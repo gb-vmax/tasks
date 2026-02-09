@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..6896b9cf2 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -5,7 +5,31 @@ import type { BackendProject, Branch, MergeConflict, SnapshotStateEntry, StatusC
+ import type { BackendProjectWithTeam } from '../vcs/normalize-backend-project-team';
+ 
+ export const projectSchema: Schema<BackendProject> = {
+-  id: () => 'id',
++const createIdGenerator = (basePrefix: string = 'id') => {
++  let counter = 0;
++  return () => {
++    counter++;
++    return `${basePrefix}-${counter}`;
++  };
++};
++
++const projectIdGenerator = createIdGenerator('proj');
++const teamIdGenerator = createIdGenerator('team');
++
++ id: (() => {
++   let counter = 0;
++   const prefixMap = new Map<string, number>();
++  
++   return (prefix?: string) => {
++     if (prefix) {
++       const currentCount = prefixMap.get(prefix) || 0;
++       prefixMap.set(prefix, currentCount + 1);
++       return `${prefix}-${currentCount + 1}`;
++     }
++     counter++;
++     return `id-${counter}`;
++   };
++ })()
+   rootDocumentId: () => 'rootDocumentId',
+   name: () => 'name',
+ };

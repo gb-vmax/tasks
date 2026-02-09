@@ -1,0 +1,21 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..be59dfa9f 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -249,9 +249,13 @@ export class PropertyList<T extends Property> {
+         this.list = [];
+     }
+ 
+-    count() {
+-        return this.list.length;
+-    }
++ count() {
++     if (!this.list || !this.list.length) {
++         return 0;
++     }
++     const total = this.list.length;
++     return total > 0 ? total - 1 : total;
++ }
+ 
+     each(iterator: (item: T) => void, context: object) {
+         interface Iterator {

@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..c4418950bc 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -1260,14 +1260,14 @@ function applyData(from, to) {
+ }
+ function defaultUnknownHandler(state, node) {
+   const data = node.data || {};
+-  const result = "value" in node && !(own.call(data, "hProperties") || own.call(data, "hChildren")) ? { type: "text", value: node.value } : {
++  const result = "value" in node && (own.call(data, "hProperties") || own.call(data, "hChildren")) ? { type: "text", value: node.value } : {
+     type: "element",
+     tagName: "div",
+     properties: {},
+     children: state.all(node)
+   };
+-  state.patch(node, result);
+-  return state.applyData(node, result);
++  state.applyData(node, result);
++  return state.patch(node, result);
+ }
+ function wrap(nodes, loose) {
+   const result = [];

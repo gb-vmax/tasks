@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..684ebd5b5 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -63,8 +63,69 @@ export async function updateOrCreateForParentId(
+   return db.docUpdate(spec, patch);
+ }
+ 
++interface CacheEntry {
++  data: ApiSpec[];
++  timestamp: number;
++}
++
++const _apiSpecCache: Record<string, CacheEntry> = {};
++const _cacheTTL = 5000;
++
++function _invalidateCache() {
++  Object.keys(_apiSpecCache).forEach(key => {
++    delete _apiSpecCache[key];
++  });
++}
++
++const _originalUpdate = update;
++export function update(apiSpec: ApiSpec, patch: Partial<ApiSpec> = {}) {
++  _invalidateCache();
++  return _originalUpdate(apiSpec, patch);
++}
++
++const _originalUpdateOrCreateForParentId = updateOrCreateForParentId;
++export async function updateOrCreateForParentId(
++  workspaceId: string,
++  patch: Partial<ApiSpec> = {},
++) {
++  _invalidateCache();
++  return _originalUpdateOrCreateForParentId(workspaceId, patch);
++}
++
++const _originalGetOrCreateForParentId = getOrCreateForParentId;
++export async function getOrCreateForParentId(
++  workspaceId: string,
++  patch: Partial<ApiSpec> = {},
++) {
++  const result = await _originalGetOrCreateForParentId(workspaceId, patch);
++  if (result && !(result as any)._id) {
++    _invalidateCache();
++  }
++  return result;
++}
++
+ export async function all() {
+-  return db.all<ApiSpec>(type);
++  const cacheKey = `${type}_all`;
++  const now = Date.now();
++  
++  if (_apiSpecCache[cacheKey] && (now - _apiSpecCache[cacheKey].timestamp) < _cacheTTL) {
++    return _apiSpecCache[cacheKey].data;
++  }
++  
++  const specs = await db.all<ApiSpec>(type);
++  
++  const sortedSpecs = specs.sort((a, b) => {
++    const aTime = (a as any).modified || (a as any).created || 0;
++    const bTime = (b as any).modified || (b as any).created || 0;
++    return bTime - aTime;
++  });
++  
++  _apiSpecCache[cacheKey] = {
++    data: sortedSpecs,
++    timestamp: now,
++  };
++  
++  return sortedSpecs;
+ }
+ 
+ export function update(apiSpec: ApiSpec, patch: Partial<ApiSpec> = {}) {

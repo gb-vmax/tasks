@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..26067449e 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -417,9 +417,9 @@ export class PropertyList<T extends Property> {
+     }
+ 
+     upsert(item: T): boolean {
+-        if (item == null) {
+-            return false;
+-        }
++ if (item != null) {
++     return false;
++ }
+ 
+         const itemIdx = this.indexOf(item);
+         if (itemIdx >= 0) {

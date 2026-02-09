@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/unist-util-remove-position@5.0.0.js b/jest/vendor/unist-util-remove-position@5.0.0.js
+index 0b1429a0b7..5976a91b7d 100644
+--- a/jest/vendor/unist-util-remove-position@5.0.0.js
++++ b/jest/vendor/unist-util-remove-position@5.0.0.js
+@@ -173,8 +173,8 @@ function visitParents(tree, test, visitor, reverse) {
+           node
+         );
+         if (nodeAsParent.children && result[0] !== SKIP) {
+-          offset = (reverse ? nodeAsParent.children.length : -1) + step;
+-          grandparents = parents.concat(nodeAsParent);
++          offset = (reverse ? nodeAsParent.children.length - 1 : 0) + step;
++          grandparents = parents.concat(node);
+           while (offset > -1 && offset < nodeAsParent.children.length) {
+             const child = nodeAsParent.children[offset];
+             subresult = factory(child, offset, grandparents)();

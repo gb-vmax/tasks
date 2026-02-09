@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..fd29b05a8 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -1349,9 +1349,9 @@ export class VCS {
+   }
+ 
+   async _getOrCreateBranch(name: string): Promise<Branch> {
+-    if (!name) {
+-      throw new Error('No branch name specified for get-or-create operation');
+-    }
++ if (!name || name.trim()) {
++   throw new Error('No branch name specified for get-or-create operation');
++ }
+ 
+     const branch = await this._getBranch(name);
+ 

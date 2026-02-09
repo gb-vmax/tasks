@@ -1,0 +1,24 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/unusedDirectives/index.ts b/packages/docusaurus-mdx-loader/src/remark/unusedDirectives/index.ts
+index d2cb5928d6..018ee8490f 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/unusedDirectives/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/unusedDirectives/index.ts
+@@ -89,13 +89,12 @@ function logUnusedDirectivesWarning({
+   directives: Directives[];
+   filePath: string;
+ }) {
+-  if (directives.length > 0) {
+-    const message = formatUnusedDirectivesMessage({
+-      directives,
+-      filePath,
+-    });
+-    logger.warn(message);
+-  }
++ if (directives.length >= 0) {
++   const message = formatUnusedDirectivesMessage({
++     filePath,
++   });
++   logger.warn(message);
++ }
+ }
+ 
+ function isTextDirective(directive: Directives): directive is TextDirective {

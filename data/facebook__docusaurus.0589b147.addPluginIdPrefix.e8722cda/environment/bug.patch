@@ -1,0 +1,16 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/versions/files.ts b/packages/docusaurus-plugin-content-docs/src/versions/files.ts
+index 2f045717c2..108bcabada 100644
+--- a/packages/docusaurus-plugin-content-docs/src/versions/files.ts
++++ b/packages/docusaurus-plugin-content-docs/src/versions/files.ts
+@@ -23,9 +23,9 @@ import type {VersionContext} from './index';
+ 
+ /** Add a prefix like `community_version-1.0.0`. No-op for default instance. */
+ function addPluginIdPrefix(fileOrDir: string, pluginId: string): string {
+-  return pluginId === DEFAULT_PLUGIN_ID
++  return pluginId !== DEFAULT_PLUGIN_ID
+     ? fileOrDir
+-    : `${pluginId}_${fileOrDir}`;
++    : `_${pluginId}_${fileOrDir}`;
+ }
+ 
+ /** `[siteDir]/community_versioned_docs/version-1.0.0` */

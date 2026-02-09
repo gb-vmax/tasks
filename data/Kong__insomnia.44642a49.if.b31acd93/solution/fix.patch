@@ -1,0 +1,156 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..926941a84 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -406,9 +406,149 @@ export const database = {
+   },
+ 
+   insert: async function<T extends BaseModel>(doc: T, fromSync = false, initializeModel = true) {
+-    if (db._empty) {
+-      return _send<T>('insert', ...arguments);
++type DuplicateStrategy = 'error' | 'skip' | 'replace' | 'allow';
++
++interface DuplicateCheckResult<T extends BaseModel = BaseModel> {
++  hasDuplicate: boolean;
++  duplicateId?: string;
++  existingDoc?: T;
++}
++
++async function _validateDocumentForInsert<T extends BaseModel>(doc: T): Promise<void> {
++  const model = models.getModel(doc.type);
++  if (!model) {
++    throw new Error(`Unknown model type: ${doc.type}`);
++  }
++
++  const requiredFields = _getRequiredFields(doc.type);
++  for (const field of requiredFields) {
++    if (doc[field as keyof T] === undefined || doc[field as keyof T] === null) {
++      throw new Error(`Required field '${field}' is missing for type ${doc.type}`);
++    }
++  }
++
++  if (!doc._id) {
++    throw new Error(`Document missing _id field for type ${doc.type}`);
++  }
++}
++
++function _getRequiredFields(type: string): string[] {
++  const requiredFieldsMap: Record<string, string[]> = {
++    [models.workspace.type]: ['name'],
++    [models.request.type]: ['url', 'method'],
++    [models.environment.type]: ['data'],
++  };
++  
++  return requiredFieldsMap[type] || [];
++}
++
++async function _checkForDuplicates<T extends BaseModel>(doc: T): Promise<DuplicateCheckResult<T>> {
++  const uniqueFields = _getUniqueFields(doc.type);
++  
++  if (uniqueFields.length === 0) {
++    return { hasDuplicate: false };
++  }
++
++  for (const fieldSet of uniqueFields) {
++    const query: Query<T> = {};
++    let allFieldsPresent = true;
++
++    for (const field of fieldSet) {
++      const value = doc[field as keyof T];
++      if (value === undefined || value === null) {
++        allFieldsPresent = false;
++        break;
++      }
++      query[field as keyof T] = value as any;
++    }
++
++    if (!allFieldsPresent) {
++      continue;
++    }
++
++    const existingDocs = await database.find<T>(doc.type, query);
++    const duplicate = existingDocs.find(d => d._id !== doc._id);
++    
++    if (duplicate) {
++      return {
++        hasDuplicate: true,
++        duplicateId: duplicate._id,
++        existingDoc: duplicate,
++      };
+     }
++  }
++
++  return { hasDuplicate: false };
++}
++
++function _getUniqueFields(type: string): string[][] {
++  const uniqueFieldsMap: Record<string, string[][]> = {
++    [models.workspace.type]: [['name', 'parentId']],
++    [models.cookieJar.type]: [['parentId']],
++    [models.apiSpec.type]: [['parentId']],
++    [models.environment.type]: [['parentId', 'name']],
++  };
++  
++  return uniqueFieldsMap[type] || [];
++}
++
++function _getDuplicateStrategy(type: string): DuplicateStrategy {
++  const strategyMap: Record<string, DuplicateStrategy> = {
++    [models.cookieJar.type]: 'skip',
++    [models.apiSpec.type]: 'skip',
++    [models.workspace.type]: 'error',
++  };
++  
++  return strategyMap[type] || 'allow';
++}
++
++ insert: async function<T extends BaseModel>(doc: T, fromSync = false, initializeModel = true) {
++   if (db._empty) {
++     return _send<T>('insert', ...arguments);
++   }
++   return new Promise<T>(async (resolve, reject) => {
++     let docWithDefaults: T | null = null;
++
++     try {
++       if (initializeModel) {
++         docWithDefaults = await models.initModel<T>(doc.type, doc);
++       } else {
++         docWithDefaults = doc;
++       }
++     } catch (err) {
++       return reject(err);
++     }
++
++     try {
++       await _validateDocumentForInsert(docWithDefaults);
++     } catch (err) {
++       return reject(err);
++     }
++
++     const duplicateCheck = await _checkForDuplicates(docWithDefaults);
++     if (duplicateCheck.hasDuplicate) {
++       const strategy = _getDuplicateStrategy(docWithDefaults.type);
++      
++       if (strategy === 'error') {
++         return reject(new Error(`Duplicate document found for type ${docWithDefaults.type}: ${duplicateCheck.duplicateId}`));
++       } else if (strategy === 'skip') {
++         return resolve(duplicateCheck.existingDoc as T);
++       } else if (strategy === 'replace') {
++         const updatedDoc = { ...duplicateCheck.existingDoc, ...docWithDefaults, _id: duplicateCheck.duplicateId };
++         return database.update(updatedDoc as T, fromSync).then(resolve).catch(reject);
++       }
++     }
++
++     (db[doc.type] as NeDB<T>).insert(docWithDefaults, (err, newDoc: T) => {
++       if (err) {
++         return reject(err);
++       }
++
++       resolve(newDoc);
++       notifyOfChange('insert', newDoc, fromSync);
++     });
++   });
++ },
+     return new Promise<T>(async (resolve, reject) => {
+       let docWithDefaults: T | null = null;
+ 

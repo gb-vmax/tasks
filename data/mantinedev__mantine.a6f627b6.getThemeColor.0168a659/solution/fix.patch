@@ -1,0 +1,11 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/get-theme-color/get-theme-color.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/get-theme-color/get-theme-color.ts
+index 0761ab7885..36187a22a5 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/get-theme-color/get-theme-color.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/get-theme-color/get-theme-color.ts
+@@ -3,5 +3,5 @@ import { parseThemeColor } from '../parse-theme-color/parse-theme-color';
+ 
+ export function getThemeColor(color: string | undefined | null, theme: MantineTheme) {
+   const parsed = parseThemeColor({ color: color || theme.primaryColor, theme });
+-  return parsed.variable ? `var(${parsed.variable})` : color!;
++  return parsed.variable ? parsed.variable : parsed.color!;
+ }

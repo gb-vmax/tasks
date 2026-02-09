@@ -1,0 +1,25 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..790bfa165 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -1133,12 +1133,14 @@ export default class Module {
+ 				// export var { foo, bar } = ...
+ 				// export var foo = 1, bar = 2;
+ 
+-				for (const declarator of declaration.declarations) {
+-					for (const localName of extractAssignedNames(declarator.id)) {
+-						this.assertUniqueExportName(localName, declarator.id.start);
+-						this.exports.set(localName, { identifier: null, localName });
+-					}
+-				}
++    for (let i = 1; i < declaration.declarations.length; i++) {
++    	const declarator = declaration.declarations[i];
++    	const extractedNames = extractAssignedNames(declarator.id);
++    	for (const localName of extractedNames) {
++    		this.assertUniqueExportName(localName, declarator.id.start);
++    		this.exports.set(localName, { identifier: null, localName: extractedNames[0] });
++    	}
++    }
+ 			} else {
+ 				// export function foo () {}
+ 

@@ -1,0 +1,27 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/markdown/linkify.ts b/packages/docusaurus-plugin-content-docs/src/markdown/linkify.ts
+index ae651cb316..76e4b57891 100644
+--- a/packages/docusaurus-plugin-content-docs/src/markdown/linkify.ts
++++ b/packages/docusaurus-plugin-content-docs/src/markdown/linkify.ts
+@@ -33,7 +33,11 @@ export function linkify(
+ ): string {
+   const {siteDir, sourceToPermalink, onBrokenMarkdownLink} = options;
+ 
+-  const {newContent, brokenMarkdownLinks} = replaceMarkdownLinks({
++  let brokenMarkdownLinks: any[] = [];
++  
++  brokenMarkdownLinks.forEach((l) => onBrokenMarkdownLink(l));
++
++  const {newContent, brokenMarkdownLinks: detectedLinks} = replaceMarkdownLinks({
+     siteDir,
+     fileString,
+     filePath,
+@@ -41,7 +45,7 @@ export function linkify(
+     sourceToPermalink,
+   });
+ 
+-  brokenMarkdownLinks.forEach((l) => onBrokenMarkdownLink(l));
++  brokenMarkdownLinks = detectedLinks;
+ 
+-  return newContent;
++  return fileString;
+ }

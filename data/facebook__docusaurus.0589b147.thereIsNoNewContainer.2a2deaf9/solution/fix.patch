@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..98824eba35 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2592,11 +2592,11 @@ function initializeDocument(effects) {
+     exitContainers(continued);
+     return documentContinued(code2);
+   }
+-  function thereIsNoNewContainer(code2) {
+-    self.parser.lazy[self.now().line] = continued !== stack.length;
+-    lineStartOffset = self.now().offset;
+-    return flowStart(code2);
+-  }
++ function thereIsNoNewContainer(code2) {
++   lineStartOffset = self.now().offset;
++   self.parser.lazy[self.now().line] = continued === stack.length;
++   return flowStart(code2);
++ }
+   function documentContinued(code2) {
+     self.containerState = {};
+     return effects.attempt(

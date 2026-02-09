@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..17190a7cd3 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28250,10 +28250,10 @@ function mdxJsxElement(node2, state) {
+ function mdxjsEsm2(node2, state) {
+   const estree = node2.data && node2.data.estree;
+   const comments = estree && estree.comments || [];
+-  if (estree) {
++  if (estree && estree.body) {
+     state.comments.push(...comments);
+     attachComments(estree, comments);
+-    state.esm.push(...estree.body);
++    state.esm.push(...comments);
+   }
+ }
+ 

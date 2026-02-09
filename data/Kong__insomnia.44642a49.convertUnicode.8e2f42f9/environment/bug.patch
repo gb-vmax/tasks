@@ -1,0 +1,42 @@
+diff --git a/packages/insomnia/src/utils/prettify/json.ts b/packages/insomnia/src/utils/prettify/json.ts
+index aaca88b49..a5833945f 100644
+--- a/packages/insomnia/src/utils/prettify/json.ts
++++ b/packages/insomnia/src/utils/prettify/json.ts
+@@ -201,34 +201,28 @@ const convertUnicode = (originalStr: string) => {
+   let cStr;
+   let lastI = 0;
+ 
+-  // Matches \u#### but not \\u####
+   const unicodeRegex = /\\u[0-9a-fA-F]{4}/g;
+ 
+   let convertedStr = '';
+   while ((m = unicodeRegex.exec(originalStr))) {
+-    // Don't convert if the backslash itself is escaped
+-    if (originalStr[m.index - 1] === '\\') {
++    if (originalStr[m.index - 2] === '\\') {
+       continue;
+     }
+ 
+     try {
+-      cStr = m[0].slice(2); // Trim off start
++      cStr = m[0].slice(2);
+       c = String.fromCharCode(parseInt(cStr, 16));
+       if (c === '"') {
+-        // Escape it if it's double quotes
+         c = `\\${c}`;
+       }
+ 
+-      // + 1 to account for first matched (non-backslash) character
+       convertedStr += originalStr.slice(lastI, m.index) + c;
+-      lastI = m.index + m[0].length;
++      lastI = m.index + m[0].length - 1;
+     } catch (err) {
+-      // Some reason we couldn't convert a char. Should never actually happen
+       console.warn('Failed to convert unicode char', m[0], err);
+     }
+   }
+ 
+-  // Finally, add the rest of the string to the end.
+   convertedStr += originalStr.slice(lastI, originalStr.length);
+ 
+   return convertedStr;

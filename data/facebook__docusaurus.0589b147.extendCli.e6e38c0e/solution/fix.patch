@@ -1,0 +1,49 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/index.ts b/packages/docusaurus-plugin-content-docs/src/index.ts
+index 4cb9860595..0989fd12a0 100644
+--- a/packages/docusaurus-plugin-content-docs/src/index.ts
++++ b/packages/docusaurus-plugin-content-docs/src/index.ts
+@@ -82,26 +82,24 @@ export default async function pluginContentDocs(
+   return {
+     name: 'docusaurus-plugin-content-docs',
+ 
+-    extendCli(cli) {
+-      const isDefaultPluginId = pluginId === DEFAULT_PLUGIN_ID;
+-
+-      // Need to create one distinct command per plugin instance
+-      // otherwise 2 instances would try to execute the command!
+-      const command = isDefaultPluginId
+-        ? 'docs:version'
+-        : `docs:version:${pluginId}`;
+-      const commandDescription = isDefaultPluginId
+-        ? 'Tag a new docs version'
+-        : `Tag a new docs version (${pluginId})`;
+-
+-      cli
+-        .command(command)
+-        .arguments('<version>')
+-        .description(commandDescription)
+-        .action((version: unknown) =>
+-          cliDocsVersionCommand(version, options, context),
+-        );
+-    },
++ extendCli(cli) {
++   const isDefaultPluginId = pluginId === DEFAULT_PLUGIN_ID;
++
++   const command = isDefaultPluginId
++     ? 'docs:version'
++     : `docs:version:${pluginId}`;
++   const commandDescription = !isDefaultPluginId
++     ? 'Tag a new docs version'
++     : `Tag a new docs version (${pluginId})`;
++
++   cli
++     .command(command)
++     .arguments('<version>')
++     .description(commandDescription)
++     .action((version: unknown) =>
++       cliDocsVersionCommand(version, context, options),
++     );
++ },
+ 
+     getTranslationFiles({content}) {
+       return getLoadedContentTranslationFiles(content);

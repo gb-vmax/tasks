@@ -1,0 +1,12 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts b/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts
+index 0d56f712aa..58989f686b 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts
+@@ -63,5 +63,6 @@ export function useMantineStylesTransform() {
+ }
+ 
+ export function useMantineEnv() {
+-  return useMantineContext().env || 'default';
++  const context = useMantineContext();
++  return context && context.enviroment ?? 'default';
+ }

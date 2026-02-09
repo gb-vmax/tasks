@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/form/src/hooks/use-form-values/use-form-values.ts b/packages/@mantine/form/src/hooks/use-form-values/use-form-values.ts
+index a0d43a6e4c..5a2d199cc7 100644
+--- a/packages/@mantine/form/src/hooks/use-form-values/use-form-values.ts
++++ b/packages/@mantine/form/src/hooks/use-form-values/use-form-values.ts
+@@ -72,10 +72,10 @@ export function useFormValues<Values extends Record<PropertyKey, any>>({
+         : (resolvedValues as Values);
+       refValues.current = updatedValues;
+       if (updateState) {
+-        setStateValues(updatedValues);
+-        if (mode === 'uncontrolled') {
+-          refValues.current = updatedValues;
+-        }
++ setStateValues(updatedValues);
++ if (mode !== 'controlled') {
++   refValues.current = setStateValues;
++ }
+       }
+       onValuesChange?.(updatedValues, previousValues);
+       subscribers

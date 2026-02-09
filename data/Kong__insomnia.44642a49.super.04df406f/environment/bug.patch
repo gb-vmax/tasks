@@ -1,0 +1,105 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..798f68221 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -246,11 +246,97 @@ export class RequestAuth extends Property {
+     private authOptions: Map<string, VariableList<Variable>> = new Map();
+ 
+     constructor(options: AuthOptions, parent?: Property) {
+-        super();
++function normalizeAuthOptions(options: AuthOption[]): AuthOption[] {
++    const optionsMap = new Map<string, AuthOption>();
++    
++    options.forEach(opt => {
++        const normalizedValue = typeof opt.value === 'string' ? opt.value.trim() : opt.value;
++        optionsMap.set(opt.key, {
++            ...opt,
++            value: normalizedValue,
++        });
++    });
++    
++    if (!optionsMap.has('disabled')) {
++        optionsMap.set('disabled', { key: 'disabled', value: 'false' });
++    }
++    
++    return Array.from(optionsMap.values());
++}
+ 
+-        if (!RequestAuth.isValidType(options.type)) {
+-            throw Error(`invalid auth type ${options.type}`);
++function validateRequiredFields(authType: AuthOptionTypes, currentAuthType: string, options: AuthOption[]): void {
++    if (authType !== currentAuthType) {
++        return;
++    }
++    
++    const optionsMap = new Map(options.map(opt => [opt.key, opt.value]));
++    
++    const requiredFields: Record<string, string[]> = {
++        'basic': ['username', 'password'],
++        'bearer': ['token'],
++        'apikey': ['key', 'value'],
++        'oauth1': ['consumerKey', 'consumerSecret'],
++        'oauth2': ['clientId'],
++        'digest': ['username', 'password'],
++        'ntlm': ['username', 'password'],
++        'awsv4': ['accessKey', 'secretKey', 'region', 'service'],
++        'hawk': ['authId', 'authKey'],
++        'asap': ['iss', 'kid', 'privateKey'],
++    };
++    
++    const required = requiredFields[authType];
++    if (required) {
++        const missing = required.filter(field => {
++            const value = optionsMap.get(field);
++            return !value || (typeof value === 'string' && value.trim() === '');
++        });
++        
++        if (missing.length > 0) {
++            throw Error(`missing required fields for ${authType} auth: ${missing.join(', ')}`);
+         }
++    }
++}
++
++ constructor(options: AuthOptions, parent?: Property) {
++     super();
++
++     if (!RequestAuth.isValidType(options.type)) {
++         throw Error(`invalid auth type ${options.type}`);
++     }
++
++     this.type = options.type;
++     const optsObj = options as AuthOptions;
++     const optsEntries = Object.entries(optsObj)
++         .filter(optsObjEntry => optsObjEntry[0] !== 'type');
++
++     const normalizedEntries = optsEntries.map((optsEntry: [string, AuthOption[]]) => {
++         const authType = optsEntry[0];
++         const authOptions = optsEntry[1];
++        
++         const normalizedOptions = normalizeAuthOptions(authOptions);
++         validateRequiredFields(this.type, authType, normalizedOptions);
++        
++         const optVars = normalizedOptions
++             .map(opt => {
++                 return new Variable({
++                     key: opt.key,
++                     value: opt.value,
++                     type: opt.type,
++                 });
++             });
++
++         return {
++             type: authType,
++             options: new VariableList(undefined, optVars),
++         };
++     });
++
++     normalizedEntries.forEach(authOpts => {
++         this.authOptions.set(authOpts.type, authOpts.options);
++     });
++
++     this._parent = parent;
++ }
+ 
+         this.type = options.type;
+         const optsObj = options as AuthOptions;

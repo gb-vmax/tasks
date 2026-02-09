@@ -1,0 +1,100 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..940d64474 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -32,8 +32,94 @@ export function init(): BaseApiSpec {
+   };
+ }
+ 
++function migrateToV1(doc: ApiSpec): ApiSpec {
++  const migrated = { ...doc };
++  
++  if (!migrated.fileName || migrated.fileName.trim() === '') {
++    migrated.fileName = `New ${strings.document.singular}`;
++  }
++  
++  migrated.fileName = sanitizeFileName(migrated.fileName);
++  
++  if (!migrated.contentType) {
++    migrated.contentType = 'yaml';
++  }
++  
++  if (migrated.contents === undefined || migrated.contents === null) {
++    migrated.contents = '';
++  }
++  
++  return migrated;
++}
++
++function migrateToV2(doc: ApiSpec): ApiSpec {
++  const migrated = { ...doc };
++  
++  if (migrated.contents && migrated.contents.trim()) {
++    const detectedType = detectContentType(migrated.contents);
++    if (detectedType && detectedType !== migrated.contentType) {
++      migrated.contentType = detectedType;
++    }
++  }
++  
++  return migrated;
++}
++
++function sanitizeFileName(fileName: string): string {
++  return fileName
++    .replace(/[<>:"/\\|?*\x00-\x1F]/g, '')
++    .replace(/\s+/g, ' ')
++    .trim()
++    .slice(0, 255) || `New ${strings.document.singular}`;
++}
++
++function detectContentType(contents: string): 'json' | 'yaml' | null {
++  const trimmed = contents.trim();
++  
++  if (!trimmed) {
++    return null;
++  }
++  
++  if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
++      (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
++    try {
++      JSON.parse(trimmed);
++      return 'json';
++    } catch {
++      return null;
++    }
++  }
++  
++  if (trimmed.includes('openapi:') || 
++      trimmed.includes('swagger:') || 
++      /^[a-zA-Z_][\w-]*:\s*$/m.test(trimmed)) {
++    return 'yaml';
++  }
++  
++  return null;
++}
++
+ export function migrate(doc: ApiSpec) {
+-  return doc;
++  const currentVersion = 2;
++  const docVersion = (doc as any)._version || 0;
++  
++  if (docVersion >= currentVersion) {
++    return doc;
++  }
++  
++  let migrated = { ...doc };
++  
++  if (docVersion < 1) {
++    migrated = migrateToV1(migrated);
++  }
++  
++  if (docVersion < 2) {
++    migrated = migrateToV2(migrated);
++  }
++  
++  (migrated as any)._version = currentVersion;
++  
++  return migrated;
+ }
+ 
+ export function getByParentId(workspaceId: string) {

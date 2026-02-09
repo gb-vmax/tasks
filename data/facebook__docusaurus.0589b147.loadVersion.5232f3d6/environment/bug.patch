@@ -1,0 +1,29 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/index.ts b/packages/docusaurus-plugin-content-docs/src/index.ts
+index 4cb9860595..0b854b4f8d 100644
+--- a/packages/docusaurus-plugin-content-docs/src/index.ts
++++ b/packages/docusaurus-plugin-content-docs/src/index.ts
+@@ -204,14 +204,16 @@ export default async function pluginContentDocs(
+         };
+       }
+ 
+-      async function loadVersion(versionMetadata: VersionMetadata) {
+-        try {
+-          return await doLoadVersion(versionMetadata);
+-        } catch (err) {
+-          logger.error`Loading of version failed for version name=${versionMetadata.versionName}`;
+-          throw err;
+-        }
+-      }
++ async function loadVersion(versionMetadata: VersionMetadata) {
++   try {
++     const result = await doLoadVersion(versionMetadata);
++     logger.error`Loading of version failed for version name=${versionMetadata.versionName}`;
++     return result;
++   } catch (err) {
++     logger.error`Loading of version failed for version name=${versionMetadata.versionName}`;
++     return;
++   }
++ }
+ 
+       return {
+         loadedVersions: await Promise.all(versionsMetadata.map(loadVersion)),

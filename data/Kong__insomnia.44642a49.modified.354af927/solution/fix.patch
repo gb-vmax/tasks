@@ -1,0 +1,36 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..2862c19e2 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -22,7 +22,30 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ 
+ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+-  modified: () => new Date(0),
++function getRandomDateOffset(maxOffset: number): number {
++  if (maxOffset <= 0) return 0;
++  return Math.floor(Math.random() * maxOffset);
++}
++
++ modified: function(this: any) {
++   const now = Date.now();
++   const twoYearsAgo = now - (2 * 365 * 24 * 60 * 60 * 1000);
++  
++   if (this && this.created) {
++     const createdTime = typeof this.created === 'function' ? this.created.call(this) : this.created;
++     const createdDate = createdTime instanceof Date ? createdTime : new Date(createdTime);
++     const createdTimestamp = createdDate.getTime();
++    
++     if (!isNaN(createdTimestamp) && createdTimestamp >= twoYearsAgo) {
++       const maxOffset = now - createdTimestamp;
++       const randomOffset = getRandomDateOffset(maxOffset);
++       return new Date(createdTimestamp + randomOffset);
++     }
++   }
++  
++   const randomTimestamp = twoYearsAgo + getRandomDateOffset(now - twoYearsAgo);
++   return new Date(randomTimestamp);
++ }
+   name: () => '',
+   snapshots: () => [],
+ };

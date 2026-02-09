@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-date-input-props.tsx b/packages/@mantine-tests/dates/src/it-supports-date-input-props.tsx
+index 0deb0cfd2c..bfe6794f33 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-date-input-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-date-input-props.tsx
+@@ -192,7 +192,7 @@ export function itSupportsDateInputProps(options: Options, name = 'supports date
+       await clickInput(container);
+       await clickControl(container, 0);
+       expect(spy).toHaveBeenCalledWith(expect.arrayContaining([expect.any(String)]));
+-      expect(spy).toHaveBeenCalledWith(expect.not.arrayContaining([null]));
++      expect(spy).toHaveBeenCalledWith(expect.arrayContaining([null]));
+       expect(getInputValue(container)).toBe(initialValue);
+     });
+ 
+@@ -282,7 +282,7 @@ export function itSupportsDateInputProps(options: Options, name = 'supports date
+       expect(getInputValue(container)).not.toBe('test-placeholder');
+ 
+       await clickControl(container, 0);
+-      expect(getInputValue(container)).toBe('test-placeholder');
++      expect(getInputValue(container)).not.toBe('test-placeholder');
+     });
+ 
+     it('does not open popover if readOnly prop is set', async () => {

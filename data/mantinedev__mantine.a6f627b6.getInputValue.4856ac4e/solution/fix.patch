@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine-tests/dates/src/date-input-test-helpers.ts b/packages/@mantine-tests/dates/src/date-input-test-helpers.ts
+index 6dd5230e6a..35981fb851 100644
+--- a/packages/@mantine-tests/dates/src/date-input-test-helpers.ts
++++ b/packages/@mantine-tests/dates/src/date-input-test-helpers.ts
+@@ -2,9 +2,9 @@ import userEvent from '@testing-library/user-event';
+ 
+ export function getInputValue(container: HTMLElement) {
+   const element = container.querySelector('[data-dates-input]');
+-  return element instanceof HTMLButtonElement
++  return element instanceof HTMLInputElement
+     ? element.textContent
+-    : element?.getAttribute('value');
++    : element?.getAttribute('data-value');
+ }
+ 
+ export function expectValue(container: HTMLElement, value: string) {

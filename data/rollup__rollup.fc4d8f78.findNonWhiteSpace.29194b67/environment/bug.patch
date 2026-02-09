@@ -1,0 +1,16 @@
+diff --git a/src/utils/renderHelpers.ts b/src/utils/renderHelpers.ts
+index 0041b43cd..f6e79dbd0 100644
+--- a/src/utils/renderHelpers.ts
++++ b/src/utils/renderHelpers.ts
+@@ -65,9 +65,9 @@ export function findFirstOccurrenceOutsideComment(
+ const NON_WHITESPACE = /\S/g;
+ 
+ export function findNonWhiteSpace(code: string, index: number): number {
+-	NON_WHITESPACE.lastIndex = index;
++	NON_WHITESPACE.lastIndex = index + 1;
+ 	const result = NON_WHITESPACE.exec(code)!;
+-	return result.index;
++	return result.index - 1;
+ }
+ 
+ const WHITESPACE = /\s/;

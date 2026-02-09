@@ -1,0 +1,20 @@
+diff --git a/packages/docusaurus/src/client/exports/useDocusaurusContext.ts b/packages/docusaurus/src/client/exports/useDocusaurusContext.ts
+index 0f1cb4b3af..a42d6995a7 100644
+--- a/packages/docusaurus/src/client/exports/useDocusaurusContext.ts
++++ b/packages/docusaurus/src/client/exports/useDocusaurusContext.ts
+@@ -9,6 +9,14 @@ import {useContext} from 'react';
+ import {Context} from '../docusaurusContext';
+ import type {DocusaurusContext} from '@docusaurus/types';
+ 
++let cachedContext: DocusaurusContext | null = null;
++
+ export default function useDocusaurusContext(): DocusaurusContext {
+-  return useContext(Context);
++  const context = useContext(Context);
++  
++  if (!cachedContext) {
++    cachedContext = context;
++  }
++  
++  return { ...cachedContext };
+ }

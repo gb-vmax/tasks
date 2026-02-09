@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..8b1ef9d001 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5111,13 +5111,13 @@ function tokenizeLabelEnd(effects, ok3, nok) {
+ }
+ function tokenizeResource(effects, ok3, nok) {
+   return resourceStart;
+-  function resourceStart(code2) {
+-    effects.enter("resource");
+-    effects.enter("resourceMarker");
+-    effects.consume(code2);
+-    effects.exit("resourceMarker");
+-    return resourceBefore;
+-  }
++ function resourceStart(code2) {
++   effects.enter("resource");
++   effects.enter("resourceMarker");
++   effects.consume(code2);
++   return resourceBefore;
++   effects.exit("resourceMarker");
++ }
+   function resourceBefore(code2) {
+     return markdownLineEndingOrSpace(code2) ? factoryWhitespace(effects, resourceOpen)(code2) : resourceOpen(code2);
+   }

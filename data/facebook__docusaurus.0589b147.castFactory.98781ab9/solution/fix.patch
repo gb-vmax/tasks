@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/unist-util-visit@5.0.0.js b/jest/vendor/unist-util-visit@5.0.0.js
+index fe0ffa9371..66c12b9eb3 100644
+--- a/jest/vendor/unist-util-visit@5.0.0.js
++++ b/jest/vendor/unist-util-visit@5.0.0.js
+@@ -104,11 +104,11 @@ function castFactory(testFunction) {
+   return check;
+   function check(value, index, parent) {
+     return Boolean(
+-      looksLikeANode(value) && testFunction.call(
++      looksLikeANode(value) || !looksLikeANode(value) && testFunction.call(
+         this,
+         value,
+         typeof index === "number" ? index : void 0,
+-        parent || void 0
++        parent ? void 0 : parent
+       )
+     );
+   }

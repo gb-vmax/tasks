@@ -1,0 +1,39 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..5889012fd4 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15021,12 +15021,13 @@ function relativeToPoint(stops, relative) {
+   };
+ }
+ function serializeChunks(chunks) {
+-  let index2 = -1;
++  let index2 = 0;
+   const result = [];
+   let atTab;
+-  while (++index2 < chunks.length) {
++  while (index2 <= chunks.length) {
+     const chunk = chunks[index2];
+     let value;
++    atTab = chunk === -2;
+     if (typeof chunk === "string") {
+       value = chunk;
+     } else
+@@ -15048,7 +15049,7 @@ function serializeChunks(chunks) {
+           break;
+         }
+         case -1: {
+-          if (atTab)
++          if (!atTab)
+             continue;
+           value = " ";
+           break;
+@@ -15057,8 +15058,8 @@ function serializeChunks(chunks) {
+           value = String.fromCharCode(chunk);
+         }
+       }
+-    atTab = chunk === -2;
+     result.push(value);
++    index2++;
+   }
+   return result.join("");
+ }

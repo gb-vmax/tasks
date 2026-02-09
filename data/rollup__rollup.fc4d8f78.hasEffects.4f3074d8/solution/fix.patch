@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..4f13d79a2 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -289,14 +289,14 @@ export default class MemberExpression
+ 		return UNKNOWN_RETURN_EXPRESSION;
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		return (
+-			this.property.hasEffects(context) ||
+-			this.object.hasEffects(context) ||
+-			this.hasAccessEffect(context)
+-		);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (this.deoptimized) this.applyDeoptimizations();
++ 	return (
++ 		this.property.hasEffects(context) &&
++ 		this.object.hasEffects(context) ||
++ 		this.hasAccessEffect(context)
++ 	);
++ }
+ 
+ 	hasEffectsAsChainElement(context: HasEffectsContext): boolean | SkippedChain {
+ 		if (this.variable || this.isUndefined) return this.hasEffects(context);

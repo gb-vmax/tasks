@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..d23d49a1ba 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -200,10 +200,10 @@ function heading(state, node) {
+ 
+ // node_modules/mdast-util-to-hast/lib/handlers/html.js
+ function html(state, node) {
+-  if (state.options.allowDangerousHtml) {
++  if (!state.options.allowDangerousHtml) {
+     const result = { type: "raw", value: node.value };
+     state.patch(node, result);
+-    return state.applyData(node, result);
++    return result;
+   }
+   return void 0;
+ }

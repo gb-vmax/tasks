@@ -1,0 +1,95 @@
+diff --git a/packages/insomnia-sdk/src/objects/proxy-configs.ts b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+index 783e6b03c..a04cf2b21 100644
+--- a/packages/insomnia-sdk/src/objects/proxy-configs.ts
++++ b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+@@ -149,9 +149,87 @@ export class ProxyConfigList<T extends ProxyConfig> extends PropertyList<T> {
+     }
+ 
+     resolve(url?: Url) {
+-        if (!url) {
+-            return null;
+-        }
++private _resolutionCache?: Map<string, any>;
++
++private _calculateProxyPriority(proxyConfig: ProxyConfig): number {
++    let priority = 0;
++    
++    const match = proxyConfig.match;
++    const protocolEnd = match.indexOf('://');
++    if (protocolEnd === -1) {
++        return priority;
++    }
++    
++    const protocols = match.substring(0, protocolEnd).split('+');
++    priority += (3 - protocols.length) * 100;
++    
++    const pathPart = match.substring(protocolEnd + 3);
++    const pathSegments = pathPart.split('/').filter(seg => seg.length > 0);
++    priority += pathSegments.length * 10;
++    
++    const wildcardCount = (match.match(/\*/g) || []).length;
++    priority -= wildcardCount * 5;
++    
++    const hasPortInMatch = pathPart.includes(':');
++    if (hasPortInMatch) {
++        priority += 15;
++    }
++    
++    return priority;
++}
++
++override clear() {
++    super.clear();
++    if (this._resolutionCache) {
++        this._resolutionCache.clear();
++    }
++}
++
++override remove(predicate: ((item: T) => boolean) | string, ...args: any[]) {
++    const result = super.remove(predicate, ...args);
++    if (this._resolutionCache) {
++        this._resolutionCache.clear();
++    }
++    return result;
++}
++
++override insert(item: T, index?: number) {
++    const result = super.insert(item, index);
++    if (this._resolutionCache) {
++        this._resolutionCache.clear();
++    }
++    return result;
++}
++
++ resolve(url?: Url) {
++     if (!url) {
++         return null;
++     }
++
++     const urlStr = url.toString();
++    
++     if (this._resolutionCache && this._resolutionCache.has(urlStr)) {
++         return this._resolutionCache.get(urlStr);
++     }
++
++     const matches = this.list
++         .filter((proxyConfig: ProxyConfig) => {
++             return !proxyConfig.disabled && proxyConfig.test(urlStr);
++         })
++         .sort((a: ProxyConfig, b: ProxyConfig) => {
++             return this._calculateProxyPriority(b) - this._calculateProxyPriority(a);
++         })
++         .map(proxyConfig => proxyConfig.toJSON());
++
++     const result = matches.length > 0 ? matches[0] : null;
++    
++     if (!this._resolutionCache) {
++         this._resolutionCache = new Map();
++     }
++     this._resolutionCache.set(urlStr, result);
++    
++     return result;
++ }
+ 
+         const urlStr = url.toString();
+         const matches = this.list

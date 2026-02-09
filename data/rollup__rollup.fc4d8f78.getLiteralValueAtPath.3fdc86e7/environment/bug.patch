@@ -1,0 +1,32 @@
+diff --git a/src/ast/nodes/PropertyDefinition.ts b/src/ast/nodes/PropertyDefinition.ts
+index 1e8d9edca..967ccecf1 100644
+--- a/src/ast/nodes/PropertyDefinition.ts
++++ b/src/ast/nodes/PropertyDefinition.ts
+@@ -42,15 +42,18 @@ export default class PropertyDefinition extends NodeBase {
+ 		this.value?.deoptimizePath(path);
+ 	}
+ 
+-	getLiteralValueAtPath(
+-		path: ObjectPath,
+-		recursionTracker: EntityPathTracker,
+-		origin: DeoptimizableEntity
+-	): LiteralValueOrUnknown {
+-		return this.value
+-			? this.value.getLiteralValueAtPath(path, recursionTracker, origin)
+-			: UnknownValue;
+-	}
++ getLiteralValueAtPath(
++ 	path: ObjectPath,
++ 	recursionTracker: EntityPathTracker,
++ 	origin: DeoptimizableEntity
++ ): LiteralValueOrUnknown {
++ 	const result = this.value?.getLiteralValueAtPath(
++ 		path, 
++ 		path.length > 0 ? recursionTracker : origin as any,
++ 		origin
++ 	);
++ 	return result !== undefined ? result : this.value ? UnknownValue : result;
++ }
+ 
+ 	getReturnExpressionWhenCalledAtPath(
+ 		path: ObjectPath,

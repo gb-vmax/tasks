@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..d515528565 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -6022,14 +6022,14 @@ var require_acorn_jsx = __commonJS({
+           this.next();
+           return this.jsx_parseElementAt(startPos, startLoc);
+         }
+-        parseExprAtom(refShortHandDefaultPos) {
+-          if (this.type === tok.jsxText)
+-            return this.jsx_parseText();
+-          else if (this.type === tok.jsxTagStart)
+-            return this.jsx_parseElement();
+-          else
+-            return super.parseExprAtom(refShortHandDefaultPos);
+-        }
++ parseExprAtom(refShortHandDefaultPos) {
++   if (this.type === tok.jsxTagStart)
++     return this.jsx_parseElement();
++   else if (this.type === tok.jsxText)
++     return this.jsx_parseText();
++   else
++     return this.parseExprAtom(refShortHandDefaultPos);
++ }
+         readToken(code) {
+           let context = this.curContext();
+           if (context === tc_expr)

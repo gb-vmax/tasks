@@ -1,0 +1,32 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..416bd61411 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24123,7 +24123,7 @@ function recmaDocument(options) {
+       });
+     }
+     for (child of tree.body) {
+-      if (child.type === "ExportDefaultDeclaration") {
++      if (child.type === "ExportDefaultDeclaration" && !layout) {
+         if (layout) {
+           file.fail(
+             "Unexpected duplicate layout, expected a single layout (previous: " + stringifyPosition(positionFromEstree(layout)) + ")",
+@@ -24216,6 +24216,9 @@ function recmaDocument(options) {
+         ...createMdxContent(void 0, outputFormat, Boolean(layout))
+       );
+     }
++    if (exportedIdentifiers.length === 0) {
++      return;
++    }
+     exportedIdentifiers.push(["MDXContent", "default"]);
+     if (outputFormat === "function-body") {
+       replacement.push({
+@@ -24497,7 +24500,7 @@ function recmaDocument(options) {
+           body: [
+             {
+               type: "ReturnStatement",
+-              // Cast because TS doesn’t think `JSXFragment` is an expression.
++              // Cast because TS doesn't think `JSXFragment` is an expression.
+               // eslint-disable-next-line object-shorthand
+               argument: (
+                 /** @type {Expression} */

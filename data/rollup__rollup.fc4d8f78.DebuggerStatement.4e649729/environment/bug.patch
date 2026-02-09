@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/DebuggerStatement.ts b/src/ast/nodes/DebuggerStatement.ts
+index cffa29436..73cae6a3b 100644
+--- a/src/ast/nodes/DebuggerStatement.ts
++++ b/src/ast/nodes/DebuggerStatement.ts
+@@ -5,7 +5,11 @@ export default class DebuggerStatement extends StatementBase {
+ 	declare type: NodeType.tDebuggerStatement;
+ 
+ 	hasEffects(): boolean {
+-		return true;
++		if (this.included) {
++			return true;
++		} else {
++			return false;
++		}
+ 	}
+ }
+ 

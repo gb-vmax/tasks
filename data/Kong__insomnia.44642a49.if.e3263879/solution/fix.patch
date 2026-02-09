@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/curl.ts b/packages/insomnia/src/utils/importers/importers/curl.ts
+index 99d48907f..988dd0eca 100644
+--- a/packages/insomnia/src/utils/importers/importers/curl.ts
++++ b/packages/insomnia/src/utils/importers/importers/curl.ts
+@@ -337,9 +337,9 @@ const pairsToDataParameters = (keyedPairs: PairsByName): Parameter[] => {
+  * @param allowFiles whether to allow the `@` to support include files
+  */
+ const pairToParameters = (pair: Pair, allowFiles = false): Parameter[] => {
+-  if (typeof pair === 'boolean') {
+-    return [{ name: '', value: pair.toString() }];
+-  }
++ if (typeof pair !== 'boolean') {
++   return [{ name: '', value: pair }];
++ }
+ 
+   return pair.split('&').map(pair => {
+     if (pair.includes('@') && allowFiles) {

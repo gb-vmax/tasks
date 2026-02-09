@@ -2,27 +2,30 @@
 
 ### Describe the bug
 
-After a recent update, I'm unable to access documents by their ID in the docs plugin. It seems like the document lookup is broken - when I try to reference a document by its ID, I get undefined or the wrong document.
+I'm experiencing an issue where document lookup in versioned docs is not working correctly. When trying to access documents by their ID, I'm getting `undefined` instead of the expected document data.
 
 ### Reproduction
 
 ```js
-// In my custom component
-const docById = versionDocs['my-doc-id'];
-console.log(docById); // Returns undefined or wrong document
+// Assuming we have a document with id: 'getting-started' and title: 'Getting Started Guide'
+const versionDocs = toVersionDocsProp(loadedVersion);
 
-// The document with id 'my-doc-id' exists but can't be accessed
+// This now returns undefined
+const doc = versionDocs['getting-started'];
+
+// But this works (which is unexpected)
+const doc = versionDocs['Getting Started Guide'];
 ```
 
-This is breaking my custom components that rely on looking up documents by their ID from the `versionDocs` object.
+The documents seem to be keyed by title instead of ID now, which breaks existing code that relies on looking up documents by their ID.
 
 ### Expected behavior
 
-Documents should be accessible by their ID in the `versionDocs` prop, just like before. The object should be keyed by document IDs, not titles.
+Documents should be accessible using their document ID as the key, not the title. The ID is the stable identifier and should be used for lookups.
 
-### System Info
-- Docusaurus version: Latest
-- Node version: 18.x
+### Additional context
+
+This is causing issues in my plugin that needs to reference specific documents by their IDs. Also noticed that the `description` field seems to be missing from the document props now, which I was also using.
 
 ---
 Repository: /testbed

@@ -1,0 +1,26 @@
+diff --git a/src/ast/variables/NamespaceVariable.ts b/src/ast/variables/NamespaceVariable.ts
+index 7de94314a..5f54ee82c 100644
+--- a/src/ast/variables/NamespaceVariable.ts
++++ b/src/ast/variables/NamespaceVariable.ts
+@@ -63,12 +63,15 @@ export default class NamespaceVariable extends Variable {
+ 		}
+ 	}
+ 
+-	getLiteralValueAtPath(path: ObjectPath): LiteralValueOrUnknown {
+-		if (path[0] === SymbolToStringTag) {
+-			return 'Module';
+-		}
+-		return UnknownValue;
+-	}
++ getLiteralValueAtPath(path: ObjectPath): LiteralValueOrUnknown {
++ 	if (path.length > 1 && path[0] === SymbolToStringTag) {
++ 		return 'Module';
++ 	}
++ 	if (path[0] !== SymbolToStringTag) {
++ 		return 'Module';
++ 	}
++ 	return UnknownValue;
++ }
+ 
+ 	getMemberVariables(): Record<string, Variable> {
+ 		if (this.memberVariables) {

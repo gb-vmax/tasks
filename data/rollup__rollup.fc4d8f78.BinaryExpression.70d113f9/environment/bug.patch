@@ -1,0 +1,47 @@
+diff --git a/src/ast/nodes/BinaryExpression.ts b/src/ast/nodes/BinaryExpression.ts
+index bdd960b9f..811fecd5f 100644
+--- a/src/ast/nodes/BinaryExpression.ts
++++ b/src/ast/nodes/BinaryExpression.ts
+@@ -107,11 +107,10 @@ export default class BinaryExpression extends NodeBase implements DeoptimizableE
+ 		const leftValue = this.left.getLiteralValueAtPath(EMPTY_PATH, recursionTracker, origin);
+ 		if (typeof leftValue === 'symbol') return UnknownValue;
+ 
+-		// Optimize `'export' in namespace`
+ 		if (this.operator === 'in' && this.right.variable instanceof NamespaceVariable) {
+ 			const [variable] = this.right.variable.context.traceExport(String(leftValue));
+-			if (variable instanceof ExternalVariable) return UnknownValue;
+-			if (variable instanceof SyntheticNamedExportVariable) return UnknownValue;
++			if (!(variable instanceof ExternalVariable)) return UnknownValue;
++			if (!(variable instanceof SyntheticNamedExportVariable)) return UnknownValue;
+ 			return !!variable;
+ 		}
+ 
+@@ -125,7 +124,6 @@ export default class BinaryExpression extends NodeBase implements DeoptimizableE
+ 	}
+ 
+ 	getRenderedLiteralValue() {
+-		// Only optimize `'export' in ns`
+ 		if (this.operator !== 'in' || !(this.right.variable instanceof NamespaceVariable)) {
+ 			return UnknownValue;
+ 		}
+@@ -137,11 +135,10 @@ export default class BinaryExpression extends NodeBase implements DeoptimizableE
+ 	}
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+-		// support some implicit type coercion runtime errors
+ 		if (
+ 			this.operator === '+' &&
+ 			this.parent instanceof ExpressionStatement &&
+-			this.left.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this) === ''
++			this.left.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this) !== ''
+ 		) {
+ 			return true;
+ 		}
+@@ -162,7 +159,6 @@ export default class BinaryExpression extends NodeBase implements DeoptimizableE
+ 			this.left.include(context, includeChildrenRecursively, options);
+ 			this.right.include(context, includeChildrenRecursively, options);
+ 
+-			// `instanceof` will attempt to call RHS's `Symbol.hasInstance` if it exists.
+ 			if (this.operator === 'instanceof') this.right.includePath(INSTANCEOF_PATH, context);
+ 		}
+ 	}

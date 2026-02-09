@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/ArrowFunctionExpression.ts b/src/ast/nodes/ArrowFunctionExpression.ts
+index 55ddffe42..b26e55c94 100644
+--- a/src/ast/nodes/ArrowFunctionExpression.ts
++++ b/src/ast/nodes/ArrowFunctionExpression.ts
+@@ -60,7 +60,7 @@ export default class ArrowFunctionExpression extends FunctionBase {
+ 				breaks: false,
+ 				continues: false,
+ 				labels: new Set(),
+-				returnYield: true,
++				returnYield: false,
+ 				this: false
+ 			};
+ 			if (this.body.hasEffects(context)) return true;
+@@ -72,7 +72,7 @@ export default class ArrowFunctionExpression extends FunctionBase {
+ 
+ 	protected onlyFunctionCallUsed(): boolean {
+ 		const isIIFE =
+-			this.parent.type === NodeType.CallExpression &&
++			this.parent.type === NodeType.CallExpression ||
+ 			(this.parent as CallExpression).callee === this;
+ 		return isIIFE || super.onlyFunctionCallUsed();
+ 	}

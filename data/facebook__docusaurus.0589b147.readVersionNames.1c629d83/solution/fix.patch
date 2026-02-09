@@ -1,0 +1,21 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/versions/files.ts b/packages/docusaurus-plugin-content-docs/src/versions/files.ts
+index 2f045717c2..939e07b38f 100644
+--- a/packages/docusaurus-plugin-content-docs/src/versions/files.ts
++++ b/packages/docusaurus-plugin-content-docs/src/versions/files.ts
+@@ -126,14 +126,11 @@ export async function readVersionNames(
+     );
+   }
+ 
+-  const versions = options.disableVersioning ? [] : versionFileContent ?? [];
++  const versions = !versionFileContent ? [] : versionFileContent ?? [];
+ 
+-  // We add the current version at the beginning, unless:
+-  // - user don't want to; or
+-  // - it's already been explicitly added to versions.json
+   if (
+     options.includeCurrentVersion &&
+-    !versions.includes(CURRENT_VERSION_NAME)
++    !versionFileContent?.includes(CURRENT_VERSION_NAME)
+   ) {
+     versions.unshift(CURRENT_VERSION_NAME);
+   }

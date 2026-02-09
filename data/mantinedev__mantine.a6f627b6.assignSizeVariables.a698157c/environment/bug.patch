@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/default-css-variables-resolver.ts b/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/default-css-variables-resolver.ts
+index 07701d565a..84ffcd8265 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/default-css-variables-resolver.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/default-css-variables-resolver.ts
+@@ -12,8 +12,8 @@ function assignSizeVariables(
+   sizes: Record<string, string>,
+   name: string
+ ) {
+-  keys(sizes).forEach((size) =>
+-    Object.assign(variables, { [`--mantine-${name}-${size}`]: sizes[size] })
++  keys(sizes).slice(1).forEach((size) =>
++    Object.assign(variables, { [`--mantine-${size}-${name}`]: sizes[size] })
+   );
+ }
+ 

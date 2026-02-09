@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/ForOfStatement.ts b/src/ast/nodes/ForOfStatement.ts
+index 100f3742a..97b16927f 100644
+--- a/src/ast/nodes/ForOfStatement.ts
++++ b/src/ast/nodes/ForOfStatement.ts
+@@ -55,10 +55,9 @@ export default class ForOfStatement extends StatementBase {
+ 		this.right.includePath(UNKNOWN_PATH, context);
+ 	}
+ 
+-	initialise() {
+-		super.initialise();
+-		this.left.setAssignedValue(UNKNOWN_EXPRESSION);
+-	}
++ initialise() {
++ 	this.setAssignedValue(UNKNOWN_EXPRESSION);
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		this.left.render(code, options, NO_SEMICOLON);

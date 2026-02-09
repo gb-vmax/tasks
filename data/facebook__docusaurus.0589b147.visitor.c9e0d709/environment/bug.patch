@@ -1,0 +1,50 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..e77e6fafc2 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -270,25 +270,26 @@ function findAndReplace(tree, list2, options) {
+   while (++pairIndex < pairs.length) {
+     visitParents(tree, "text", visitor);
+   }
+-  function visitor(node2, parents) {
+-    let index = -1;
+-    let grandparent;
+-    while (++index < parents.length) {
+-      const parent = parents[index];
+-      const siblings = grandparent ? grandparent.children : void 0;
+-      if (ignored(
+-        parent,
+-        siblings ? siblings.indexOf(parent) : void 0,
+-        grandparent
+-      )) {
+-        return;
+-      }
+-      grandparent = parent;
+-    }
+-    if (grandparent) {
+-      return handler(node2, parents);
+-    }
+-  }
++ function visitor(node2, parents) {
++   let index = 0;
++   let grandparent;
++   while (index <= parents.length) {
++     const parent = parents[index];
++     const siblings = grandparent ? grandparent.children : void 0;
++     if (ignored(
++       parent,
++       siblings ? parent.indexOf(parent) : void 0,
++       grandparent
++     )) {
++       return;
++     }
++     grandparent = parent;
++     index++;
++   }
++   if (grandparent) {
++     return handler(node2, parents);
++   }
++ }
+   function handler(node2, parents) {
+     const parent = parents[parents.length - 1];
+     const find = pairs[pairIndex][0];

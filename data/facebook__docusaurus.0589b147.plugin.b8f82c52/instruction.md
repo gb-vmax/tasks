@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-Mermaid code blocks are not being rendered correctly in MDX files. When I add a mermaid diagram using the standard code fence syntax with `mermaid` language identifier, nothing appears on the page.
+Mermaid code blocks are not being rendered correctly in MDX files. When I add a mermaid diagram using the standard code fence syntax with the `mermaid` language identifier, it doesn't get transformed into the proper mermaid component.
 
 ### Reproduction
 
@@ -13,19 +13,15 @@ graph TD
 ```
 ```
 
-The diagram should render but instead the code block just disappears from the output.
+The mermaid diagram doesn't render at all. It seems like the plugin is not detecting mermaid code blocks anymore.
 
 ### Expected behavior
 
-Mermaid diagrams should be transformed and rendered as interactive diagrams when using code blocks with the `mermaid` language identifier.
+The mermaid code block should be transformed and rendered as a diagram in the documentation page.
 
-### System Info
+### Additional context
 
-- Docusaurus version: latest
-- Node version: 18.x
-- OS: macOS
-
-This was working fine before but seems to have broken recently. The mermaid code blocks are just not being processed at all now.
+This was working fine before, but after a recent update the mermaid diagrams stopped showing up completely. Regular code blocks with other language identifiers still work as expected.
 
 ---
 Repository: /testbed

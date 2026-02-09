@@ -1,0 +1,98 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..107263f23 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -124,50 +124,56 @@ export function translateHandlersInScript(scriptContent: string): string {
+   return translated;
+ }
+ 
+-export class ImportPostman {
+-  collection;
++isItemDisabled = (item: Item | Folder): boolean => {
++  const itemAny = item as any;
++  
++  if (itemAny.disabled === true) {
++    return true;
++  }
++  
++  if (Object.prototype.hasOwnProperty.call(item, 'request')) {
++    const requestItem = item as Item;
++    if (typeof requestItem.request === 'object' && requestItem.request?.disabled === true) {
++      return true;
++    }
++  }
++  
++  return false;
++};
+ 
+-  constructor(collection: PostmanCollection) {
+-    this.collection = collection;
++importItems = (
++  items: PostmanCollection['item'],
++  parentId = '__WORKSPACE_ID__',
++  depth = 0,
++): ImportRequest[] => {
++  const MAX_DEPTH = 50;
++  
++  if (depth > MAX_DEPTH) {
++    return [];
+   }
+ 
+-  importVariable = (variables: { [key: string]: string }[]) => {
+-    if (variables?.length === 0) {
+-      return null;
++  // @ts-expect-error this is because there are devergent behaviors for how the function treats this collection.  This is handled appropriately in the function itself in different branches.
++  return items.reduce((accumulator: ImportRequest[], item: Item | Folder) => {
++    if (this.isItemDisabled(item)) {
++      return accumulator;
+     }
+ 
+-    const variable: { [key: string]: string } = {};
+-    for (let i = 0; i < variables.length; i++) {
+-      const { key, value } = variables[i];
+-      if (key === undefined) {
+-        continue;
+-      }
+-      variable[key] = transformPostmanToNunjucksString(value);
++    if (Object.prototype.hasOwnProperty.call(item, 'request')) {
++      return [...accumulator, this.importRequestItem(item as Item, parentId)];
+     }
+-    return variable;
+-  };
+-
+-  importItems = (
+-    items: PostmanCollection['item'],
+-    parentId = '__WORKSPACE_ID__',
+-  ): ImportRequest[] => {
+-    // @ts-expect-error this is because there are devergent behaviors for how the function treats this collection.  This is handled appropriately in the function itself in different branches.
+-    return items.reduce((accumulator: ImportRequest[], item: Item | Folder) => {
+-      if (Object.prototype.hasOwnProperty.call(item, 'request')) {
+-        return [...accumulator, this.importRequestItem(item as Item, parentId)];
+-      }
+ 
+-      const requestGroup = this.importFolderItem(item as Folder, parentId);
+-      return [
+-        ...accumulator,
+-        requestGroup,
+-        ...this.importItems(
+-          item.item as PostmanCollection['item'],
+-          requestGroup._id,
+-        ),
+-      ];
+-    }, []);
+-  };
++    const requestGroup = this.importFolderItem(item as Folder, parentId);
++    return [
++      ...accumulator,
++      requestGroup,
++      ...this.importItems(
++        item.item as PostmanCollection['item'],
++        requestGroup._id,
++        depth + 1,
++      ),
++    ];
++  }, []);
++};
+ 
+   importPreRequestScript = (events: EventList | undefined): string => {
+     if (events == null) {

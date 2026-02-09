@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..8297640f9 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -447,7 +447,52 @@ const generateParameterExample = (
+       parameter: OpenAPIV2.Parameter
+     ) => null | string | boolean | number | Record<string, unknown>;
+   } = {
+-    string: () => 'string',
++const generateStringWithLength = (minLength?: number, maxLength?: number): string => {
++  const defaultLength = 6;
++  let targetLength = defaultLength;
++
++  if (minLength !== undefined && maxLength !== undefined) {
++    targetLength = Math.min(maxLength, Math.max(minLength, defaultLength));
++  } else if (minLength !== undefined) {
++    targetLength = Math.max(minLength, defaultLength);
++  } else if (maxLength !== undefined) {
++    targetLength = Math.min(maxLength, defaultLength);
++  }
++
++  return 'string'.padEnd(targetLength, 'x').slice(0, targetLength);
++};
++
++ string: (parameter: OpenAPIV2.Parameter) => {
++   if (parameter && typeof parameter === 'object') {
++     if (parameter.enum && parameter.enum.length > 0) {
++       return parameter.enum[0];
++     }
++
++     const format = parameter.format;
++     const formatExamples: { [key: string]: string } = {
++       uuid: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
++       uri: 'https://example.com/resource',
++       url: 'https://example.com',
++       hostname: 'example.com',
++       ipv4: '192.168.1.1',
++       ipv6: '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
++       password: '********',
++     };
++
++     if (format && formatExamples[format]) {
++       return formatExamples[format];
++     }
++
++     const minLength = parameter.minLength;
++     const maxLength = parameter.maxLength;
++
++     if (minLength !== undefined || maxLength !== undefined) {
++       return generateStringWithLength(minLength, maxLength);
++     }
++   }
++
++   return 'string';
++ }
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',

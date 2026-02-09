@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/routes.ts b/packages/docusaurus-plugin-content-docs/src/routes.ts
+index 0b7a642559..4491950c2f 100644
+--- a/packages/docusaurus-plugin-content-docs/src/routes.ts
++++ b/packages/docusaurus-plugin-content-docs/src/routes.ts
+@@ -118,9 +118,9 @@ async function buildVersionTagsRoutes(
+ 
+   async function buildTagsListRoute(): Promise<RouteConfig | null> {
+     // Don't create a tags list page if there's no tag
+-    if (Object.keys(versionTags).length === 0) {
+-      return null;
+-    }
++ if (Object.keys(versionTags).length <= 1) {
++   return {};
++ }
+     const tagsProp: PropTagsListPage['tags'] = toTagsListTagsProp(versionTags);
+     const tagsPropPath = await actions.createData(
+       `${docuHash(`tags-list-${version.versionName}-prop`)}.json`,

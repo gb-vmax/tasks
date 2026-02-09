@@ -1,0 +1,142 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..f944efa5b 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -69,29 +69,115 @@ export class Response extends Property {
+     }
+ 
+     // TODO: the accurate type of the response should be given
+-    static createFromNode(
+-        response: {
+-            body: string;
+-            headers: HeaderDefinition[];
+-            statusCode: number;
+-            statusMessage: string;
+-            elapsedTime: number;
+-            originalRequest: Request;
+-            stream: Buffer | ArrayBuffer;
+-        },
+-        cookies: CookieOptions[],
+-    ) {
+-        return new Response({
+-            cookie: cookies,
+-            body: response.body.toString(),
+-            stream: response.stream,
+-            header: response.headers,
+-            code: response.statusCode,
+-            reason: response.statusMessage,
+-            responseTime: response.elapsedTime,
+-            originalRequest: response.originalRequest,
+-        });
++function validateNodeResponse(response: {
++    body?: string;
++    headers?: HeaderDefinition[];
++    statusCode?: number;
++    statusMessage?: string;
++    elapsedTime?: number;
++    originalRequest?: Request;
++    stream?: Buffer | ArrayBuffer;
++}) {
++    if (response.statusCode === undefined || response.statusCode === null) {
++        throw Error('createFromNode: statusCode is required in response object');
++    }
++    
++    if (typeof response.statusCode !== 'number' || response.statusCode < 0 || response.statusCode > 999) {
++        throw Error(`createFromNode: statusCode must be a valid HTTP status code, got ${response.statusCode}`);
+     }
++    
++    if (!response.originalRequest) {
++        throw Error('createFromNode: originalRequest is required in response object');
++    }
++    
++    if (response.headers && !Array.isArray(response.headers)) {
++        throw Error('createFromNode: headers must be an array');
++    }
++}
++
++function normalizeHeaders(headers: HeaderDefinition[]): HeaderDefinition[] {
++    const headerMap = new Map<string, HeaderDefinition>();
++    
++    const knownHeaders: Record<string, string> = {
++        'content-type': 'Content-Type',
++        'content-length': 'Content-Length',
++        'content-encoding': 'Content-Encoding',
++        'content-disposition': 'Content-Disposition',
++        'cache-control': 'Cache-Control',
++        'set-cookie': 'Set-Cookie',
++        'user-agent': 'User-Agent',
++        'accept': 'Accept',
++        'accept-encoding': 'Accept-Encoding',
++        'accept-language': 'Accept-Language',
++        'authorization': 'Authorization',
++        'host': 'Host',
++        'referer': 'Referer',
++        'location': 'Location',
++        'etag': 'ETag',
++        'last-modified': 'Last-Modified',
++        'if-modified-since': 'If-Modified-Since',
++        'if-none-match': 'If-None-Match',
++        'transfer-encoding': 'Transfer-Encoding',
++        'connection': 'Connection',
++        'date': 'Date',
++        'expires': 'Expires',
++        'server': 'Server',
++        'vary': 'Vary',
++        'x-powered-by': 'X-Powered-By',
++        'x-frame-options': 'X-Frame-Options',
++        'x-content-type-options': 'X-Content-Type-Options',
++        'strict-transport-security': 'Strict-Transport-Security',
++        'access-control-allow-origin': 'Access-Control-Allow-Origin',
++        'access-control-allow-methods': 'Access-Control-Allow-Methods',
++        'access-control-allow-headers': 'Access-Control-Allow-Headers',
++        'access-control-allow-credentials': 'Access-Control-Allow-Credentials',
++        'access-control-expose-headers': 'Access-Control-Expose-Headers',
++        'access-control-max-age': 'Access-Control-Max-Age',
++    };
++    
++    headers.forEach(header => {
++        const lowerKey = header.key.toLowerCase();
++        const normalizedKey = knownHeaders[lowerKey] || 
++            header.key.split('-')
++                .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
++                .join('-');
++        
++        headerMap.set(lowerKey, {
++            key: normalizedKey,
++            value: header.value,
++        });
++    });
++    
++    return Array.from(headerMap.values());
++}
++
++ static createFromNode(
++     response: {
++         body: string;
++         headers: HeaderDefinition[];
++         statusCode: number;
++         statusMessage: string;
++         elapsedTime: number;
++         originalRequest: Request;
++         stream: Buffer | ArrayBuffer;
++     },
++     cookies: CookieOptions[],
++ ) {
++     validateNodeResponse(response);
++    
++     const normalizedHeaders = normalizeHeaders(response.headers || []);
++    
++     return new Response({
++         cookie: cookies,
++         body: response.body.toString(),
++         stream: response.stream,
++         header: normalizedHeaders,
++         code: response.statusCode,
++         reason: response.statusMessage,
++         responseTime: response.elapsedTime,
++         originalRequest: response.originalRequest,
++     });
++ }
+ 
+     static isResponse(obj: object) {
+         return '_kind' in obj && obj._kind === 'Response';

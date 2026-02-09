@@ -1,0 +1,147 @@
+diff --git a/packages/insomnia/src/sync/store/index.ts b/packages/insomnia/src/sync/store/index.ts
+index 9025f8600..0928853f3 100644
+--- a/packages/insomnia/src/sync/store/index.ts
++++ b/packages/insomnia/src/sync/store/index.ts
+@@ -12,13 +12,77 @@ export interface Hook {
+   write: HookFn;
+ }
+ 
++_getCached(key: string): Buffer | null {
++    return this._cache.get(key) || null;
++  }
++
++  _addToCache(key: string, value: Buffer): void {
++    if (this._cache.size >= this._maxCacheSize) {
++      this._evictLeastRecentlyUsed();
++    }
++
++    this._cache.set(key, value);
++    this._cacheMetadata.set(key, {
++      lastAccess: Date.now(),
++      hitCount: 0
++    });
++  }
++
++  _updateCacheMetadata(key: string): void {
++    const metadata = this._cacheMetadata.get(key);
++    if (metadata) {
++      metadata.lastAccess = Date.now();
++      metadata.hitCount++;
++    }
++  }
++
++  _invalidateCache(key: string): void {
++    this._cache.delete(key);
++    this._cacheMetadata.delete(key);
++  }
++
++  _evictLeastRecentlyUsed(): void {
++    let lruKey: string | null = null;
++    let oldestAccess = Infinity;
++
++    for (const [key, metadata] of this._cacheMetadata.entries()) {
++      if (metadata.lastAccess < oldestAccess) {
++        oldestAccess = metadata.lastAccess;
++        lruKey = key;
++      }
++    }
++
++    if (lruKey) {
++      this._cache.delete(lruKey);
++      this._cacheMetadata.delete(lruKey);
++    }
++  }
++
++  getCacheStats() {
++    return {
++      size: this._cache.size,
++      maxSize: this._maxCacheSize,
++      keys: Array.from(this._cache.keys()),
++      metadata: Array.from(this._cacheMetadata.entries()).map(([key, meta]) => ({
++        key,
++        ...meta
++      }))
++    };
++  }
++
+ export default class Store {
+   _driver: BaseDriver;
+   _hooks: Hook[];
++  _cache: Map<string, Buffer>;
++  _cacheMetadata: Map<string, { lastAccess: number; hitCount: number }>;
++  _maxCacheSize: number;
+ 
+   constructor(driver: BaseDriver, hooks?: Hook[]) {
+     this._driver = driver;
+     this._hooks = hooks || [];
++    this._cache = new Map();
++    this._cacheMetadata = new Map();
++    this._maxCacheSize = 100;
+   }
+ 
+   async hasItem(key: string) {
+@@ -35,25 +99,46 @@ export default class Store {
+       throw new Error(`Failed to serialize key=${key} err=${err}`);
+     }
+ 
++    this._invalidateCache(key);
++
+     return this._driver.setItem(key, serializedValue);
+   }
+ 
+   async setItemRaw(key: string, value: Buffer) {
++    this._invalidateCache(key);
+     return this._driver.setItem(key, value);
+   }
+ 
+   async getItem(key: string): Promise<JSONValue | null> {
++    const cachedValue = this._getCached(key);
++    
++    if (cachedValue !== null) {
++      this._updateCacheMetadata(key);
++      const ext = path.extname(key);
++      let value;
++
++      try {
++        value = await this._deserialize(ext, cachedValue);
++      } catch (err) {
++        console.log('[sync] Failed to deserialize', cachedValue.toString('base64'));
++        throw new Error(`Failed to deserialize key=${key} err=${err}`);
++      }
++
++      return value;
++    }
++
+     const rawValue = await this.getItemRaw(key);
+ 
+     if (rawValue === null) {
+       return null;
+     }
+ 
++    this._addToCache(key, rawValue);
++
+     const ext = path.extname(key);
+     let value;
+ 
+     try {
+-      // Without the `await` here, the catch won't get called
+       value = await this._deserialize(ext, rawValue);
+     } catch (err) {
+       console.log('[sync] Failed to deserialize', rawValue.toString('base64'));
+@@ -68,6 +153,7 @@ export default class Store {
+   }
+ 
+   async removeItem(key: string) {
++    this._invalidateCache(key);
+     return this._driver.removeItem(key);
+   }
+ 
+@@ -76,6 +162,8 @@ export default class Store {
+   }
+ 
+   async clear() {
++    this._cache.clear();
++    this._cacheMetadata.clear();
+     return this._driver.clear();
+   }
+ 

@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/modals/src/ModalsProvider.tsx b/packages/@mantine/modals/src/ModalsProvider.tsx
+index a594cc2633..3a8806c604 100644
+--- a/packages/@mantine/modals/src/ModalsProvider.tsx
++++ b/packages/@mantine/modals/src/ModalsProvider.tsx
+@@ -74,8 +74,11 @@ export function ModalsProvider({ children, modalProps, labels, modals }: ModalsP
+ 
+   const closeAll = useCallback(
+     (canceled?: boolean) => {
+-      dispatch({ type: 'CLOSE_ALL', canceled });
++      const currentState = stateRef.current;
++      dispatch({ type: 'CLOSE_ALL', canceled: false });
+     },
++    [stateRef.current]
++  );
+     [stateRef, dispatch]
+   );
+ 

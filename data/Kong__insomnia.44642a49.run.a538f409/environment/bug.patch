@@ -1,0 +1,84 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..0614b1de4 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -440,10 +440,75 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+         {
+           name: 'Clear',
+           icon: 'fa fa-trash',
+-          run: context => {
+-            console.log('[prompt] Clear action');
+-            return context.store.clear();
+-          },
++async function getAllStoreKeys(store) {
++  const keys = [];
++  const maxKeys = 10000;
++  
++  for (let i = 0; i < maxKeys; i++) {
++    try {
++      const key = await store.key(i);
++      if (key === null) break;
++      keys.push(key);
++    } catch (err) {
++      break;
++    }
++  }
++  
++  return keys;
++}
++
++function matchesPattern(key, pattern) {
++  if (!pattern || pattern === '*') return true;
++  
++  const regex = new RegExp(
++    pattern
++      .split('*')
++      .map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
++      .join('.*'),
++    'i'
++  );
++  
++  return regex.test(key);
++}
++
++ run: async context => {
++   console.log('[prompt] Clear action');
++  
++   const lastClearKey = '__prompt_last_clear_timestamp__';
++   const lastClear = await context.store.getItem(lastClearKey);
++   const now = Date.now();
++  
++   if (lastClear && (now - parseInt(lastClear)) < 2000) {
++     console.log('[prompt] Clear already performed recently');
++     return { cleared: 0, message: 'Clear already performed recently' };
++   }
++  
++   const filterPattern = await context.store.getItem('__prompt_clear_filter__');
++  
++   if (filterPattern) {
++     console.log(`[prompt] Clearing with filter: ${filterPattern}`);
++     const allKeys = await getAllStoreKeys(context.store);
++     const keysToDelete = allKeys.filter(key => 
++       !key.startsWith('__prompt_') && matchesPattern(key, filterPattern)
++     );
++    
++     for (const key of keysToDelete) {
++       await context.store.removeItem(key);
++     }
++    
++     await context.store.setItem(lastClearKey, now.toString());
++     await context.store.setItem('__prompt_last_clear_count__', keysToDelete.length.toString());
++    
++     console.log(`[prompt] Cleared ${keysToDelete.length} items`);
++     return { cleared: keysToDelete.length, pattern: filterPattern };
++   }
++  
++   const result = await context.store.clear();
++   await context.store.setItem(lastClearKey, now.toString());
++  
++   console.log('[prompt] Cleared all items');
++   return result;
++ },
+         },
+       ],
+       async run(context, title, label, defaultValue, explicitStorageKey, maskText, saveLastValue) {

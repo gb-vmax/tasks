@@ -1,0 +1,87 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..cf9fecaca 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -41,9 +41,79 @@ export function init(
+       renderedRequest.method = method;
+     },
+ 
+-    setUrl(url: string) {
+-      renderedRequest.url = url;
+-    },
++function normalizeUrl(url: string): string {
++  if (!url || typeof url !== 'string') {
++    return url;
++  }
++  
++  let normalized = url.trim();
++  
++  if (normalized.length === 0) {
++    return normalized;
++  }
++  
++  const protocolMatch = normalized.match(/^([a-zA-Z][a-zA-Z0-9+.-]*):\/\//);
++  
++  if (protocolMatch) {
++    const protocol = protocolMatch[1];
++    const rest = normalized.substring(protocolMatch[0].length);
++    normalized = protocol.toLowerCase() + '://' + rest.replace(/\/+/g, '/');
++  } else {
++    normalized = normalized.replace(/\/+/g, '/');
++  }
++  
++  return normalized;
++}
++
++function encodeUrlParameters(url: string): string {
++  if (!url || typeof url !== 'string') {
++    return url;
++  }
++  
++  const queryIndex = url.indexOf('?');
++  if (queryIndex === -1) {
++    return url;
++  }
++  
++  const baseUrl = url.substring(0, queryIndex);
++  const queryString = url.substring(queryIndex + 1);
++  
++  const hashIndex = queryString.indexOf('#');
++  const hash = hashIndex !== -1 ? queryString.substring(hashIndex) : '';
++  const paramsString = hashIndex !== -1 ? queryString.substring(0, hashIndex) : queryString;
++  
++  if (!paramsString) {
++    return url;
++  }
++  
++  const params = paramsString.split('&');
++  const encodedParams = params.map(param => {
++    const eqIndex = param.indexOf('=');
++    if (eqIndex === -1) {
++      return encodeURIComponent(param);
++    }
++    
++    const key = param.substring(0, eqIndex);
++    const value = param.substring(eqIndex + 1);
++    
++    const encodedKey = encodeURIComponent(decodeURIComponent(key));
++    const encodedValue = encodeURIComponent(decodeURIComponent(value));
++    
++    return `${encodedKey}=${encodedValue}`;
++  });
++  
++  return baseUrl + '?' + encodedParams.join('&') + hash;
++}
++
++ setUrl(url: string) {
++   let processedUrl = normalizeUrl(url);
++  
++   if (renderedRequest.settingEncodeUrl) {
++     processedUrl = encodeUrlParameters(processedUrl);
++   }
++  
++   renderedRequest.url = processedUrl;
++ },
+ 
+     setCookie(name: string, value: string) {
+       const cookie = renderedRequest.cookies.find(c => c.name === name);

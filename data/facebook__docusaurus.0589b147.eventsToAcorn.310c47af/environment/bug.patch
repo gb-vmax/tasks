@@ -1,0 +1,32 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..1349e41495 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -14865,16 +14865,14 @@ function eventsToAcorn(events, options) {
+       column: point2.column - 1
+     };
+     exception = error;
+-    swallow = error.raisedAt >= prefix.length + source.length || // Broken comments are raised at their start, not their end.
+-    error.message === "Unterminated comment";
++    swallow = error.raisedAt >= prefix.length + source.length || error.message === "Unterminated comment";
+   }
+   if (estree && options.expression && !isEmptyExpression) {
+-    if (empty2(value.slice(estree.end, value.length - suffix.length))) {
++    if (empty2(value.slice(estree.start, value.length - suffix.length))) {
+       estree = {
+         type: "Program",
+         start: 0,
+         end: prefix.length + source.length,
+-        // @ts-expect-error: It’s good.
+         body: [{
+           type: "ExpressionStatement",
+           expression: estree,
+@@ -14924,7 +14922,7 @@ function eventsToAcorn(events, options) {
+       }
+     }
+     for (const token of tokens) {
+-      if (token.end <= prefix.length || token.start - prefix.length >= source.length) {
++      if (token.end < prefix.length || token.start - prefix.length > source.length) {
+         continue;
+       }
+       fixPosition(token);

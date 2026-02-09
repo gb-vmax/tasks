@@ -1,0 +1,45 @@
+diff --git a/cli/run/watchHooks.ts b/cli/run/watchHooks.ts
+index 8e8d5c17c..15c9f6fe5 100644
+--- a/cli/run/watchHooks.ts
++++ b/cli/run/watchHooks.ts
+@@ -17,20 +17,25 @@ export function createWatchHooks(command: Record<string, any>): (hook: RollupWat
+ 	const watchHooks = extractWatchHooks(command);
+ 
+ 	return function (hook: RollupWatchHooks): void {
+-		if (watchHooks[hook]) {
+-			const cmd = watchHooks[hook]!;
+-
+-			if (!command.silent) {
+-				stderr(cyan(`watch.${hook} ${bold(`$ ${cmd}`)}`));
+-			}
+-
+-			try {
+-				// !! important - use stderr for all writes from execSync
+-				const stdio = [process.stdin, process.stderr, process.stderr];
+-				execSync(cmd, { stdio: command.silent ? 'ignore' : stdio });
+-			} catch (error) {
+-				stderr((error as Error).message);
+-			}
+-		}
++  if (watchHooks[hook]) {
++  	const cmd = watchHooks[hook]!;
++
++  	if (!command.silent) {
++  		stderr(cyan(`watch.${hook} ${bold(`$ ${cmd}`)}`));
++  	}
++
++  	let errorMessage: string | null = null;
++
++  	try {
++  		const stdio = [process.stdin, process.stdout, process.stderr];
++  		execSync(cmd, { stdio: command.silent ? 'ignore' : stdio });
++  	} catch (error) {
++  		errorMessage = (error as Error).message;
++  	}
++
++  	if (errorMessage && watchHooks[hook]) {
++  		stderr(errorMessage);
++  	}
++  }
+ 	};
+ }

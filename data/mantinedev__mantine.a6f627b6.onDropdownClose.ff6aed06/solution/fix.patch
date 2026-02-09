@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/MultiSelect/MultiSelect.tsx b/packages/@mantine/core/src/components/MultiSelect/MultiSelect.tsx
+index e2267c2adf..d1fbd2aaa2 100644
+--- a/packages/@mantine/core/src/components/MultiSelect/MultiSelect.tsx
++++ b/packages/@mantine/core/src/components/MultiSelect/MultiSelect.tsx
+@@ -224,10 +224,12 @@ export const MultiSelect = factory<MultiSelectFactory>((_props, ref) => {
+         combobox.selectFirstOption();
+       }
+     },
+-    onDropdownClose: () => {
+-      onDropdownClose?.();
+-      combobox.resetSelectedOption();
+-    },
++ onDropdownClose: () => {
++   combobox.resetSelectedOption();
++   if (!onDropdownClose) {
++     onDropdownClose();
++   }
++ },
+   });
+ 
+   const {

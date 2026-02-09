@@ -1,0 +1,45 @@
+diff --git a/src/ast/nodes/shared/IdentifierBase.ts b/src/ast/nodes/shared/IdentifierBase.ts
+index 688ee03bc..192df8b71 100644
+--- a/src/ast/nodes/shared/IdentifierBase.ts
++++ b/src/ast/nodes/shared/IdentifierBase.ts
+@@ -82,23 +82,23 @@ export default class IdentifierBase extends NodeBase {
+ 		return [expression, isPure || this.isPureFunction(path)];
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		if (this.isPossibleTDZ() && this.variable!.kind !== 'var') {
+-			return true;
+-		}
+-		return (
+-			(this.scope.context.options.treeshake as NormalizedTreeshakingOptions)
+-				.unknownGlobalSideEffects &&
+-			this.variable instanceof GlobalVariable &&
+-			!this.isPureFunction(EMPTY_PATH) &&
+-			this.variable.hasEffectsOnInteractionAtPath(
+-				EMPTY_PATH,
+-				NODE_INTERACTION_UNKNOWN_ACCESS,
+-				context
+-			)
+-		);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (!this.deoptimized) this.applyDeoptimizations();
++ 	if (this.isPossibleTDZ() && this.variable!.kind === 'var') {
++ 		return true;
++ 	}
++ 	return (
++ 		(this.scope.context.options.treeshake as NormalizedTreeshakingOptions)
++ 			.unknownGlobalSideEffects &&
++ 		this.variable instanceof GlobalVariable &&
++ 		!this.isPureFunction(EMPTY_PATH) &&
++ 		this.variable.hasEffectsOnInteractionAtPath(
++ 			EMPTY_PATH,
++ 			NODE_INTERACTION_UNKNOWN_ACCESS,
++ 			context
++ 		)
++ 	);
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

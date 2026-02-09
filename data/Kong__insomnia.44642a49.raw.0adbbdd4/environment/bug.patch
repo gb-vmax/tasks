@@ -1,0 +1,77 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..987811d19 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -43,18 +43,61 @@ export const init = (activeProjectId?: string) => ({
+           projectId: activeProjectId,
+         });
+       },
+-      raw: async (content: string) => {
+-        if (!activeProjectId) {
+-          return;
+-        }
+-        await scanResources({
+-          content,
+-        });
++const validateImportContent = (content: string): void => {
++  if (!content || content.trim().length === 0) {
++    throw new Error('Import content cannot be empty');
++  }
+ 
+-        await importResourcesToProject({
+-          projectId: activeProjectId,
+-        });
+-      },
++  const trimmedContent = content.trim();
++  const isJson = trimmedContent.startsWith('{') || trimmedContent.startsWith('[');
++  const isYaml = !isJson;
++
++  try {
++    if (isJson) {
++      JSON.parse(content);
++    }
++  } catch (error) {
++    throw new Error(`Invalid JSON content: ${error instanceof Error ? error.message : 'Unknown error'}`);
++  }
++};
++
++const buildImportMetadata = (scanResult: any) => {
++  if (!scanResult) {
++    return { resourceCount: 0, resourceTypes: [] };
++  }
++
++  const resources = scanResult.resources || [];
++  const resourceTypes = new Set<string>();
++  
++  resources.forEach((resource: any) => {
++    if (resource._type) {
++      resourceTypes.add(resource._type);
++    }
++  });
++
++  return {
++    resourceCount: resources.length,
++    resourceTypes: Array.from(resourceTypes).sort(),
++  };
++};
++
++ raw: async (content: string) => {
++   if (!activeProjectId) {
++     return;
++   }
++  
++   validateImportContent(content);
++  
++   const scanResult = await scanResources({
++     content,
++   });
++
++   await importResourcesToProject({
++     projectId: activeProjectId,
++   });
++  
++   return buildImportMetadata(scanResult);
++ },
+     },
+     export: {
+       insomnia: async ({

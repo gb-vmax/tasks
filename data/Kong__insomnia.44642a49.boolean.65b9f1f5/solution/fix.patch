@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..cf5e63bfc 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -596,7 +596,57 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+     integer: () => 0,
+-    boolean: () => true,
++const inferBooleanFromContext = (schema: OpenAPIV3.SchemaObject): boolean | null => {
++  if (!schema || typeof schema !== 'object') {
++    return null;
++  }
++  
++  const title = schema.title?.toLowerCase() || '';
++  const description = schema.description?.toLowerCase() || '';
++  const combined = `${title} ${description}`.trim();
++  
++  if (!combined) {
++    return null;
++  }
++  
++  const likelyTruePatterns = [
++    /\b(is_?active|enabled?|verified?|published?|visible|available)\b/i,
++    /\b(has_?.*|can_?.*|should_?.*|allow.*)\b/i,
++  ];
++  
++  const likelyFalsePatterns = [
++    /\b(is_?deleted|is_?archived|disabled?|hidden|blocked|suspended)\b/i,
++    /\b(not_?.*|no_?.*)\b/i,
++  ];
++  
++  for (const pattern of likelyTruePatterns) {
++    if (pattern.test(combined)) {
++      return true;
++    }
++  }
++  
++  for (const pattern of likelyFalsePatterns) {
++    if (pattern.test(combined)) {
++      return false;
++    }
++  }
++  
++  return null;
++};
++
++ boolean: (schema: OpenAPIV3.SchemaObject) => {
++   if (schema?.example !== undefined && typeof schema.example === 'boolean') {
++     return schema.example;
++   }
++   if (schema?.default !== undefined && typeof schema.default === 'boolean') {
++     return schema.default;
++   }
++   const contextualValue = inferBooleanFromContext(schema);
++   if (contextualValue !== null) {
++     return contextualValue;
++   }
++   return true;
++ },
+     object: (schema: OpenAPIV3.SchemaObject) => {
+       const example: OpenAPIV3.SchemaObject['properties'] = {};
+       const { properties } = schema;

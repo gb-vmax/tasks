@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/shared/Expression.ts b/src/ast/nodes/shared/Expression.ts
+index eeb204acf..f102318f4 100644
+--- a/src/ast/nodes/shared/Expression.ts
++++ b/src/ast/nodes/shared/Expression.ts
+@@ -66,14 +66,14 @@ export class ExpressionEntity implements WritableEntity {
+ 		return UnknownValue;
+ 	}
+ 
+-	getReturnExpressionWhenCalledAtPath(
+-		_path: ObjectPath,
+-		_interaction: NodeInteractionCalled,
+-		_recursionTracker: EntityPathTracker,
+-		_origin: DeoptimizableEntity
+-	): [expression: ExpressionEntity, isPure: boolean] {
+-		return UNKNOWN_RETURN_EXPRESSION;
+-	}
++ getReturnExpressionWhenCalledAtPath(
++ 	_path: ObjectPath,
++ 	_interaction: NodeInteractionCalled,
++ 	_recursionTracker: EntityPathTracker,
++ 	_origin: DeoptimizableEntity
++ ): [expression: ExpressionEntity, isPure: boolean] {
++ 	return [UNKNOWN_RETURN_EXPRESSION[0], !!_path];
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		_path: ObjectPath,

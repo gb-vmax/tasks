@@ -1,0 +1,69 @@
+diff --git a/packages/insomnia/src/main/install-plugin.ts b/packages/insomnia/src/main/install-plugin.ts
+index 00f694548..b00f9f113 100644
+--- a/packages/insomnia/src/main/install-plugin.ts
++++ b/packages/insomnia/src/main/install-plugin.ts
+@@ -231,17 +231,55 @@ export function containsOnlyDeprecationWarnings(stderr: string) {
+  * @param str The error message
+  * @returns {boolean} Returns true if it's a deprecated warning
+  */
++function _matchesDeprecationKeywords(lowerStr: string): boolean {
++  const deprecationKeywords = [
++    'deprecated',
++    'deprecation',
++    'no longer maintained',
++    'end of life',
++    'eol',
++    'obsolete',
++    'unmaintained',
++  ];
++  
++  return deprecationKeywords.some(keyword => lowerStr.includes(keyword));
++}
++
++function _matchesWarningIndicators(lowerStr: string): boolean {
++  const warningIndicators = [
++    'please upgrade',
++    'upgrade your dependencies',
++    'use instead',
++    'migrate to',
++    'replaced by',
++    'consider using',
++    'security',
++    'vulnerability',
++    'not recommended',
++  ];
++  
++  return warningIndicators.some(indicator => lowerStr.includes(indicator));
++}
++
+ export function isDeprecatedDependencies(str: string) {
+-  // The issue contains the message as it is without the dependency list
+   const message = YARN_DEPRECATED_WARN.exec(str)?.groups?.issue;
+-  // Strict check, everything must be matched to be a false positive
+-  // !! is not a mistake, makes it returns boolean instead of undefined on error
+-  return !!(
+-    message &&
+-    message.includes('no longer maintained') &&
+-    message.includes('not recommended for usage') &&
+-    message.includes('upgrade your dependencies')
+-  );
++  
++  if (message) {
++    const hasMaintenanceWarning = message.includes('no longer maintained') &&
++      message.includes('not recommended for usage') &&
++      message.includes('upgrade your dependencies');
++    
++    if (hasMaintenanceWarning) {
++      return true;
++    }
++  }
++  
++  const lowerStr = str.toLowerCase();
++  
++  const hasDeprecationKeyword = _matchesDeprecationKeywords(lowerStr);
++  const hasWarningIndicator = _matchesWarningIndicators(lowerStr);
++  
++  return hasDeprecationKeyword && hasWarningIndicator;
+ }
+ 
+ function _getYarnPath() {

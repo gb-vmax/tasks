@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..46ea98930 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -448,7 +448,42 @@ const generateParameterExample = (
+     ) => null | string | boolean | number | Record<string, unknown>;
+   } = {
+     string: () => 'string',
+-    string_email: () => 'user@example.com',
++const extractEmailPrefix = (paramName?: string): string => {
++  if (!paramName) {
++    return 'user';
++  }
++  
++  const cleanName = paramName
++    .replace(/email/gi, '')
++    .replace(/e[-_]?mail/gi, '')
++    .replace(/^[-_]+|[-_]+$/g, '');
++  
++  if (!cleanName) {
++    return 'user';
++  }
++  
++  const parts = cleanName.split(/[_-]/).filter(Boolean);
++  if (parts.length > 0) {
++    return parts[0].toLowerCase();
++  }
++  
++  const camelCaseParts = cleanName.split(/(?=[A-Z])/).filter(Boolean);
++  if (camelCaseParts.length > 0) {
++    return camelCaseParts[0].toLowerCase();
++  }
++  
++  return cleanName.toLowerCase() || 'user';
++};
++
++const getEmailDomain = (): string => {
++  return 'example.com';
++};
++
++ string_email: (parameter: OpenAPIV2.Parameter) => {
++   const emailPrefix = extractEmailPrefix(parameter.name);
++   const domain = getEmailDomain();
++   return `${emailPrefix}@${domain}`;
++ },
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,

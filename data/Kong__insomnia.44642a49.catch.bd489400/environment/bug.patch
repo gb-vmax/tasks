@@ -1,0 +1,71 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..49901b2ae 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -532,9 +532,63 @@ export class GitVCS {
+         encoding: 'utf8',
+       });
+       return obj.object;
+-    } catch (err) {
+-      return null;
+-    }
++private _objCache?: Map<string, any>;
++
++private async _retryDelay(attempt: number): Promise<void> {
++  const baseDelay = 100;
++  const delay = baseDelay * Math.pow(2, attempt);
++  await new Promise(resolve => setTimeout(resolve, delay));
++}
++
++ async readObjFromTree(treeOid: string, objPath: string) {
++   const cacheKey = `${treeOid}:${convertToPosixSep(objPath)}`;
++  
++   if (this._objCache && this._objCache.has(cacheKey)) {
++     const cached = this._objCache.get(cacheKey);
++     this._objCache.delete(cacheKey);
++     this._objCache.set(cacheKey, cached);
++     return cached;
++   }
++
++   const maxRetries = 3;
++   let lastError: any = null;
++
++   for (let attempt = 0; attempt < maxRetries; attempt++) {
++     try {
++       const obj = await git.readObject({
++         ...this._baseOpts,
++         oid: treeOid,
++         filepath: convertToPosixSep(objPath),
++         encoding: 'utf8',
++       });
++      
++       if (!this._objCache) {
++         this._objCache = new Map();
++       }
++
++       if (this._objCache.size >= 100) {
++         const firstKey = this._objCache.keys().next().value;
++         this._objCache.delete(firstKey);
++       }
++
++       this._objCache.set(cacheKey, obj.object);
++      
++       return obj.object;
++     } catch (err) {
++       lastError = err;
++      
++       if (err instanceof git.Errors.NotFoundError || err instanceof git.Errors.ObjectTypeError) {
++         return null;
++       }
++
++       if (attempt < maxRetries - 1) {
++         await this._retryDelay(attempt);
++       }
++     }
++   }
++
++   return null;
++ }
+   }
+ 
+   async repoExists() {

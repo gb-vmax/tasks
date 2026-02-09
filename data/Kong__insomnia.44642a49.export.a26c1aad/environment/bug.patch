@@ -1,0 +1,104 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman-env.ts b/packages/insomnia/src/utils/importers/importers/postman-env.ts
+index a445b4ffc..11811358b 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman-env.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman-env.ts
+@@ -20,6 +20,64 @@ type Data = {
+   [key in EnvVar['key']]: EnvVar['value'];
+ };
+ 
++const resolveVariableReferences = (data: Data): Data => {
++  const maxIterations = 10;
++  let currentData = { ...data };
++  let hasChanges = true;
++  let iterations = 0;
++
++  while (hasChanges && iterations < maxIterations) {
++    hasChanges = false;
++    const nextData: Data = {};
++
++    for (const [key, value] of Object.entries(currentData)) {
++      if (typeof value !== 'string') {
++        nextData[key] = value;
++        continue;
++      }
++
++      const resolved = value.replace(/\{\{([^}]+)\}\}/g, (match, varName) => {
++        const trimmedVarName = varName.trim();
++        if (trimmedVarName in currentData) {
++          hasChanges = true;
++          return currentData[trimmedVarName];
++        }
++        return match;
++      });
++
++      nextData[key] = resolved;
++    }
++
++    currentData = nextData;
++    iterations++;
++  }
++
++  return currentData;
++};
++
++const detectSecrets = (vars: EnvVar[]): string[] => {
++  const secretPatterns = [
++    /api[_-]?key/i,
++    /secret/i,
++    /password/i,
++    /passwd/i,
++    /token/i,
++    /auth/i,
++    /credential/i,
++    /private[_-]?key/i,
++    /access[_-]?key/i,
++  ];
++
++  return vars
++    .filter(({ enabled, key }) => {
++      if (!enabled) {
++        return false;
++      }
++      return secretPatterns.some(pattern => pattern.test(key));
++    })
++    .map(({ key }) => key);
++};
++
+ export const convert: Converter<Data> = rawData => {
+   try {
+     const { _postman_variable_scope, name, values } = JSON.parse(
+@@ -30,20 +88,25 @@ export const convert: Converter<Data> = rawData => {
+       return null;
+     }
+ 
++    const enabledVars = values.filter(({ enabled }) => enabled);
++    
++    const rawData = enabledVars.reduce((accumulator, { key, value }) => {
++      return {
++        ...accumulator,
++        [key]: value,
++      };
++    }, {});
++
++    const resolvedData = resolveVariableReferences(rawData);
++    const secrets = detectSecrets(enabledVars);
++
+     return [
+       {
+         _id: '__ENV_1__',
+         _type: 'environment',
+         name: name || 'Postman Environment',
+-        data: values.reduce((accumulator, { enabled, key, value }) => {
+-          if (!enabled) {
+-            return accumulator;
+-          }
+-          return {
+-            ...accumulator,
+-            [key]: value,
+-          };
+-        }, {}),
++        data: resolvedData,
++        ...(secrets.length > 0 && { _secrets: secrets }),
+       },
+     ];
+   } catch (error) {

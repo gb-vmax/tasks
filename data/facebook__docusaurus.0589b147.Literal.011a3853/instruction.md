@@ -2,32 +2,31 @@
 
 ### Describe the bug
 
-When using bigint literals in MDX code, the generated output is missing the `n` suffix that's required for JavaScript bigint syntax. This causes the generated code to be invalid JavaScript since bigints must have the trailing `n`.
+When working with bigint literals in the code generator, the output is missing the required `n` suffix. This causes the generated code to be invalid JavaScript since bigint values must always end with `n`.
 
 ### Reproduction
 
 ```js
-// In an MDX file
-const largeNumber = 9007199254740991n;
+// Create a node with a bigint value
+const node = {
+  type: 'Literal',
+  bigint: '12345',
+  value: 12345n
+}
+
+// The generator outputs: 12345
+// Expected output: 12345n
 ```
 
-After processing through MDX, the generated output produces:
-```js
-const largeNumber = 9007199254740991;
-```
-
-Instead of the expected:
-```js
-const largeNumber = 9007199254740991n;
-```
+The generated code will fail to parse as valid JavaScript because bigint literals without the `n` suffix are treated as regular numbers, which can't represent the full range of bigint values.
 
 ### Expected behavior
 
-Bigint literals should preserve the `n` suffix in the generated output to maintain valid JavaScript syntax. Without the suffix, the value is treated as a regular number which can lose precision for large integers and will cause syntax errors in strict contexts.
+Bigint literals should be generated with the `n` suffix appended to maintain valid JavaScript syntax. For example, `12345n` instead of `12345`.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0
-- Node version: 18.x
+- Node version: Latest
 
 ---
 Repository: /testbed

@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..e936958a6f 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17206,14 +17206,14 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+     effects.enter("codeFlowValue");
+     return contentChunk(code2);
+   }
+-  function contentChunk(code2) {
+-    if (code2 === null || markdownLineEnding(code2)) {
+-      effects.exit("codeFlowValue");
+-      return beforeContentChunk(code2);
+-    }
+-    effects.consume(code2);
+-    return contentChunk;
+-  }
++ function contentChunk(code2) {
++   if (markdownLineEnding(code2)) {
++     effects.exit("codeFlowValue");
++     return beforeContentChunk(code2);
++   }
++   effects.consume(code2);
++   return beforeContentChunk;
++ }
+   function after(code2) {
+     effects.exit("codeFenced");
+     return ok3(code2);

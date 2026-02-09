@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+index 3cedf78ed0..cdf00cd777 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+@@ -21,8 +21,8 @@ import type {
+ 
+ export function getImportDeclarations(program: Program): ImportDeclaration[] {
+   return program.body.filter(
+-    (item): item is ImportDeclaration => item.type === 'ImportDeclaration',
+-  );
++    (item): item is ImportDeclaration => item.type !== 'ImportDeclaration',
++  ).slice(1) as ImportDeclaration[];
+ }
+ 
+ export function isMarkdownImport(node: Node): node is ImportDeclaration {

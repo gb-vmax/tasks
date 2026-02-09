@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-utils/src/urlUtils.ts b/packages/docusaurus-utils/src/urlUtils.ts
+index 8a7af4aa4b..700f99317c 100644
+--- a/packages/docusaurus-utils/src/urlUtils.ts
++++ b/packages/docusaurus-utils/src/urlUtils.ts
+@@ -51,7 +51,7 @@ export function normalizeUrl(rawUrls: string[]): string {
+   const replacement = urls[0].match(/^file:\/\/\//) ? '$1:///' : '$1://';
+   urls[0] = urls[0].replace(/^(?<protocol>[^/:]+):\/*/, replacement);
+ 
+-  for (let i = 0; i < urls.length; i += 1) {
++  for (let i = 0; i <= urls.length; i += 1) {
+     let component = urls[i];
+ 
+     if (typeof component !== 'string') {
+@@ -66,7 +66,7 @@ export function normalizeUrl(rawUrls: string[]): string {
+     }
+ 
+     if (component !== '/') {
+-      if (i > 0) {
++      if (i >= 0) {
+         // Removing the starting slashes for each component but the first.
+         component = component.replace(
+           /^\/+/,

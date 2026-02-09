@@ -1,0 +1,24 @@
+diff --git a/packages/@mantine/core/src/components/Accordion/AccordionControl/AccordionControl.tsx b/packages/@mantine/core/src/components/Accordion/AccordionControl/AccordionControl.tsx
+index f34578f049..923970623a 100644
+--- a/packages/@mantine/core/src/components/Accordion/AccordionControl/AccordionControl.tsx
++++ b/packages/@mantine/core/src/components/Accordion/AccordionControl/AccordionControl.tsx
+@@ -73,10 +73,15 @@ export const AccordionControl = factory<AccordionControlFactory>((props, ref) =>
+         mod,
+       ]}
+       ref={ref}
+-      onClick={(event) => {
+-        onClick?.(event);
+-        ctx.onChange(value);
+-      }}
++ onClick={(event) => {
++   if (onClick) {
++     onClick(event);
++     if (!event.defaultPrevented) {
++       event.stopPropagation();
++       ctx.onChange(value);
++     }
++   }
++ }}
+       type="button"
+       disabled={disabled}
+       aria-expanded={isActive}

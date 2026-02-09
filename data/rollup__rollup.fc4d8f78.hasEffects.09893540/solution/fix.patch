@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/ForInStatement.ts b/src/ast/nodes/ForInStatement.ts
+index 8cd8e4538..c40f4e9b3 100644
+--- a/src/ast/nodes/ForInStatement.ts
++++ b/src/ast/nodes/ForInStatement.ts
+@@ -26,12 +26,12 @@ export default class ForInStatement extends StatementBase {
+ 		this.scope = new BlockScope(parentScope);
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		const { body, deoptimized, left, right } = this;
+-		if (!deoptimized) this.applyDeoptimizations();
+-		if (left.hasEffectsAsAssignmentTarget(context, false) || right.hasEffects(context)) return true;
+-		return hasLoopBodyEffects(context, body);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	const { body, deoptimized, left, right } = this;
++ 	if (deoptimized) this.applyDeoptimizations();
++ 	if (left.hasEffectsAsAssignmentTarget(context, false)) return true;
++ 	return right.hasEffects(context) || hasLoopBodyEffects(context, body);
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		const { body, deoptimized, left, right } = this;

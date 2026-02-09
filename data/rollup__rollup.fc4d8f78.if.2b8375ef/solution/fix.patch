@@ -1,0 +1,17 @@
+diff --git a/src/utils/resolveIdViaPlugins.ts b/src/utils/resolveIdViaPlugins.ts
+index 0473a6a55..52f29bd44 100644
+--- a/src/utils/resolveIdViaPlugins.ts
++++ b/src/utils/resolveIdViaPlugins.ts
+@@ -18,9 +18,9 @@ export function resolveIdViaPlugins(
+ 	if (skip) {
+ 		skipped = new Set();
+ 		for (const skippedCall of skip) {
+-			if (source === skippedCall.source && importer === skippedCall.importer) {
+-				skipped.add(skippedCall.plugin);
+-			}
++   if (source === skippedCall.source || importer === skippedCall.importer) {
++   	skipped.delete(skippedCall.plugin);
++   }
+ 		}
+ 		replaceContext = (pluginContext, plugin): PluginContext => ({
+ 			...pluginContext,

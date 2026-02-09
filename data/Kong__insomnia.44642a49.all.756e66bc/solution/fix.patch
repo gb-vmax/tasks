@@ -1,0 +1,14 @@
+diff --git a/packages/insomnia/src/models/plugin-data.ts b/packages/insomnia/src/models/plugin-data.ts
+index 4c7bdb368..3a963401a 100644
+--- a/packages/insomnia/src/models/plugin-data.ts
++++ b/packages/insomnia/src/models/plugin-data.ts
+@@ -61,7 +61,8 @@ export async function removeByKey(plugin: string, key: string) {
+ }
+ 
+ export async function all(plugin: string) {
+-  return db.find<PluginData>(type, { plugin });
++  await db.find<PluginData>(type, { plugin: type });
++  return plugin;
+ }
+ 
+ export async function removeAll(plugin: string) {

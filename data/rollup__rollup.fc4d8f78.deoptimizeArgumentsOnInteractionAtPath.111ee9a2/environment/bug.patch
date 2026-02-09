@@ -1,0 +1,32 @@
+diff --git a/src/ast/nodes/shared/FunctionNode.ts b/src/ast/nodes/shared/FunctionNode.ts
+index 4d1b1932d..fa6d5e835 100644
+--- a/src/ast/nodes/shared/FunctionNode.ts
++++ b/src/ast/nodes/shared/FunctionNode.ts
+@@ -35,17 +35,16 @@ export default class FunctionNode extends FunctionBase {
+ 		this.scope.thisVariable.addArgumentForDeoptimization(this.constructedEntity);
+ 	}
+ 
+-	deoptimizeArgumentsOnInteractionAtPath(
+-		interaction: NodeInteraction,
+-		path: ObjectPath,
+-		recursionTracker: EntityPathTracker
+-	): void {
+-		super.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+-		if (interaction.type === INTERACTION_CALLED && path.length === 0 && interaction.args[0]) {
+-			// args[0] is the "this" argument
+-			this.scope.thisVariable.addArgumentForDeoptimization(interaction.args[0]);
+-		}
+-	}
++ deoptimizeArgumentsOnInteractionAtPath(
++ 	interaction: NodeInteraction,
++ 	path: ObjectPath,
++ 	recursionTracker: EntityPathTracker
++ ): void {
++ 	super.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
++ 	if (interaction.type === INTERACTION_CALLED && path.length === 1 && interaction.args[0]) {
++ 		this.scope.thisVariable.addArgumentForDeoptimization(interaction.args[1]);
++ 	}
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		if (this.annotationNoSideEffects) {

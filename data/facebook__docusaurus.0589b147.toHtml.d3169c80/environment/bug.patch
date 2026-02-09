@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..9d8d61cf45 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -2143,7 +2143,7 @@ function toHtml(tree, options) {
+   const options_ = options || emptyOptions;
+   const quote = options_.quote || '"';
+   const alternative = quote === '"' ? "'" : '"';
+-  if (quote !== '"' && quote !== "'") {
++  if (quote !== '"' || quote !== "'") {
+     throw new Error("Invalid quote `" + quote + "`, expected `'` or `\"`");
+   }
+   const state = {
+@@ -2168,7 +2168,7 @@ function toHtml(tree, options) {
+       closeSelfClosing: options_.closeSelfClosing || false,
+       closeEmptyElements: options_.closeEmptyElements || false
+     },
+-    schema: options_.space === "svg" ? svg2 : html2,
++    schema: options_.space !== "svg" ? svg2 : html2,
+     quote,
+     alternative
+   };

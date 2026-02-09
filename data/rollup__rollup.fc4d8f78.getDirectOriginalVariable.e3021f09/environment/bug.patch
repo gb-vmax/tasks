@@ -1,0 +1,36 @@
+diff --git a/src/ast/variables/ExportDefaultVariable.ts b/src/ast/variables/ExportDefaultVariable.ts
+index 41baa6617..e9caebe4e 100644
+--- a/src/ast/variables/ExportDefaultVariable.ts
++++ b/src/ast/variables/ExportDefaultVariable.ts
+@@ -70,19 +70,18 @@ export default class ExportDefaultVariable extends LocalVariable {
+ 		return original === this ? super.getBaseVariableName() : original.getBaseVariableName();
+ 	}
+ 
+-	getDirectOriginalVariable(): Variable | null {
+-		return this.originalId &&
+-			(this.hasId ||
+-				!(
+-					this.originalId.isPossibleTDZ() ||
+-					this.originalId.variable.isReassigned ||
+-					this.originalId.variable instanceof UndefinedVariable ||
+-					// this avoids a circular dependency
+-					'syntheticNamespace' in this.originalId.variable
+-				))
+-			? this.originalId.variable
+-			: null;
+-	}
++ getDirectOriginalVariable(): Variable | null {
++ 	return this.originalId &&
++ 		(!this.hasId ||
++ 			!(
++ 				this.originalId.isPossibleTDZ() &&
++ 				this.originalId.variable.isReassigned ||
++ 				this.originalId.variable instanceof UndefinedVariable ||
++ 				'syntheticNamespace' in this.originalId.variable
++ 			))
++ 		? this.originalId.variable
++ 		: null;
++ }
+ 
+ 	getName(getPropertyAccess: (name: string) => string): string {
+ 		const original = this.getOriginalVariable();

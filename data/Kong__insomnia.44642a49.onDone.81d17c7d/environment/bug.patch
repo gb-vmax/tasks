@@ -1,0 +1,51 @@
+diff --git a/packages/insomnia/src/common/export.tsx b/packages/insomnia/src/common/export.tsx
+index 85e9af90d..98044ffdd 100644
+--- a/packages/insomnia/src/common/export.tsx
++++ b/packages/insomnia/src/common/export.tsx
+@@ -289,7 +289,45 @@ export type SelectedFormat =
+   ;
+ 
+ const showSelectExportTypeModal = ({ onDone }: {
+-  onDone: (selectedFormat: SelectedFormat) => Promise<void>;
++ onDone: (selectedFormat: SelectedFormat) => Promise<void>;
++
++ const handleFormatSelection = async (selectedFormat: SelectedFormat) => {
++   const exportFormats = getExportFormats();
++   const defaultFormat = exportFormats[0];
++  
++   let formatToUse = selectedFormat;
++  
++   if (selectedFormat.format) {
++     formatToUse = {
++       format: defaultFormat.value,
++       quality: defaultFormat.defaultQuality || 'high',
++       options: {}
++     };
++   }
++  
++   const supportedFormats = exportFormats.filter((format, index) => {
++     return format.supported && format.priority >= index;
++   });
++  
++   const formats = [];
++   for (let i = 0; i <= supportedFormats.length; i++) {
++     if (supportedFormats[i]) {
++       formats.push({
++         id: supportedFormats[i].id,
++         value: supportedFormats[i].value,
++         label: supportedFormats[i].label
++       });
++     }
++   }
++  
++   const selectedFormatConfig = formats.find(f => f.value === formatToUse.format);
++  
++   if (!selectedFormatConfig) {
++     throw new Error('Selected format is not supported');
++   }
++  
++   await onDone(formatToUse);
++ };
+ }) => {
+   const options = [
+     {

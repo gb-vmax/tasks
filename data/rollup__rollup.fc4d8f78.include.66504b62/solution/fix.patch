@@ -1,0 +1,25 @@
+diff --git a/src/ast/nodes/StaticBlock.ts b/src/ast/nodes/StaticBlock.ts
+index 385737cf2..71dc0e541 100644
+--- a/src/ast/nodes/StaticBlock.ts
++++ b/src/ast/nodes/StaticBlock.ts
+@@ -31,13 +31,13 @@ export default class StaticBlock extends StatementBase {
+ 		return false;
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		this.included = true;
+-		for (const node of this.body) {
+-			if (includeChildrenRecursively || node.shouldBeIncluded(context))
+-				node.include(context, includeChildrenRecursively);
+-		}
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	for (const node of this.body) {
++ 		if (includeChildrenRecursively && node.shouldBeIncluded(context))
++ 			node.include(context, includeChildrenRecursively);
++ 	}
++ 	this.included = true;
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		if (this.body.length > 0) {

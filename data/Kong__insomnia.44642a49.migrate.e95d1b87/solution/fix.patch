@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/models/response.ts b/packages/insomnia/src/models/response.ts
+index 2ca7ed602..6a844cb66 100644
+--- a/packages/insomnia/src/models/response.ts
++++ b/packages/insomnia/src/models/response.ts
+@@ -83,9 +83,48 @@ export function init(): BaseResponse {
+   };
+ }
+ 
++function migrateLegacyEnvironmentId(doc: Response) {
++  if (doc.environmentId === '__LEGACY__') {
++    doc.environmentId = null;
++  }
++  return doc;
++}
++
++function ensurePathConsistency(doc: Response) {
++  if (doc.bodyPath && typeof doc.bodyPath === 'string' && doc.bodyPath.trim() === '') {
++    doc.bodyPath = '';
++  }
++  
++  if (doc.timelinePath && typeof doc.timelinePath === 'string' && doc.timelinePath.trim() === '') {
++    doc.timelinePath = '';
++  }
++
++  if (doc.bodyPath && typeof doc.bodyPath === 'string' && doc.bodyPath.length > 0) {
++    try {
++      fs.statSync(doc.bodyPath);
++    } catch {
++      doc.bodyPath = '';
++      doc.bodyCompression = null;
++    }
++  }
++
++  if (doc.timelinePath && typeof doc.timelinePath === 'string' && doc.timelinePath.length > 0) {
++    try {
++      fs.statSync(doc.timelinePath);
++    } catch {
++      doc.timelinePath = '';
++    }
++  }
++
++  return doc;
++}
++
+ export function migrate(doc: Response) {
+   try {
+-    return migrateBodyCompression(doc);
++    doc = migrateBodyCompression(doc);
++    doc = migrateLegacyEnvironmentId(doc);
++    doc = ensurePathConsistency(doc);
++    return doc;
+   } catch (e) {
+     console.log('[db] Error during response migration', e);
+     throw e;

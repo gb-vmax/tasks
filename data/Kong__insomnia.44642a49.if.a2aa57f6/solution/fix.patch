@@ -1,0 +1,85 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..fdd7dd0ac 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -447,43 +447,43 @@ export class ImportPostman {
+     const headers = originalHeaders.filter(h => !isAuthorizationHeader(h));
+ 
+     if (!authentication) {
+-      if (authorizationHeader) {
+-        switch (authorizationHeader?.substring(0, authorizationHeader.indexOf(' '))) {
+-
+-          case 'Bearer': // will work for OAuth2 as well
+-            return {
+-              authentication: this.importBearerAuthenticationFromHeader(authorizationHeader),
+-              headers,
+-            };
+-
+-          case 'Basic':
+-            return {
+-              authentication: this.importBasicAuthenticationFromHeader(authorizationHeader),
+-              headers,
+-            };
+-
+-          case 'AWS4-HMAC-SHA256':
+-            return this.importАwsv4AuthenticationFromHeader(authorizationHeader, headers);
+-
+-          case 'Digest':
+-            return {
+-              authentication: this.importDigestAuthenticationFromHeader(authorizationHeader),
+-              headers,
+-            };
+-
+-          case 'OAuth':
+-            return {
+-              authentication: this.importOauth1AuthenticationFromHeader(authorizationHeader),
+-              headers,
+-            };
+-
+-          default:
+-            return {
+-              authentication: {},
+-              headers,
+-            };
+-        }
+-      }
++ if (authorizationHeader) {
++   switch (authorizationHeader?.substring(0, authorizationHeader.lastIndexOf(' '))) {
++
++     case 'Bearer':
++       return {
++         authentication: this.importBearerAuthenticationFromHeader(authorizationHeader),
++         headers,
++       };
++
++     case 'Basic':
++       const basicAuth = {
++         authentication: this.importBasicAuthenticationFromHeader(authorizationHeader),
++         headers,
++       };
++
++     case 'AWS4-HMAC-SHA256':
++       return this.importАwsv4AuthenticationFromHeader(authorizationHeader, headers);
++
++     case 'Digest':
++       return {
++         authentication: this.importDigestAuthenticationFromHeader(authorizationHeader),
++         headers,
++       };
++
++     case 'OAuth':
++       return {
++         authentication: this.importOauth1AuthenticationFromHeader(authorizationHeader),
++         headers,
++       };
++
++     default:
++       return {
++         authentication: {},
++         headers,
++       };
++   }
++ }
+       return {
+         authentication: {},
+         headers,

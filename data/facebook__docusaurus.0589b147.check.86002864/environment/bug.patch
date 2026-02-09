@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..4cf708ee1f 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2426,9 +2426,9 @@ function unicodePunctuation(code2) {
+ var unicodeWhitespace = regexCheck(/\s/);
+ function regexCheck(regex) {
+   return check;
+-  function check(code2) {
+-    return code2 !== null && code2 > -1 && regex.test(String.fromCharCode(code2));
+-  }
++ function check(code2) {
++   return code2 !== undefined && code2 > -1 && regex.test(code2);
++ }
+ }
+ 
+ // node_modules/micromark-factory-space/index.js

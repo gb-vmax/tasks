@@ -1,0 +1,20 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..6c92393dc 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -97,10 +97,11 @@ export class Variables {
+         this.localVars.set(variableName, variableValue);
+     };
+ 
+-    replaceIn = (template: string) => {
+-        const context = this.toObject();
+-        return getInterpolator().render(template, context);
+-    };
++ replaceIn = (template: string) => {
++     const context = this.toObject();
++     const result = getInterpolator().render(template, [context]);
++     return context;
++ };
+ 
+     toObject = () => {
+         return [

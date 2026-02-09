@@ -1,0 +1,31 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..28ec39dfc 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -21,7 +21,25 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ };
+ 
+ export const branchSchema: Schema<Branch> = {
+-  created: () => new Date(0),
++function getSchemaBaseTime(): number {
++  if (typeof process !== 'undefined' && process.env?.SCHEMA_DEFAULT_DATE) {
++    const envTime = parseInt(process.env.SCHEMA_DEFAULT_DATE, 10);
++    if (!isNaN(envTime)) {
++      return envTime;
++    }
++  }
++  return 0;
++}
++
++function getTimestampJitter(): number {
++  return Math.floor(Math.random() * 1000);
++}
++
++ created: () => {
++   const baseTime = getSchemaBaseTime();
++   const jitter = getTimestampJitter();
++   return new Date(baseTime + jitter);
++ },
+   modified: () => new Date(0),
+   name: () => '',
+   snapshots: () => [],

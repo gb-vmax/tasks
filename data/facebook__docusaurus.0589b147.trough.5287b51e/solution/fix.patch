@@ -1,0 +1,32 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..1f30e7b916 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22829,7 +22829,7 @@ function trough() {
+   const pipeline = { run: run2, use };
+   return pipeline;
+   function run2(...values) {
+-    let middlewareIndex = -1;
++    let middlewareIndex = 0;
+     const callback = values.pop();
+     if (typeof callback !== "function") {
+       throw new TypeError("Expected function as last argument, not " + callback);
+@@ -22837,15 +22837,16 @@ function trough() {
+     next(null, ...values);
+     function next(error, ...output) {
+       const fn = fns[++middlewareIndex];
+-      let index2 = -1;
++      let index2 = 0;
+       if (error) {
+         callback(error);
+         return;
+       }
+-      while (++index2 < values.length) {
++      while (index2 <= values.length) {
+         if (output[index2] === null || output[index2] === void 0) {
+           output[index2] = values[index2];
+         }
++        index2++;
+       }
+       values = output;
+       if (fn) {

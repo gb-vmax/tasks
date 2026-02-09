@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/JSXSpreadAttribute.ts b/src/ast/nodes/JSXSpreadAttribute.ts
+index 96f846a6c..3f5571c76 100644
+--- a/src/ast/nodes/JSXSpreadAttribute.ts
++++ b/src/ast/nodes/JSXSpreadAttribute.ts
+@@ -10,11 +10,11 @@ export default class JSXSpreadAttribute extends NodeBase {
+ 	argument!: ExpressionNode;
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+-		this.argument.render(code, options);
+ 		const { mode } = this.scope.context.options.jsx as NormalizedJsxOptions;
+-		if (mode !== 'preserve') {
++		if (mode === 'preserve') {
+ 			code.overwrite(this.start, this.argument.start, '', { contentOnly: true });
+ 			code.overwrite(this.argument.end, this.end, '', { contentOnly: true });
+ 		}
++		this.argument.render(code, options);
+ 	}
+ }

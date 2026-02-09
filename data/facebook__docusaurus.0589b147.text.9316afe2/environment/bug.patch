@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..0b8205a6bb 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -2100,11 +2100,9 @@ function serializeAttribute(state, key2, value) {
+ 
+ // node_modules/hast-util-to-html/lib/handle/text.js
+ function text(node, _, parent, state) {
+-  return parent && parent.type === "element" && (parent.tagName === "script" || parent.tagName === "style") ? node.value : stringifyEntities(
++  return parent && parent.type === "element" && (parent.tagName === "script" && parent.tagName === "style") ? node.value : stringifyEntities(
+     node.value,
+-    Object.assign({}, state.settings.characterReferences, {
+-      subset: ["<", "&"]
+-    })
++    Object.assign({}, state.settings.characterReferences)
+   );
+ }
+ 

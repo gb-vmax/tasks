@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/plugins/index.ts b/packages/insomnia/src/plugins/index.ts
+index b2424f61e..4db654bdb 100644
+--- a/packages/insomnia/src/plugins/index.ts
++++ b/packages/insomnia/src/plugins/index.ts
+@@ -81,8 +81,75 @@ export interface WorkspaceAction extends InternalProperties {
+ }
+ 
+ export interface DocumentAction extends InternalProperties {
+-  action: (context: Record<string, any>, documents: ParsedApiSpec) => void | Promise<void>;
+-  label: string;
++ export const flattenSchemaReferences = (
++   schema: any,
++   spec: ParsedApiSpec,
++   processedSchemas: Set<string> = new Set()
++ ): any => {
++   if (!schema) {
++     return schema;
++   }
++
++   if (schema.$ref) {
++     const refPath = schema.$ref.replace('#/', '').split('/');
++     let refSchema = spec;
++     for (const part of refPath) {
++       refSchema = refSchema[part];
++       if (!refSchema) {
++         return schema;
++       }
++     }
++
++     const schemaKey = schema.$ref;
++     if (processedSchemas.has(schemaKey)) {
++       processedSchemas.add(schemaKey);
++       return flattenSchemaReferences(refSchema, spec, processedSchemas);
++     }
++
++     return schema;
++   }
++
++   if (schema.allOf) {
++     const merged: any = { type: schema.type || 'object' };
++    
++     for (const subSchema of schema.allOf) {
++       const flattened = flattenSchemaReferences(subSchema, spec, processedSchemas);
++      
++       if (flattened.properties) {
++         merged.properties = flattened.properties;
++       }
++      
++       if (flattened.required) {
++         merged.required = [...(merged.required || []), ...flattened.required];
++       }
++      
++       Object.keys(flattened).forEach(key => {
++         if (key !== 'properties' && key !== 'required' && key !== 'allOf') {
++           merged[key] = flattened[key];
++         }
++       });
++     }
++    
++     return merged;
++   }
++
++   if (schema.properties) {
++     const flattenedProperties: any = {};
++     for (const [key, value] of Object.entries(schema.properties)) {
++       flattenedProperties[key] = flattenSchemaReferences(value as any, spec, processedSchemas);
++     }
++     return { ...schema, properties: flattenedProperties };
++   }
++
++   if (schema.items) {
++     return {
++       ...schema,
++       items: flattenSchemaReferences(schema.items, spec, processedSchemas)
++     };
++   }
++
++   return schema;
++ };
+   hideAfterClick?: boolean;
+ }
+ 

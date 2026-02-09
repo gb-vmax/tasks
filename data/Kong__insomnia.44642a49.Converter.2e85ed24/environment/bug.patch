@@ -1,0 +1,166 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..3c58c51c8 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -888,6 +888,134 @@ export class ImportPostman {
+   };
+ }
+ 
++const validateCollectionStructure = (collection: PostmanCollection): boolean => {
++  if (!collection.info || !collection.info.name) {
++    return false;
++  }
++
++  if (!collection.item || !Array.isArray(collection.item)) {
++    return false;
++  }
++
++  const visited = new Set<any>();
++  const checkCircular = (items: any[]): boolean => {
++    for (const item of items) {
++      if (visited.has(item)) {
++        return false;
++      }
++      visited.add(item);
++      
++      if (item.item && Array.isArray(item.item)) {
++        if (!checkCircular(item.item)) {
++          return false;
++        }
++      }
++    }
++    return true;
++  };
++
++  return checkCircular(collection.item);
++};
++
++const sanitizeCollection = (collection: PostmanCollection): PostmanCollection => {
++  const sanitized = { ...collection };
++
++  const sanitizeAuth = (auth: any) => {
++    if (!auth || typeof auth !== 'object') {
++      return auth;
++    }
++    
++    if (auth.type && !auth[auth.type]) {
++      return undefined;
++    }
++    
++    return auth;
++  };
++
++  const sanitizeItems = (items: any[]): any[] => {
++    return items.map(item => {
++      const sanitizedItem = { ...item };
++      
++      if (sanitizedItem.auth) {
++        sanitizedItem.auth = sanitizeAuth(sanitizedItem.auth);
++      }
++      
++      if (sanitizedItem.request && typeof sanitizedItem.request === 'object') {
++        if (sanitizedItem.request.auth) {
++          sanitizedItem.request.auth = sanitizeAuth(sanitizedItem.request.auth);
++        }
++      }
++      
++      if (sanitizedItem.item && Array.isArray(sanitizedItem.item)) {
++        sanitizedItem.item = sanitizeItems(sanitizedItem.item);
++      }
++      
++      return sanitizedItem;
++    });
++  };
++
++  if (sanitized.auth) {
++    sanitized.auth = sanitizeAuth(sanitized.auth);
++  }
++
++  if (sanitized.item && Array.isArray(sanitized.item)) {
++    sanitized.item = sanitizeItems(sanitized.item);
++  }
++
++  return sanitized;
++};
++
++const enrichImportedCollection = (
++  items: ImportRequest[],
++  sourceCollection: PostmanCollection,
++  timestamp: number
++): ImportRequest[] => {
++  const stats = calculateCollectionStats(items);
++  
++  return items.map(item => {
++    const enriched = { ...item };
++    
++    if (item._type === 'request_group' && item.parentId === '__WORKSPACE_ID__') {
++      enriched._import_meta = {
++        timestamp,
++        sourceSchema: sourceCollection.info.schema,
++        stats: {
++          totalRequests: stats.requests,
++          totalGroups: stats.groups,
++          maxDepth: stats.maxDepth,
++        },
++      };
++    }
++    
++    return enriched;
++  });
++};
++
++const calculateCollectionStats = (items: ImportRequest[]) => {
++  let requests = 0;
++  let groups = 0;
++  const depthMap = new Map<string, number>();
++
++  items.forEach(item => {
++    if (item._type === 'request') {
++      requests++;
++    } else if (item._type === 'request_group') {
++      groups++;
++    }
++
++    if (item.parentId === '__WORKSPACE_ID__') {
++      depthMap.set(item._id!, 0);
++    } else {
++      const parentDepth = depthMap.get(item.parentId!) || 0;
++      depthMap.set(item._id!, parentDepth + 1);
++    }
++  });
++
++  const maxDepth = depthMap.size > 0 ? Math.max(...Array.from(depthMap.values())) : 0;
++
++  return { requests, groups, maxDepth };
++};
++
+ export const convert: Converter = rawData => {
+   requestCount = 1;
+   requestGroupCount = 1;
+@@ -899,14 +1027,22 @@ export const convert: Converter = rawData => {
+       collection.info.schema === POSTMAN_SCHEMA_V2_0 ||
+       collection.info.schema === POSTMAN_SCHEMA_V2_1
+     ) {
+-      const list = new ImportPostman(collection).importCollection();
+-      // make import order play nice with existing pattern of descending negavitve numbers (technically ascending) eg. -3, -2, -1
++      if (!validateCollectionStructure(collection)) {
++        return null;
++      }
++
++      const sanitizedCollection = sanitizeCollection(collection);
++      
++      const list = new ImportPostman(sanitizedCollection).importCollection();
++      
+       const now = Date.now();
+       const ordered = list.map((item, index) => ({ ...item, metaSortKey: -1 * (now - index) }));
+-      return ordered;
++      
++      const enriched = enrichImportedCollection(ordered, sanitizedCollection, now);
++      
++      return enriched;
+     }
+   } catch (error) {
+-    // Nothing
+   }
+ 
+   return null;

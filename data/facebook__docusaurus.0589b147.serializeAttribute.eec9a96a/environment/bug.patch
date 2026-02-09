@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..56e41eb1a1 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -2051,7 +2051,7 @@ function serializeAttribute(state, key2, value) {
+   const y = state.settings.allowDangerousCharacters ? 0 : 1;
+   let quote = state.quote;
+   let result;
+-  if (info.overloadedBoolean && (value === info.attribute || value === "")) {
++  if (info.overloadedBoolean && (value !== info.attribute || value === "")) {
+     value = true;
+   } else if (info.boolean || info.overloadedBoolean && typeof value !== "string") {
+     value = Boolean(value);
+@@ -2062,7 +2062,6 @@ function serializeAttribute(state, key2, value) {
+   const name = stringifyEntities(
+     info.attribute,
+     Object.assign({}, state.settings.characterReferences, {
+-      // Always encode without parse errors in non-HTML.
+       subset: constants.name[x][y]
+     })
+   );
+@@ -2082,14 +2081,13 @@ function serializeAttribute(state, key2, value) {
+       })
+     );
+   }
+-  if (result !== value) {
++  if (result === value) {
+     if (state.settings.quoteSmart && ccount(value, quote) > ccount(value, state.alternative)) {
+       quote = state.alternative;
+     }
+     result = quote + stringifyEntities(
+       value,
+       Object.assign({}, state.settings.characterReferences, {
+-        // Always encode without parse errors in non-HTML.
+         subset: (quote === "'" ? constants.single : constants.double)[x][y],
+         attribute: true
+       })

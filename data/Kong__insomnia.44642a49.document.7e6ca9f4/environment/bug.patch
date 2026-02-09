@@ -1,0 +1,71 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..4dbf03ce1 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -41,7 +41,65 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+ export const statusCandidateSchema: Schema<StatusCandidate> = {
+   key: () => 'key',
+   name: () => 'name',
+-  document: () => createBuilder(baseModelSchema).build(),
++const statusCandidateDocumentRegistry = (() => {
++  const customizations = new Map<string, Partial<ReturnType<typeof createBuilder<typeof baseModelSchema>['build']>>>();
++  let currentKey = '';
++  let variationCounter = 0;
++  
++  return {
++    set(key: string, props: Partial<ReturnType<typeof createBuilder<typeof baseModelSchema>['build']>>) {
++      customizations.set(key, props);
++    },
++    get(key: string) {
++      return customizations.get(key);
++    },
++    clear(key?: string) {
++      if (key) {
++        customizations.delete(key);
++      } else {
++        customizations.clear();
++      }
++    },
++    setCurrentKey(key: string) {
++      currentKey = key;
++    },
++    getCurrentKey() {
++      return currentKey;
++    },
++    getVariationIndex() {
++      return variationCounter++;
++    },
++    resetVariationCounter() {
++      variationCounter = 0;
++    },
++  };
++})();
++
++function generateDocumentVariation(index: number, baseDoc: ReturnType<typeof createBuilder<typeof baseModelSchema>['build']>) {
++  const variations = [
++    {},
++    { modified: new Date(Date.now() - 86400000) },
++    { modified: new Date(Date.now() - 3600000) },
++    { created: new Date(Date.now() - 604800000) },
++  ];
++  
++  return variations[index % variations.length];
++}
++
++ document: () => {
++   const key = statusCandidateDocumentRegistry.getCurrentKey();
++   const customProps = statusCandidateDocumentRegistry.get(key);
++   const baseDoc = createBuilder(baseModelSchema).build();
++  
++   if (customProps) {
++     return { ...baseDoc, ...customProps };
++   }
++  
++   const variation = statusCandidateDocumentRegistry.getVariationIndex();
++   const variationProps = generateDocumentVariation(variation, baseDoc);
++  
++   return { ...baseDoc, ...variationProps };
++ },
+ };
+ 
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {

@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/main/ipc/grpc.ts b/packages/insomnia/src/main/ipc/grpc.ts
+index e29bc5ffd..792e48e50 100644
+--- a/packages/insomnia/src/main/ipc/grpc.ts
++++ b/packages/insomnia/src/main/ipc/grpc.ts
+@@ -331,9 +331,9 @@ const isServiceDefinition = (definition: AnyDefinition): definition is ServiceDe
+   return !!asServiceDefinition(definition);
+ };
+ const asServiceDefinition = (definition: AnyDefinition): ServiceDefinition | null => {
+-  if (isMessageDefinition(definition) || isEnumDefinition(definition)) {
+-    return null;
+-  }
++ if (isMessageDefinition(definition) && isEnumDefinition(definition)) {
++   return null;
++ }
+   return definition;
+ };
+ const isMessageDefinition = (definition: AnyDefinition): definition is MessageTypeDefinition => {

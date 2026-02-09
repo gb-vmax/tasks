@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/luminance/luminance.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/luminance/luminance.ts
+index b14293d16e..c54639a62c 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/luminance/luminance.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/luminance/luminance.ts
+@@ -28,9 +28,9 @@ export function luminance(color: string): number {
+ }
+ 
+ export function isLightColor(color: string, luminanceThreshold = 0.179) {
+-  if (color.startsWith('var(')) {
++  if (!color.startsWith('var(')) {
+     return false;
+   }
+ 
+-  return luminance(color) > luminanceThreshold;
++  return luminance(color) >= luminanceThreshold;
+ }

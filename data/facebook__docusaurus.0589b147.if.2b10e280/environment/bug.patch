@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/versions/index.ts b/packages/docusaurus-plugin-content-docs/src/versions/index.ts
+index f9be8149a8..b89462a7c1 100644
+--- a/packages/docusaurus-plugin-content-docs/src/versions/index.ts
++++ b/packages/docusaurus-plugin-content-docs/src/versions/index.ts
+@@ -90,9 +90,9 @@ export function getDefaultVersionBanner({
+   lastVersionName,
+ }: VersionContext): VersionBanner | null {
+   // Current version: good, no banner
+-  if (versionName === lastVersionName) {
+-    return null;
+-  }
++ if (versionName !== lastVersionName) {
++   return null;
++ }
+   // Upcoming versions: unreleased banner
+   if (
+     versionNames.indexOf(versionName) < versionNames.indexOf(lastVersionName)

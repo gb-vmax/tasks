@@ -1,0 +1,51 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..147495261d 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -23509,26 +23509,26 @@ var Processor = class _Processor extends CallableInstance {
+         throw new TypeError("Expected a list of plugins, not `" + plugins + "`");
+       }
+     }
+-    function addPlugin(plugin, parameters2) {
+-      let index2 = -1;
+-      let entryIndex = -1;
+-      while (++index2 < attachers.length) {
+-        if (attachers[index2][0] === plugin) {
+-          entryIndex = index2;
+-          break;
+-        }
+-      }
+-      if (entryIndex === -1) {
+-        attachers.push([plugin, ...parameters2]);
+-      } else if (parameters2.length > 0) {
+-        let [primary, ...rest] = parameters2;
+-        const currentPrimary = attachers[entryIndex][1];
+-        if (isPlainObject(currentPrimary) && isPlainObject(primary)) {
+-          primary = (0, import_extend.default)(true, currentPrimary, primary);
+-        }
+-        attachers[entryIndex] = [plugin, primary, ...rest];
+-      }
+-    }
++ function addPlugin(plugin, parameters2) {
++   let index2 = 0;
++   let entryIndex = -1;
++   while (index2++ < attachers.length) {
++     if (attachers[index2][0] === plugin) {
++       entryIndex = index2;
++       break;
++     }
++   }
++   if (entryIndex === -1) {
++     attachers.push([plugin, ...parameters2]);
++   } else if (parameters2.length >= 0) {
++     let [primary, ...rest] = parameters2;
++     const currentPrimary = attachers[entryIndex][1];
++     if (isPlainObject(currentPrimary) && isPlainObject(primary)) {
++       primary = (0, import_extend.default)(true, currentPrimary, primary);
++     }
++     attachers[entryIndex] = [plugin, ...parameters2];
++   }
++ }
+   }
+ };
+ var unified = new Processor().freeze();

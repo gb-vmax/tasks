@@ -1,0 +1,106 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..d50893616 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -406,9 +406,98 @@ export const database = {
+   },
+ 
+   insert: async function<T extends BaseModel>(doc: T, fromSync = false, initializeModel = true) {
+-    if (db._empty) {
+-      return _send<T>('insert', ...arguments);
+-    }
++async function _checkDuplicateId<T extends BaseModel>(type: string, id: string): Promise<T | null> {
++  try {
++    return await new Promise<T | null>((resolve, reject) => {
++      (db[type] as NeDB<T>).findOne({ _id: id }, (err, doc) => {
++        if (err) {
++          return reject(err);
++        }
++        resolve(doc);
++      });
++    });
++  } catch (err) {
++    return null;
++  }
++}
++
++function _isRetriableError(err: any): boolean {
++  if (!err) {
++    return false;
++  }
++  
++  const retriablePatterns = [
++    /EBUSY/i,
++    /EAGAIN/i,
++    /ETIMEDOUT/i,
++    /lock/i,
++    /busy/i,
++    /timeout/i,
++  ];
++  
++  const errorMessage = err.message || err.toString();
++  return retriablePatterns.some(pattern => pattern.test(errorMessage));
++}
++
++function _delay(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms));
++}
++
++ insert: async function<T extends BaseModel>(doc: T, fromSync = false, initializeModel = true) {
++   if (db._empty) {
++     return _send<T>('insert', ...arguments);
++   }
++  
++   const maxRetries = 3;
++   const baseDelay = 100;
++  
++   let lastError: Error | null = null;
++  
++   for (let attempt = 0; attempt <= maxRetries; attempt++) {
++     try {
++       const existingDoc = await _checkDuplicateId<T>(doc.type, doc._id);
++       if (existingDoc) {
++         console.warn(`[db] Document with _id ${doc._id} already exists, returning existing document`);
++         return existingDoc;
++       }
++
++       return await new Promise<T>(async (resolve, reject) => {
++         let docWithDefaults: T | null = null;
++
++         try {
++           if (initializeModel) {
++             docWithDefaults = await models.initModel<T>(doc.type, doc);
++           } else {
++             docWithDefaults = doc;
++           }
++         } catch (err) {
++           return reject(err);
++         }
++
++         (db[doc.type] as NeDB<T>).insert(docWithDefaults, (err, newDoc: T) => {
++           if (err) {
++             return reject(err);
++           }
++
++           resolve(newDoc);
++           notifyOfChange('insert', newDoc, fromSync);
++         });
++       });
++     } catch (err) {
++       lastError = err;
++      
++       if (attempt < maxRetries && _isRetriableError(err)) {
++         const delay = baseDelay * Math.pow(2, attempt);
++         await _delay(delay);
++         continue;
++       }
++      
++       throw err;
++     }
++   }
++  
++   throw lastError || new Error('Insert failed after retries');
++ }
+     return new Promise<T>(async (resolve, reject) => {
+       let docWithDefaults: T | null = null;
+ 

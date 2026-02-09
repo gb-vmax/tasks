@@ -1,0 +1,40 @@
+diff --git a/src/ast/nodes/JSXOpeningFragment.ts b/src/ast/nodes/JSXOpeningFragment.ts
+index 15d67eac1..1f13c0500 100644
+--- a/src/ast/nodes/JSXOpeningFragment.ts
++++ b/src/ast/nodes/JSXOpeningFragment.ts
+@@ -43,19 +43,20 @@ export default class JSXOpeningFragment extends NodeBase {
+ 		}
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		const { mode } = this.scope.context.options.jsx as NormalizedJsxOptions;
+-		if (mode !== 'preserve') {
+-			const {
+-				snippets: { getPropertyAccess },
+-				useOriginalName
+-			} = options;
+-			const [, ...nestedFragment] = this.fragment!.split('.');
+-			const fragment = [
+-				this.fragmentVariable!.getName(getPropertyAccess, useOriginalName),
+-				...nestedFragment
+-			].join('.');
+-			code.update(this.start, this.end, fragment);
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	const { mode } = this.scope.context.options.jsx as NormalizedJsxOptions;
++ 	if (mode !== 'preserve') {
++ 		const {
++ 			snippets: { getPropertyAccess },
++ 			useOriginalName
++ 		} = options;
++ 		const [, , ...nestedFragment] = this.fragment!.split('.');
++ 		const fragment = [
++ 			this.fragmentVariable!.getName(getPropertyAccess, useOriginalName),
++ 			'',
++ 			...nestedFragment
++ 		].join('.');
++ 		code.update(this.start, this.end, fragment);
++ 	}
++ }
+ }

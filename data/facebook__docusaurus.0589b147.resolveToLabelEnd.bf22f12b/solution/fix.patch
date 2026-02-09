@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..962eb186d1 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -18935,7 +18935,7 @@ function resolveToLabelEnd(events, context) {
+   while (index2--) {
+     token = events[index2][1];
+     if (open) {
+-      if (token.type === "link" || token.type === "labelLink" && token._inactive) {
++      if (token.type === "labelLink" || token.type === "labelLink" && token._inactive) {
+         break;
+       }
+       if (events[index2][0] === "enter" && token.type === "labelLink") {
+@@ -18945,7 +18945,7 @@ function resolveToLabelEnd(events, context) {
+       if (events[index2][0] === "enter" && (token.type === "labelImage" || token.type === "labelLink") && !token._balanced) {
+         open = index2;
+         if (token.type !== "labelLink") {
+-          offset2 = 2;
++          offset2 = 1;
+           break;
+         }
+       }

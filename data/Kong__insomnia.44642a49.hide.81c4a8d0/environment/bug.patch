@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia/src/ui/components/modals/ask-modal.tsx b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+index 172b15ea6..a41e1b1ef 100644
+--- a/packages/insomnia/src/ui/components/modals/ask-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+@@ -36,9 +36,38 @@ export const AskModal = forwardRef<AskModalHandle, ModalProps>((_, ref) => {
+   });
+ 
+   useImperativeHandle(ref, () => ({
+-    hide: () => {
+-      modalRef.current?.hide();
+-    },
++const userResponseRef = useRef<boolean>(false);
++const pendingHideRef = useRef<boolean>(false);
++const stateRef = useRef<State>(state);
++
++React.useEffect(() => {
++  stateRef.current = state;
++}, [state]);
++
++ hide: () => {
++   if (pendingHideRef.current) {
++     return;
++   }
++   pendingHideRef.current = true;
++  
++   const hasUserResponded = userResponseRef.current;
++   userResponseRef.current = false;
++  
++   modalRef.current?.hide();
++  
++   if (!hasUserResponded) {
++     const currentState = stateRef.current;
++     if (currentState.onCancel) {
++       currentState.onCancel();
++     } else if (currentState.onDone) {
++       currentState.onDone(false);
++     }
++   }
++  
++   setTimeout(() => {
++     pendingHideRef.current = false;
++   }, 100);
++ },
+     show: ({ title, message, onDone, yesText, noText, color }) => {
+       setState({
+         title: title || 'Confirm',

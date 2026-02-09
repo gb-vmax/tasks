@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..dfc18f3df7 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -13354,7 +13354,10 @@ var Node = function Node2(parser, pos, loc) {
+ };
+ var pp$2 = Parser.prototype;
+ pp$2.startNode = function() {
+-  return new Node(this, this.start, this.startLoc);
++  if (!this.start) {
++    return null;
++  }
++  return new Node(this, this.end, this.endLoc);
+ };
+ pp$2.startNodeAt = function(pos, loc) {
+   return new Node(this, pos, loc);

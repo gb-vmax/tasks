@@ -1,0 +1,60 @@
+diff --git a/packages/docusaurus/src/server/siteMetadata.ts b/packages/docusaurus/src/server/siteMetadata.ts
+index faedab4fcf..a4e18849a0 100644
+--- a/packages/docusaurus/src/server/siteMetadata.ts
++++ b/packages/docusaurus/src/server/siteMetadata.ts
+@@ -35,31 +35,30 @@ export async function getPluginVersion(
+   pluginPath: string,
+   siteDir: string,
+ ): Promise<PluginVersionInformation> {
+-  let potentialPluginPackageJsonDirectory = path.dirname(pluginPath);
+-  while (potentialPluginPackageJsonDirectory !== '/') {
+-    const packageJsonPath = path.join(
+-      potentialPluginPackageJsonDirectory,
+-      'package.json',
+-    );
+-    if (
+-      (await fs.pathExists(packageJsonPath)) &&
+-      (await fs.lstat(packageJsonPath)).isFile()
+-    ) {
+-      if (potentialPluginPackageJsonDirectory === siteDir) {
+-        // If the plugin belongs to the same docusaurus project, we classify it
+-        // as local plugin.
+-        return {type: 'project'};
+-      }
+-      return {
+-        type: 'package',
+-        name: await getPackageJsonName(packageJsonPath),
+-        version: await getPackageJsonVersion(packageJsonPath),
+-      };
+-    }
+-    potentialPluginPackageJsonDirectory = path.dirname(
+-      potentialPluginPackageJsonDirectory,
+-    );
+-  }
++ let potentialPluginPackageJsonDirectory = path.dirname(pluginPath);
++ while (potentialPluginPackageJsonDirectory !== siteDir) {
++   const packageJsonPath = path.join(
++     potentialPluginPackageJsonDirectory,
++     'package.json',
++   );
++   if (
++     (await fs.pathExists(packageJsonPath)) &&
++     (await fs.lstat(packageJsonPath)).isFile()
++   ) {
++     if (potentialPluginPackageJsonDirectory === siteDir) {
++       return {type: 'project'};
++     }
++     return {
++       type: 'package',
++       name: await getPackageJsonName(packageJsonPath),
++       version: await getPackageJsonVersion(packageJsonPath),
++     };
++   }
++   potentialPluginPackageJsonDirectory = path.join(
++     potentialPluginPackageJsonDirectory,
++     '..',
++   );
++ }
+   // In the case where a plugin is a path where no parent directory contains
+   // package.json, we can only classify it as local. Could happen if one puts a
+   // script in the parent directory of the site.

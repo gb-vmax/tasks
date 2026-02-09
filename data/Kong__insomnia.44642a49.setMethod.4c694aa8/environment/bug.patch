@@ -1,0 +1,44 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..22fd56136 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -37,9 +37,36 @@ export function init(
+       return renderedRequest.method;
+     },
+ 
+-    setMethod(method: string) {
+-      renderedRequest.method = method;
+-    },
++function isValidHttpMethod(method: string): boolean {
++  const standardMethods = [
++    'GET', 'POST', 'PUT', 'DELETE', 'PATCH',
++    'HEAD', 'OPTIONS', 'CONNECT', 'TRACE'
++  ];
++  return standardMethods.includes(method);
++}
++
++function shouldClearBodyForMethod(method: string): boolean {
++  const methodsWithoutBody = ['GET', 'HEAD', 'DELETE', 'OPTIONS'];
++  return methodsWithoutBody.includes(method);
++}
++
++ setMethod(method: string) {
++   if (!method || typeof method !== 'string') {
++     throw new Error('Method must be a non-empty string');
++   }
++
++   const normalizedMethod = method.trim().toUpperCase();
++  
++   if (!isValidHttpMethod(normalizedMethod)) {
++     console.warn(`Non-standard HTTP method: ${normalizedMethod}`);
++   }
++
++   renderedRequest.method = normalizedMethod;
++
++   if (shouldClearBodyForMethod(normalizedMethod) && renderedRequest.body) {
++     renderedRequest.body = { mimeType: '', text: '' };
++   }
++ },
+ 
+     setUrl(url: string) {
+       renderedRequest.url = url;

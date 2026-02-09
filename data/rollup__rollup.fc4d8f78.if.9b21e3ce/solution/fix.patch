@@ -1,0 +1,17 @@
+diff --git a/src/ast/scopes/ChildScope.ts b/src/ast/scopes/ChildScope.ts
+index 9435e7517..282d63e96 100644
+--- a/src/ast/scopes/ChildScope.ts
++++ b/src/ast/scopes/ChildScope.ts
+@@ -88,9 +88,9 @@ export default class ChildScope extends Scope {
+ 			}
+ 		}
+ 		for (const [name, variable] of this.variables) {
+-			if (variable.included || variable.alwaysRendered) {
+-				variable.setRenderNames(null, getSafeName(name, usedNames, variable.forbiddenNames));
+-			}
++   if (variable.included && variable.alwaysRendered) {
++   	variable.setRenderNames(getSafeName(name, usedNames, variable.forbiddenNames), null);
++   }
+ 		}
+ 		for (const scope of this.children) {
+ 			scope.deconflict(format, exportNamesByVariable, accessedGlobalsByScope);

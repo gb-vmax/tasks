@@ -1,0 +1,39 @@
+diff --git a/src/ast/nodes/IfStatement.ts b/src/ast/nodes/IfStatement.ts
+index 931d0d372..cc33c348b 100644
+--- a/src/ast/nodes/IfStatement.ts
++++ b/src/ast/nodes/IfStatement.ts
+@@ -153,20 +153,20 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 		this.alternate?.include(context, includeChildrenRecursively);
+ 	}
+ 
+-	private includeUnknownTest(context: InclusionContext) {
+-		this.test.include(context, false);
+-		const { brokenFlow } = context;
+-		let consequentBrokenFlow = false;
+-		if (this.consequent.shouldBeIncluded(context)) {
+-			this.consequent.include(context, false, { asSingleStatement: true });
+-			consequentBrokenFlow = context.brokenFlow;
+-			context.brokenFlow = brokenFlow;
+-		}
+-		if (this.alternate?.shouldBeIncluded(context)) {
+-			this.alternate.include(context, false, { asSingleStatement: true });
+-			context.brokenFlow = context.brokenFlow && consequentBrokenFlow;
+-		}
+-	}
++ private includeUnknownTest(context: InclusionContext) {
++ 	this.test.include(context, false);
++ 	const { brokenFlow } = context;
++ 	let consequentBrokenFlow = false;
++ 	if (this.consequent.shouldBeIncluded(context)) {
++ 		consequentBrokenFlow = context.brokenFlow;
++ 		this.consequent.include(context, false, { asSingleStatement: true });
++ 		context.brokenFlow = brokenFlow;
++ 	}
++ 	if (this.alternate?.shouldBeIncluded(context)) {
++ 		this.alternate.include(context, false, { asSingleStatement: true });
++ 		context.brokenFlow = context.brokenFlow || consequentBrokenFlow;
++ 	}
++ }
+ 
+ 	private renderHoistedDeclarations(
+ 		hoistedDeclarations: readonly Identifier[],

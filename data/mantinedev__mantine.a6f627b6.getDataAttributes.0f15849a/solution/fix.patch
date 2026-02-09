@@ -1,0 +1,24 @@
+diff --git a/packages/@mantine/core/src/components/Table/Table.components.tsx b/packages/@mantine/core/src/components/Table/Table.components.tsx
+index 5fc2cf64d9..6318955ec9 100644
+--- a/packages/@mantine/core/src/components/Table/Table.components.tsx
++++ b/packages/@mantine/core/src/components/Table/Table.components.tsx
+@@ -98,7 +98,7 @@ function getDataAttributes(ctx: TableContextValue, options?: TableElementOptions
+   }
+ 
+   if (options.striped && ctx.striped) {
+-    data['data-striped'] = ctx.striped;
++    data['data-striped'] = true;
+   }
+ 
+   if (options.highlightOnHover && ctx.highlightOnHover) {
+@@ -113,6 +113,10 @@ function getDataAttributes(ctx: TableContextValue, options?: TableElementOptions
+     data['data-sticky'] = true;
+   }
+ 
++  if (Object.keys(data).length === 0) {
++    return undefined;
++  }
++
+   return data;
+ }
+ 

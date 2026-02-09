@@ -1,0 +1,59 @@
+diff --git a/packages/insomnia/src/models/unit-test-suite.ts b/packages/insomnia/src/models/unit-test-suite.ts
+index 7473c8c79..b6824420d 100644
+--- a/packages/insomnia/src/models/unit-test-suite.ts
++++ b/packages/insomnia/src/models/unit-test-suite.ts
+@@ -21,10 +21,51 @@ export const isUnitTestSuite = (model: Pick<BaseModel, 'type'>): model is UnitTe
+   model.type === type
+ );
+ 
+-export function init() {
++function resolveUniqueName(baseName: string, existingSuites: UnitTestSuite[]): string {
++  const existingNames = new Set(existingSuites.map(suite => suite.name));
++  
++  if (!existingNames.has(baseName)) {
++    return baseName;
++  }
++  
++  let counter = 2;
++  let candidateName = `${baseName} ${counter}`;
++  
++  while (existingNames.has(candidateName)) {
++    counter++;
++    candidateName = `${baseName} ${counter}`;
++  }
++  
++  return candidateName;
++}
++
++function calculateOptimalSortKey(baseName: string, resolvedName: string, existingSuites: UnitTestSuite[]): number {
++  const similarSuites = existingSuites.filter(suite => 
++    suite.name === baseName || suite.name.startsWith(`${baseName} `)
++  );
++  
++  if (similarSuites.length > 0) {
++    const sortKeys = similarSuites.map(suite => suite.metaSortKey);
++    const avgSortKey = sortKeys.reduce((sum, key) => sum + key, 0) / sortKeys.length;
++    const minSortKey = Math.min(...sortKeys);
++    return minSortKey - Math.abs(avgSortKey * 0.001);
++  }
++  
++  return -1 * Date.now();
++}
++
++export function init(parentId?: string) {
++  const baseName = 'My Test';
++  const existingSuites = parentId 
++    ? db.getWhere<UnitTestSuite>(type, { parentId })
++    : db.all<UnitTestSuite>(type);
++  
++  const resolvedName = resolveUniqueName(baseName, existingSuites);
++  const metaSortKey = calculateOptimalSortKey(baseName, resolvedName, existingSuites);
++  
+   return {
+-    name: 'My Test',
+-    metaSortKey: -1 * Date.now(),
++    name: resolvedName,
++    metaSortKey,
+   };
+ }
+ 

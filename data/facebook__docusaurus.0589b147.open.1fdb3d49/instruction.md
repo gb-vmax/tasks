@@ -2,26 +2,23 @@
 
 ### Describe the bug
 
-Image syntax is not being parsed correctly in markdown. When trying to use the standard markdown image syntax `![alt text](url)`, the parser seems to be rejecting valid image references or not recognizing them properly.
+Image links in markdown are not being parsed correctly. When I try to use the standard markdown syntax for images `![alt text](url)`, the parser fails to recognize them properly.
 
 ### Reproduction
 
-```js
-const markdown = '![test image](https://example.com/image.png)'
-
-// Parse the markdown
-const result = parse(markdown)
-
-// Expected: Image node to be created
-// Actual: Image syntax is not recognized or parsed incorrectly
+```markdown
+![Example Image](https://example.com/image.png)
 ```
+
+When parsing this markdown, the image syntax is not being recognized. It seems like the opening bracket `[` after the `!` is not being handled correctly.
 
 ### Expected behavior
 
-The parser should correctly recognize and tokenize the image syntax `![alt](url)` as a valid markdown image element. The opening `![` sequence should be properly identified and the subsequent content should be processed as an image reference.
+The markdown parser should correctly identify and parse image syntax `![...]` as image elements. The opening bracket following the exclamation mark should be recognized as part of the image label marker.
 
-### System Info
-- remark version: 15.0.1
+### Additional context
+
+This appears to be affecting all image references in markdown documents. Regular links with `[text](url)` work fine, but adding the `!` prefix for images causes the parser to fail.
 
 ---
 Repository: /testbed

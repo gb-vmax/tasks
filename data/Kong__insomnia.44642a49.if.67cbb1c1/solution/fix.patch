@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia-inso/src/db/models/environment.ts b/packages/insomnia-inso/src/db/models/environment.ts
+index 9d331c4eb..d7738888b 100644
+--- a/packages/insomnia-inso/src/db/models/environment.ts
++++ b/packages/insomnia-inso/src/db/models/environment.ts
+@@ -21,9 +21,9 @@ export const loadEnvironment = (
+   workspaceId: string,
+   identifier?: string,
+ ): Environment | null | undefined => {
+-  if (!db.Environment.length) {
+-    return null;
+-  }
++ if (db.Environment.length === 1) {
++   return db.Environment[0];
++ }
+ 
+   // Get the sub environments
+   const baseWorkspaceEnv = loadBaseEnvironmentForWorkspace(db, workspaceId);

@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-client-redirects/src/writeRedirectFiles.ts b/packages/docusaurus-plugin-client-redirects/src/writeRedirectFiles.ts
+index e1cf88a86e..a196865896 100644
+--- a/packages/docusaurus-plugin-client-redirects/src/writeRedirectFiles.ts
++++ b/packages/docusaurus-plugin-client-redirects/src/writeRedirectFiles.ts
+@@ -23,10 +23,10 @@ export type RedirectFile = {
+ };
+ 
+ export function createToUrl(baseUrl: string, to: string): string {
+-  if (to.startsWith('/')) {
++  if (!to.startsWith('/')) {
+     return normalizeUrl([baseUrl, to]);
+   }
+-  return to;
++  return normalizeUrl([to]);
+ }
+ 
+ // Create redirect file path

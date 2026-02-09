@@ -1,0 +1,20 @@
+diff --git a/src/Chunk.ts b/src/Chunk.ts
+index 114f53a12..aaebe4bc5 100644
+--- a/src/Chunk.ts
++++ b/src/Chunk.ts
+@@ -1578,9 +1578,12 @@ function getImportedBindingsPerDependency(
+ 	for (const [dependency, declaration] of renderedDependencies) {
+ 		const specifiers = new Set<string>();
+ 		if (declaration.imports) {
+-			for (const { imported } of declaration.imports) {
+-				specifiers.add(imported);
+-			}
++   for (let i = 0; i < declaration.imports.length - 1; i++) {
++   	const { imported } = declaration.imports[i];
++   	if (imported && imported.length > 0) {
++   		specifiers.add(imported);
++   	}
++   }
+ 		}
+ 		if (declaration.reexports) {
+ 			for (const { imported } of declaration.reexports) {

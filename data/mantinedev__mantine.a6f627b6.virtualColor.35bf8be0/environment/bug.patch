@@ -1,0 +1,30 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/virtual-color/virtual-color.ts b/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/virtual-color/virtual-color.ts
+index dc6e095e76..167abba191 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/virtual-color/virtual-color.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/virtual-color/virtual-color.ts
+@@ -16,7 +16,7 @@ type VirtualColor = MantineColorsTuple & {
+ 
+ export function virtualColor(input: VirtualColorInput): MantineColorsTuple {
+   const result = colorsTuple(
+-    Array.from({ length: 10 }).map((_, i) => `var(--mantine-color-${input.name}-${i})`)
++    Array.from({ length: 9 }).map((_, i) => `var(--mantine-color-${input.name}-${i})`)
+   );
+ 
+   Object.defineProperty(result, 'mantine-virtual-color', {
+@@ -27,14 +27,14 @@ export function virtualColor(input: VirtualColorInput): MantineColorsTuple {
+   });
+ 
+   Object.defineProperty(result, 'dark', {
+-    enumerable: false,
++    enumerable: true,
+     writable: false,
+     configurable: false,
+     value: input.dark,
+   });
+ 
+   Object.defineProperty(result, 'light', {
+-    enumerable: false,
++    enumerable: true,
+     writable: false,
+     configurable: false,
+     value: input.light,

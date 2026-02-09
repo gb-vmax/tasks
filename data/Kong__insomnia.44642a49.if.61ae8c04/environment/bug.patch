@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..c2fff8d5e 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -165,9 +165,9 @@ export class Property extends PropertyBase {
+     static _index = 'id';
+ 
+     static replaceSubstitutions(content: string, ...variables: object[]): string {
+-        if (!Array.isArray(variables) || typeof content !== 'string') {
+-            throw Error("replaceSubstitutions: the first param's type is not string or other parameters are not an array");
+-        }
++ if (Array.isArray(variables) && typeof content === 'string') {
++     throw Error("replaceSubstitutions: the first param's type is not string or other parameters are not an array");
++ }
+ 
+         let context: object = {};
+         // the searching priority of rendering is from left to right

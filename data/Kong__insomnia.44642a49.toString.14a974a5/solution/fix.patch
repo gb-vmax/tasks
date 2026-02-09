@@ -1,0 +1,104 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..cfab63e7b 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -398,22 +398,86 @@ export class Url extends PropertyBase {
+         }
+     }
+ 
+-    override toString(forceProtocol?: boolean) {
+-        const protocolStr = forceProtocol ?
+-            (this.protocol ? `${this.protocol}//` : 'http://') :
+-            (this.protocol ? `${this.protocol}//` : '');
+-
+-        const authStr = this.auth ? `${this.auth.username}:${this.auth.password}@` : '';
+-        const hostStr = this.getHost();
+-        const portStr = this.port ? `:${this.port}` : '';
+-        const pathStr = this.getPath();
+-        const queryStr = this.getQueryString() ? `?${this.getQueryString()}` : '';
+-        const hashStr = this.hash ? `#${this.hash}` : '';
++function encodeUrlComponent(component: string, context: 'path' | 'query' | 'fragment' | 'userinfo', shouldEncode: boolean): string {
++    if (!shouldEncode) {
++        return component;
++    }
++
++    switch (context) {
++        case 'path':
++            return encodeURIComponent(component)
++                .replace(/%2F/g, '/')
++                .replace(/%40/g, '@')
++                .replace(/%3A/g, ':')
++                .replace(/%24/g, '$')
++                .replace(/%2C/g, ',')
++                .replace(/%3B/g, ';')
++                .replace(/%2B/g, '+')
++                .replace(/%3D/g, '=');
++        case 'query':
++            return encodeURIComponent(component)
++                .replace(/%20/g, '+');
++        case 'fragment':
++            return encodeURIComponent(component);
++        case 'userinfo':
++            return encodeURIComponent(component)
++                .replace(/%3A/g, ':');
++        default:
++            return encodeURIComponent(component);
++    }
++}
+ 
+-        return `${protocolStr}${authStr}${hostStr}${portStr}${pathStr}${queryStr}${hashStr}`;
+-        // return parser.toString();
++function encodeQueryString(queryList: PropertyList<QueryParam>, shouldEncode: boolean): string {
++    if (!shouldEncode) {
++        return queryList.map(pair => {
++            return pair.value ? `${pair.key}=${pair.value}` : pair.key;
++        }, {}).join('&');
+     }
+ 
++    return queryList.map(pair => {
++        const encodedKey = encodeUrlComponent(pair.key, 'query', true);
++        const encodedValue = pair.value ? encodeUrlComponent(pair.value, 'query', true) : '';
++        return encodedValue ? `${encodedKey}=${encodedValue}` : encodedKey;
++    }, {}).join('&');
++}
++
++ override toString(forceProtocol?: boolean | { forceProtocol?: boolean; encode?: boolean; exclude?: Array<'auth' | 'query' | 'hash' | 'port'> }) {
++     let shouldForceProtocol = false;
++     let shouldEncode = false;
++     let excludeComponents: Set<string> = new Set();
++
++     if (typeof forceProtocol === 'boolean') {
++         shouldForceProtocol = forceProtocol;
++     } else if (typeof forceProtocol === 'object' && forceProtocol !== null) {
++         shouldForceProtocol = forceProtocol.forceProtocol || false;
++         shouldEncode = forceProtocol.encode || false;
++         excludeComponents = new Set(forceProtocol.exclude || []);
++     }
++
++     const protocolStr = shouldForceProtocol ?
++         (this.protocol ? `${this.protocol}//` : 'http://') :
++         (this.protocol ? `${this.protocol}//` : '');
++
++     const authStr = (this.auth && !excludeComponents.has('auth')) ? 
++         `${encodeUrlComponent(this.auth.username, 'userinfo', shouldEncode)}:${encodeUrlComponent(this.auth.password, 'userinfo', shouldEncode)}@` : '';
++    
++     const hostStr = this.getHost();
++    
++     const portStr = (this.port && !excludeComponents.has('port')) ? `:${this.port}` : '';
++    
++     const pathStr = shouldEncode ? 
++         this.path?.map(segment => encodeUrlComponent(segment, 'path', true)).join('/') || '/' :
++         this.getPath();
++    
++     const queryStr = !excludeComponents.has('query') && this.getQueryString() ? 
++         (shouldEncode ? `?${encodeQueryString(this.query, true)}` : `?${this.getQueryString()}`) : '';
++    
++     const hashStr = (this.hash && !excludeComponents.has('hash')) ? 
++         `#${encodeUrlComponent(this.hash, 'fragment', shouldEncode)}` : '';
++
++     return `${protocolStr}${authStr}${hostStr}${portStr}${pathStr}${queryStr}${hashStr}`;
++ }
++
+     update(url: UrlOptions | string) {
+         this.setFields(url);
+     }

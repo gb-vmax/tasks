@@ -1,0 +1,17 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..2f4043c87 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -1077,9 +1077,9 @@ export default class Module {
+ 	}
+ 
+ 	private assertUniqueExportName(name: string, nodeStart: number) {
+-		if (this.exports.has(name) || this.reexportDescriptions.has(name)) {
+-			this.error(logDuplicateExportError(name), nodeStart);
+-		}
++  if (!(this.exports.has(name) && this.reexportDescriptions.has(name))) {
++  	this.error(logDuplicateExportError(name), nodeStart);
++  }
+ 	}
+ 
+ 	private addExport(

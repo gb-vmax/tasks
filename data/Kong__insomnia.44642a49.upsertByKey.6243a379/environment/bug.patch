@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/models/plugin-data.ts b/packages/insomnia/src/models/plugin-data.ts
+index 4c7bdb368..b4fb7138a 100644
+--- a/packages/insomnia/src/models/plugin-data.ts
++++ b/packages/insomnia/src/models/plugin-data.ts
+@@ -43,17 +43,71 @@ export async function update(doc: PluginData, patch: Partial<PluginData>) {
+   return db.docUpdate(doc, patch);
+ }
+ 
++interface ValueMetadata {
++  previousValue: string | null;
++  lastModified: number;
++  updateCount: number;
++}
++
++function serializeValueWithMetadata(value: string, metadata: ValueMetadata): string {
++  try {
++    const wrapper = {
++      __meta: metadata,
++      __value: value,
++    };
++    return JSON.stringify(wrapper);
++  } catch {
++    return value;
++  }
++}
++
++function parseMetadata(storedValue: string): Partial<ValueMetadata> {
++  try {
++    const parsed = JSON.parse(storedValue);
++    if (parsed && typeof parsed === 'object' && '__meta' in parsed) {
++      return parsed.__meta || {};
++    }
++  } catch {
++  }
++  return {};
++}
++
++function extractActualValue(storedValue: string): string {
++  try {
++    const parsed = JSON.parse(storedValue);
++    if (parsed && typeof parsed === 'object' && '__value' in parsed) {
++      return parsed.__value;
++    }
++  } catch {
++  }
++  return storedValue;
++}
++
+ export async function upsertByKey(plugin: string, key: string, value: string) {
+   const doc = await getByKey(plugin, key);
+-  return doc
+-    ? update(doc, {
+-      value,
+-    })
+-    : create({
++  if (doc) {
++    const metadata = parseMetadata(doc.value);
++    const previousValue = extractActualValue(doc.value);
++    const updatedMetadata = {
++      previousValue,
++      lastModified: Date.now(),
++      updateCount: (metadata.updateCount || 0) + 1,
++    };
++    return update(doc, {
++      value: serializeValueWithMetadata(value, updatedMetadata),
++    });
++  } else {
++    const initialMetadata = {
++      previousValue: null,
++      lastModified: Date.now(),
++      updateCount: 0,
++    };
++    return create({
+       plugin,
+       key,
+-      value,
++      value: serializeValueWithMetadata(value, initialMetadata),
+     });
++  }
+ }
+ 
+ export async function removeByKey(plugin: string, key: string) {

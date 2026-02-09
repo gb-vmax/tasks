@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..4560832db 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -264,11 +264,71 @@ export class GitVCS {
+     });
+   }
+ 
+-  async add(relPath: string) {
+-    relPath = convertToPosixSep(relPath);
+-    console.log(`[git] Add ${relPath}`);
+-    return git.add({ ...this._baseOpts, filepath: relPath });
+-  }
++ async add(relPath: string | string[]) {
++   const paths = Array.isArray(relPath) ? relPath : [relPath];
++   const expandedPaths: string[] = [];
++
++   for (const p of paths) {
++     const posixPath = convertToPosixSep(p);
++     if (posixPath.includes('*') || posixPath.includes('?')) {
++       const allFiles = await this.listFiles();
++       const pattern = new RegExp('^' + posixPath.replace(/\*/g, '.*').replace(/\?/g, '.') + '$');
++       const matches = allFiles.filter(f => pattern.test(convertToPosixSep(f)));
++       expandedPaths.push(...matches.map(convertToPosixSep));
++     } else {
++       expandedPaths.push(posixPath);
++     }
++   }
++
++   const filesToAdd: string[] = [];
++   const renamedFiles: Array<{from: string; to: string}> = [];
++
++   for (const filepath of expandedPaths) {
++     try {
++       const fileStatus = await this.status(filepath);
++      
++       if (fileStatus === 'unmodified' || fileStatus === '*added' || fileStatus === '*modified') {
++         continue;
++       }
++
++       if (fileStatus === '*deleted') {
++         const allFiles = await this.listFiles();
++         const baseName = path.basename(filepath);
++         const dirName = path.dirname(filepath);
++        
++         for (const f of allFiles) {
++           const fPosix = convertToPosixSep(f);
++           if (fPosix !== filepath && path.basename(fPosix) === baseName) {
++             const fStatus = await this.status(fPosix);
++             if (fStatus === 'added' || fStatus === '*added') {
++               renamedFiles.push({ from: filepath, to: fPosix });
++               continue;
++             }
++           }
++         }
++       }
++
++       filesToAdd.push(filepath);
++     } catch (err) {
++       filesToAdd.push(filepath);
++     }
++   }
++
++   const allFilesToStage = [...new Set([...filesToAdd, ...renamedFiles.flatMap(r => [r.from, r.to])])];
++
++   if (allFilesToStage.length === 0) {
++     console.log(`[git] No files to add`);
++     return;
++   }
++
++   console.log(`[git] Add ${allFilesToStage.length} file(s): ${allFilesToStage.join(', ')}`);
++
++   for (const filepath of allFilesToStage) {
++     await git.add({ ...this._baseOpts, filepath });
++   }
++
++   return;
++ }
+ 
+   async remove(relPath: string) {
+     relPath = convertToPosixSep(relPath);

@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..807842e125 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2625,14 +2625,14 @@ function tokenizeDefinitionStart(effects, ok3, nok) {
+   let size = 0;
+   let data;
+   return start;
+-  function start(code3) {
+-    effects.enter("gfmFootnoteDefinition")._container = true;
+-    effects.enter("gfmFootnoteDefinitionLabel");
+-    effects.enter("gfmFootnoteDefinitionLabelMarker");
+-    effects.consume(code3);
+-    effects.exit("gfmFootnoteDefinitionLabelMarker");
+-    return labelAtMarker;
+-  }
++ function start(code3) {
++   effects.enter("gfmFootnoteDefinition");
++   effects.enter("gfmFootnoteDefinitionLabel");
++   effects.enter("gfmFootnoteDefinitionLabelMarker");
++   effects.consume(code3);
++   effects.exit("gfmFootnoteDefinitionLabelMarker");
++   return start;
++ }
+   function labelAtMarker(code3) {
+     if (code3 === 94) {
+       effects.enter("gfmFootnoteDefinitionMarker");

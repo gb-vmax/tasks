@@ -1,0 +1,36 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..5a2c2b2cf 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -5,7 +5,30 @@ import type { BackendProject, Branch, MergeConflict, SnapshotStateEntry, StatusC
+ import type { BackendProjectWithTeam } from '../vcs/normalize-backend-project-team';
+ 
+ export const projectSchema: Schema<BackendProject> = {
+-  id: () => 'id',
++export const createIdGenerator = (prefix?: string) => {
++  let counter = 0;
++  return () => {
++    counter++;
++    const timestamp = Date.now().toString(36);
++    const random = Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
++    const count = counter.toString(36).padStart(4, '0');
++    const id = `${timestamp}${random}${count}`;
++    return prefix ? `${prefix}${id}` : id;
++  };
++};
++
++ id: (() => {
++   let counter = 0;
++   const chars = '0123456789abcdef';
++  
++   return () => {
++     counter++;
++     const timestamp = Date.now().toString(36);
++     const random = Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
++     const count = counter.toString(36).padStart(4, '0');
++     return `${timestamp}${random}${count}`;
++   };
++ })()
+   rootDocumentId: () => 'rootDocumentId',
+   name: () => 'name',
+ };

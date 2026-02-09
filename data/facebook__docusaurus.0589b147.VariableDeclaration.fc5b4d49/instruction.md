@@ -2,35 +2,27 @@
 
 ### Describe the bug
 
-I'm experiencing an issue where variable declarations are being duplicated in the generated output. When MDX processes code with variable declarations, each declaration appears twice in the resulting JavaScript.
+I'm seeing duplicate variable declarations being generated in the output when using MDX. It looks like variable declarations are being written twice, which causes invalid JavaScript to be produced.
 
 ### Reproduction
 
-```jsx
-// Input MDX file
-export const myVar = 'hello';
+When processing MDX content that contains variable declarations, the generated JavaScript output includes the same variable declaration twice in a row.
 
-function MyComponent() {
-  const localVar = 'world';
-  return <div>{myVar} {localVar}</div>;
-}
-```
-
-Expected output:
+For example, if the MDX contains:
 ```js
-export const myVar = 'hello';
+const myVar = 'test';
 ```
 
-Actual output:
+The generated output becomes something like:
 ```js
-export const myVar = 'hello';export const myVar = 'hello';
+const myVar = 'test';const myVar = 'test';
 ```
 
-The same happens with local variable declarations - they get written out twice in the compiled code.
+This results in a "SyntaxError: Identifier 'myVar' has already been declared" when trying to execute the generated code.
 
 ### Expected behavior
 
-Variable declarations should only appear once in the generated JavaScript output. Each `const`, `let`, or `var` declaration should be formatted and written exactly once.
+Variable declarations should only appear once in the generated output. Each variable should be declared exactly one time.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0

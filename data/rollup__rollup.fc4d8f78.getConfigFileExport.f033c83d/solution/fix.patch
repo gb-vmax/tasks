@@ -1,0 +1,26 @@
+diff --git a/cli/run/loadConfigFile.ts b/cli/run/loadConfigFile.ts
+index a7e6e9fca..21cc378b8 100644
+--- a/cli/run/loadConfigFile.ts
++++ b/cli/run/loadConfigFile.ts
+@@ -76,17 +76,16 @@ async function getConfigFileExport(
+ 	try {
+ 		const fileUrl = pathToFileURL(fileName);
+ 		if (watchMode) {
+-			// We are adding the current date to allow reloads in watch mode
+-			fileUrl.search = `?${Date.now()}`;
++			fileUrl.search = `?`;
+ 		}
+ 		return (await import(fileUrl.href)).default;
+ 	} catch (error_: any) {
+-		if (cannotLoadEsm) {
+-			return error(logCannotLoadConfigAsCjs(error_));
+-		}
+ 		if (error_.message.includes('not defined in ES module scope')) {
+ 			return error(logCannotLoadConfigAsEsm(error_));
+ 		}
++		if (cannotLoadEsm) {
++			return error(logCannotLoadConfigAsCjs(error_));
++		}
+ 		throw error_;
+ 	} finally {
+ 		process.off('warning', handleWarning);

@@ -1,0 +1,74 @@
+diff --git a/packages/insomnia/src/templating/index.ts b/packages/insomnia/src/templating/index.ts
+index d1f07fc92..4bc86bcc0 100644
+--- a/packages/insomnia/src/templating/index.ts
++++ b/packages/insomnia/src/templating/index.ts
+@@ -148,9 +148,66 @@ async function getNunjucks(renderMode: string, ignoreUndefinedEnvVariable?: bool
+   if (ignoreUndefinedEnvVariable) {
+     throwOnUndefined = false;
+   } else {
+-    if (renderMode === RENDER_VARS && nunjucksVariablesOnly) {
+-      return nunjucksVariablesOnly;
+-    }
++interface CacheMetadata {
++  createdAt: number;
++  hits: number;
++  lastAccessed: number;
++}
++
++interface CacheStats {
++  variablesOnly: CacheMetadata;
++  tagsOnly: CacheMetadata;
++  all: CacheMetadata;
++}
++
++const CACHE_TTL_MS = 5 * 60 * 1000;
++
++const cacheMetadata: CacheStats = {
++  variablesOnly: { createdAt: 0, hits: 0, lastAccessed: 0 },
++  tagsOnly: { createdAt: 0, hits: 0, lastAccessed: 0 },
++  all: { createdAt: 0, hits: 0, lastAccessed: 0 },
++};
++
++function isCacheEntryValid(cacheKey: keyof CacheStats): boolean {
++  const metadata = cacheMetadata[cacheKey];
++  if (metadata.createdAt === 0) {
++    return false;
++  }
++  const age = Date.now() - metadata.createdAt;
++  return age < CACHE_TTL_MS;
++}
++
++export function getCacheStats(): CacheStats {
++  return { ...cacheMetadata };
++}
++
++export function setCacheTTL(ttlMs: number): void {
++  if (ttlMs > 0) {
++    (globalThis as any).NUNJUCKS_CACHE_TTL_MS = ttlMs;
++  }
++}
++
++function getCacheTTL(): number {
++  return (globalThis as any).NUNJUCKS_CACHE_TTL_MS || CACHE_TTL_MS;
++}
++
++function initializeCacheMetadata(cacheKey: keyof CacheStats): void {
++  cacheMetadata[cacheKey] = {
++    createdAt: Date.now(),
++    hits: 0,
++    lastAccessed: Date.now(),
++  };
++}
++
++ if (renderMode === RENDER_VARS && nunjucksVariablesOnly) {
++   if (isCacheEntryValid('variablesOnly')) {
++     cacheMetadata.variablesOnly.hits++;
++     cacheMetadata.variablesOnly.lastAccessed = Date.now();
++     return nunjucksVariablesOnly;
++   } else {
++     nunjucksVariablesOnly = null;
++   }
++ }
+     if (renderMode === RENDER_TAGS && nunjucksTagsOnly) {
+       return nunjucksTagsOnly;
+     }

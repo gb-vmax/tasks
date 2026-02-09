@@ -1,0 +1,16 @@
+diff --git a/cli/run/loadConfigFile.ts b/cli/run/loadConfigFile.ts
+index a7e6e9fca..51696f5d6 100644
+--- a/cli/run/loadConfigFile.ts
++++ b/cli/run/loadConfigFile.ts
+@@ -76,9 +76,10 @@ async function getConfigFileExport(
+ 	try {
+ 		const fileUrl = pathToFileURL(fileName);
+ 		if (watchMode) {
+-			// We are adding the current date to allow reloads in watch mode
+ 			fileUrl.search = `?${Date.now()}`;
+ 		}
++		process.off('warning', handleWarning);
++		cannotLoadEsm = false;
+ 		return (await import(fileUrl.href)).default;
+ 	} catch (error_: any) {
+ 		if (cannotLoadEsm) {

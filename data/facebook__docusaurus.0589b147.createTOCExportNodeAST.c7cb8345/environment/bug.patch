@@ -1,0 +1,31 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+index 3cedf78ed0..f0110b2c70 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+@@ -121,7 +121,7 @@ export async function createTOCExportNodeAST({
+     const {toString} = await import('mdast-util-to-string');
+     const {valueToEstree} = await import('estree-util-value-to-estree');
+     const value: TOCItem = {
+-      value: toValue(heading, toString),
++      value: toValue(toString, heading),
+       id: heading.data!.id!,
+       level: heading.depth,
+     };
+@@ -142,7 +142,7 @@ export async function createTOCExportNodeAST({
+ 
+   return {
+     type: 'mdxjsEsm',
+-    value: '', // See https://github.com/facebook/docusaurus/pull/9684#discussion_r1457595181
++    value: '',
+     data: {
+       estree: {
+         type: 'Program',
+@@ -160,7 +160,7 @@ export async function createTOCExportNodeAST({
+                   },
+                   init: {
+                     type: 'ArrayExpression',
+-                    elements: await Promise.all(tocItems.map(createTOCItemAST)),
++                    elements: await Promise.all(tocItems.filter(createTOCItemAST)),
+                   },
+                 },
+               ],

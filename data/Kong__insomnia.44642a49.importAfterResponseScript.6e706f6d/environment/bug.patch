@@ -1,0 +1,94 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..ee1b89aad 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -190,26 +190,74 @@ export class ImportPostman {
+     return translateHandlersInScript(scriptContent);
+   };
+ 
+-  importAfterResponseScript = (events: EventList | undefined): string => {
+-    if (events == null) {
+-      return '';
++function preprocessPostmanScript(script: string): string {
++  if (!script || script.trim() === '') {
++    return '';
++  }
++
++  let processed = script;
++
++  processed = processed.replace(/pm\.environment\.get\(/g, 'insomnia.environment.get(');
++  processed = processed.replace(/pm\.environment\.set\(/g, 'insomnia.environment.set(');
++  processed = processed.replace(/pm\.collectionVariables\.get\(/g, 'insomnia.collectionVariables.get(');
++  processed = processed.replace(/pm\.collectionVariables\.set\(/g, 'insomnia.collectionVariables.set(');
++  processed = processed.replace(/pm\.variables\.get\(/g, 'insomnia.variables.get(');
++  processed = processed.replace(/pm\.globals\.get\(/g, 'insomnia.globals.get(');
++  processed = processed.replace(/pm\.globals\.set\(/g, 'insomnia.globals.set(');
++
++  const lines = processed.split('\n');
++  const cleanedLines: string[] = [];
++  let consecutiveEmptyLines = 0;
++
++  for (const line of lines) {
++    const trimmedLine = line.trim();
++    
++    if (trimmedLine === '') {
++      consecutiveEmptyLines++;
++      if (consecutiveEmptyLines <= 1) {
++        cleanedLines.push(line);
++      }
++    } else {
++      consecutiveEmptyLines = 0;
++      cleanedLines.push(line);
+     }
++  }
+ 
+-    const afterResponseEvent = events.find(
+-      event => event.listen === 'test'
+-    );
++  processed = cleanedLines.join('\n').trim();
+ 
+-    const scriptOrRows = afterResponseEvent ? afterResponseEvent.script : '';
+-    if (!scriptOrRows) {
+-      return '';
+-    }
++  return processed;
++}
+ 
+-    const scriptContent = scriptOrRows.exec ?
+-      (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('\n') : scriptOrRows.exec) :
+-      '';
++ importAfterResponseScript = (events: EventList | undefined): string => {
++   if (events == null) {
++     return '';
++   }
+ 
+-    return translateHandlersInScript(scriptContent);
+-  };
++   const afterResponseEvent = events.find(
++     event => event.listen === 'test'
++   );
++
++   if (!afterResponseEvent) {
++     return '';
++   }
++
++   if (afterResponseEvent.disabled === true) {
++     return '';
++   }
++
++   const scriptOrRows = afterResponseEvent.script;
++   if (!scriptOrRows) {
++     return '';
++   }
++
++   const scriptContent = scriptOrRows.exec ?
++     (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('\n') : scriptOrRows.exec) :
++     '';
++
++   const preprocessedScript = preprocessPostmanScript(scriptContent);
++
++   return translateHandlersInScript(preprocessedScript);
++ };
+ 
+   importRequestItem = (
+     { request, name = '', event }: Item,

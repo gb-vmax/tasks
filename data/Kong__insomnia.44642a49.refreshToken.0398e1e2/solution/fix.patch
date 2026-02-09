@@ -1,0 +1,107 @@
+diff --git a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+index 37e4df89e..3849378ed 100644
+--- a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
++++ b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+@@ -123,22 +123,90 @@ export async function exchangeCodeForGitLabToken(input: {
+   });
+ }
+ 
+-export async function refreshToken() {
+-  const refreshToken = localStorage.getItem(GITLAB_REFRESH_TOKEN_STORAGE_KEY);
++const MAX_REFRESH_RETRIES = 3;
++const BASE_BACKOFF_MS = 1000;
++
++let pendingRefresh: Promise<string> | null = null;
+ 
+-  if (!refreshToken) {
+-    throw new Error('No refresh token');
++function isRetriableError(error: any): boolean {
++  if (!error) {
++    return false;
+   }
+-  const { clientId } = await getGitLabConfig();
+-  const url = new URL(`${getGitLabOauthApiURL()}/oauth/token`);
+ 
+-  url.search = new URLSearchParams({
+-    grant_type: 'refresh_token',
+-    refresh_token: refreshToken,
+-    client_id: clientId,
+-  }).toString();
++  const retriableStatusCodes = [408, 429, 500, 502, 503, 504];
++  
++  if (error.status && retriableStatusCodes.includes(error.status)) {
++    return true;
++  }
+ 
+-  return insomniaFetch<{ access_token: string; refresh_token: string }>({
++  if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.code === 'ENOTFOUND') {
++    return true;
++  }
++
++  if (error.message && (error.message.includes('network') || error.message.includes('timeout'))) {
++    return true;
++  }
++
++  return false;
++}
++
++function calculateBackoffDelay(attempt: number): number {
++  const jitter = Math.random() * 200;
++  return Math.min(BASE_BACKOFF_MS * Math.pow(2, attempt) + jitter, 10000);
++}
++
++function sleep(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms));
++}
++
++export async function refreshToken() {
++  if (pendingRefresh) {
++    return pendingRefresh;
++  }
++
++  const executeRefresh = async (attempt: number = 0): Promise<string> => {
++    const refreshToken = localStorage.getItem(GITLAB_REFRESH_TOKEN_STORAGE_KEY);
++
++    if (!refreshToken) {
++      throw new Error('No refresh token');
++    }
++    const { clientId } = await getGitLabConfig();
++    const url = new URL(`${getGitLabOauthApiURL()}/oauth/token`);
++
++    url.search = new URLSearchParams({
++      grant_type: 'refresh_token',
++      refresh_token: refreshToken,
++      client_id: clientId,
++    }).toString();
++
++    try {
++      return await insomniaFetch<{ access_token: string; refresh_token: string }>({
++        path: url.pathname + url.search,
++        method: 'POST',
++        origin: getGitLabOauthApiURL(),
++        sessionId: '',
++      }).then(data => {
++        setAccessToken(data.access_token, data.refresh_token);
++
++        return data.access_token;
++      });
++    } catch (error) {
++      if (attempt < MAX_REFRESH_RETRIES && isRetriableError(error)) {
++        const delay = calculateBackoffDelay(attempt);
++        await sleep(delay);
++        return executeRefresh(attempt + 1);
++      }
++      throw error;
++    }
++  };
++
++  pendingRefresh = executeRefresh()
++    .finally(() => {
++      pendingRefresh = null;
++    });
++
++  return pendingRefresh;
++}
+     path: url.pathname + url.search,
+     method: 'POST',
+     origin: getGitLabOauthApiURL(),

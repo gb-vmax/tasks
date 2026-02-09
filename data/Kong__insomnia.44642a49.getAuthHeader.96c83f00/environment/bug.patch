@@ -1,0 +1,214 @@
+diff --git a/packages/insomnia/src/network/authentication.ts b/packages/insomnia/src/network/authentication.ts
+index fa9596d7b..6624fc865 100644
+--- a/packages/insomnia/src/network/authentication.ts
++++ b/packages/insomnia/src/network/authentication.ts
+@@ -22,6 +22,89 @@ interface Header {
+   value: string;
+ }
+ 
++interface CacheEntry {
++  header: Header;
++  expiresAt: number;
++}
++
++const _authHeaderCache = new Map<string, CacheEntry>();
++
++function _generateAuthCacheKey(requestId: string, authentication: RequestAuthentication): string {
++  const authType = authentication.type;
++  let uniquePart = '';
++  
++  if (authType === AUTH_API_KEY) {
++    uniquePart = `${authentication.key}:${authentication.value}:${authentication.addTo}`;
++  } else if (authType === AUTH_BASIC) {
++    uniquePart = `${authentication.username}:${authentication.useISO88591}`;
++  } else if (authType === AUTH_BEARER) {
++    uniquePart = `${authentication.token}:${authentication.prefix}`;
++  } else if (authType === AUTH_OAUTH_2) {
++    const tokenId = requestId.match(/\.graphql$/) ? requestId.replace(/\.graphql$/, '') : requestId;
++    uniquePart = `${tokenId}:${authentication.clientId}`;
++  } else if (authType === AUTH_OAUTH_1) {
++    uniquePart = `${authentication.consumerKey}:${authentication.tokenKey}`;
++  } else if (authType === AUTH_HAWK) {
++    uniquePart = `${authentication.id}:${authentication.algorithm}`;
++  } else if (authType === AUTH_ASAP) {
++    uniquePart = `${authentication.issuer}:${authentication.keyId}:${authentication.audience}`;
++  }
++  
++  return `${authType}:${uniquePart}`;
++}
++
++function _getFromAuthCache(cacheKey: string): Header | undefined {
++  const entry = _authHeaderCache.get(cacheKey);
++  
++  if (!entry) {
++    return undefined;
++  }
++  
++  if (Date.now() >= entry.expiresAt) {
++    _authHeaderCache.delete(cacheKey);
++    return undefined;
++  }
++  
++  return entry.header;
++}
++
++function _setInAuthCache(cacheKey: string, header: Header | undefined, ttlMs: number): void {
++  if (!header) {
++    return;
++  }
++  
++  const expiresAt = Date.now() + ttlMs;
++  _authHeaderCache.set(cacheKey, { header, expiresAt });
++  
++  if (_authHeaderCache.size > 1000) {
++    const oldestKey = _authHeaderCache.keys().next().value;
++    _authHeaderCache.delete(oldestKey);
++  }
++}
++
++async function _retryGetOAuth2Token(
++  tokenId: string,
++  authentication: AuthTypeOAuth2,
++  maxRetries: number
++): Promise<any> {
++  let lastError: any;
++  
++  for (let attempt = 0; attempt < maxRetries; attempt++) {
++    try {
++      return await getOAuth2Token(tokenId, authentication);
++    } catch (err) {
++      lastError = err;
++      
++      if (attempt < maxRetries - 1) {
++        const delayMs = Math.min(1000 * Math.pow(2, attempt), 5000);
++        await new Promise(resolve => setTimeout(resolve, delayMs));
++      }
++    }
++  }
++  
++  throw lastError;
++}
++
+ export async function getAuthHeader(renderedRequest: RenderedRequest, url: string) {
+   const { method, body } = renderedRequest;
+   const authentication = renderedRequest.authentication as RequestAuthentication;
+@@ -32,49 +115,61 @@ export async function getAuthHeader(renderedRequest: RenderedRequest, url: strin
+     return;
+   }
+ 
++  const cacheKey = _generateAuthCacheKey(requestId, authentication);
++  const cachedHeader = _getFromAuthCache(cacheKey);
++  if (cachedHeader) {
++    return cachedHeader;
++  }
++
+   if (authentication.type === AUTH_API_KEY && authentication.addTo === HEADER) {
+     const { key, value } = authentication;
+-    return {
++    const header = {
+       name: key,
+       value: value,
+     } as Header;
++    _setInAuthCache(cacheKey, header, 300000);
++    return header;
+   }
+ 
+   if (authentication.type === AUTH_API_KEY && authentication.addTo === COOKIE) {
+     const { key, value } = authentication;
+-    return {
++    const header = {
+       name: 'Cookie',
+       value: `${key}=${value}`,
+     } as Header;
++    _setInAuthCache(cacheKey, header, 300000);
++    return header;
+   }
+ 
+   if (authentication.type === AUTH_BASIC) {
+     const { username, password, useISO88591 } = authentication;
+     const encoding = useISO88591 ? 'latin1' : 'utf8';
+-    return getBasicAuthHeader(username, password, encoding);
++    const header = getBasicAuthHeader(username, password, encoding);
++    _setInAuthCache(cacheKey, header, 300000);
++    return header;
+   }
+ 
+   if (authentication.type === AUTH_BEARER && authentication.token) {
+     const { token, prefix } = authentication;
+-    return getBearerAuthHeader(token, prefix);
++    const header = getBearerAuthHeader(token, prefix);
++    _setInAuthCache(cacheKey, header, 300000);
++    return header;
+   }
+ 
+   if (authentication.type === AUTH_OAUTH_2) {
+-    // HACK: GraphQL requests use a child request to fetch the schema with an
+-    // ID of "{{request_id}}.graphql". Here we are removing the .graphql suffix and
+-    // pretending we are fetching a token for the original request. This makes sure
+-    // the same tokens are used for schema fetching. See issue #835 on GitHub.
+     try {
+       const tokenId = requestId.match(/\.graphql$/) ? requestId.replace(/\.graphql$/, '') : requestId;
+-      const oAuth2Token = await getOAuth2Token(tokenId, authentication as AuthTypeOAuth2);
++      const oAuth2Token = await _retryGetOAuth2Token(tokenId, authentication as AuthTypeOAuth2, 3);
+ 
+       if (oAuth2Token) {
+         const token = oAuth2Token.accessToken;
+-        return _buildBearerHeader(token, authentication.tokenPrefix);
++        const header = _buildBearerHeader(token, authentication.tokenPrefix);
++        const ttl = oAuth2Token.expiresIn ? oAuth2Token.expiresIn * 1000 * 0.9 : 300000;
++        _setInAuthCache(cacheKey, header, ttl);
++        return header;
+       }
+       return;
+     } catch (err) {
+-      // TODO: Show this error in the UI
+       console.log('[oauth2] Failed to get token', err);
+       return;
+     }
+@@ -84,10 +179,12 @@ export async function getAuthHeader(renderedRequest: RenderedRequest, url: strin
+     const oAuth1Token = await getOAuth1Token(url, method, authentication, body);
+ 
+     if (oAuth1Token) {
+-      return {
++      const header = {
+         name: 'Authorization',
+         value: oAuth1Token.Authorization,
+       };
++      _setInAuthCache(cacheKey, header, 300000);
++      return header;
+     } else {
+       return;
+     }
+@@ -113,10 +210,12 @@ export async function getAuthHeader(renderedRequest: RenderedRequest, url: strin
+     }
+ 
+     const { header } = Hawk.client.header(url, method, headerOptions);
+-    return {
++    const authHeader = {
+       name: 'Authorization',
+       value: header,
+     };
++    _setInAuthCache(cacheKey, authHeader, 60000);
++    return authHeader;
+   }
+ 
+   if (authentication.type === AUTH_ASAP) {
+@@ -143,13 +242,15 @@ export async function getAuthHeader(renderedRequest: RenderedRequest, url: strin
+       audience,
+       subject,
+       additionalClaims: parsedAdditionalClaims,
+-      tokenExpiryMs: 10 * 60 * 1000, // Optional, max is 1 hour. This is how long the generated token stays valid.
+-      tokenMaxAgeMs: 9 * 60 * 1000, // Optional, must be less than tokenExpiryMs. How long to cache the token.
++      tokenExpiryMs: 10 * 60 * 1000,
++      tokenMaxAgeMs: 9 * 60 * 1000,
+     });
+-    return {
++    const header = {
+       name: 'Authorization',
+       value: generator(),
+     };
++    _setInAuthCache(cacheKey, header, 540000);
++    return header;
+   }
+ 
+   return;

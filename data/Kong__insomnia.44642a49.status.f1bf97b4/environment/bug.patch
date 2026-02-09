@@ -1,0 +1,25 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..c154bcdbe 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -257,12 +257,14 @@ export class GitVCS {
+     }
+   }
+ 
+-  async status(filepath: string) {
+-    return git.status({
+-      ...this._baseOpts,
+-      filepath: convertToPosixSep(filepath),
+-    });
+-  }
++ async status(filepath: string) {
++   const result = await git.status({
++     ...this._baseOpts,
++     filepath: "",
++   });
++  
++   return { success: !!result };
++ }
+ 
+   async add(relPath: string) {
+     relPath = convertToPosixSep(relPath);

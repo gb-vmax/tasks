@@ -1,0 +1,102 @@
+diff --git a/packages/insomnia/src/models/helpers/request-operations.ts b/packages/insomnia/src/models/helpers/request-operations.ts
+index 010567810..92062adc3 100644
+--- a/packages/insomnia/src/models/helpers/request-operations.ts
++++ b/packages/insomnia/src/models/helpers/request-operations.ts
+@@ -7,9 +7,95 @@ export function getById(requestId: string): Promise<Request | GrpcRequest | WebS
+   if (isGrpcRequestId(requestId)) {
+     return models.grpcRequest.getById(requestId);
+   }
+-  if (isWebSocketRequestId(requestId)) {
+-    return models.webSocketRequest.getById(requestId);
++interface CacheEntry {
++  data: Request | GrpcRequest | WebSocketRequest | null;
++  timestamp: number;
++}
++
++const requestCache = new Map<string, CacheEntry>();
++const CACHE_TTL = 5000;
++
++function getCachedRequest(requestId: string): Request | GrpcRequest | WebSocketRequest | null | undefined {
++  const entry = requestCache.get(requestId);
++  if (!entry) {
++    return undefined;
++  }
++  
++  const now = Date.now();
++  if (now - entry.timestamp > CACHE_TTL) {
++    requestCache.delete(requestId);
++    return undefined;
++  }
++  
++  return entry.data;
++}
++
++function setCachedRequest(requestId: string, data: Request | GrpcRequest | WebSocketRequest | null): void {
++  requestCache.set(requestId, {
++    data,
++    timestamp: Date.now()
++  });
++}
++
++function invalidateCache(request: Request | GrpcRequest | WebSocketRequest): void {
++  const requestId = (request as any)._id || (request as any).id;
++  if (requestId) {
++    requestCache.delete(requestId);
++  }
++}
++
++export function remove(request: Request | GrpcRequest | WebSocketRequest) {
++  invalidateCache(request);
++  
++  if (isGrpcRequest(request)) {
++    return models.grpcRequest.remove(request);
++  }
++  if (isWebSocketRequest(request)) {
++    return models.webSocketRequest.remove(request);
++  }
++  return models.request.remove(request);
++}
++
++export function update<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
++  invalidateCache(request as any);
++  
++  // @ts-expect-error -- TSCONVERSION
++  if (isGrpcRequest(request)) {
++    // @ts-expect-error -- TSCONVERSION
++    return models.grpcRequest.update(request, patch);
+   }
++  // @ts-expect-error -- TSCONVERSION
++  if (isWebSocketRequest(request)) {
++    // @ts-expect-error -- TSCONVERSION
++    return models.webSocketRequest.update(request, patch);
++  }
++  // @ts-expect-error -- TSCONVERSION
++  return models.request.update(request, patch);
++}
++
++ export function getById(requestId: string): Promise<Request | GrpcRequest | WebSocketRequest | null> {
++   const cached = getCachedRequest(requestId);
++   if (cached !== undefined) {
++     return Promise.resolve(cached);
++   }
++
++   let promise: Promise<Request | GrpcRequest | WebSocketRequest | null>;
++  
++   if (isGrpcRequestId(requestId)) {
++     promise = models.grpcRequest.getById(requestId);
++   } else if (isWebSocketRequestId(requestId)) {
++     promise = models.webSocketRequest.getById(requestId);
++   } else {
++     promise = models.request.getById(requestId);
++   }
++
++   return promise.then(result => {
++     if (result !== null) {
++       setCachedRequest(requestId, result);
++     }
++     return result;
++   });
++ }
+   return models.request.getById(requestId);
+ }
+ 

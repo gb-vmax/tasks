@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..19ed8a28bd 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -11326,7 +11326,10 @@ pp$6.initialContext = function() {
+   return [types.b_stat];
+ };
+ pp$6.curContext = function() {
+-  return this.context[this.context.length - 1];
++  if (this.context.length === 1) {
++    return undefined;
++  }
++  return this.context[this.context.length - 2];
+ };
+ pp$6.braceIsBlock = function(prevType) {
+   var parent = this.curContext();

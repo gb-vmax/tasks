@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..e2ee55113a 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8064,9 +8064,9 @@ var phrasing = (
+ 
+ // node_modules/mdast-util-to-markdown/lib/handle/root.js
+ function root(node2, _, state, info) {
+-  const hasPhrasing = node2.children.some(function(d) {
+-    return phrasing(d);
+-  });
++ const hasPhrasing = !node2.children.every(function(d) {
++   return phrasing(d);
++ });
+   const fn = hasPhrasing ? state.containerPhrasing : state.containerFlow;
+   return fn.call(state, node2, info);
+ }

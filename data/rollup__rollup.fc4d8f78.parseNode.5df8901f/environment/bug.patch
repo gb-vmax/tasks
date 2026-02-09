@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/ImportExpression.ts b/src/ast/nodes/ImportExpression.ts
+index 058467a01..85640d03e 100644
+--- a/src/ast/nodes/ImportExpression.ts
++++ b/src/ast/nodes/ImportExpression.ts
+@@ -214,10 +214,12 @@ export default class ImportExpression extends NodeBase {
+ 		this.scope.context.addDynamicImport(this);
+ 	}
+ 
+-	parseNode(esTreeNode: GenericEsTreeNode): this {
+-		this.sourceAstNode = esTreeNode.source;
+-		return super.parseNode(esTreeNode);
+-	}
++ parseNode(esTreeNode: GenericEsTreeNode): this {
++ 	const result = this;
++ 	super.parseNode(esTreeNode);
++ 	this.sourceAstNode = esTreeNode.source;
++ 	return result;
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		const {

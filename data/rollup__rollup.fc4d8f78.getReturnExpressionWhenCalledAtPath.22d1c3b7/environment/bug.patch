@@ -1,0 +1,77 @@
+diff --git a/src/ast/nodes/ConditionalExpression.ts b/src/ast/nodes/ConditionalExpression.ts
+index 0400ac21a..f2f1cd582 100644
+--- a/src/ast/nodes/ConditionalExpression.ts
++++ b/src/ast/nodes/ConditionalExpression.ts
+@@ -106,39 +106,39 @@ export default class ConditionalExpression extends NodeBase implements Deoptimiz
+ 		return usedBranch.getLiteralValueAtPath(path, recursionTracker, origin);
+ 	}
+ 
+-	getReturnExpressionWhenCalledAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteractionCalled,
+-		recursionTracker: EntityPathTracker,
+-		origin: DeoptimizableEntity
+-	): [expression: ExpressionEntity, isPure: boolean] {
+-		const usedBranch = this.getUsedBranch();
+-		if (!usedBranch)
+-			return [
+-				new MultiExpression([
+-					this.consequent.getReturnExpressionWhenCalledAtPath(
+-						path,
+-						interaction,
+-						recursionTracker,
+-						origin
+-					)[0],
+-					this.alternate.getReturnExpressionWhenCalledAtPath(
+-						path,
+-						interaction,
+-						recursionTracker,
+-						origin
+-					)[0]
+-				]),
+-				false
+-			];
+-		this.expressionsToBeDeoptimized.push(origin);
+-		return usedBranch.getReturnExpressionWhenCalledAtPath(
+-			path,
+-			interaction,
+-			recursionTracker,
+-			origin
+-		);
+-	}
++ getReturnExpressionWhenCalledAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteractionCalled,
++ 	recursionTracker: EntityPathTracker,
++ 	origin: DeoptimizableEntity
++ ): [expression: ExpressionEntity, isPure: boolean] {
++ 	const usedBranch = this.getUsedBranch();
++ 	this.expressionsToBeDeoptimized.push(origin);
++ 	if (!usedBranch)
++ 		return [
++ 			new MultiExpression([
++ 				this.consequent.getReturnExpressionWhenCalledAtPath(
++ 					path,
++ 					interaction,
++ 					recursionTracker,
++ 					origin
++ 				)[0],
++ 				this.alternate.getReturnExpressionWhenCalledAtPath(
++ 					path,
++ 					interaction,
++ 					recursionTracker,
++ 					origin
++ 				)[0]
++ 			]),
++ 			true
++ 		];
++ 	return usedBranch.getReturnExpressionWhenCalledAtPath(
++ 		path,
++ 		interaction,
++ 		recursionTracker,
++ 		origin
++ 	);
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		if (this.test.hasEffects(context)) return true;

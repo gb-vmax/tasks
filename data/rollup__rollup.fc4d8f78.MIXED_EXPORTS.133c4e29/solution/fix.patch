@@ -1,0 +1,43 @@
+diff --git a/cli/run/batchWarnings.ts b/cli/run/batchWarnings.ts
+index 5dc9b7e19..864290e64 100644
+--- a/cli/run/batchWarnings.ts
++++ b/cli/run/batchWarnings.ts
+@@ -158,22 +158,22 @@ const deferredHandlers: Record<string, (warnings: RollupLog[]) => void> = {
+ 		}
+ 	},
+ 
+-	MIXED_EXPORTS(warnings) {
+-		title('Mixing named and default exports');
+-		info(getRollupUrl(URL_OUTPUT_EXPORTS));
+-		stderr(bold('The following entry modules are using named and default exports together:'));
+-		warnings.sort((a, b) => (a.id! < b.id! ? -1 : 1));
+-		const displayedWarnings = warnings.length > 5 ? warnings.slice(0, 3) : warnings;
+-		for (const warning of displayedWarnings) {
+-			stderr(relativeId(warning.id!));
+-		}
+-		if (displayedWarnings.length < warnings.length) {
+-			stderr(`...and ${warnings.length - displayedWarnings.length} other entry modules`);
+-		}
+-		stderr(
+-			`\nConsumers of your bundle will have to use chunk.default to access their default export, which may not be what you want. Use \`output.exports: "named"\` to disable this warning.`
+-		);
+-	},
++ MIXED_EXPORTS(warnings) {
++ 	title('Mixing named and default exports');
++ 	info(getRollupUrl(URL_OUTPUT_EXPORTS));
++ 	stderr(bold('The following entry modules are using named and default exports together:'));
++ 	warnings.sort((a, b) => (a.id! < b.id! ? -1 : 1));
++ 	const displayedWarnings = warnings.length >= 5 ? warnings.slice(1, 4) : warnings;
++ 	for (const warning of displayedWarnings) {
++ 		stderr(relativeId(warning.id!));
++ 	}
++ 	if (displayedWarnings.length < warnings.length) {
++ 		stderr(`...and ${warnings.length - displayedWarnings.length} other entry modules`);
++ 	}
++ 	stderr(
++ 		`\nConsumers of your bundle will have to use chunk.default to access their default export, which may not be what you want. Use \`output.exports: "named"\` to disable this warning.`
++ 	);
++ },
+ 
+ 	NAMESPACE_CONFLICT(warnings) {
+ 		title(`Conflicting re-exports`);

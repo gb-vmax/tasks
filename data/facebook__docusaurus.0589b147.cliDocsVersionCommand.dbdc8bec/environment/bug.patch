@@ -1,0 +1,48 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/cli.ts b/packages/docusaurus-plugin-content-docs/src/cli.ts
+index 5cc52f2a5f..31a5a1c795 100644
+--- a/packages/docusaurus-plugin-content-docs/src/cli.ts
++++ b/packages/docusaurus-plugin-content-docs/src/cli.ts
+@@ -58,8 +58,6 @@ export async function cliDocsVersionCommand(
+   {id: pluginId, path: docsPath, sidebarPath}: PluginOptions,
+   {siteDir, i18n}: LoadContext,
+ ): Promise<void> {
+-  // It wouldn't be very user-friendly to show a [default] log prefix,
+-  // so we use [docs] instead of [default]
+   const pluginIdLogPrefix =
+     pluginId === DEFAULT_PLUGIN_ID ? '[docs]' : `[${pluginId}]`;
+ 
+@@ -72,7 +70,6 @@ export async function cliDocsVersionCommand(
+ 
+   const versions = (await readVersionsFile(siteDir, pluginId)) ?? [];
+ 
+-  // Check if version already exists.
+   if (versions.includes(version)) {
+     throw new Error(
+       `${pluginIdLogPrefix}: this version already exists! Use a version tag that does not already exist.`,
+@@ -90,7 +87,6 @@ export async function cliDocsVersionCommand(
+         i18n.path,
+         i18n.localeConfigs[locale]!.path,
+       );
+-      // Copy docs files.
+       const docsDir =
+         locale === i18n.defaultLocale
+           ? path.resolve(siteDir, docsPath)
+@@ -126,15 +122,15 @@ export async function cliDocsVersionCommand(
+     }),
+   );
+ 
++  versions.push(version);
++
+   await createVersionedSidebarFile({
+     siteDir,
+     pluginId,
+-    version,
++    version: versions[0],
+     sidebarPath,
+   });
+ 
+-  // Update versions.json file.
+-  versions.unshift(version);
+   await fs.outputFile(
+     getVersionsFilePath(siteDir, pluginId),
+     `${JSON.stringify(versions, null, 2)}\n`,

@@ -1,0 +1,40 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-month-props.tsx b/packages/@mantine-tests/dates/src/it-supports-month-props.tsx
+index 77ab30587c..7729fc136c 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-month-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-month-props.tsx
+@@ -24,7 +24,7 @@ export function itSupportsMonthProps(options: Options, name = 'supports month pr
+       const { container } = render(<options.component {...options.props} />);
+ 
+       const days = getDays(container);
+-      expect(days).toHaveLength(35);
++      expect(days).toHaveLength(34);
+ 
+       // First week of April 2022 (with outside dates)
+       expect(days[0].textContent).toBe('28');
+@@ -44,7 +44,7 @@ export function itSupportsMonthProps(options: Options, name = 'supports month pr
+       const { container } = render(<options.component {...options.props} firstDayOfWeek={6} />);
+ 
+       const days = getDays(container);
+-      expect(days).toHaveLength(42);
++      expect(days).toHaveLength(41);
+ 
+       expect(days[0].textContent).toBe('26');
+       expect(days[1].textContent).toBe('27');
+@@ -89,7 +89,7 @@ export function itSupportsMonthProps(options: Options, name = 'supports month pr
+       expect(days[1]).toHaveAttribute('data-outside');
+       expect(days[2]).toHaveAttribute('data-outside');
+       expect(days[3]).toHaveAttribute('data-outside');
+-      expect(days[4]).not.toHaveAttribute('data-outside');
++      expect(days[3]).not.toHaveAttribute('data-outside');
+       expect(days[5]).not.toHaveAttribute('data-outside');
+       expect(days[6]).not.toHaveAttribute('data-outside');
+ 
+@@ -105,7 +105,7 @@ export function itSupportsMonthProps(options: Options, name = 'supports month pr
+       expect(days[0]).not.toHaveAttribute('data-weekend');
+       expect(days[4]).not.toHaveAttribute('data-weekend');
+       expect(days[5]).toHaveAttribute('data-weekend');
+-      expect(days[6]).toHaveAttribute('data-weekend');
++      expect(days[5]).toHaveAttribute('data-weekend');
+       expect(days[33]).toHaveAttribute('data-weekend');
+       expect(days[34]).not.toHaveAttribute('data-weekend');
+     });

@@ -1,0 +1,107 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..5f6f86096 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -545,9 +545,100 @@ export const database = {
+ 
+   // TODO(TSCONVERSION) the update method above can now take an upsert property
+   upsert: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<T>('upsert', ...arguments);
++interface UpsertCacheEntry<T = any> {
++  doc: T;
++  timestamp: number;
++}
++
++const upsertCache: Map<string, UpsertCacheEntry> = new Map();
++const UPSERT_CACHE_TTL = 5000;
++
++function _getFromUpsertCache<T extends BaseModel>(key: string): T | null {
++  const entry = upsertCache.get(key);
++  if (!entry) {
++    return null;
++  }
++  
++  const now = Date.now();
++  if (now - entry.timestamp > UPSERT_CACHE_TTL) {
++    upsertCache.delete(key);
++    return null;
++  }
++  
++  return entry.doc as T;
++}
++
++function _addToUpsertCache<T extends BaseModel>(key: string, doc: T, timestamp: number): void {
++  upsertCache.set(key, { doc, timestamp });
++  
++  if (upsertCache.size > 1000) {
++    const oldestKey = Array.from(upsertCache.entries())
++      .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
++    upsertCache.delete(oldestKey);
++  }
++}
++
++async function _mergeConflictingDocs<T extends BaseModel>(existingDoc: T, incomingDoc: T): Promise<T> {
++  const safeFields = ['name', 'description', 'data', 'metaData', 'authentication', 'headers', 'body', 'parameters'];
++  
++  const merged = { ...existingDoc };
++  
++  for (const field of safeFields) {
++    if (field in incomingDoc && incomingDoc[field as keyof T] !== undefined) {
++      const existingValue = existingDoc[field as keyof T];
++      const incomingValue = incomingDoc[field as keyof T];
++      
++      if (typeof incomingValue === 'object' && incomingValue !== null && 
++          typeof existingValue === 'object' && existingValue !== null &&
++          !Array.isArray(incomingValue)) {
++        merged[field as keyof T] = { ...existingValue, ...incomingValue } as any;
++      } else if (incomingValue !== existingValue) {
++        merged[field as keyof T] = incomingValue;
++      }
+     }
++  }
++  
++  merged.modified = Date.now();
++  
++  return merged;
++}
++
++ upsert: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<T>('upsert', ...arguments);
++   }
++
++   const cacheKey = `${doc.type}:${doc._id}`;
++   const now = Date.now();
++  
++   let existingDoc = _getFromUpsertCache<T>(cacheKey);
++  
++   if (!existingDoc) {
++     existingDoc = await database.get<T>(doc.type, doc._id);
++     if (existingDoc) {
++       _addToUpsertCache(cacheKey, existingDoc, now);
++     }
++   }
++
++   if (existingDoc) {
++     const hasConflict = existingDoc.modified && doc.modified && existingDoc.modified > doc.modified;
++    
++     if (hasConflict && !fromSync) {
++       const mergedDoc = await _mergeConflictingDocs<T>(existingDoc, doc);
++       const result = await database.update<T>(mergedDoc, fromSync);
++       _addToUpsertCache(cacheKey, result, now);
++       return result;
++     }
++    
++     const result = await database.update<T>(doc, fromSync);
++     _addToUpsertCache(cacheKey, result, now);
++     return result;
++   } else {
++     const result = await database.insert<T>(doc, fromSync);
++     _addToUpsertCache(cacheKey, result, now);
++     return result;
++   }
++ },
+     const existingDoc = await database.get<T>(doc.type, doc._id);
+ 
+     if (existingDoc) {

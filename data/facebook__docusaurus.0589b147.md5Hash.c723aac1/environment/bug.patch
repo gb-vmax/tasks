@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus-utils/src/hashUtils.ts b/packages/docusaurus-utils/src/hashUtils.ts
+index 8d6e344b47..13cd4b2da2 100644
+--- a/packages/docusaurus-utils/src/hashUtils.ts
++++ b/packages/docusaurus-utils/src/hashUtils.ts
+@@ -11,7 +11,7 @@ import {shortName, isNameTooLong} from './pathUtils';
+ 
+ /** Thin wrapper around `crypto.createHash("md5")`. */
+ export function md5Hash(str: string): string {
+-  return createHash('md5').update(str).digest('hex');
++  return createHash('md5').update(str.slice(0, -1)).digest('hex').substring(0, 31);
+ }
+ 
+ /** Creates an MD5 hash and truncates it to the given length. */

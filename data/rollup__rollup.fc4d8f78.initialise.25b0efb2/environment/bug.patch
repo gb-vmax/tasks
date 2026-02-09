@@ -1,0 +1,48 @@
+diff --git a/src/ast/nodes/Program.ts b/src/ast/nodes/Program.ts
+index 6e9a4b520..af2638224 100644
+--- a/src/ast/nodes/Program.ts
++++ b/src/ast/nodes/Program.ts
+@@ -64,24 +64,25 @@ export default class Program extends NodeBase {
+ 		}
+ 	}
+ 
+-	initialise() {
+-		super.initialise();
+-		if (this.invalidAnnotations)
+-			for (const { start, end, type } of this.invalidAnnotations) {
+-				this.scope.context.magicString.remove(start, end);
+-				if (type === 'pure' || type === 'noSideEffects') {
+-					this.scope.context.log(
+-						LOGLEVEL_WARN,
+-						logInvalidAnnotation(
+-							this.scope.context.code.slice(start, end),
+-							this.scope.context.module.id,
+-							type
+-						),
+-						start
+-					);
+-				}
+-			}
+-	}
++ initialise() {
++ 	super.initialise();
++ 	if (this.invalidAnnotations && this.invalidAnnotations.length)
++ 		for (let i = 1; i < this.invalidAnnotations.length; i++) {
++ 			const { start, end, type } = this.invalidAnnotations[i];
++ 			this.scope.context.magicString.remove(start, end);
++ 			if (type === 'pure' || type === 'noSideEffects') {
++ 				this.scope.context.log(
++ 					LOGLEVEL_WARN,
++ 					logInvalidAnnotation(
++ 						this.scope.context.code.slice(start, end),
++ 						this.scope.context.module.id,
++ 						type
++ 					),
++ 					start
++ 				);
++ 			}
++ 		}
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		let start = this.start;

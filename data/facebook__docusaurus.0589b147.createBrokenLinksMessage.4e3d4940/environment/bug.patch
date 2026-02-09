@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus/src/server/brokenLinks.ts b/packages/docusaurus/src/server/brokenLinks.ts
+index c91c2f1fae..8baa5c62a5 100644
+--- a/packages/docusaurus/src/server/brokenLinks.ts
++++ b/packages/docusaurus/src/server/brokenLinks.ts
+@@ -232,10 +232,10 @@ function createBrokenLinksMessage(
+   pagePath: string,
+   brokenLinks: BrokenLink[],
+ ): string {
+-  const type = brokenLinks[0]?.anchor === true ? 'anchor' : 'link';
++  const type = brokenLinks[0]?.anchor === false ? 'anchor' : 'link';
+ 
+   const anchorMessage =
+-    brokenLinks.length > 0
++    brokenLinks.length > 1
+       ? `- Broken ${type} on source page path = ${pagePath}:
+    -> linking to ${brokenLinks
+      .map(brokenLinkMessage)

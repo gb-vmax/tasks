@@ -1,0 +1,65 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..496ad9300 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -349,9 +349,57 @@ export function fromPreRequestAuth(auth: RequestAuth): RequestAuthentication {
+         }
+ 
+         for (const kv of kvs) {
+-            if (typeof kv.value === 'string' && kv.key === targetKey) {
+-                return kv.value;
+-            } else if (Array.isArray(kv.value)) {
++function normalizeKeyForComparison(key: string): string {
++    return key.toLowerCase().trim();
++}
++
++ const findValueInOauth2Options = (
++     targetKey: string,
++     kvs?: { key: string; value: string }[] | OAuth2AuthOption[]
++ ) => {
++     if (!kvs) {
++         return '';
++     }
++
++     const normalizedTargetKey = normalizeKeyForComparison(targetKey);
++     let caseInsensitiveMatch: string | undefined;
++
++     for (const kv of kvs) {
++         if (typeof kv.value === 'string' && kv.key === targetKey) {
++             return kv.value;
++         } else if (typeof kv.value === 'string' && normalizeKeyForComparison(kv.key) === normalizedTargetKey && !caseInsensitiveMatch) {
++             caseInsensitiveMatch = kv.value;
++         } else if (Array.isArray(kv.value)) {
++             const matched = kv.value.find(subKv => subKv.key === targetKey);
++             if (matched != null) {
++                 return matched.value;
++             }
++            
++             const caseInsensitiveArrayMatch = kv.value.find(subKv => 
++                 normalizeKeyForComparison(subKv.key) === normalizedTargetKey
++             );
++             if (caseInsensitiveArrayMatch != null && !caseInsensitiveMatch) {
++                 caseInsensitiveMatch = caseInsensitiveArrayMatch.value;
++             }
++         } else if (typeof kv.value === 'object' && kv.value !== null && !Array.isArray(kv.value)) {
++             const objValue = kv.value as Record<string, any>;
++             if (targetKey in objValue && typeof objValue[targetKey] === 'string') {
++                 return objValue[targetKey];
++             }
++            
++             if (!caseInsensitiveMatch) {
++                 const caseInsensitiveKey = Object.keys(objValue).find(
++                     key => normalizeKeyForComparison(key) === normalizedTargetKey
++                 );
++                 if (caseInsensitiveKey && typeof objValue[caseInsensitiveKey] === 'string') {
++                     caseInsensitiveMatch = objValue[caseInsensitiveKey];
++                 }
++             }
++         }
++     }
++
++     return caseInsensitiveMatch || '';
++ };
+                 const matched = kv.value.find(subKv => subKv.key === targetKey);
+                 if (matched != null) {
+                     return matched.value;

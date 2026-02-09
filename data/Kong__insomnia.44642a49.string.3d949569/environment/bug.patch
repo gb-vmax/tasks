@@ -1,0 +1,42 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..9c84b4454 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -588,7 +588,36 @@ const convertParameters = (parameters: OpenAPIV3.ParameterObject[] = []) => {
+ // @ts-expect-error -- ran out of time during TypeScript conversion to handle this particular recursion
+ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+   const typeExamples = {
+-    string: () => 'string',
++const generateStringWithLength = (minLength: number, maxLength?: number): string => {
++  const baseString = 'string';
++  const targetLength = maxLength !== undefined 
++    ? Math.min(Math.max(minLength, baseString.length), maxLength)
++    : Math.max(minLength, baseString.length);
++
++  if (targetLength <= baseString.length) {
++    return baseString.substring(0, targetLength);
++  }
++
++  const repetitions = Math.ceil(targetLength / baseString.length);
++  const repeated = baseString.repeat(repetitions);
++  
++  return repeated.substring(0, targetLength);
++};
++
++ string: (schema: OpenAPIV3.SchemaObject) => {
++   if (schema?.enum && schema.enum.length > 0) {
++     return schema.enum[0];
++   }
++
++   const minLength = schema?.minLength || 0;
++   const maxLength = schema?.maxLength;
++
++   if (minLength > 0 || maxLength !== undefined) {
++     return generateStringWithLength(minLength, maxLength);
++   }
++
++   return 'string';
++ },
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',

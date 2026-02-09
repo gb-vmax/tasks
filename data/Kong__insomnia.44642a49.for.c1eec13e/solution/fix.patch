@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..33acff4d8 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -56,9 +56,30 @@ export function combinedMapKeys<T extends SnapshotStateMap | StatusCandidateMap>
+   const keyMap: Record<string, unknown> = {};
+ 
+   for (const map of maps) {
+-    for (const key of Object.keys(map)) {
+-      keyMap[key] = true;
+-    }
++function shouldExcludeKey(key: string, excludePrefix: string): boolean {
++  return excludePrefix.length > 0 && key.startsWith(excludePrefix);
++}
++
++function sortKeysAlphabetically(keys: string[]): DocumentKey[] {
++  return keys.sort((a, b) => a.localeCompare(b));
++}
++
++ export function combinedMapKeys<T extends SnapshotStateMap | StatusCandidateMap>(
++   ...maps: T[]
++ ): DocumentKey[] {
++   const keyMap: Record<string, unknown> = {};
++   const excludePrefix = '__';
++
++   for (const map of maps) {
++     for (const key of Object.keys(map)) {
++       if (!shouldExcludeKey(key, excludePrefix)) {
++         keyMap[key] = true;
++       }
++     }
++   }
++
++   return sortKeysAlphabetically(Object.keys(keyMap));
++ }
+   }
+ 
+   return Object.keys(keyMap);

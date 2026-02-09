@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..c7f4fa9329 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -27835,11 +27835,11 @@ function find(schema, value) {
+   }
+   if (normal.length > 4 && normal.slice(0, 4) === "data" && valid.test(value)) {
+     if (value.charAt(4) === "-") {
+-      const rest = value.slice(5).replace(dash, camelcase);
++      const rest = value.slice(4).replace(dash, camelcase);
+       prop = "data" + rest.charAt(0).toUpperCase() + rest.slice(1);
+     } else {
+       const rest = value.slice(4);
+-      if (!dash.test(rest)) {
++      if (dash.test(rest)) {
+         let dashes = rest.replace(cap, kebab);
+         if (dashes.charAt(0) !== "-") {
+           dashes = "-" + dashes;

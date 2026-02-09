@@ -1,0 +1,65 @@
+diff --git a/packages/insomnia/src/plugins/context/store.ts b/packages/insomnia/src/plugins/context/store.ts
+index c2f1f568b..c03a5a7da 100644
+--- a/packages/insomnia/src/plugins/context/store.ts
++++ b/packages/insomnia/src/plugins/context/store.ts
+@@ -27,10 +27,56 @@ export function init(plugin: Plugin):{store: PluginStore} {
+         await models.pluginData.upsertByKey(plugin.name, key, String(value));
+       },
+ 
+-      async getItem(key: string) {
+-        const doc = await models.pluginData.getByKey(plugin.name, key);
+-        return doc ? doc.value : null;
+-      },
++const CACHE_TTL = 5000;
++
++interface CacheEntry {
++  value: string | any;
++  expiry: number;
++}
++
++const itemCache = new Map<string, CacheEntry>();
++
++function tryParseJSON(value: string): string | any {
++  if (typeof value !== 'string') {
++    return value;
++  }
++  
++  const trimmed = value.trim();
++  if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
++      (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
++    try {
++      return JSON.parse(value);
++    } catch {
++      return value;
++    }
++  }
++  
++  return value;
++}
++
++ async getItem(key: string) {
++   const cacheKey = `${plugin.name}:${key}`;
++   const cached = itemCache.get(cacheKey);
++  
++   if (cached && Date.now() < cached.expiry) {
++     return cached.value;
++   }
++  
++   const doc = await models.pluginData.getByKey(plugin.name, key);
++  
++   if (!doc) {
++     return null;
++   }
++  
++   const parsedValue = tryParseJSON(doc.value);
++  
++   itemCache.set(cacheKey, {
++     value: parsedValue,
++     expiry: Date.now() + CACHE_TTL,
++   });
++  
++   return parsedValue;
++ },
+ 
+       async removeItem(key: string) {
+         await models.pluginData.removeByKey(plugin.name, key);

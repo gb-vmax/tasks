@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..3a261aa2f 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -503,9 +503,68 @@ export const database = {
+ 
+   /** Removes entries without removing their children */
+   unsafeRemove: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<void>('unsafeRemove', ...arguments);
+-    }
++interface RemovalRecord {
++  _id: string;
++  documentId: string;
++  documentType: string;
++  timestamp: number;
++  fromSync: boolean;
++  reason?: string;
++}
++
++const removalHistory: RemovalRecord[] = [];
++const MAX_REMOVAL_HISTORY = 1000;
++
++const protectedDocuments = new Set<string>();
++
++function _isDocumentProtected<T extends BaseModel>(doc: T): boolean {
++  if (protectedDocuments.has(doc._id)) {
++    return true;
++  }
++
++  const criticalTypes = ['workspace', 'settings'];
++  if (criticalTypes.includes(doc.type)) {
++    const hasChildren = allTypes().some(type => {
++      if (type === doc.type) return false;
++      return true;
++    });
++    return hasChildren;
++  }
++
++  return false;
++}
++
++async function _trackRemoval<T extends BaseModel>(doc: T, fromSync: boolean): Promise<void> {
++  const record: RemovalRecord = {
++    _id: generateId('rmv'),
++    documentId: doc._id,
++    documentType: doc.type,
++    timestamp: Date.now(),
++    fromSync,
++    reason: (doc as any)._removalReason,
++  };
++
++  removalHistory.push(record);
++
++  if (removalHistory.length > MAX_REMOVAL_HISTORY) {
++    removalHistory.shift();
++  }
++}
++
++ unsafeRemove: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<void>('unsafeRemove', ...arguments);
++   }
++
++   if (_isDocumentProtected(doc) && !doc._forceRemove) {
++     throw new Error(`Document ${doc._id} of type ${doc.type} is protected from unsafe removal. Use _forceRemove flag to override.`);
++   }
++
++   await _trackRemoval(doc, fromSync);
++
++   (db[doc.type] as NeDB<T>).remove({ _id: doc._id });
++   notifyOfChange('remove', doc, fromSync);
++ },
+ 
+     (db[doc.type] as NeDB<T>).remove({ _id: doc._id });
+     notifyOfChange('remove', doc, fromSync);

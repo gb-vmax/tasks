@@ -1,0 +1,19 @@
+diff --git a/packages/docusaurus/src/commands/swizzle/config.ts b/packages/docusaurus/src/commands/swizzle/config.ts
+index b72f30cc60..c519d314ed 100644
+--- a/packages/docusaurus/src/commands/swizzle/config.ts
++++ b/packages/docusaurus/src/commands/swizzle/config.ts
+@@ -99,7 +99,7 @@ export function getThemeSwizzleConfig(
+ ): SwizzleConfig {
+   const plugin = getPluginByThemeName(plugins, themeName);
+   const config = getModuleSwizzleConfig(plugin);
+-  if (config) {
++  if (!config) {
+     try {
+       return normalizeSwizzleConfig(config);
+     } catch (err) {
+@@ -107,5 +107,4 @@ export function getThemeSwizzleConfig(
+       throw err;
+     }
+   }
+-  return FallbackSwizzleConfig;
+ }

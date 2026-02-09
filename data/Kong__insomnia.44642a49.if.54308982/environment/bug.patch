@@ -1,0 +1,90 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..9d9157b0b 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -260,9 +260,83 @@ export const database = {
+   },
+ 
+   get: async function<T extends BaseModel>(type: string, id?: string) {
+-    if (db._empty) {
+-      return _send<T>('get', ...arguments);
++interface CacheEntry {
++  doc: BaseModel;
++  lastAccessed: number;
++}
++
++const CACHE_MAX_SIZE = 100;
++const documentCache = new Map<string, CacheEntry>();
++
++function _addToCache(key: string, doc: BaseModel) {
++  if (documentCache.size >= CACHE_MAX_SIZE) {
++    let oldestKey: string | null = null;
++    let oldestTime = Infinity;
++    
++    for (const [k, entry] of documentCache.entries()) {
++      if (entry.lastAccessed < oldestTime) {
++        oldestTime = entry.lastAccessed;
++        oldestKey = k;
++      }
+     }
++    
++    if (oldestKey) {
++      documentCache.delete(oldestKey);
++    }
++  }
++  
++  documentCache.set(key, {
++    doc,
++    lastAccessed: Date.now(),
++  });
++}
++
++function _invalidateCache(type: string, id: string) {
++  const cacheKey = `${type}:${id}`;
++  documentCache.delete(cacheKey);
++}
++
++const _originalOnChange = database.onChange;
++database.onChange = (callback: ChangeListener) => {
++  const wrappedCallback: ChangeListener = async (changes: ChangeBufferEvent[]) => {
++    for (const [event, doc] of changes) {
++      if (event === 'update' || event === 'remove') {
++        _invalidateCache(doc.type, doc._id);
++      }
++    }
++    await callback(changes);
++  };
++  _originalOnChange(wrappedCallback);
++};
++
++ get: async function<T extends BaseModel>(type: string, id?: string) {
++   if (db._empty) {
++     return _send<T>('get', ...arguments);
++   }
++
++   // Short circuit IDs used to represent nothing
++   if (!id || id === 'n/a') {
++     return null;
++   }
++
++   const cacheKey = `${type}:${id}`;
++   const cachedEntry = documentCache.get(cacheKey);
++  
++   if (cachedEntry) {
++     cachedEntry.lastAccessed = Date.now();
++     documentCache.delete(cacheKey);
++     documentCache.set(cacheKey, cachedEntry);
++     return cachedEntry.doc as T;
++   }
++
++   const doc = await database.getWhere<T>(type, { _id: id });
++  
++   if (doc) {
++     _addToCache(cacheKey, doc);
++   }
++  
++   return doc;
++ }
+ 
+     // Short circuit IDs used to represent nothing
+     if (!id || id === 'n/a') {

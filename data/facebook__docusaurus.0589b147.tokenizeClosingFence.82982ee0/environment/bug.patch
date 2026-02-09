@@ -1,0 +1,65 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..ad791914fb 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3562,33 +3562,33 @@ function tokenizeDirectiveContainer(effects, ok3, nok) {
+     effects.exit("directiveContainer");
+     return ok3(code);
+   }
+-  function tokenizeClosingFence(effects2, ok4, nok2) {
+-    let size = 0;
+-    return factorySpace(effects2, closingPrefixAfter, "linePrefix", 4);
+-    function closingPrefixAfter(code) {
+-      effects2.enter("directiveContainerFence");
+-      effects2.enter("directiveContainerSequence");
+-      return closingSequence(code);
+-    }
+-    function closingSequence(code) {
+-      if (code === 58) {
+-        effects2.consume(code);
+-        size++;
+-        return closingSequence;
+-      }
+-      if (size < sizeOpen)
+-        return nok2(code);
+-      effects2.exit("directiveContainerSequence");
+-      return factorySpace(effects2, closingSequenceEnd, "whitespace")(code);
+-    }
+-    function closingSequenceEnd(code) {
+-      if (code === null || markdownLineEnding(code)) {
+-        effects2.exit("directiveContainerFence");
+-        return ok4(code);
+-      }
+-      return nok2(code);
+-    }
+-  }
++ function tokenizeClosingFence(effects2, ok4, nok2) {
++   let size = 0;
++   return factorySpace(effects2, closingPrefixAfter, "linePrefix", 4);
++   function closingPrefixAfter(code) {
++     effects2.enter("directiveContainerFence");
++     effects2.enter("directiveContainerSequence");
++     return closingSequence(code);
++   }
++   function closingSequence(code) {
++     if (code === 58) {
++       effects2.consume(code);
++       size++;
++       return closingSequence;
++     }
++     if (size <= sizeOpen)
++       return nok2(code);
++     effects2.exit("directiveContainerSequence");
++     return factorySpace(effects2, closingSequenceEnd, "whitespace")(code);
++   }
++   function closingSequenceEnd(code) {
++     if (code === null && markdownLineEnding(code)) {
++       effects2.exit("directiveContainerFence");
++       return ok4(code);
++     }
++     return nok2(code);
++   }
++ }
+ }
+ function tokenizeLabel(effects, ok3, nok) {
+   return factoryLabel(

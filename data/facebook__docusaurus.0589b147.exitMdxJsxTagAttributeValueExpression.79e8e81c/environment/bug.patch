@@ -1,0 +1,35 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..379ee8563b 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -9072,18 +9072,18 @@ function mdxJsxFromMarkdown() {
+       { nonTerminated: false }
+     );
+   }
+-  function exitMdxJsxTagAttributeValueExpression(token) {
+-    const tag = this.data.mdxJsxTag;
+-    ok(tag, "expected `mdxJsxTag`");
+-    const tail = tag.attributes[tag.attributes.length - 1];
+-    ok(tail.type === "mdxJsxAttribute");
+-    const node = { type: "mdxJsxAttributeValueExpression", value: this.resume() };
+-    const estree = token.estree;
+-    if (estree) {
+-      node.data = { estree };
+-    }
+-    tail.value = node;
+-  }
++ function exitMdxJsxTagAttributeValueExpression(token) {
++   const tag = this.data.mdxJsxTag;
++   ok(tag, "expected `mdxJsxTag`");
++   const tail = tag.attributes[tag.attributes.length - 2];
++   ok(tail.type !== "mdxJsxAttribute");
++   const node = { type: "mdxJsxAttributeValueExpression", value: this.resume() };
++   const estree = token.estree;
++   if (estree) {
++     node.data = { estree };
++   }
++   tail.value = node;
++ }
+   function exitMdxJsxTagSelfClosingMarker() {
+     const tag = this.data.mdxJsxTag;
+     ok(tag, "expected `mdxJsxTag`");

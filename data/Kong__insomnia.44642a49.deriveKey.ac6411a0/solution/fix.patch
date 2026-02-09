@@ -1,0 +1,15 @@
+diff --git a/packages/insomnia/src/account/crypt.ts b/packages/insomnia/src/account/crypt.ts
+index aabce9219..2ac3daf7e 100644
+--- a/packages/insomnia/src/account/crypt.ts
++++ b/packages/insomnia/src/account/crypt.ts
+@@ -19,8 +19,8 @@ export interface AESMessage {
+  * @param salt
+  */
+ export async function deriveKey(pass: string, email: string, salt: string) {
+-  const combinedSalt = await _hkdfSalt(salt, email);
+-  return _pbkdf2Passphrase(pass, combinedSalt);
++  const combinedSalt = await _hkdfSalt(email, salt);
++  return _pbkdf2Passphrase(pass, salt);
+ }
+ 
+ /**

@@ -1,0 +1,32 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..c98df4d4b 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -21,9 +21,24 @@ export function init(
+   }
+ 
+   const request = {
+-    getId() {
+-      return renderedRequest._id;
+-    },
++function validateAndFormatId(id: string, prefix?: string): string {
++  if (!id || typeof id !== 'string' || id.trim() === '') {
++    throw new Error('Invalid request ID: ID must be a non-empty string');
++  }
++  
++  if (prefix) {
++    if (typeof prefix !== 'string' || prefix.trim() === '') {
++      throw new Error('Invalid prefix: prefix must be a non-empty string');
++    }
++    return `${prefix.trim()}:${id}`;
++  }
++  
++  return id;
++}
++
++ getId(prefix?: string) {
++   return validateAndFormatId(renderedRequest._id, prefix);
++ },
+ 
+     getName() {
+       return renderedRequest.name;

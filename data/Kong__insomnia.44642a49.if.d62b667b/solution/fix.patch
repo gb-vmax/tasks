@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia-sdk/src/objects/proxy-configs.ts b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+index 783e6b03c..dcf5f8f3c 100644
+--- a/packages/insomnia-sdk/src/objects/proxy-configs.ts
++++ b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+@@ -89,10 +89,65 @@ export class ProxyConfig extends Property {
+     }
+ 
+     test(url?: string) {
+-        if (!url) {
+-            // TODO: it is confusing in which case url arg is optional
+-            return false;
++private _testCache?: Map<string, boolean>;
++private static readonly MAX_CACHE_SIZE = 1000;
++
++private _shouldBypassUrl(url: string): boolean {
++    for (const bypassPattern of this.bypass) {
++        if (bypassPattern === url) {
++            return true;
++        }
++        
++        if (bypassPattern.includes('*') || bypassPattern.includes('://')) {
++            try {
++                const bypassMatch = new UrlMatchPattern(bypassPattern);
++                if (bypassMatch.test(url)) {
++                    return true;
++                }
++            } catch (e) {
++                continue;
++            }
++        }
++    }
++    return false;
++}
++
++private _cacheTestResult(key: string, result: boolean): void {
++    if (!this._testCache) {
++        this._testCache = new Map<string, boolean>();
++    }
++    
++    if (this._testCache.size >= ProxyConfig.MAX_CACHE_SIZE) {
++        const firstKey = this._testCache.keys().next().value;
++        if (firstKey !== undefined) {
++            this._testCache.delete(firstKey);
+         }
++    }
++    
++    this._testCache.set(key, result);
++}
++
++ test(url?: string) {
++     if (!url) {
++         return false;
++     }
++
++     const cacheKey = `${this.match}:${url}:${this.bypass.join(',')}`;
++     if (this._testCache && this._testCache.has(cacheKey)) {
++         return this._testCache.get(cacheKey)!;
++     }
++
++     if (this._shouldBypassUrl(url)) {
++         this._cacheTestResult(cacheKey, false);
++         return false;
++     }
++
++     const urlMatch = new UrlMatchPattern(this.match);
++     const result = urlMatch.test(url);
++    
++     this._cacheTestResult(cacheKey, result);
++     return result;
++ }
+         if (this.bypass.includes(url)) {
+             return false;
+         }

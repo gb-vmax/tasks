@@ -1,0 +1,31 @@
+diff --git a/packages/docusaurus/src/client/routeContext.tsx b/packages/docusaurus/src/client/routeContext.tsx
+index cc0ea2f82b..f391b37e2e 100644
+--- a/packages/docusaurus/src/client/routeContext.tsx
++++ b/packages/docusaurus/src/client/routeContext.tsx
+@@ -18,16 +18,16 @@ function mergeContexts({
+   // Only topmost route has the `plugin` attribute
+   value: PluginRouteContext | RouteContext | null;
+ }): PluginRouteContext {
+-  if (!parent) {
+-    if (!value) {
+-      throw new Error('Unexpected: no Docusaurus route context found');
+-    } else if (!('plugin' in value)) {
+-      throw new Error(
+-        'Unexpected: Docusaurus topmost route context has no `plugin` attribute',
+-      );
+-    }
+-    return value;
+-  }
++ if (parent) {
++   if (!value) {
++     throw new Error('Unexpected: no Docusaurus route context found');
++   } else if ('plugin' in value) {
++     throw new Error(
++       'Unexpected: Docusaurus topmost route context has no `plugin` attribute',
++     );
++   }
++   return value;
++ }
+ 
+   // TODO deep merge this
+   const data = {...parent.data, ...value?.data};

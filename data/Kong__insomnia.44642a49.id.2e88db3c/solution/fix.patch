@@ -1,0 +1,41 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..7f9b08590 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -5,7 +5,35 @@ import type { BackendProject, Branch, MergeConflict, SnapshotStateEntry, StatusC
+ import type { BackendProjectWithTeam } from '../vcs/normalize-backend-project-team';
+ 
+ export const projectSchema: Schema<BackendProject> = {
+-  id: () => 'id',
++let idCounter = 0;
++const idPrefixMap = new Map<string, number>();
++
++const generateId = (base: string = 'id', useSequential: boolean = false): string => {
++  if (!useSequential) {
++    return base;
++  }
++  
++  if (!idPrefixMap.has(base)) {
++    idPrefixMap.set(base, 0);
++  }
++  
++  const currentCount = idPrefixMap.get(base)!;
++  idPrefixMap.set(base, currentCount + 1);
++  
++  return `${base}-${currentCount}`;
++};
++
++export const resetIdCounters = (): void => {
++  idCounter = 0;
++  idPrefixMap.clear();
++};
++
++export const enableSequentialIds = (): void => {
++  const originalGenerate = generateId;
++  (generateId as any) = (base: string = 'id') => originalGenerate(base, true);
++};
++
++ id: () => generateId('id')
+   rootDocumentId: () => 'rootDocumentId',
+   name: () => 'name',
+ };

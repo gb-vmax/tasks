@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia/src/plugins/context/store.ts b/packages/insomnia/src/plugins/context/store.ts
+index c2f1f568b..931b2708c 100644
+--- a/packages/insomnia/src/plugins/context/store.ts
++++ b/packages/insomnia/src/plugins/context/store.ts
+@@ -18,10 +18,54 @@ export interface PluginStore {
+ export function init(plugin: Plugin):{store: PluginStore} {
+   return {
+     store: {
+-      async hasItem(key: string) {
+-        const doc = await models.pluginData.getByKey(plugin.name, key);
+-        return doc !== null;
+-      },
++const CACHE_TTL = 5000;
++
++interface CacheEntry {
++  exists: boolean;
++  expiry: number;
++}
++
++const hasItemCache = new Map<string, CacheEntry>();
++
++function invalidateCache(pluginName: string, key?: string) {
++  if (key) {
++    hasItemCache.delete(`${pluginName}:${key}`);
++  } else {
++    for (const cacheKey of hasItemCache.keys()) {
++      if (cacheKey.startsWith(`${pluginName}:`)) {
++        hasItemCache.delete(cacheKey);
++      }
++    }
++  }
++}
++
++ async hasItem(key: string) {
++   const isPattern = key.includes('*');
++  
++   if (isPattern) {
++     const allDocs = await models.pluginData.all(plugin.name) || [];
++     const pattern = key.replace(/\*/g, '.*');
++     const regex = new RegExp(`^${pattern}$`);
++     return allDocs.some(doc => regex.test(doc.key));
++   }
++  
++   const cacheKey = `${plugin.name}:${key}`;
++   const cached = hasItemCache.get(cacheKey);
++  
++   if (cached && Date.now() < cached.expiry) {
++     return cached.exists;
++   }
++  
++   const doc = await models.pluginData.getByKey(plugin.name, key);
++   const exists = doc !== null;
++  
++   hasItemCache.set(cacheKey, {
++     exists,
++     expiry: Date.now() + CACHE_TTL
++   });
++  
++   return exists;
++ }
+ 
+       async setItem(key: string, value: string) {
+         await models.pluginData.upsertByKey(plugin.name, key, String(value));

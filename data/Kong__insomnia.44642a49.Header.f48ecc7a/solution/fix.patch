@@ -1,0 +1,121 @@
+diff --git a/packages/insomnia-sdk/src/objects/headers.ts b/packages/insomnia-sdk/src/objects/headers.ts
+index 943133066..b9dd46d68 100644
+--- a/packages/insomnia-sdk/src/objects/headers.ts
++++ b/packages/insomnia-sdk/src/objects/headers.ts
+@@ -9,6 +9,46 @@ export interface HeaderDefinition {
+     disabled?: boolean;
+ }
+ 
++function normalizeHeaderKey(key: string): string {
++    if (!key) {
++        return key;
++    }
++    
++    return key
++        .split('-')
++        .map(part => {
++            if (part.length === 0) {
++                return part;
++            }
++            return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
++        })
++        .join('-');
++}
++
++function validateHeaderKey(key: string): void {
++    if (!key) {
++        return;
++    }
++    
++    const validKeyPattern = /^[a-zA-Z0-9\-]+$/;
++    if (!validKeyPattern.test(key)) {
++        throw Error(`Invalid header key: "${key}". Header keys must contain only letters, digits, and hyphens.`);
++    }
++}
++
++function validateHeaderValue(value: string): void {
++    if (!value) {
++        return;
++    }
++    
++    for (let i = 0; i < value.length; i++) {
++        const code = value.charCodeAt(i);
++        if ((code < 32 && code !== 9) || code === 127) {
++            throw Error(`Invalid header value: contains illegal control character at position ${i}.`);
++        }
++    }
++}
++
+ export class Header extends Property {
+     override _kind: string = 'Header';
+     type: string = '';
+@@ -17,19 +57,31 @@ export class Header extends Property {
+ 
+     constructor(
+         opts: HeaderDefinition | string,
+-        name?: string, // if it is defined, it overrides 'key' (not 'name')
++        name?: string,
+     ) {
+         super();
+ 
+         if (typeof opts === 'string') {
+             const obj = Header.parseSingle(opts);
+-            this.key = obj.key;
++            const normalizedKey = normalizeHeaderKey(obj.key);
++            validateHeaderKey(normalizedKey);
++            validateHeaderValue(obj.value);
++            this.key = normalizedKey;
+             this.value = obj.value;
+         } else {
+             this.id = opts.id ? opts.id : '';
+-            this.key = opts.key ? opts.key : '';
++            const rawKey = opts.key ? opts.key : '';
++            const normalizedKey = normalizeHeaderKey(rawKey);
++            if (rawKey) {
++                validateHeaderKey(normalizedKey);
++            }
++            const rawValue = opts.value ? opts.value : '';
++            if (rawValue) {
++                validateHeaderValue(rawValue);
++            }
++            this.key = normalizedKey;
+             this.name = name ? name : (opts.name ? opts.name : '');
+-            this.value = opts.value ? opts.value : '';
++            this.value = rawValue;
+             this.type = opts.type ? opts.type : '';
+             this.disabled = opts ? opts.disabled : false;
+         }
+@@ -45,7 +97,6 @@ export class Header extends Property {
+         return '_kind' in obj && obj._kind === 'Header';
+     }
+ 
+-    // example: 'Content-Type: application/json\nUser-Agent: MyClientLibrary/2.0\n'
+     static parse(headerString: string): { key: string; value: string }[] {
+         return headerString
+             .split('\n')
+@@ -54,8 +105,6 @@ export class Header extends Property {
+     }
+ 
+     static parseSingle(headerStr: string): { key: string; value: string } {
+-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+-        // the first colon is the separator
+         const separatorPos = headerStr.indexOf(':');
+ 
+         if (separatorPos <= 0) {
+@@ -79,12 +128,14 @@ export class Header extends Property {
+     }
+ 
+     static unparseSingle(header: { key: string; value: string } | Header): string {
+-        // both PropertyList and object contains 'key' and 'value'
+         return `${header.key}: ${header.value}`;
+     }
+ 
+     update(newHeader: { key: string; value: string }) {
+-        this.key = newHeader.key;
++        const normalizedKey = normalizeHeaderKey(newHeader.key);
++        validateHeaderKey(normalizedKey);
++        validateHeaderValue(newHeader.value);
++        this.key = normalizedKey;
+         this.value = newHeader.value;
+     }
+ 

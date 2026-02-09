@@ -1,0 +1,196 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..e438e6ef1 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -888,6 +888,164 @@ export class ImportPostman {
+   };
+ }
+ 
++interface ValidationResult {
++  isValid: boolean;
++  warnings: string[];
++  hasCircularReferences: boolean;
++  emptyNameCount: number;
++  invalidUrlCount: number;
++}
++
++interface ImportStatistics {
++  totalItems: number;
++  requestCount: number;
++  folderCount: number;
++  itemsWithAuth: number;
++  itemsWithScripts: number;
++  itemsWithVariables: number;
++  validationWarnings: number;
++}
++
++const validateCollectionStructure = (collection: PostmanCollection): ValidationResult => {
++  const result: ValidationResult = {
++    isValid: true,
++    warnings: [],
++    hasCircularReferences: false,
++    emptyNameCount: 0,
++    invalidUrlCount: 0,
++  };
++
++  const visitedIds = new Set<string>();
++  
++  const checkItem = (item: any, depth: number = 0): void => {
++    if (depth > 100) {
++      result.hasCircularReferences = true;
++      result.warnings.push('Potential circular reference or excessive nesting detected');
++      result.isValid = false;
++      return;
++    }
++
++    if (item.id && visitedIds.has(item.id)) {
++      result.hasCircularReferences = true;
++      result.warnings.push(`Duplicate item ID found: ${item.id}`);
++      return;
++    }
++
++    if (item.id) {
++      visitedIds.add(item.id);
++    }
++
++    if (item.name === '' || item.name === undefined) {
++      result.emptyNameCount++;
++      result.warnings.push('Item with empty or missing name found');
++    }
++
++    if (item.request && typeof item.request === 'object') {
++      const url = item.request.url;
++      if (url && typeof url === 'string' && url.trim() === '') {
++        result.invalidUrlCount++;
++      }
++    }
++
++    if (item.item && Array.isArray(item.item)) {
++      item.item.forEach((childItem: any) => checkItem(childItem, depth + 1));
++    }
++  };
++
++  if (collection.item && Array.isArray(collection.item)) {
++    collection.item.forEach(item => checkItem(item));
++  }
++
++  return result;
++};
++
++const sanitizeCollection = (collection: PostmanCollection): PostmanCollection => {
++  const sanitizeItem = (item: any): any => {
++    const sanitized = { ...item };
++
++    if (sanitized.name === undefined || sanitized.name === null) {
++      sanitized.name = 'Untitled';
++    }
++
++    if (typeof sanitized.name === 'string') {
++      sanitized.name = sanitized.name.trim() || 'Untitled';
++    }
++
++    if (sanitized.request && typeof sanitized.request === 'object') {
++      const request = { ...sanitized.request };
++      
++      if (request.url && typeof request.url === 'string') {
++        request.url = request.url.trim();
++      }
++
++      if (request.method && typeof request.method === 'string') {
++        request.method = request.method.toUpperCase();
++      }
++
++      if (request.header && Array.isArray(request.header)) {
++        request.header = request.header.filter((h: any) => h.key !== undefined && h.key !== null);
++      }
++
++      sanitized.request = request;
++    }
++
++    if (sanitized.item && Array.isArray(sanitized.item)) {
++      sanitized.item = sanitized.item.map(sanitizeItem);
++    }
++
++    return sanitized;
++  };
++
++  const sanitized = { ...collection };
++  
++  if (sanitized.item && Array.isArray(sanitized.item)) {
++    sanitized.item = sanitized.item.map(sanitizeItem);
++  }
++
++  if (sanitized.info && sanitized.info.name === undefined) {
++    sanitized.info = { ...sanitized.info, name: 'Imported Collection' };
++  }
++
++  return sanitized;
++};
++
++const calculateImportStatistics = (
++  items: ImportRequest[],
++  validationResult: ValidationResult
++): ImportStatistics => {
++  const stats: ImportStatistics = {
++    totalItems: items.length,
++    requestCount: 0,
++    folderCount: 0,
++    itemsWithAuth: 0,
++    itemsWithScripts: 0,
++    itemsWithVariables: 0,
++    validationWarnings: validationResult.warnings.length,
++  };
++
++  items.forEach(item => {
++    if (item._type === 'request') {
++      stats.requestCount++;
++    } else if (item._type === 'request_group') {
++      stats.folderCount++;
++    }
++
++    if (item.authentication && Object.keys(item.authentication).length > 0) {
++      stats.itemsWithAuth++;
++    }
++
++    if (item.preRequestScript || item.afterResponseScript) {
++      stats.itemsWithScripts++;
++    }
++
++    if (item.variable && Object.keys(item.variable).length > 0) {
++      stats.itemsWithVariables++;
++    }
++  });
++
++  return stats;
++};
++
+ export const convert: Converter = rawData => {
+   requestCount = 1;
+   requestGroupCount = 1;
+@@ -899,10 +1057,24 @@ export const convert: Converter = rawData => {
+       collection.info.schema === POSTMAN_SCHEMA_V2_0 ||
+       collection.info.schema === POSTMAN_SCHEMA_V2_1
+     ) {
+-      const list = new ImportPostman(collection).importCollection();
+-      // make import order play nice with existing pattern of descending negavitve numbers (technically ascending) eg. -3, -2, -1
++      const validationResult = validateCollectionStructure(collection);
++      
++      if (!validationResult.isValid) {
++        console.warn('Collection validation warnings:', validationResult.warnings);
++      }
++
++      const sanitizedCollection = sanitizeCollection(collection);
++      
++      const list = new ImportPostman(sanitizedCollection).importCollection();
++      
+       const now = Date.now();
+       const ordered = list.map((item, index) => ({ ...item, metaSortKey: -1 * (now - index) }));
++      
++      const stats = calculateImportStatistics(ordered, validationResult);
++      if (stats.totalItems > 0) {
++        console.info('Import statistics:', stats);
++      }
++      
+       return ordered;
+     }
+   } catch (error) {

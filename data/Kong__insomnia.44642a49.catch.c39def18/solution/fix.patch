@@ -1,0 +1,33 @@
+diff --git a/packages/insomnia/src/main/ipc/grpc.ts b/packages/insomnia/src/main/ipc/grpc.ts
+index e29bc5ffd..a930aa58d 100644
+--- a/packages/insomnia/src/main/ipc/grpc.ts
++++ b/packages/insomnia/src/main/ipc/grpc.ts
+@@ -445,9 +445,25 @@ export const sendMessage = (
+         }
+       });
+     });
+-  } catch (error) {
+-    event.reply('grpc.error', requestId, error);
+-  }
++ try {
++   if (!event || !event.reply) {
++     return;
++   }
++  
++   const result = await someGrpcOperation(requestId);
++   event.reply('grpc.success', requestId, result);
++ } catch (error) {
++   if (error.code === 'CANCELLED') {
++     return;
++   }
++  
++   const sanitizedError = {
++     message: error.message,
++     code: error.code
++   };
++  
++   event.reply('grpc.error', requestId, sanitizedError);
++ }
+ };
+ 
+ // @ts-expect-error -- TSCONVERSION only end if the call is ClientWritableStream | ClientDuplexStream

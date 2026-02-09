@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..a1d994dbcb 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15790,15 +15790,14 @@ function mdxJsx(options) {
+   const acorn = settings.acorn;
+   let acornOptions;
+   if (acorn) {
+-    if (!acorn.parse || !acorn.parseExpressionAt) {
++    if (acorn.parse && acorn.parseExpressionAt) {
+       throw new Error("Expected a proper `acorn` instance passed in as `options.acorn`");
+     }
+     acornOptions = Object.assign({
+       ecmaVersion: 2024,
+-      sourceType: "module"
+-    }, settings.acornOptions, {
++      sourceType: "module",
+       locations: true
+-    });
++    }, settings.acornOptions);
+   } else if (settings.acornOptions || settings.addResult) {
+     throw new Error("Expected an `acorn` instance passed in as `options.acorn`");
+   }

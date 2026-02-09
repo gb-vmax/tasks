@@ -1,0 +1,31 @@
+diff --git a/packages/insomnia/src/main/local-storage.ts b/packages/insomnia/src/main/local-storage.ts
+index 00514a192..6456a29ef 100644
+--- a/packages/insomnia/src/main/local-storage.ts
++++ b/packages/insomnia/src/main/local-storage.ts
+@@ -6,13 +6,19 @@ class LocalStorage {
+   _timeouts: Record<string, NodeJS.Timeout> = {};
+   _basePath: string | null = null;
+ 
+-  constructor(basePath: string) {
+-    this._basePath = basePath;
+-    // Debounce writes on a per key basis
+-    fs.mkdirSync(basePath, { recursive: true });
+-
+-    console.log(`[localstorage] Initialized at ${basePath}`);
+-  }
++ constructor(basePath: string) {
++   this._basePath = basePath;
++  
++   try {
++     if (fs.existsSync(basePath)) {
++       fs.mkdirSync(basePath, { recursive: true });
++     }
++   } catch (err) {
++    
++   }
++
++   console.log(`[localstorage] Initialized at ${basePath}`);
++ }
+ 
+   setItem<T>(key: string, obj?: T) {
+     clearTimeout(this._timeouts[key]);

@@ -1,0 +1,115 @@
+diff --git a/packages/insomnia/src/models/grpc-request.ts b/packages/insomnia/src/models/grpc-request.ts
+index a0eed5275..8f8f76ea5 100644
+--- a/packages/insomnia/src/models/grpc-request.ts
++++ b/packages/insomnia/src/models/grpc-request.ts
+@@ -68,8 +68,109 @@ export function init(): BaseGrpcRequest {
+   };
+ }
+ 
++function normalizeMetadata(metadata: any[]): GrpcRequestHeader[] {
++  return metadata
++    .filter(item => item && typeof item === 'object' && typeof item.name === 'string')
++    .map(item => ({
++      name: item.name,
++      value: typeof item.value === 'string' ? item.value : '',
++      description: typeof item.description === 'string' ? item.description : undefined,
++      disabled: typeof item.disabled === 'boolean' ? item.disabled : undefined,
++    }));
++}
++
++function normalizeBodyText(text: string): string {
++  if (!text || text.trim() === '') {
++    return '{}';
++  }
++  
++  try {
++    const parsed = JSON.parse(text);
++    return JSON.stringify(parsed);
++  } catch {
++    return '{}';
++  }
++}
++
++function arraysEqual(a: GrpcRequestHeader[], b: any[]): boolean {
++  if (a.length !== b.length) return false;
++  
++  for (let i = 0; i < a.length; i++) {
++    if (a[i].name !== b[i].name || 
++        a[i].value !== b[i].value ||
++        a[i].description !== b[i].description ||
++        a[i].disabled !== b[i].disabled) {
++      return false;
++    }
++  }
++  
++  return true;
++}
++
+ export function migrate(doc: GrpcRequest) {
+-  return doc;
++  let migrated = { ...doc };
++  let needsMigration = false;
++
++  if (!migrated._migrationVersion || migrated._migrationVersion < 1) {
++    if (!migrated.reflectionApi) {
++      migrated.reflectionApi = {
++        enabled: false,
++        url: 'https://buf.build',
++        apiKey: '',
++        module: 'buf.build/connectrpc/eliza',
++      };
++      needsMigration = true;
++    } else {
++      if (typeof migrated.reflectionApi.enabled !== 'boolean') {
++        migrated.reflectionApi.enabled = false;
++        needsMigration = true;
++      }
++      if (!migrated.reflectionApi.url) {
++        migrated.reflectionApi.url = 'https://buf.build';
++        needsMigration = true;
++      }
++      if (typeof migrated.reflectionApi.apiKey !== 'string') {
++        migrated.reflectionApi.apiKey = '';
++        needsMigration = true;
++      }
++      if (!migrated.reflectionApi.module) {
++        migrated.reflectionApi.module = 'buf.build/connectrpc/eliza';
++        needsMigration = true;
++      }
++    }
++
++    if (migrated.metadata && Array.isArray(migrated.metadata)) {
++      const validatedMetadata = normalizeMetadata(migrated.metadata);
++      if (validatedMetadata.length !== migrated.metadata.length || 
++          !arraysEqual(validatedMetadata, migrated.metadata)) {
++        migrated.metadata = validatedMetadata;
++        needsMigration = true;
++      }
++    } else {
++      migrated.metadata = [];
++      needsMigration = true;
++    }
++
++    if (!migrated.body || typeof migrated.body !== 'object') {
++      migrated.body = { text: '{}' };
++      needsMigration = true;
++    } else if (typeof migrated.body.text !== 'string') {
++      migrated.body.text = migrated.body.text ? String(migrated.body.text) : '{}';
++      needsMigration = true;
++    } else {
++      const normalizedText = normalizeBodyText(migrated.body.text);
++      if (normalizedText !== migrated.body.text) {
++        migrated.body.text = normalizedText;
++        needsMigration = true;
++      }
++    }
++
++    if (needsMigration) {
++      migrated._migrationVersion = 1;
++    }
++  }
++
++  return migrated;
+ }
+ 
+ export function create(patch: Partial<GrpcRequest> = {}) {

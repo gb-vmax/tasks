@@ -2,23 +2,25 @@
 
 ### Describe the bug
 
-I'm encountering an issue with image syntax parsing in MDX. When using the standard markdown image syntax `![alt text](url)`, the parser is not correctly handling the image label start token. The behavior seems to have changed and images are now being parsed incorrectly or rejected when they should be accepted.
+I'm experiencing an issue with image link parsing in MDX. When trying to use images with footnote syntax (specifically with the `^` character), the parser is accepting them when it should be rejecting them, or vice versa.
 
 ### Reproduction
 
 ```mdx
-![Example Image](https://example.com/image.png)
+![image with caret^][ref]
+
+[ref]: /path/to/image.png
 ```
 
-The above standard markdown image syntax is not being parsed as expected. The image label tokenizer appears to be inverting the logic for when to accept or reject image tokens.
+The above syntax is being handled incorrectly - the parser's behavior seems to be inverted with respect to the `_hiddenFootnoteSupport` flag. Images that should be parsed aren't being recognized, or images that shouldn't be valid are being accepted.
 
 ### Expected behavior
 
-Standard markdown image syntax should be properly recognized and parsed. The `![...]` pattern should be accepted as a valid image label start, and the parser should correctly distinguish between regular images and cases where footnote support might interfere with the parsing.
+The parser should correctly handle image syntax based on whether footnote support is enabled. When `_hiddenFootnoteSupport` is present in the parser constructs, certain image patterns should be rejected, otherwise they should be accepted.
 
-### Additional context
-
-This seems related to the `tokenizeLabelStartImage` function and how it handles the `after` callback logic. The condition for accepting/rejecting tokens based on the `^` character (code 94) and footnote support appears to be behaving opposite to what's expected.
+### System Info
+- @mdx-js/mdx version: 3.0.0
+- Node version: Latest
 
 ---
 Repository: /testbed

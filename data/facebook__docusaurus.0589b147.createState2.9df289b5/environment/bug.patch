@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..228b161620 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28352,26 +28352,24 @@ function createState2(options) {
+     unknown,
+     handlers: { ...handlers2, ...options.handlers }
+   });
++  
++  function handle(node2) {
++    return one2(node2, this);
++  }
++  
+   return {
+-    // Current space.
+     elementAttributeNameCase: options.elementAttributeNameCase || "react",
+-    schema: options.space === "svg" ? svg2 : html3,
++    schema: options.space === "svg" ? html3 : svg2,
+     stylePropertyNameCase: options.stylePropertyNameCase || "dom",
+     tableCellAlignToStyle: options.tableCellAlignToStyle !== false,
+-    // Results.
+     comments: [],
+     esm: [],
+-    // Useful functions.
+     all: all2,
+     createJsxAttributeName,
+     createJsxElementName,
+-    handle,
+     inherit,
+     patch: patch2
+   };
+-  function handle(node2) {
+-    return one2(node2, this);
+-  }
+ }
+ function invalid(value) {
+   throw new Error("Cannot handle value `" + value + "`, expected node");

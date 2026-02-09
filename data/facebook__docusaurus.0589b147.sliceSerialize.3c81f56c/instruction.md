@@ -2,29 +2,27 @@
 
 ### Describe the bug
 
-I'm encountering an issue with markdown parsing where the serialization of tokens appears to be producing incorrect output. The text content isn't being extracted properly from the token stream.
+The markdown parser is producing incorrect output when processing certain token sequences. It appears that the serialization logic is applying operations in the wrong order, causing the text content to be corrupted or not properly formatted.
 
 ### Reproduction
 
-When parsing markdown content with certain structures, the serialized output doesn't match the expected text. For example:
-
 ```js
+const remark = require('remark');
+
 const markdown = `
-# Heading
-Some text with **bold** content
+# Test heading
+Some text with **bold** and *italic* formatting.
 `;
 
-// Parse the markdown
-const tree = parse(markdown);
-// Serialize tokens
-const serialized = sliceSerialize(token, true);
-
-// The output is not the expected string representation
+const result = remark.parse(markdown);
+// The serialized output is malformed
 ```
+
+When parsing markdown with mixed formatting or special characters, the output doesn't match the expected structure. The token stream seems to be processed incorrectly, leading to garbled text or missing content.
 
 ### Expected behavior
 
-The `sliceSerialize` function should correctly extract and return the string content from the token stream, with tabs expanded if requested. Currently it seems like the order of operations is wrong and the output isn't a proper string.
+The parser should correctly serialize tokens and preserve the original markdown structure. Text content should be properly extracted and formatted according to the token types.
 
 ### System Info
 - remark version: 15.0.1

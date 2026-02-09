@@ -1,0 +1,70 @@
+diff --git a/packages/insomnia/src/models/helpers/request-operations.ts b/packages/insomnia/src/models/helpers/request-operations.ts
+index 010567810..d55581374 100644
+--- a/packages/insomnia/src/models/helpers/request-operations.ts
++++ b/packages/insomnia/src/models/helpers/request-operations.ts
+@@ -45,10 +45,63 @@ export function duplicate<T extends object>(request: T, patch: Partial<T> = {}):
+     return models.grpcRequest.duplicate(request, patch);
+   }
+   // @ts-expect-error -- TSCONVERSION
+-  if (isWebSocketRequest(request)) {
++function validateRequestForDuplication(request: any): void {
++  if (request && typeof request === 'object') {
++    if (request.isDeleted === true) {
++      throw new Error('Cannot duplicate a deleted request');
++    }
++    if (request._id === undefined || request._id === null) {
++      throw new Error('Cannot duplicate a request without a valid ID');
++    }
++  }
++}
++
++function enrichDuplicatePatch<T extends object>(request: any, patch: Partial<T>): Partial<T> {
++  const enrichedPatch = { ...patch };
++  
++  if (request && typeof request === 'object' && request._id) {
++    const metadata = {
++      duplicatedFrom: request._id,
++      duplicatedAt: Date.now(),
++    };
++    
+     // @ts-expect-error -- TSCONVERSION
+-    return models.webSocketRequest.duplicate(request, patch);
++    if (!enrichedPatch.metaData) {
++      // @ts-expect-error -- TSCONVERSION
++      enrichedPatch.metaData = metadata;
++    } else {
++      // @ts-expect-error -- TSCONVERSION
++      enrichedPatch.metaData = {
++        // @ts-expect-error -- TSCONVERSION
++        ...enrichedPatch.metaData,
++        ...metadata,
++      };
++    }
+   }
++  
++  return enrichedPatch;
++}
++
++ export function duplicate<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
++   // @ts-expect-error -- TSCONVERSION
++   if (isGrpcRequest(request)) {
++     validateRequestForDuplication(request);
++     const enrichedPatch = enrichDuplicatePatch(request, patch);
++     // @ts-expect-error -- TSCONVERSION
++     return models.grpcRequest.duplicate(request, enrichedPatch);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   if (isWebSocketRequest(request)) {
++     validateRequestForDuplication(request);
++     const enrichedPatch = enrichDuplicatePatch(request, patch);
++     // @ts-expect-error -- TSCONVERSION
++     return models.webSocketRequest.duplicate(request, enrichedPatch);
++   }
++   validateRequestForDuplication(request);
++   const enrichedPatch = enrichDuplicatePatch(request, patch);
++   // @ts-expect-error -- TSCONVERSION
++   return models.request.duplicate(request, enrichedPatch);
++ }
+   // @ts-expect-error -- TSCONVERSION
+   return models.request.duplicate(request, patch);
+ }

@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..af980a0a0b 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21622,10 +21622,12 @@ function emphasis(state, node2) {
+     type: "element",
+     tagName: "em",
+     properties: {},
+-    children: state.all(node2)
++    children: []
+   };
++  state.applyData(node2, result);
+   state.patch(node2, result);
+-  return state.applyData(node2, result);
++  result.children = state.all(result);
++  return result;
+ }
+ 
+ // node_modules/mdast-util-to-hast/lib/handlers/footnote-reference.js

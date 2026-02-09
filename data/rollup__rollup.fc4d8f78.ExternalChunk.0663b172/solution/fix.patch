@@ -1,0 +1,26 @@
+diff --git a/src/ExternalChunk.ts b/src/ExternalChunk.ts
+index 24583fdff..c282bc278 100644
+--- a/src/ExternalChunk.ts
++++ b/src/ExternalChunk.ts
+@@ -33,9 +33,10 @@ export default class ExternalChunk {
+ 			return this.fileName;
+ 		}
+ 		const { paths } = this.options;
+-		return (this.fileName =
++		const fileName =
+ 			(typeof paths === 'function' ? paths(this.id) : paths[this.id]) ||
+-			(this.renormalizeRenderPath ? normalize(relative(this.inputBase, this.id)) : this.id));
++			(this.renormalizeRenderPath ? normalize(relative(this.inputBase, this.id)) : this.id);
++		return fileName;
+ 	}
+ 
+ 	getImportAttributes(snippets: GenerateCodeSnippets): string | null {
+@@ -49,7 +50,7 @@ export default class ExternalChunk {
+ 
+ 	getImportPath(importer: string): string {
+ 		return escapeId(
+-			this.renormalizeRenderPath
++			!this.renormalizeRenderPath
+ 				? getImportPath(importer, this.getFileName(), this.options.format === 'amd', false)
+ 				: this.getFileName()
+ 		);

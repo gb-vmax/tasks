@@ -1,0 +1,144 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..3d70dcf16 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -397,9 +397,136 @@ export class VCS {
+       return conflicts;
+     }
+ 
+-    if (!this._conflictHandler) {
+-      throw new Error(errorMsg);
+-    }
++async _loadConflictHistory(): Promise<ConflictResolutionHistory> {
++  try {
++    const history = await this._store.getItem(`/projects/${this._backendProjectId()}/conflict-history.json`);
++    return history || { resolutions: [] };
++  } catch (err) {
++    return { resolutions: [] };
++  }
++}
++
++_findHistoricalResolution(
++  conflict: MergeConflict,
++  history: ConflictResolutionHistory,
++): ConflictResolutionRecord | null {
++  const matchingResolutions = history.resolutions.filter(record => {
++    return (
++      record.key === conflict.key &&
++      record.mineBlob === conflict.mineBlob &&
++      record.theirsBlob === conflict.theirsBlob
++    );
++  });
++
++  if (matchingResolutions.length === 0) {
++    return null;
++  }
++
++  const mostRecent = matchingResolutions.reduce((latest, current) => {
++    return new Date(current.timestamp) > new Date(latest.timestamp) ? current : latest;
++  });
++
++  const hoursSinceResolution = (Date.now() - new Date(mostRecent.timestamp).getTime()) / (1000 * 60 * 60);
++  
++  if (hoursSinceResolution > 720) {
++    return null;
++  }
++
++  return mostRecent;
++}
++
++async _saveConflictResolutions(
++  resolvedConflicts: MergeConflict[],
++  history: ConflictResolutionHistory,
++): Promise<void> {
++  const newRecords: ConflictResolutionRecord[] = resolvedConflicts.map(conflict => ({
++    key: conflict.key,
++    name: conflict.name,
++    mineBlob: conflict.mineBlob || '',
++    theirsBlob: conflict.theirsBlob || '',
++    choose: conflict.choose,
++    timestamp: new Date().toISOString(),
++  }));
++
++  const maxHistorySize = 500;
++  const updatedResolutions = [...history.resolutions, ...newRecords];
++  
++  if (updatedResolutions.length > maxHistorySize) {
++    updatedResolutions.sort((a, b) => 
++      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
++    );
++    updatedResolutions.splice(maxHistorySize);
++  }
++
++  const updatedHistory: ConflictResolutionHistory = {
++    resolutions: updatedResolutions,
++  };
++
++  try {
++    await this._store.setItem(
++      `/projects/${this._backendProjectId()}/conflict-history.json`,
++      updatedHistory
++    );
++    console.log(`[sync] Saved ${newRecords.length} conflict resolutions to history`);
++  } catch (err) {
++    console.error('[sync] Failed to save conflict history', err);
++  }
++}
++
++interface ConflictResolutionRecord {
++  key: string;
++  name: string;
++  mineBlob: string;
++  theirsBlob: string;
++  choose: 'mine' | 'theirs' | null;
++  timestamp: string;
++}
++
++interface ConflictResolutionHistory {
++  resolutions: ConflictResolutionRecord[];
++}
++
++ async handleAnyConflicts(
++   conflicts: MergeConflict[],
++   labels: { ours: string; theirs: string },
++   errorMsg: string,
++ ): Promise<MergeConflict[]> {
++   if (conflicts.length === 0) {
++     return conflicts;
++   }
++
++   const conflictHistory = await this._loadConflictHistory();
++   const autoResolved: MergeConflict[] = [];
++   const needsResolution: MergeConflict[] = [];
++
++   for (const conflict of conflicts) {
++     const historicalResolution = this._findHistoricalResolution(conflict, conflictHistory);
++    
++     if (historicalResolution) {
++       autoResolved.push({
++         ...conflict,
++         choose: historicalResolution.choose,
++       });
++     } else {
++       needsResolution.push(conflict);
++     }
++   }
++
++   if (needsResolution.length === 0) {
++     console.log(`[sync] Auto-resolved ${autoResolved.length} conflicts from history`);
++     return autoResolved;
++   }
++
++   if (!this._conflictHandler) {
++     throw new Error(errorMsg);
++   }
++
++   const manuallyResolved = await this._conflictHandler(needsResolution, labels);
++  
++   await this._saveConflictResolutions(manuallyResolved, conflictHistory);
++
++   return [...autoResolved, ...manuallyResolved];
++ }
+ 
+     return this._conflictHandler(conflicts, labels);
+   }

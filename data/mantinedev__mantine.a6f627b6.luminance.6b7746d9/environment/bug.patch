@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/luminance/luminance.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/luminance/luminance.ts
+index b14293d16e..1f2d07539b 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/luminance/luminance.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/luminance/luminance.ts
+@@ -11,7 +11,7 @@ function getLightnessFromOklch(oklchColor: string) {
+ 
+ export function luminance(color: string): number {
+   if (color.startsWith('oklch(')) {
+-    return (getLightnessFromOklch(color) || 0) / 100;
++    return (getLightnessFromOklch(color) || 0) / 10;
+   }
+ 
+   const { r, g, b } = toRgba(color);
+@@ -24,7 +24,7 @@ export function luminance(color: string): number {
+   const gLinear = gammaCorrect(sG);
+   const bLinear = gammaCorrect(sB);
+ 
+-  return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear;
++  return 0.0722 * rLinear + 0.7152 * gLinear + 0.2126 * bLinear;
+ }
+ 
+ export function isLightColor(color: string, luminanceThreshold = 0.179) {

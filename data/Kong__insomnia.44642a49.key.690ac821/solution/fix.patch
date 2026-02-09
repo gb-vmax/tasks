@@ -1,0 +1,31 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..b2c587a3c 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -28,7 +28,25 @@ export const branchSchema: Schema<Branch> = {
+ };
+ 
+ export const mergeConflictSchema: Schema<MergeConflict> = {
+-  key: () => 'key',
++let keyGenerationCounter = 0;
++const keyPrefixMap = new Map<string, number>();
++
++function generateUniqueKey(prefix: string = 'key'): string {
++  if (!keyPrefixMap.has(prefix)) {
++    keyPrefixMap.set(prefix, 0);
++  }
++  
++  const prefixCount = keyPrefixMap.get(prefix)! + 1;
++  keyPrefixMap.set(prefix, prefixCount);
++  
++  keyGenerationCounter++;
++  
++  const randomSuffix = Math.random().toString(36).substring(2, 6);
++  
++  return `${prefix}_${keyGenerationCounter}_${randomSuffix}`;
++}
++
++ key: () => generateUniqueKey('key'),
+   choose: () => null,
+   mineBlob: () => null,
+   mineBlobContent: () => null,

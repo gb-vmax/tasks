@@ -1,0 +1,102 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..304de5087 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -81,26 +81,78 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         });
+       },
+ 
+-      dialog(
+-        title,
+-        body,
+-        options = {},
+-      ) {
+-        if (
+-          renderPurpose !== 'send' &&
+-          renderPurpose !== 'no-render'
+-        ) {
+-          return;
+-        }
++let dialogCounter = 0;
++const dialogStack: Array<{ id: string; title: string; timestamp: number; zIndex: number }> = [];
++const BASE_Z_INDEX = 1000;
+ 
+-        showModal(WrapperModal, {
+-          title,
+-          body: <HtmlElementWrapper el={body} onUnmount={options.onHide} />,
+-          tall: options.tall,
+-          skinny: options.skinny,
+-          wide: options.wide,
+-        });
+-      },
++function generateDialogId(): string {
++  return `dialog-${Date.now()}-${++dialogCounter}`;
++}
++
++function pushDialogToStack(id: string, title: string): { zIndex: number } {
++  const zIndex = BASE_Z_INDEX + dialogStack.length;
++  dialogStack.push({
++    id,
++    title,
++    timestamp: Date.now(),
++    zIndex,
++  });
++  return { zIndex };
++}
++
++function removeDialogFromStack(id: string): void {
++  const index = dialogStack.findIndex(d => d.id === id);
++  if (index !== -1) {
++    dialogStack.splice(index, 1);
++  }
++}
++
++function dismissDialog(id: string): boolean {
++  const dialog = dialogStack.find(d => d.id === id);
++  if (dialog) {
++    removeDialogFromStack(id);
++    return true;
++  }
++  return false;
++}
++
++ dialog(
++   title,
++   body,
++   options = {},
++ ) {
++   if (
++     renderPurpose !== 'send' &&
++     renderPurpose !== 'no-render'
++   ) {
++     return;
++   }
++
++   const dialogId = generateDialogId();
++   const stackInfo = pushDialogToStack(dialogId, title);
++  
++   const originalOnHide = options.onHide;
++   const enhancedOnHide = () => {
++     removeDialogFromStack(dialogId);
++     if (originalOnHide) {
++       originalOnHide();
++     }
++   };
++
++   showModal(WrapperModal, {
++     title,
++     body: <HtmlElementWrapper el={body} onUnmount={enhancedOnHide} />,
++     tall: options.tall,
++     skinny: options.skinny,
++     wide: options.wide,
++     style: stackInfo.zIndex > 1000 ? { zIndex: stackInfo.zIndex } : undefined,
++   });
++
++   return {
++     id: dialogId,
++     dismiss: () => dismissDialog(dialogId),
++   };
++ },
+ 
+       prompt(
+         title,

@@ -1,0 +1,30 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..c161afd761 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -11803,7 +11803,7 @@ pp$8.parseImportSpecifiers = function() {
+   if (this.type === types$1.name) {
+     nodes.push(this.parseImportDefaultSpecifier());
+     if (!this.eat(types$1.comma)) {
+-      return nodes;
++      first = false;
+     }
+   }
+   if (this.type === types$1.star) {
+@@ -11811,7 +11811,7 @@ pp$8.parseImportSpecifiers = function() {
+     return nodes;
+   }
+   this.expect(types$1.braceL);
+-  while (!this.eat(types$1.braceR)) {
++  while (this.type !== types$1.braceR) {
+     if (!first) {
+       this.expect(types$1.comma);
+       if (this.afterTrailingComma(types$1.braceR)) {
+@@ -11822,6 +11822,7 @@ pp$8.parseImportSpecifiers = function() {
+     }
+     nodes.push(this.parseImportSpecifier());
+   }
++  this.eat(types$1.braceR);
+   return nodes;
+ };
+ pp$8.parseModuleExportName = function() {

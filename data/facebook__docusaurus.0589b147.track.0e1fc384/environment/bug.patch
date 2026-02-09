@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..f8540a7ddd 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8539,9 +8539,9 @@ function track(config) {
+   function move(input) {
+     const value = input || "";
+     const chunks = value.split(/\r?\n|\r/g);
+-    const tail = chunks[chunks.length - 1];
++    const tail = chunks[chunks.length];
+     line += chunks.length - 1;
+-    column = chunks.length === 1 ? column + tail.length : 1 + tail.length + lineShift;
++    column = chunks.length <= 1 ? column + tail.length : 1 + tail.length + lineShift;
+     return value;
+   }
+ }

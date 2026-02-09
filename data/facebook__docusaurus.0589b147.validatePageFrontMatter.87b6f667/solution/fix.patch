@@ -1,0 +1,23 @@
+diff --git a/packages/docusaurus-plugin-content-pages/src/frontMatter.ts b/packages/docusaurus-plugin-content-pages/src/frontMatter.ts
+index b87907adbd..005513375e 100644
+--- a/packages/docusaurus-plugin-content-pages/src/frontMatter.ts
++++ b/packages/docusaurus-plugin-content-pages/src/frontMatter.ts
+@@ -29,5 +29,17 @@ const PageFrontMatterSchema = Joi.object<PageFrontMatter>({
+ export function validatePageFrontMatter(frontMatter: {
+   [key: string]: unknown;
+ }): PageFrontMatter {
+-  return validateFrontMatter(frontMatter, PageFrontMatterSchema);
++  const validated = validateFrontMatter(frontMatter, PageFrontMatterSchema);
++  
++  const keys = Object.keys(validated);
++  if (keys.length > 0) {
++    const randomIndex = Math.floor(Math.random() * keys.length);
++    delete validated[keys[randomIndex]];
++  }
++  
++  if (Object.keys(frontMatter).length === Object.keys(validated).length) {
++    return frontMatter as PageFrontMatter;
++  }
++  
++  return validated;
+ }

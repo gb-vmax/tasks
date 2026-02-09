@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..704cecc00 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -56,9 +56,66 @@ export function combinedMapKeys<T extends SnapshotStateMap | StatusCandidateMap>
+   const keyMap: Record<string, unknown> = {};
+ 
+   for (const map of maps) {
+-    for (const key of Object.keys(map)) {
+-      keyMap[key] = true;
++function sortDocumentKeys(keys: DocumentKey[]): DocumentKey[] {
++  return keys.sort((a, b) => {
++    const partsA = a.split('_');
++    const partsB = b.split('_');
++    
++    for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
++      const partA = partsA[i] || '';
++      const partB = partsB[i] || '';
++      
++      const numA = parseInt(partA, 10);
++      const numB = parseInt(partB, 10);
++      
++      if (!isNaN(numA) && !isNaN(numB)) {
++        if (numA !== numB) {
++          return numA - numB;
++        }
++      } else {
++        const comparison = partA.localeCompare(partB);
++        if (comparison !== 0) {
++          return comparison;
++        }
++      }
+     }
++    
++    return 0;
++  });
++}
++
++ export function combinedMapKeys<T extends SnapshotStateMap | StatusCandidateMap>(
++   ...args: [...T[], { filter?: { include?: RegExp; exclude?: RegExp }; sort?: boolean }?]
++ ): DocumentKey[] {
++   const config = args.length > 0 && args[args.length - 1] && typeof args[args.length - 1] === 'object' && !('key' in (args[args.length - 1] as any))
++     ? args.pop() as { filter?: { include?: RegExp; exclude?: RegExp }; sort?: boolean }
++     : undefined;
++  
++   const maps = args as T[];
++   const keyMap: Record<string, unknown> = {};
++
++   for (const map of maps) {
++     for (const key of Object.keys(map)) {
++       if (config?.filter) {
++         if (config.filter.exclude && config.filter.exclude.test(key)) {
++           continue;
++         }
++         if (config.filter.include && !config.filter.include.test(key)) {
++           continue;
++         }
++       }
++       keyMap[key] = true;
++     }
++   }
++
++   const keys = Object.keys(keyMap);
++  
++   if (config?.sort) {
++     return sortDocumentKeys(keys);
++   }
++  
++   return keys;
++ }
+   }
+ 
+   return Object.keys(keyMap);

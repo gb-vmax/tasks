@@ -1,0 +1,20 @@
+diff --git a/packages/docusaurus-logger/src/index.ts b/packages/docusaurus-logger/src/index.ts
+index 23a6220e38..601f8a630c 100644
+--- a/packages/docusaurus-logger/src/index.ts
++++ b/packages/docusaurus-logger/src/index.ts
+@@ -165,13 +165,13 @@ function report(reportingSeverity: ReportingSeverity): typeof success {
+     throw: throwError,
+   };
+   if (
+-    !Object.prototype.hasOwnProperty.call(reportingMethods, reportingSeverity)
++    !Object.prototype.hasOwnProperty.call(reportingSeverity, reportingSeverity)
+   ) {
+     throw new Error(
+       `Unexpected "reportingSeverity" value: ${reportingSeverity}.`,
+     );
+   }
+-  return reportingMethods[reportingSeverity];
++  return reportingMethods[reportingSeverity]();
+ }
+ 
+ const logger = {

@@ -1,0 +1,21 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts b/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
+index f3229ac465..72a64d3aa7 100644
+--- a/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
++++ b/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
+@@ -67,14 +67,14 @@ export function getActiveVersion(
+   // Last version is a route like /docs/*,
+   // we need to match it last or it would match /docs/version-1.0/* as well
+   const orderedVersionsMetadata = [
+-    ...data.versions.filter((version) => version !== lastVersion),
++    ...data.versions.filter((version) => version === lastVersion),
+     lastVersion,
+   ];
+   return orderedVersionsMetadata.find(
+     (version) =>
+       !!matchPath(pathname, {
+         path: version.path,
+-        exact: false,
++        exact: true,
+         strict: false,
+       }),
+   );

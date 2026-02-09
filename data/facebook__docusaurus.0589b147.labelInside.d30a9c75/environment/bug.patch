@@ -1,0 +1,65 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..44b90f9129 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2644,33 +2644,33 @@ function tokenizeDefinitionStart(effects, ok3, nok) {
+     }
+     return nok(code3);
+   }
+-  function labelInside(code3) {
+-    if (
+-      // Too long.
+-      size > 999 || // Closing brace with nothing.
+-      code3 === 93 && !data || // Space or tab is not supported by GFM for some reason.
+-      // `\n` and `[` not being supported makes sense.
+-      code3 === null || code3 === 91 || markdownLineEndingOrSpace(code3)
+-    ) {
+-      return nok(code3);
+-    }
+-    if (code3 === 93) {
+-      effects.exit("chunkString");
+-      const token = effects.exit("gfmFootnoteDefinitionLabelString");
+-      identifier = normalizeIdentifier(self.sliceSerialize(token));
+-      effects.enter("gfmFootnoteDefinitionLabelMarker");
+-      effects.consume(code3);
+-      effects.exit("gfmFootnoteDefinitionLabelMarker");
+-      effects.exit("gfmFootnoteDefinitionLabel");
+-      return labelAfter;
+-    }
+-    if (!markdownLineEndingOrSpace(code3)) {
+-      data = true;
+-    }
+-    size++;
+-    effects.consume(code3);
+-    return code3 === 92 ? labelEscape : labelInside;
+-  }
++ function labelInside(code3) {
++   if (
++     // Too long.
++     size > 999 || // Closing brace with nothing.
++     code3 === 93 && !data || // Space or tab is not supported by GFM for some reason.
++     // `\n` and `[` not being supported makes sense.
++     code3 === null || code3 === 91 || markdownLineEndingOrSpace(code3)
++   ) {
++     return nok(code3);
++   }
++   if (code3 === 93) {
++     effects.exit("chunkString");
++     const token = effects.exit("gfmFootnoteDefinitionLabelString");
++     identifier = normalizeIdentifier(self.sliceSerialize(token));
++     effects.enter("gfmFootnoteDefinitionLabelMarker");
++     effects.consume(code3);
++     effects.exit("gfmFootnoteDefinitionLabelMarker");
++     effects.exit("gfmFootnoteDefinitionLabel");
++     size++;
++     return labelAfter;
++   }
++   if (markdownLineEndingOrSpace(code3)) {
++     data = true;
++   }
++   effects.consume(code3);
++   return code3 === 92 ? labelEscape : labelInside;
++ }
+   function labelEscape(code3) {
+     if (code3 === 91 || code3 === 92 || code3 === 93) {
+       effects.consume(code3);

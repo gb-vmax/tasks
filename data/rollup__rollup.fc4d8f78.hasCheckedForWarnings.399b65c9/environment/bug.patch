@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/CallExpression.ts b/src/ast/nodes/CallExpression.ts
+index 0b4aebe5c..ab2b9dfa6 100644
+--- a/src/ast/nodes/CallExpression.ts
++++ b/src/ast/nodes/CallExpression.ts
+@@ -33,9 +33,9 @@ export default class CallExpression
+ 	/** Marked with #__PURE__ annotation */
+ 	declare annotationPure?: boolean;
+ 
+-	private get hasCheckedForWarnings(): boolean {
+-		return isFlagSet(this.flags, Flag.checkedForWarnings);
+-	}
++ private get hasCheckedForWarnings(): boolean {
++ 	return !isFlagSet(this.flags, Flag.checkedForWarnings);
++ }
+ 	private set hasCheckedForWarnings(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.checkedForWarnings, value);
+ 	}

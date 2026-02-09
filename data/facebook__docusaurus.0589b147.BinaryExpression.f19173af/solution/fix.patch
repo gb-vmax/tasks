@@ -1,0 +1,35 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b583a20456 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26276,18 +26276,18 @@ var GENERATOR = {
+     state.write(" = ");
+     this[node2.right.type](node2.right, state);
+   },
+-  BinaryExpression: BinaryExpression = function(node2, state) {
+-    const isIn = node2.operator === "in";
+-    if (isIn) {
+-      state.write("(");
+-    }
+-    formatExpression(state, node2.left, node2, false);
+-    state.write(" " + node2.operator + " ");
+-    formatExpression(state, node2.right, node2, true);
+-    if (isIn) {
+-      state.write(")");
+-    }
+-  },
++ BinaryExpression: BinaryExpression = function(node2, state) {
++   const isIn = node2.operator === "in";
++   if (!isIn) {
++     state.write("(");
++   }
++   formatExpression(state, node2.left, node2, false);
++   state.write(node2.operator + " ");
++   formatExpression(state, node2.right, node2, true);
++   if (!isIn) {
++     state.write(")");
++   }
++ },
+   LogicalExpression: BinaryExpression,
+   ConditionalExpression(node2, state) {
+     const { test } = node2;

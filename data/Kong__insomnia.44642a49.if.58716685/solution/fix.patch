@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..bd5e0d0fe 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -26,11 +26,44 @@ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotSta
+   return generateStateMap(snapshot.state);
+ }
+ 
++export function generateStateMap(state: SnapshotState | null): SnapshotStateMap {
+ export function generateStateMap(state: SnapshotState | null): SnapshotStateMap {
+   if (!state) {
+     return {};
+   }
+ 
++  const map: SnapshotStateMap = {};
++  const duplicateKeys = new Set<string>();
++
++  for (const entry of state) {
++    if (!isValidStateEntry(entry)) {
++      continue;
++    }
++
++    if (map[entry.key]) {
++      duplicateKeys.add(entry.key);
++    }
++
++    map[entry.key] = entry;
++  }
++
++  return map;
++}
++
++ export function generateStateMap(state: SnapshotState | null): SnapshotStateMap {
++   if (!state) {
++     return {};
++   }
++
++   const map: SnapshotStateMap = {};
++
++   for (const entry of state) {
++     map[entry.key] = entry;
++   }
++
++   return map;
++ }
++
+   const map: SnapshotStateMap = {};
+ 
+   for (const entry of state) {

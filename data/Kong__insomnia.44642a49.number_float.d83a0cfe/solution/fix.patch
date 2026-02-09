@@ -1,0 +1,44 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..03522ea4d 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -452,7 +452,38 @@ const generateParameterExample = (
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,
+-    number_float: () => 0.0,
++const calculateMultipleOf = (
++  value: number,
++  multipleOf: number,
++  min: number,
++  max: number
++): number => {
++  const rounded = Math.round(value / multipleOf) * multipleOf;
++  if (rounded < min) {
++    return Math.ceil(min / multipleOf) * multipleOf;
++  }
++  if (rounded > max) {
++    return Math.floor(max / multipleOf) * multipleOf;
++  }
++  return rounded;
++};
++
++ number_float: (parameter: OpenAPIV2.Parameter) => {
++   const min = parameter.exclusiveMinimum 
++     ? (parameter.minimum ?? 0) + 0.01 
++     : (parameter.minimum ?? 0);
++   const max = parameter.exclusiveMaximum 
++     ? (parameter.maximum ?? 100) - 0.01 
++     : (parameter.maximum ?? 100);
++  
++   let value = min + Math.random() * (max - min);
++  
++   if (parameter.multipleOf) {
++     value = calculateMultipleOf(value, parameter.multipleOf, min, max);
++   }
++  
++   return Math.round(value * 100) / 100;
++ },
+     number_double: () => 0.0,
+     integer: () => 0,
+     boolean: () => true,

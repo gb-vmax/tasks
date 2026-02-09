@@ -1,0 +1,80 @@
+diff --git a/packages/insomnia-sdk/src/objects/proxy-configs.ts b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+index 783e6b03c..07a25b6a8 100644
+--- a/packages/insomnia-sdk/src/objects/proxy-configs.ts
++++ b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+@@ -149,9 +149,72 @@ export class ProxyConfigList<T extends ProxyConfig> extends PropertyList<T> {
+     }
+ 
+     resolve(url?: Url) {
+-        if (!url) {
+-            return null;
+-        }
++private _resolutionCache?: Map<string, any>;
++
++private _calculateSpecificity(proxyConfig: ProxyConfig, url: string): number {
++    let score = 0;
++    
++    const protocols = proxyConfig.getProtocols();
++    score += (10 - protocols.length) * 1000;
++    
++    const pattern = proxyConfig.match;
++    const protocolEnd = pattern.indexOf('://');
++    const pathPart = protocolEnd >= 0 ? pattern.slice(protocolEnd + 3) : pattern;
++    
++    const pathSegments = pathPart.split('/').filter(seg => seg && seg !== '*');
++    score += pathSegments.length * 100;
++    
++    const wildcardCount = (pathPart.match(/\*/g) || []).length;
++    score -= wildcardCount * 10;
++    
++    if (!pathPart.includes('*')) {
++        score += 50;
++    }
++    
++    const domainPart = pathPart.split('/')[0];
++    const domainSegments = domainPart.split('.').filter(seg => seg && seg !== '*');
++    score += domainSegments.length * 20;
++    
++    return score;
++}
++
++ resolve(url?: Url) {
++     if (!url) {
++         return null;
++     }
++
++     const urlStr = url.toString();
++    
++     if (this._resolutionCache && this._resolutionCache.has(urlStr)) {
++         return this._resolutionCache.get(urlStr);
++     }
++
++     const matches = this.list
++         .filter((proxyConfig: ProxyConfig) => {
++             return proxyConfig.test(urlStr);
++         })
++         .map(proxyConfig => ({
++             config: proxyConfig,
++             specificity: this._calculateSpecificity(proxyConfig, urlStr)
++         }))
++         .sort((a, b) => b.specificity - a.specificity)
++         .map(item => item.config.toJSON());
++
++     const result = matches.length > 0 ? matches[0] : null;
++    
++     if (!this._resolutionCache) {
++         this._resolutionCache = new Map();
++     }
++    
++     if (this._resolutionCache.size >= 100) {
++         const firstKey = this._resolutionCache.keys().next().value;
++         this._resolutionCache.delete(firstKey);
++     }
++    
++     this._resolutionCache.set(urlStr, result);
++    
++     return result;
++ }
+ 
+         const urlStr = url.toString();
+         const matches = this.list

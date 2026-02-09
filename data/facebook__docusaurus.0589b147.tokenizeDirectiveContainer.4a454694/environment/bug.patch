@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..85e464132d 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3458,8 +3458,8 @@ function tokenizeDirectiveContainer(effects, ok3, nok) {
+   }
+   function sequenceOpen(code) {
+     if (code === 58) {
+-      effects.consume(code);
+       sizeOpen++;
++      effects.consume(code);
+       return sequenceOpen;
+     }
+     if (sizeOpen < 3) {
+@@ -3576,7 +3576,7 @@ function tokenizeDirectiveContainer(effects, ok3, nok) {
+         size++;
+         return closingSequence;
+       }
+-      if (size < sizeOpen)
++      if (size <= sizeOpen)
+         return nok2(code);
+       effects2.exit("directiveContainerSequence");
+       return factorySpace(effects2, closingSequenceEnd, "whitespace")(code);

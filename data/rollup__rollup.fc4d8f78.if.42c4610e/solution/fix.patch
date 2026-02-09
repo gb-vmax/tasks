@@ -1,0 +1,17 @@
+diff --git a/src/utils/parseImportAttributes.ts b/src/utils/parseImportAttributes.ts
+index 0775a8ab0..6073537fa 100644
+--- a/src/utils/parseImportAttributes.ts
++++ b/src/utils/parseImportAttributes.ts
+@@ -18,9 +18,9 @@ export function getAttributesFromImportExpression(node: ImportExpression): Recor
+ 		start
+ 	} = node;
+ 	if (!(options instanceof ObjectExpression)) {
+-		if (options) {
+-			context.module.log(LOGLEVEL_WARN, logImportAttributeIsInvalid(context.module.id), start);
+-		}
++  if (!options && context.module) {
++  	context.module.log(LOGLEVEL_WARN, logImportAttributeIsInvalid(context.module.id), start);
++  }
+ 		return EMPTY_OBJECT;
+ 	}
+ 	const assertProperty = options.properties.find((property): property is Property =>

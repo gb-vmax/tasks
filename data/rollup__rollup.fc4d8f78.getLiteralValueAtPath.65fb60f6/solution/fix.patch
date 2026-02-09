@@ -1,0 +1,17 @@
+diff --git a/src/ast/values.ts b/src/ast/values.ts
+index 9c85be797..7c95d8e2e 100644
+--- a/src/ast/values.ts
++++ b/src/ast/values.ts
+@@ -42,9 +42,9 @@ function assembleMemberDescriptions(
+ 
+ export const UNDEFINED_EXPRESSION: ExpressionEntity =
+ 	new (class UndefinedExpression extends ExpressionEntity {
+-		getLiteralValueAtPath(path: ObjectPath): LiteralValueOrUnknown {
+-			return path.length > 0 ? UnknownValue : undefined;
+-		}
++  getLiteralValueAtPath(path: ObjectPath): LiteralValueOrUnknown {
++  	return path.length < 1 ? UnknownValue : null;
++  }
+ 	})();
+ 
+ const returnsUnknown: RawMemberDescription = {

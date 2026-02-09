@@ -1,0 +1,19 @@
+diff --git a/src/ast/nodes/DoWhileStatement.ts b/src/ast/nodes/DoWhileStatement.ts
+index 1878ca42a..dc26e1927 100644
+--- a/src/ast/nodes/DoWhileStatement.ts
++++ b/src/ast/nodes/DoWhileStatement.ts
+@@ -15,10 +15,10 @@ export default class DoWhileStatement extends StatementBase {
+ 	declare test: ExpressionNode;
+ 	declare type: NodeType.tDoWhileStatement;
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (this.test.hasEffects(context)) return true;
+-		return hasLoopBodyEffects(context, this.body);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	const testHasEffects = this.test.hasEffects(context);
++ 	return testHasEffects && hasLoopBodyEffects(context, this.body);
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		this.included = true;

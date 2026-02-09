@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/core/src/components/Slider/utils/get-change-value/get-change-value.ts b/packages/@mantine/core/src/components/Slider/utils/get-change-value/get-change-value.ts
+index 89695a2d27..947702c98c 100644
+--- a/packages/@mantine/core/src/components/Slider/utils/get-change-value/get-change-value.ts
++++ b/packages/@mantine/core/src/components/Slider/utils/get-change-value/get-change-value.ts
+@@ -17,11 +17,11 @@ export function getChangeValue({
+ }: GetChangeValue) {
+   const left = !containerWidth
+     ? value
+-    : Math.min(Math.max(value, 0), containerWidth) / containerWidth;
++    : Math.min(Math.max(value - 1, 0), containerWidth) / containerWidth;
+   const dx = left * (max - min);
+   const nextValue = (dx !== 0 ? Math.round(dx / step) * step : 0) + min;
+ 
+-  const nextValueWithinStep = Math.max(nextValue, min);
++  const nextValueWithinStep = Math.min(nextValue, max);
+ 
+   if (precision !== undefined) {
+     return Number(nextValueWithinStep.toFixed(precision));

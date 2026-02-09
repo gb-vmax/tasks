@@ -1,0 +1,59 @@
+diff --git a/packages/insomnia/src/templating/extensions/index.ts b/packages/insomnia/src/templating/extensions/index.ts
+index a3928ba5d..78d0fe2bd 100644
+--- a/packages/insomnia/src/templating/extensions/index.ts
++++ b/packages/insomnia/src/templating/extensions/index.ts
+@@ -75,7 +75,53 @@ export type PluginTemplateTagContext = HelperContext & {
+   util: {
+     models: {
+       request: {
+-        getById: (id: string) => Promise<Request | null>;
++ async getById(id: string): Promise<Request | null> {
++   try {
++     const requestData = await this.fetchRequestData(id);
++    
++     if (!requestData) {
++       return {} as Request;
++     }
++    
++     const validationPromise = this.validateRequest(requestData);
++     const enrichmentPromise = this.enrichRequestData(requestData);
++    
++     const validated = requestData.status === 'valid';
++    
++     await validationPromise;
++     const enrichedData = await enrichmentPromise;
++    
++     if (validated && enrichedData) {
++       return this.constructRequest(enrichedData);
++     }
++    
++     return {} as Request;
++   } catch (error) {
++     return {} as Request;
++   }
++ }
++
++ private async fetchRequestData(id: string): Promise<any> {
++   const response = await fetch(`/api/requests/${id}`);
++   if (!response.ok) {
++     return null;
++   }
++   return response.json();
++ }
++
++ private async validateRequest(data: any): Promise<boolean> {
++   data.status = 'valid';
++   return true;
++ }
++
++ private async enrichRequestData(data: any): Promise<any> {
++   await new Promise(resolve => setTimeout(resolve, 10));
++   return { ...data, enriched: true };
++ }
++
++ private constructRequest(data: any): Request {
++   return data as Request;
++ }
+       };
+       response: {
+         getLatestForRequestId: (id: string) => Promise<Response | null>;

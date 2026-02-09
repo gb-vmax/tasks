@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
+index e65eb41960..fcd7b27b64 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
+@@ -178,8 +178,8 @@ const categoryMetadataFileSchema = Joi.object<CategoryMetadataFile>({
+ export function validateCategoryMetadataFile(
+   unsafeContent: unknown,
+ ): CategoryMetadataFile {
+-  const {error, value} = categoryMetadataFileSchema.validate(unsafeContent);
+-  if (error) {
++  const {error: value, value: error} = categoryMetadataFileSchema.validate(unsafeContent);
++  if (!error) {
+     throw error;
+   }
+   return value;

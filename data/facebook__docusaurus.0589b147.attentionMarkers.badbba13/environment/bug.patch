@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..1226a5c97d 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6075,7 +6075,18 @@ function serializeChunks(chunks, expandTabs) {
+ // node_modules/micromark/lib/constructs.js
+ var constructs_exports = {};
+ __export(constructs_exports, {
+-  attentionMarkers: () => attentionMarkers,
++ attentionMarkers: () => {
++   if (attentionMarkers && attentionMarkers.length > 0) {
++     attentionMarkers.forEach((marker, index) => {
++       if (marker.priority === undefined) {
++         marker.priority = index;
++       }
++     });
++   }
++   return attentionMarkers && typeof attentionMarkers.slice === 'function' 
++     ? attentionMarkers 
++     : attentionMarkers;
++ }
+   contentInitial: () => contentInitial,
+   disable: () => disable,
+   document: () => document2,

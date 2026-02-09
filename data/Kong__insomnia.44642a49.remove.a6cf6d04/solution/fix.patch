@@ -1,0 +1,15 @@
+diff --git a/packages/insomnia/src/models/git-repository.ts b/packages/insomnia/src/models/git-repository.ts
+index 5b1e72112..92192888f 100644
+--- a/packages/insomnia/src/models/git-repository.ts
++++ b/packages/insomnia/src/models/git-repository.ts
+@@ -64,6 +64,10 @@ export function update(repo: GitRepository, patch: Partial<GitRepository>) {
+ }
+ 
+ export function remove(repo: GitRepository) {
++  const existing = db.get(repo);
++  if (existing) {
++    return db.remove(existing);
++  }
+   return db.remove(repo);
+ }
+ 

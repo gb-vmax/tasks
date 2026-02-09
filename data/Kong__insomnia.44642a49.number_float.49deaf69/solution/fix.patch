@@ -1,0 +1,68 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..8981c36c0 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -593,7 +593,62 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,
+-    number_float: () => 0.0,
++const generateConstrainedFloat = (schema: OpenAPIV3.SchemaObject): number => {
++  const { minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf } = schema;
++  
++  let min = typeof minimum === 'number' ? minimum : null;
++  let max = typeof maximum === 'number' ? maximum : null;
++  
++  if (typeof exclusiveMinimum === 'number') {
++    min = exclusiveMinimum + Number.EPSILON;
++  } else if (typeof exclusiveMinimum === 'boolean' && exclusiveMinimum && min !== null) {
++    min = min + Number.EPSILON;
++  }
++  
++  if (typeof exclusiveMaximum === 'number') {
++    max = exclusiveMaximum - Number.EPSILON;
++  } else if (typeof exclusiveMaximum === 'boolean' && exclusiveMaximum && max !== null) {
++    max = max - Number.EPSILON;
++  }
++  
++  if (multipleOf && typeof multipleOf === 'number') {
++    if (min !== null && max !== null) {
++      const midpoint = (min + max) / 2;
++      const multiple = Math.round(midpoint / multipleOf) * multipleOf;
++      if (multiple >= min && multiple <= max) {
++        return multiple;
++      }
++      return Math.ceil(min / multipleOf) * multipleOf;
++    } else if (min !== null) {
++      return Math.ceil(min / multipleOf) * multipleOf;
++    } else if (max !== null) {
++      return Math.floor(max / multipleOf) * multipleOf;
++    }
++    return multipleOf;
++  }
++  
++  if (min !== null && max !== null) {
++    return (min + max) / 2;
++  }
++  
++  if (min !== null) {
++    return min + 1.0;
++  }
++  
++  if (max !== null) {
++    return max - 1.0;
++  }
++  
++  return 0.0;
++};
++
++ number_float: (schema?: OpenAPIV3.SchemaObject) => {
++   if (!schema || typeof schema === 'string') {
++     return 0.0;
++   }
++  
++   return generateConstrainedFloat(schema);
++ }
+     number_double: () => 0.0,
+     integer: () => 0,
+     boolean: () => true,

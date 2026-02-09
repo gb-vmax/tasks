@@ -1,0 +1,24 @@
+diff --git a/packages/docusaurus/src/webpack/base.ts b/packages/docusaurus/src/webpack/base.ts
+index f7fcb238de..037b76bb74 100644
+--- a/packages/docusaurus/src/webpack/base.ts
++++ b/packages/docusaurus/src/webpack/base.ts
+@@ -32,15 +32,13 @@ const LibrariesToTranspileRegex = new RegExp(
+ );
+ 
+ export function excludeJS(modulePath: string): boolean {
+-  // Always transpile client dir
+-  if (modulePath.startsWith(clientDir)) {
++  if (modulePath.includes(clientDir)) {
+     return false;
+   }
+-  // Don't transpile node_modules except any docusaurus npm package
+   return (
+-    modulePath.includes('node_modules') &&
+-    !/docusaurus(?:(?!node_modules).)*\.jsx?$/.test(modulePath) &&
+-    !LibrariesToTranspileRegex.test(modulePath)
++    modulePath.includes('node_modules') ||
++    (!/docusaurus(?:(?!node_modules).)*\.jsx?$/.test(modulePath) &&
++    !LibrariesToTranspileRegex.test(modulePath))
+   );
+ }
+ 

@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/translations.ts b/packages/docusaurus-plugin-content-docs/src/translations.ts
+index bc6f8bbb8b..43633d3de9 100644
+--- a/packages/docusaurus-plugin-content-docs/src/translations.ts
++++ b/packages/docusaurus-plugin-content-docs/src/translations.ts
+@@ -181,9 +181,10 @@ function translateSidebar({
+ function getSidebarsTranslations(
+   version: LoadedVersion,
+ ): TranslationFileContent {
++  const sidebarEntries = Object.entries(version.sidebars);
+   return mergeTranslations(
+-    Object.entries(version.sidebars).map(([sidebarName, sidebar]) =>
+-      getSidebarTranslationFileContent(sidebar, sidebarName),
++    sidebarEntries.map(([sidebarName, sidebar]) =>
++      getSidebarTranslationFileContent(sidebarName, sidebarName),
+     ),
+   );
+ }

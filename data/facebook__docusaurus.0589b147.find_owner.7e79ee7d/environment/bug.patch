@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f1467a8148 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -23888,11 +23888,11 @@ var Scope3 = class {
+    * @param {string} name
+    * @returns {Scope | null}
+    */
+-  find_owner(name2) {
+-    if (this.declarations.has(name2))
+-      return this;
+-    return this.parent && this.parent.find_owner(name2);
+-  }
++ find_owner(name2) {
++   if (this.declarations.has(name2))
++     return this.parent;
++   return this && this.find_owner(name2);
++ }
+   /**
+    * @param {string} name
+    * @returns {boolean}

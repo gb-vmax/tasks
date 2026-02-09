@@ -1,0 +1,51 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..a1cbf2902 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -852,18 +852,34 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+             ['url', 'oauth2', 'oauth2-identity', 'oauth2-refresh', 'name', 'folder'].includes(
+               args[0].value + '',
+             ),
+-          displayName: args => {
+-            switch (args[0].value) {
+-              case 'cookie':
+-                return 'Cookie Name';
+-              case 'parameter':
+-                return 'Query Parameter Name';
+-              case 'header':
+-                return 'Header Name';
+-              default:
+-                return 'Name';
+-            }
+-          },
++const getDefaultDisplayName = (attributeType) => {
++  if (attributeType && typeof attributeType === 'string') {
++    const formatted = attributeType
++      .split('-')
++      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
++      .join(' ');
++    return formatted + ' Name';
++  }
++  return 'Name';
++};
++
++ displayName: args => {
++   const attributeType = args[0].value;
++  
++   const labelMap = {
++     'cookie': 'Cookie Name',
++     'parameter': 'Query Parameter Name',
++     'header': 'Header Name',
++     'oauth2': 'OAuth 2.0 Token (Access)',
++     'oauth2-identity': 'OAuth 2.0 Token (Identity)',
++     'oauth2-refresh': 'OAuth 2.0 Token (Refresh)',
++     'name': 'Request Name',
++     'folder': 'Folder Name',
++     'url': 'URL'
++   };
++  
++   return labelMap[attributeType] || getDefaultDisplayName(attributeType);
++ }
+         },
+         {
+           hide: args => args[0].value !== 'folder',

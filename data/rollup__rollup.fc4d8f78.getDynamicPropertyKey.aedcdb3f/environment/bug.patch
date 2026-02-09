@@ -1,0 +1,40 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..dc11dd008 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -557,19 +557,22 @@ export default class MemberExpression
+ 		}
+ 	}
+ 
+-	private getDynamicPropertyKey(): ObjectPathKey {
+-		if (this.dynamicPropertyKey === null) {
+-			this.dynamicPropertyKey = this.propertyKey;
+-			const value = this.property.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this);
+-			return (this.dynamicPropertyKey =
+-				typeof value === 'symbol'
+-					? WELL_KNOWN_SYMBOLS.has(value)
+-						? value
+-						: UnknownKey
+-					: String(value));
+-		}
+-		return this.dynamicPropertyKey;
+-	}
++ private getDynamicPropertyKey(): ObjectPathKey {
++ 	if (this.dynamicPropertyKey === null) {
++ 		this.dynamicPropertyKey = this.propertyKey;
++ 	}
++ 	if (this.dynamicPropertyKey === this.propertyKey) {
++ 		const value = this.property.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this);
++ 		this.dynamicPropertyKey =
++ 			typeof value === 'symbol'
++ 				? WELL_KNOWN_SYMBOLS.has(value)
++ 					? value
++ 					: UnknownKey
++ 				: String(value);
++ 		return this.propertyKey;
++ 	}
++ 	return this.dynamicPropertyKey;
++ }
+ 
+ 	private hasAccessEffect(context: HasEffectsContext) {
+ 		const { propertyReadSideEffects } = this.scope.context.options

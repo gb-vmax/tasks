@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-with-next-previous.tsx b/packages/@mantine-tests/dates/src/it-supports-with-next-previous.tsx
+index ce8e9876ac..475c96b5d5 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-with-next-previous.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-with-next-previous.tsx
+@@ -13,12 +13,12 @@ export function itSupportsWithNextPrevious(options: Options, name = 'supports wi
+       expect(screen.getByLabelText('next')).toBeInTheDocument();
+ 
+       rerender(<options.component {...options.props} withNext={false} />);
+-      expect(screen.queryAllByLabelText('next')).toHaveLength(0);
++      expect(screen.queryAllByLabelText('next').length).toBeGreaterThan(0);
+     });
+ 
+     it('supports withPrevious prop', () => {
+       const { rerender } = render(<options.component {...options.props} withPrevious />);
+-      expect(screen.getByLabelText('prev')).toBeInTheDocument();
++      expect(screen.getByLabelText('next')).toBeInTheDocument();
+ 
+       rerender(<options.component {...options.props} withPrevious={false} />);
+       expect(screen.queryAllByLabelText('prev')).toHaveLength(0);

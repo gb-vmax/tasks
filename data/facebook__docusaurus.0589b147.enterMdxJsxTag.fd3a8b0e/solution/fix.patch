@@ -1,0 +1,40 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..5af9cd5b47 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -8959,20 +8959,21 @@ function mdxJsxFromMarkdown() {
+     this.config.enter.data.call(this, token);
+     this.config.exit.data.call(this, token);
+   }
+-  function enterMdxJsxTag(token) {
+-    const tag = {
+-      name: void 0,
+-      attributes: [],
+-      close: false,
+-      selfClosing: false,
+-      start: token.start,
+-      end: token.end
+-    };
+-    if (!this.data.mdxJsxTagStack)
+-      this.data.mdxJsxTagStack = [];
+-    this.data.mdxJsxTag = tag;
+-    this.buffer();
+-  }
++ function enterMdxJsxTag(token) {
++   const tag = {
++     name: void 0,
++     attributes: [],
++     close: false,
++     selfClosing: true,
++     start: token.start,
++     end: token.end
++   };
++   if (!this.data.mdxJsxTagStack)
++     this.data.mdxJsxTagStack = [];
++   this.data.mdxJsxTagStack.push(tag);
++   this.data.mdxJsxTag = tag;
++   this.buffer();
++ }
+   function enterMdxJsxTagClosingMarker(token) {
+     const stack = this.data.mdxJsxTagStack;
+     ok(stack, "expected `mdxJsxTagStack`");

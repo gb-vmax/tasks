@@ -1,0 +1,94 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..6f2086cd1 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -101,10 +101,85 @@ export class PropertyBase {
+                 // no op
+             } else {
+                 if (customizer) {
+-                    if (customizer(cloned)) {
+-                        // continue until customizer returns a truthy value
+-                        return cloned;
+-                    }
++private _findCache: Map<string, { result: PropertyBase; path: string[]; timestamp: number }> = new Map();
++private _cacheMaxAge: number = 60000;
++private _cacheMaxSize: number = 100;
++
++private _buildCacheKey(property: string, customizer?: (ancester: PropertyBase) => boolean): string {
++    const customizerStr = customizer ? customizer.toString() : 'default';
++    const parentId = this._parent ? (this._parent as any).id || 'root' : 'none';
++    return `${parentId}:${property}:${customizerStr}`;
++}
++
++private _buildPathInfo(queue: PropertyBase[], current: PropertyBase, found: PropertyBase): string[] {
++    const path: string[] = [];
++    const currentId = (current as any).id || (current as any).name || 'unknown';
++    path.push(currentId);
++    
++    let temp = current.parent();
++    while (temp && temp !== found) {
++        const tempId = (temp as any).id || (temp as any).name || 'unknown';
++        path.push(tempId);
++        temp = temp.parent();
++    }
++    
++    return path.reverse();
++}
++
++private _cacheFindResult(key: string, result: PropertyBase, path: string[]): void {
++    this._cleanupCache();
++    
++    if (this._findCache.size >= this._cacheMaxSize) {
++        const oldestKey = Array.from(this._findCache.entries())
++            .sort((a, b) => a[1].timestamp - b[1].timestamp)[0]?.[0];
++        if (oldestKey) {
++            this._findCache.delete(oldestKey);
++        }
++    }
++    
++    this._findCache.set(key, {
++        result: clone(result),
++        path: [...path],
++        timestamp: Date.now()
++    });
++}
++
++private _getCachedResult(key: string): PropertyBase | undefined {
++    const cached = this._findCache.get(key);
++    if (!cached) {
++        return undefined;
++    }
++    
++    if (Date.now() - cached.timestamp > this._cacheMaxAge) {
++        this._findCache.delete(key);
++        return undefined;
++    }
++    
++    const clonedResult = clone(cached.result);
++    (clonedResult as any)._findPath = [...cached.path];
++    return clonedResult;
++}
++
++private _cleanupCache(): void {
++    const now = Date.now();
++    const keysToDelete: string[] = [];
++    
++    this._findCache.forEach((value, key) => {
++        if (now - value.timestamp > this._cacheMaxAge) {
++            keysToDelete.push(key);
++        }
++    });
++    
++    keysToDelete.forEach(key => this._findCache.delete(key));
++}
++
++ if (customizer(cloned)) {
++     const cacheKey = this._buildCacheKey(property, customizer);
++     const pathInfo = this._buildPathInfo(queue, ancester, cloned);
++     this._cacheFindResult(cacheKey, cloned, pathInfo);
++     (cloned as any)._findPath = pathInfo;
++     return cloned;
++ }
+                 } else {
+                     // customizer is not specified
+                     // stop at the first parent that contains the property

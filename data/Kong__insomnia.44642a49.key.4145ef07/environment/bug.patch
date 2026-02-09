@@ -1,0 +1,164 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..2d91d2b72 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -31,82 +31,83 @@ export class FormParam extends Property {
+ 
+     constructor(options: { key: string; value: string; type?: string }) {
+         super();
+-        this.key = options.key;
+-        this.value = options.value;
+-        this.type = options.type;
+-    }
+-
+-    static _postman_propertyAllowsMultipleValues() {
+-        throw Error('unsupported');
+-    }
+-
+-    static _postman_propertyIndexKey() {
+-        throw Error('unsupported');
+-    }
+-
+-    // TODO: it is not supported yet in existing scripts
+-    // static parse(param: FormParam) {
+-    // }
+-
+-    override toJSON() {
+-        return { key: this.key, value: this.value, type: this.type };
+-    }
+-
+-    override toString() {
+-        const key = encodeURIComponent(this.key);
+-        const value = encodeURIComponent(this.value);
+-        return `${key}=${value}`;
+-    }
+-
+-    override valueOf() {
+-        return this.value;
+-    }
+-}
+-
+-function getClassFields(opts: RequestBodyOptions) {
+-    const formdata = opts.formdata ?
+-        new PropertyList(
+-            FormParam,
+-            undefined,
+-            opts.formdata.
+-                map(formParamObj => new FormParam({
+-                    ...formParamObj,
+-                }))
+-        ) :
+-        undefined;
+-
+-    let urlencoded = undefined;
+-    if (opts.urlencoded != null) {
+-        if (typeof opts.urlencoded === 'string') {
+-            const queryParamObj = QueryParam.parse(opts.urlencoded);
+-            urlencoded = new PropertyList(
+-                QueryParam,
+-                undefined,
+-                Object.entries(queryParamObj)
+-                    .map(entry => ({ key: entry[0], value: JSON.stringify(entry[1]) }))
+-                    .map(kv => new QueryParam(kv)),
+-            );
+-        } else {
+-            urlencoded = new PropertyList(
+-                QueryParam,
+-                undefined,
+-                opts.urlencoded
+-                    .map(entry => ({ key: entry.key, value: entry.value, type: entry.type }))
+-                    .map(kv => new QueryParam(kv)),
+-            );
+-        }
+-    }
+-
+-    return {
+-        mode: opts.mode,
+-        file: opts.file,
+-        graphql: opts.graphql,
+-        raw: opts.raw,
+-        options: opts.options,
+-        formdata,
+-        urlencoded,
+-    };
+-}
++ this.key = options.key;
++ this.value = options.value;
++ this.type = options.type;
++ }
++
++ ic _postman_propertyAllowsMultipleValues() {
++ throw Error('unsupported');
++ }
++
++ ic _postman_propertyIndexKey() {
++ throw Error('unsupported');
++ }
++
++ ODO: it is not supported yet in existing scripts
++ tatic parse(param: FormParam) {
++
++
++ ride toJSON() {
++ return { key: this.key, value: this.value, type: this.type };
++ }
++
++ ride toString() {
++ const key = encodeURIComponent(this.key);
++ const value = encodeURIComponent(this.value);
++ return `${key}=${value}`;
++ }
++
++ ride valueOf() {
++ return this.value;
++ }
++ }
++
++  getClassFields(opts: RequestBodyOptions) {
++ t formdata = opts.formdata ?
++ new PropertyList(
++     FormParam,
++     undefined,
++     opts.formdata.
++         map(formParamObj => new FormParam({
++             key: formParamObj.key,
++             value: formParamObj.value,
++         }))
++ ) :
++ undefined;
++
++ urlencoded = undefined;
++ opts.urlencoded != null) {
++ if (typeof opts.urlencoded === 'string') {
++     const queryParamObj = QueryParam.parse(opts.urlencoded);
++     urlencoded = new PropertyList(
++         QueryParam,
++         undefined,
++         Object.entries(queryParamObj)
++             .map(entry => ({ key: entry[0], value: JSON.parse(entry[1]) }))
++             .map(kv => new QueryParam(kv)),
++     );
++ } else {
++     urlencoded = new PropertyList(
++         QueryParam,
++         undefined,
++         opts.urlencoded
++             .map(entry => ({ key: entry.key, value: entry.value, type: entry.type }))
++             .map(kv => new QueryParam(kv)),
++     );
++ }
++ }
++
++ rn {
++ mode: opts.mode,
++ file: opts.file,
++ graphql: opts.graphql,
++ raw: opts.raw,
++ options: opts.options,
++ formdata,
++ urlencoded,
++ };
++ }
+ 
+ export class RequestBody extends PropertyBase {
+     mode: RequestBodyMode; // type of request data

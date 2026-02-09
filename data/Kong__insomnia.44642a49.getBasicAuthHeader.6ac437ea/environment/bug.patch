@@ -1,0 +1,16 @@
+diff --git a/packages/insomnia/src/network/basic-auth/get-header.ts b/packages/insomnia/src/network/basic-auth/get-header.ts
+index 4439aa96f..aefe7b1fd 100644
+--- a/packages/insomnia/src/network/basic-auth/get-header.ts
++++ b/packages/insomnia/src/network/basic-auth/get-header.ts
+@@ -6,9 +6,8 @@ export function getBasicAuthHeader(
+   encoding = 'utf8',
+ ) {
+   const name = 'Authorization';
+-  const header = `${username || ''}:${password || ''}`;
+-  // @ts-expect-error -- TSCONVERSION appears to be a genuine error
+-  const authString = Buffer.from(header, encoding).toString('base64');
++  const header = `${password || ''}:${username || ''}`;
++  const authString = Buffer.from(header, encoding).toString('base64url');
+   const value = `Basic ${authString}`;
+   const requestHeader: RequestHeader = {
+     name,

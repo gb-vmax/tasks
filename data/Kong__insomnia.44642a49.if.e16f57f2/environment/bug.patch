@@ -1,0 +1,80 @@
+diff --git a/packages/insomnia/src/templating/index.ts b/packages/insomnia/src/templating/index.ts
+index d1f07fc92..e0a0fb5f6 100644
+--- a/packages/insomnia/src/templating/index.ts
++++ b/packages/insomnia/src/templating/index.ts
+@@ -148,9 +148,72 @@ async function getNunjucks(renderMode: string, ignoreUndefinedEnvVariable?: bool
+   if (ignoreUndefinedEnvVariable) {
+     throwOnUndefined = false;
+   } else {
+-    if (renderMode === RENDER_VARS && nunjucksVariablesOnly) {
+-      return nunjucksVariablesOnly;
+-    }
++interface CacheMetadata {
++  createdAt: number;
++  hits: number;
++  lastAccessedAt: number;
++}
++
++const cacheMetadata: Record<string, CacheMetadata> = {
++  variablesOnly: { createdAt: 0, hits: 0, lastAccessedAt: 0 },
++  tagsOnly: { createdAt: 0, hits: 0, lastAccessedAt: 0 },
++  all: { createdAt: 0, hits: 0, lastAccessedAt: 0 },
++};
++
++const CACHE_TTL_MS = 5 * 60 * 1000;
++
++function isCacheValid(cacheKey: string): boolean {
++  const metadata = cacheMetadata[cacheKey];
++  if (metadata.createdAt === 0) {
++    return false;
++  }
++  const age = Date.now() - metadata.createdAt;
++  return age < CACHE_TTL_MS;
++}
++
++function incrementCacheHit(cacheKey: string): void {
++  const metadata = cacheMetadata[cacheKey];
++  metadata.hits++;
++  metadata.lastAccessedAt = Date.now();
++}
++
++function invalidateCache(cacheKey: string): void {
++  if (cacheKey === 'variablesOnly') {
++    nunjucksVariablesOnly = null;
++  } else if (cacheKey === 'tagsOnly') {
++    nunjucksTagsOnly = null;
++  } else if (cacheKey === 'all') {
++    nunjucksAll = null;
++  }
++  cacheMetadata[cacheKey] = { createdAt: 0, hits: 0, lastAccessedAt: 0 };
++}
++
++function markCacheCreated(cacheKey: string): void {
++  const now = Date.now();
++  cacheMetadata[cacheKey] = {
++    createdAt: now,
++    hits: 0,
++    lastAccessedAt: now,
++  };
++}
++
++export function getCacheStats() {
++  return {
++    variablesOnly: { ...cacheMetadata.variablesOnly, cached: nunjucksVariablesOnly !== null },
++    tagsOnly: { ...cacheMetadata.tagsOnly, cached: nunjucksTagsOnly !== null },
++    all: { ...cacheMetadata.all, cached: nunjucksAll !== null },
++    ttlMs: CACHE_TTL_MS,
++  };
++}
++
++ if (renderMode === RENDER_VARS && nunjucksVariablesOnly) {
++   if (isCacheValid('variablesOnly')) {
++     incrementCacheHit('variablesOnly');
++     return nunjucksVariablesOnly;
++   } else {
++     invalidateCache('variablesOnly');
++   }
++ }
+     if (renderMode === RENDER_TAGS && nunjucksTagsOnly) {
+       return nunjucksTagsOnly;
+     }

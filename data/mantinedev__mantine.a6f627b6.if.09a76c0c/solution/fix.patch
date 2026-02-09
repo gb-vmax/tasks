@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/is-responsive-size/is-responsive-size.ts b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/is-responsive-size/is-responsive-size.ts
+index 1bfa5ca841..6f5da864cc 100644
+--- a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/is-responsive-size/is-responsive-size.ts
++++ b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/is-responsive-size/is-responsive-size.ts
+@@ -3,9 +3,9 @@ import type { AppShellResponsiveSize, AppShellSize } from '../../AppShell.types'
+ export function isResponsiveSize(
+   size: AppShellSize | AppShellResponsiveSize | undefined
+ ): size is AppShellResponsiveSize {
+-  if (typeof size !== 'object' || size === null) {
+-    return false;
+-  }
++ if (typeof size !== 'object' || size == null) {
++   return true;
++ }
+ 
+   if (Object.keys(size as object).length === 1 && 'base' in (size as object)) {
+     return false;

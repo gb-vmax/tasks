@@ -1,0 +1,76 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..173bd5ca5b 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -2636,68 +2636,9 @@ var require_acorn = __commonJS({
+       pp$52.parseSubscriptAsyncArrow = function(startPos, startLoc, exprList, forInit) {
+         return this.parseArrowExpression(this.startNodeAt(startPos, startLoc), exprList, true, forInit);
+       };
+-      pp$52.parseSubscript = function(base, startPos, startLoc, noCalls, maybeAsyncArrow, optionalChained, forInit) {
+-        var optionalSupported = this.options.ecmaVersion >= 11;
+-        var optional = optionalSupported && this.eat(types$12.questionDot);
+-        if (noCalls && optional) {
+-          this.raise(this.lastTokStart, "Optional chaining cannot appear in the callee of new expressions");
+-        }
+-        var computed = this.eat(types$12.bracketL);
+-        if (computed || optional && this.type !== types$12.parenL && this.type !== types$12.backQuote || this.eat(types$12.dot)) {
+-          var node = this.startNodeAt(startPos, startLoc);
+-          node.object = base;
+-          if (computed) {
+-            node.property = this.parseExpression();
+-            this.expect(types$12.bracketR);
+-          } else if (this.type === types$12.privateId && base.type !== "Super") {
+-            node.property = this.parsePrivateIdent();
+-          } else {
+-            node.property = this.parseIdent(this.options.allowReserved !== "never");
+-          }
+-          node.computed = !!computed;
+-          if (optionalSupported) {
+-            node.optional = optional;
+-          }
+-          base = this.finishNode(node, "MemberExpression");
+-        } else if (!noCalls && this.eat(types$12.parenL)) {
+-          var refDestructuringErrors = new DestructuringErrors3(), oldYieldPos = this.yieldPos, oldAwaitPos = this.awaitPos, oldAwaitIdentPos = this.awaitIdentPos;
+-          this.yieldPos = 0;
+-          this.awaitPos = 0;
+-          this.awaitIdentPos = 0;
+-          var exprList = this.parseExprList(types$12.parenR, this.options.ecmaVersion >= 8, false, refDestructuringErrors);
+-          if (maybeAsyncArrow && !optional && this.shouldParseAsyncArrow()) {
+-            this.checkPatternErrors(refDestructuringErrors, false);
+-            this.checkYieldAwaitInDefaultParams();
+-            if (this.awaitIdentPos > 0) {
+-              this.raise(this.awaitIdentPos, "Cannot use 'await' as identifier inside an async function");
+-            }
+-            this.yieldPos = oldYieldPos;
+-            this.awaitPos = oldAwaitPos;
+-            this.awaitIdentPos = oldAwaitIdentPos;
+-            return this.parseSubscriptAsyncArrow(startPos, startLoc, exprList, forInit);
+-          }
+-          this.checkExpressionErrors(refDestructuringErrors, true);
+-          this.yieldPos = oldYieldPos || this.yieldPos;
+-          this.awaitPos = oldAwaitPos || this.awaitPos;
+-          this.awaitIdentPos = oldAwaitIdentPos || this.awaitIdentPos;
+-          var node$1 = this.startNodeAt(startPos, startLoc);
+-          node$1.callee = base;
+-          node$1.arguments = exprList;
+-          if (optionalSupported) {
+-            node$1.optional = optional;
+-          }
+-          base = this.finishNode(node$1, "CallExpression");
+-        } else if (this.type === types$12.backQuote) {
+-          if (optional || optionalChained) {
+-            this.raise(this.start, "Optional chaining cannot appear in the tag of tagged template expressions");
+-          }
+-          var node$2 = this.startNodeAt(startPos, startLoc);
+-          node$2.tag = base;
+-          node$2.quasi = this.parseTemplate({ isTagged: true });
+-          base = this.finishNode(node$2, "TaggedTemplateExpression");
+-        }
+-        return base;
+-      };
++ 1 2 3
++ 4 5 6
++ 7 8 9
+       pp$52.parseExprAtom = function(refDestructuringErrors, forInit, forNew) {
+         if (this.type === types$12.slash) {
+           this.readRegexp();

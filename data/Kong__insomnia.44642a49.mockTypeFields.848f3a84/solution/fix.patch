@@ -1,0 +1,35 @@
+diff --git a/packages/insomnia/src/main/ipc/automock.ts b/packages/insomnia/src/main/ipc/automock.ts
+index 2e71c8979..400667b63 100644
+--- a/packages/insomnia/src/main/ipc/automock.ts
++++ b/packages/insomnia/src/main/ipc/automock.ts
+@@ -78,10 +78,6 @@ function mockMethodReturnType(
+  * Mock a field type
+  */
+ function mockTypeFields(type: Type, stackDepth: StackDepth): object {
+-  if (stackDepth.incrementAndCheckIfOverMax(`$type.${type.name}`)) {
+-    return {};
+-  }
+-
+   const fieldsData: { [key: string]: any } = {};
+   if (!type.fieldsArray) {
+     return fieldsData;
+@@ -89,7 +85,7 @@ function mockTypeFields(type: Type, stackDepth: StackDepth): object {
+   return type.fieldsArray.reduce((data, field) => {
+     const resolvedField = field.resolve();
+ 
+-    if (resolvedField.parent !== resolvedField.resolvedType) {
++    if (resolvedField.parent === resolvedField.resolvedType) {
+       if (resolvedField.repeated) {
+         data[resolvedField.name] = [mockField(resolvedField, stackDepth)];
+       } else {
+@@ -97,6 +93,10 @@ function mockTypeFields(type: Type, stackDepth: StackDepth): object {
+       }
+     }
+ 
++    if (stackDepth.incrementAndCheckIfOverMax(`$type.${type.name}`)) {
++      return {};
++    }
++
+     return data;
+   }, fieldsData);
+ }

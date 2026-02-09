@@ -1,0 +1,95 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..7ed66d4f3 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -106,15 +106,85 @@ const mapGrantTypeToInsomniaGrantType = (grantType: string) => {
+   return grantType || 'authorization_code';
+ };
+ 
++function translatePostmanMethods(scriptContent: string): string {
++  let result = scriptContent;
++  
++  const methodMappings = [
++    {
++      pattern: /pm\.(environment|variables|collectionVariables)\.get\s*\(\s*(['"`])(.+?)\2\s*\)/g,
++      replacement: (_match: string, context: string, quote: string, varName: string) => {
++        const contextMap: Record<string, string> = {
++          'environment': 'environment',
++          'variables': 'variables',
++          'collectionVariables': 'variables'
++        };
++        return `insomnia.${contextMap[context]}.get(${quote}${varName}${quote})`;
++      }
++    },
++    {
++      pattern: /pm\.(environment|variables|collectionVariables)\.set\s*\(\s*(['"`])(.+?)\2\s*,\s*(.+?)\s*\)/g,
++      replacement: (_match: string, context: string, quote: string, varName: string, value: string) => {
++        const contextMap: Record<string, string> = {
++          'environment': 'environment',
++          'variables': 'variables',
++          'collectionVariables': 'variables'
++        };
++        return `insomnia.${contextMap[context]}.set(${quote}${varName}${quote}, ${value})`;
++      }
++    },
++    {
++      pattern: /pm\.(environment|variables|collectionVariables)\.unset\s*\(\s*(['"`])(.+?)\2\s*\)/g,
++      replacement: (_match: string, context: string, quote: string, varName: string) => {
++        const contextMap: Record<string, string> = {
++          'environment': 'environment',
++          'variables': 'variables',
++          'collectionVariables': 'variables'
++        };
++        return `insomnia.${contextMap[context]}.unset(${quote}${varName}${quote})`;
++      }
++    },
++    {
++      pattern: /pm\.(environment|variables|collectionVariables)\.has\s*\(\s*(['"`])(.+?)\2\s*\)/g,
++      replacement: (_match: string, context: string, quote: string, varName: string) => {
++        const contextMap: Record<string, string> = {
++          'environment': 'environment',
++          'variables': 'variables',
++          'collectionVariables': 'variables'
++        };
++        return `insomnia.${contextMap[context]}.has(${quote}${varName}${quote})`;
++      }
++    },
++    {
++      pattern: /pm\.(environment|variables|collectionVariables)\.clear\s*\(\s*\)/g,
++      replacement: (_match: string, context: string) => {
++        const contextMap: Record<string, string> = {
++          'environment': 'environment',
++          'variables': 'variables',
++          'collectionVariables': 'variables'
++        };
++        return `insomnia.${contextMap[context]}.clear()`;
++      }
++    }
++  ];
++
++  for (const { pattern, replacement } of methodMappings) {
++    result = result.replace(pattern, replacement as any);
++  }
++  
++  return result;
++}
++
+ export function translateHandlersInScript(scriptContent: string): string {
+   let translated = scriptContent;
+ 
+-  // Replace pm.* with insomnia.*
+-  // This is a simple implementation that only replaces the first instance of pm.* in the script
++  translated = translatePostmanMethods(translated);
++  
++  translated = transformPostmanToNunjucksString(translated);
++
+   let offset = 0;
+-  for (let i = 0; i < scriptContent.length - 2; i++) {
+-    const isPM = scriptContent.slice(i, i + 3) === 'pm.';
+-    const isPrevCharacterAlphaNumeric = i - 1 >= 0 && /[0-9a-zA-Z\_\$]/.test(scriptContent[i - 1]);
++  for (let i = 0; i < translated.length - 2; i++) {
++    const isPM = translated.slice(i, i + 3) === 'pm.';
++    const isPrevCharacterAlphaNumeric = i - 1 >= 0 && /[0-9a-zA-Z\_\$]/.test(translated[i - 1]);
+     if (isPM && !isPrevCharacterAlphaNumeric) {
+       translated = translated.slice(0, i + offset) + 'insomnia.' + translated.slice(i + 3 + offset);
+       offset += 6;

@@ -1,0 +1,91 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..79e129fd0 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -67,13 +67,79 @@ export const init = (activeProjectId?: string) => ({
+         format || 'json',
+       ),
+ 
+-      har: async ({
+-        workspace,
+-        includePrivate,
+-      }: HarExport = {}) => exportWorkspacesHAR(
+-        workspace ? [workspace] : await getWorkspaces(activeProjectId),
+-        Boolean(includePrivate),
+-      ),
++interface RequestFilter {
++  methods?: string[];
++  excludeFolders?: string[];
++}
++
++type HarExport = Omit<InsomniaExport, 'format'> & {
++  workspaceNamePattern?: string;
++  requestFilter?: RequestFilter;
++};
++
++const filterHARRequests = (harData: any, filter: RequestFilter) => {
++  if (!harData || !harData.log || !harData.log.entries) {
++    return harData;
++  }
++  
++  const { methods, excludeFolders } = filter;
++  
++  const filteredEntries = harData.log.entries.filter((entry: any) => {
++    if (methods && methods.length > 0) {
++      const requestMethod = entry.request?.method?.toUpperCase();
++      if (!methods.map(m => m.toUpperCase()).includes(requestMethod)) {
++        return false;
++      }
++    }
++    
++    if (excludeFolders && excludeFolders.length > 0) {
++      const comment = entry.comment || '';
++      for (const folder of excludeFolders) {
++        if (comment.includes(folder)) {
++          return false;
++        }
++      }
++    }
++    
++    return true;
++  });
++  
++  return {
++    ...harData,
++    log: {
++      ...harData.log,
++      entries: filteredEntries,
++    },
++  };
++};
++
++ har: async ({
++   workspace,
++   includePrivate,
++   workspaceNamePattern,
++   requestFilter,
++ }: HarExport = {}) => {
++   let workspacesToExport = workspace ? [workspace] : await getWorkspaces(activeProjectId);
++  
++   if (!workspace && workspaceNamePattern) {
++     const pattern = new RegExp(workspaceNamePattern);
++     workspacesToExport = workspacesToExport.filter(ws => pattern.test(ws.name));
++   }
++  
++   if (requestFilter) {
++     const harResult = await exportWorkspacesHAR(
++       workspacesToExport,
++       Boolean(includePrivate),
++     );
++    
++     return filterHARRequests(harResult, requestFilter);
++   }
++  
++   return exportWorkspacesHAR(
++     workspacesToExport,
++     Boolean(includePrivate),
++   );
++ },
+     },
+   },
+ });

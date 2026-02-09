@@ -1,0 +1,107 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..25ec5c04f 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -124,6 +124,7 @@ export class GitVCS {
+ 
+     if (await this.repoExists()) {
+       console.log(`[git] Opened repo for ${gitDirectory}`);
++      this.initializedRepoId = repoId;
+     } else {
+       console.log(`[git] Initialized repo in ${gitDirectory}`);
+       let defaultBranch = 'main';
+@@ -146,6 +147,7 @@ export class GitVCS {
+       }
+ 
+       await git.init({ ...this._baseOpts, defaultBranch });
++      this.initializedRepoId = repoId;
+     }
+   }
+ 
+@@ -158,7 +160,6 @@ export class GitVCS {
+ 
+       return remoteOriginURI;
+     } catch (err) {
+-      // Ignore error
+       return this._baseOpts.uri || '';
+     }
+   }
+@@ -186,12 +187,17 @@ export class GitVCS {
+       singleBranch: true,
+     });
+     console.log(`[git] Clones repo to ${gitDirectory} from ${url}`);
++    this.initializedRepoId = repoId;
+   }
+ 
+   isInitializedForRepo(id: string) {
+     return this._baseOpts.repoId === id;
+   }
+ 
++  requiresReinitialization(repoId: string): boolean {
++    return this.initializedRepoId !== repoId || this._baseOpts.repoId !== repoId;
++  }
++
+   async listFiles() {
+     console.log('[git] List files');
+     const repositoryFiles = await git.listFiles({ ...this._baseOpts });
+@@ -215,7 +221,6 @@ export class GitVCS {
+     const branch = await this.getCurrentBranch();
+     const branches = await git.listBranches({ ...this._baseOpts });
+ 
+-    // For some reason, master isn't in branches on fresh repo (no commits)
+     if (!branches.includes(branch)) {
+       branches.push(branch);
+     }
+@@ -232,7 +237,6 @@ export class GitVCS {
+       ...this._baseOpts,
+       remote: 'origin',
+     });
+-    // Don't care about returning remote HEAD
+     return GitVCS.sortBranches(branches.filter(b => b !== 'HEAD'));
+   }
+ 
+@@ -245,7 +249,6 @@ export class GitVCS {
+         url: uri,
+       });
+       console.log({ branches });
+-      // Don't care about returning remote HEAD
+       return GitVCS.sortBranches(
+         branches
+           .filter(b => b.ref !== 'HEAD')
+@@ -328,14 +331,6 @@ export class GitVCS {
+     return git.commit({ ...this._baseOpts, message });
+   }
+ 
+-  /**
+-   * Check to see whether remote is different than local. This is here because
+-   * when pushing with isomorphic-git, if the HEAD of local is equal the HEAD
+-   * of remote, it will fail with a non-fast-forward message.
+-   *
+-   * @param gitCredentials
+-   * @returns {Promise<boolean>}
+-   */
+   async canPush(gitCredentials?: GitCredentials | null): Promise<boolean> {
+     const branch = await this.getCurrentBranch();
+     const remote = await this.getRemote('origin');
+@@ -365,7 +360,6 @@ export class GitVCS {
+ 
+   async push(gitCredentials?: GitCredentials | null, force = false) {
+     console.log(`[git] Push remote=origin force=${force ? 'true' : 'false'}`);
+-    // eslint-disable-next-line no-unreachable
+     const response: git.PushResult = await git.push({
+       ...this._baseOpts,
+       ...gitCallbacks(gitCredentials),
+@@ -486,7 +480,6 @@ export class GitVCS {
+       try {
+         if (!syncedBranches.includes(branch)) {
+           console.log('[git] Fetching branch', branch);
+-          // Try to fetch the branch from the remote if it doesn't exist locally;
+           await git.fetch({
+             ...this._baseOpts,
+             remote: 'origin',
+@@ -565,5 +558,3 @@ export class GitVCS {
+     return newBranches;
+   }
+ }
+-
+-export default new GitVCS();

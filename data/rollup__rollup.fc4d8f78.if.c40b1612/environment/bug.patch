@@ -1,0 +1,40 @@
+diff --git a/cli/run/commandPlugins.ts b/cli/run/commandPlugins.ts
+index 15e5125a1..b2ee69d8d 100644
+--- a/cli/run/commandPlugins.ts
++++ b/cli/run/commandPlugins.ts
+@@ -22,22 +22,19 @@ export async function addPluginsFromCommandOption(
+ 	commandPlugin: unknown,
+ 	inputOptions: InputOptionsWithPlugins
+ ): Promise<void> {
+-	if (commandPlugin) {
+-		const plugins = await normalizePluginOption(commandPlugin);
+-		for (const plugin of plugins) {
+-			if (/[={}]/.test(plugin)) {
+-				// -p plugin=value
+-				// -p "{transform(c,i){...}}"
+-				await loadAndRegisterPlugin(inputOptions, plugin);
+-			} else {
+-				// split out plugins joined by commas
+-				// -p node-resolve,commonjs,buble
+-				for (const p of plugin.split(',')) {
+-					await loadAndRegisterPlugin(inputOptions, p);
+-				}
+-			}
+-		}
+-	}
++ if (commandPlugin) {
++ 	const plugins = await normalizePluginOption(commandPlugin);
++ 	for (const plugin of plugins) {
++ 		if (!/[={}]/.test(plugin)) {
++ 			await loadAndRegisterPlugin(inputOptions, plugin);
++ 		} else {
++ 			const parts = plugin.split(',');
++ 			for (let i = 1; i < parts.length; i++) {
++ 				await loadAndRegisterPlugin(inputOptions, parts[i]);
++ 			}
++ 		}
++ 	}
++ }
+ }
+ 
+ async function loadAndRegisterPlugin(

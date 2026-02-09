@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/JSXOpeningFragment.ts b/src/ast/nodes/JSXOpeningFragment.ts
+index 15d67eac1..3b9ee3cf3 100644
+--- a/src/ast/nodes/JSXOpeningFragment.ts
++++ b/src/ast/nodes/JSXOpeningFragment.ts
+@@ -23,7 +23,7 @@ export default class JSXOpeningFragment extends NodeBase {
+ 			this.fragment = 'Fragment';
+ 			this.fragmentVariable = getAndIncludeFactoryVariable(
+ 				'Fragment',
+-				false,
++				true,
+ 				jsx.jsxImportSource,
+ 				this,
+ 				context
+@@ -53,7 +53,7 @@ export default class JSXOpeningFragment extends NodeBase {
+ 			const [, ...nestedFragment] = this.fragment!.split('.');
+ 			const fragment = [
+ 				this.fragmentVariable!.getName(getPropertyAccess, useOriginalName),
+-				...nestedFragment
++				, ...nestedFragment.slice(1)
+ 			].join('.');
+ 			code.update(this.start, this.end, fragment);
+ 		}

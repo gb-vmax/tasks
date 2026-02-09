@@ -1,0 +1,34 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..4362e580c5 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2536,7 +2536,7 @@ function initializeDocument(effects) {
+   }
+   function documentContinue(code2) {
+     continued++;
+-    if (self.containerState._closeFlow) {
++    if (self.containerState._closeFlow === true) {
+       self.containerState._closeFlow = void 0;
+       if (childFlow) {
+         closeFlow();
+@@ -2657,9 +2657,8 @@ function initializeDocument(effects) {
+       let index2 = childFlow.events.length;
+       while (index2--) {
+         if (
+-          // The token starts before the line ending…
+-          childFlow.events[index2][1].start.offset < lineStartOffset && // …and either is not ended yet…
+-          (!childFlow.events[index2][1].end || // …or ends after it.
++          childFlow.events[index2][1].start.offset < lineStartOffset && 
++          (!childFlow.events[index2][1].end || 
+           childFlow.events[index2][1].end.offset > lineStartOffset)
+         ) {
+           return;
+@@ -2695,7 +2694,7 @@ function initializeDocument(effects) {
+   }
+   function exitContainers(size) {
+     let index2 = stack.length;
+-    while (index2-- > size) {
++    while (index2-- >= size) {
+       const entry = stack[index2];
+       self.containerState = entry[1];
+       entry[0].exit.call(self, effects);

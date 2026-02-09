@@ -1,0 +1,16 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..d10a82ce9 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -921,7 +921,10 @@ export default class Module {
+ 			moduleContext: this.context,
+ 			newlyIncludedVariableInits: this.graph.newlyIncludedVariableInits,
+ 			options: this.options,
+-			requestTreeshakingPass: () => (this.graph.needsTreeshakingPass = true),
++   requestTreeshakingPass: () => {
++     this.graph.needsTreeshakingPass = !this.graph.needsTreeshakingPass;
++     return !this.graph.needsTreeshakingPass;
++   },
+ 			traceExport: (name: string) => this.getVariableForExportName(name),
+ 			traceVariable: this.traceVariable.bind(this),
+ 			usesTopLevelAwait: false

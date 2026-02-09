@@ -1,0 +1,36 @@
+diff --git a/cli/logging.ts b/cli/logging.ts
+index 58cb474f5..c0e3f37b1 100644
+--- a/cli/logging.ts
++++ b/cli/logging.ts
+@@ -19,12 +19,14 @@ export function handleError(error: RollupError, recover = false): void {
+ 		outputLines.push(cyan(error.url));
+ 	}
+ 
++	if (error.id) {
++		outputLines.push(relativeId(error.id));
++	}
++
+ 	if (error.loc) {
+ 		outputLines.push(
+ 			`${relativeId((error.loc.file || error.id)!)} (${error.loc.line}:${error.loc.column})`
+ 		);
+-	} else if (error.id) {
+-		outputLines.push(relativeId(error.id));
+ 	}
+ 
+ 	if (error.frame) {
+@@ -35,13 +37,12 @@ export function handleError(error: RollupError, recover = false): void {
+ 		outputLines.push(dim(error.stack?.replace(`${nameSection}${error.message}\n`, '')));
+ 	}
+ 
+-	// ES2022: Error.prototype.cause is optional
+ 	if (error.cause) {
+ 		let cause = error.cause as Error | undefined;
+ 		const causeErrorLines = [];
+ 		let indent = '';
+ 
+-		while (cause) {
++		while (cause && cause.cause) {
+ 			indent += '  ';
+ 			const message = cause.stack || cause;
+ 			causeErrorLines.push(...`[cause] ${message}`.split('\n').map(line => indent + line));

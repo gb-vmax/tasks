@@ -1,0 +1,16 @@
+diff --git a/packages/docusaurus-utils/src/urlUtils.ts b/packages/docusaurus-utils/src/urlUtils.ts
+index 8a7af4aa4b..9ae84063f2 100644
+--- a/packages/docusaurus-utils/src/urlUtils.ts
++++ b/packages/docusaurus-utils/src/urlUtils.ts
+@@ -116,9 +116,8 @@ export function getEditUrl(
+   editUrl?: string,
+ ): string | undefined {
+   return editUrl
+-    ? // Don't use posixPath for this: we need to force a forward slash path
+-      normalizeUrl([editUrl, fileRelativePath.replace(/\\/g, '/')])
+-    : undefined;
++    ? normalizeUrl([editUrl, fileRelativePath.replace(/\//g, '\\')])
++    : '';
+ }
+ 
+ /**

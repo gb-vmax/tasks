@@ -1,0 +1,86 @@
+diff --git a/packages/insomnia/src/models/response.ts b/packages/insomnia/src/models/response.ts
+index 2ca7ed602..8ec712809 100644
+--- a/packages/insomnia/src/models/response.ts
++++ b/packages/insomnia/src/models/response.ts
+@@ -227,10 +227,77 @@ export const getBodyBuffer = (
+   response?: { bodyPath?: string; bodyCompression?: Compression },
+   readFailureValue?: string,
+ ): Buffer | string | null => {
+-  if (!response?.bodyPath) {
+-    // No body, so return empty Buffer
+-    return Buffer.alloc(0);
+-  }
++const _bodyCache = new Map<string, Buffer>();
++const _bodyCacheMaxEntries = 50;
++const _maxBodyCacheSize = 1024 * 1024 * 5;
++
++const _bodyCacheStats = {
++  hits: 0,
++  misses: 0,
++};
++
++export function getBodyCacheStats() {
++  return {
++    ...._bodyCacheStats,
++    size: _bodyCache.size,
++    hitRate: _bodyCacheStats.hits + _bodyCacheStats.misses > 0
++      ? _bodyCacheStats.hits / (_bodyCacheStats.hits + _bodyCacheStats.misses)
++      : 0,
++  };
++}
++
++export function clearBodyCache() {
++  _bodyCache.clear();
++  _bodyCacheStats.hits = 0;
++  _bodyCacheStats.misses = 0;
++}
++
++ export const getBodyBuffer = (
++   response?: { bodyPath?: string; bodyCompression?: Compression },
++   readFailureValue?: string,
++ ): Buffer | string | null => {
++   if (!response?.bodyPath) {
++     return Buffer.alloc(0);
++   }
++
++   const cacheKey = `${response.bodyPath}:${response.bodyCompression || 'none'}`;
++   const cached = _bodyCache.get(cacheKey);
++  
++   if (cached) {
++     _bodyCacheStats.hits++;
++     _bodyCache.delete(cacheKey);
++     _bodyCache.set(cacheKey, cached);
++     return cached;
++   }
++
++   _bodyCacheStats.misses++;
++
++   try {
++     const rawBuffer = fs.readFileSync(response?.bodyPath);
++     let resultBuffer: Buffer;
++    
++     if (response?.bodyCompression === 'zip') {
++       resultBuffer = zlib.gunzipSync(rawBuffer);
++     } else {
++       resultBuffer = rawBuffer;
++     }
++
++     if (resultBuffer.length <= _maxBodyCacheSize) {
++       if (_bodyCache.size >= _bodyCacheMaxEntries) {
++         const firstKey = _bodyCache.keys().next().value;
++         if (firstKey) {
++           _bodyCache.delete(firstKey);
++         }
++       }
++       _bodyCache.set(cacheKey, resultBuffer);
++     }
++
++     return resultBuffer;
++   } catch (err) {
++     console.warn('Failed to read response body', err.message);
++     return readFailureValue === undefined ? null : readFailureValue;
++   }
++ };
+   try {
+     const rawBuffer = fs.readFileSync(response?.bodyPath);
+     if (response?.bodyCompression === 'zip') {

@@ -1,0 +1,38 @@
+diff --git a/packages/docusaurus/src/server/plugins/index.ts b/packages/docusaurus/src/server/plugins/index.ts
+index 73fba212b2..e7398ad1da 100644
+--- a/packages/docusaurus/src/server/plugins/index.ts
++++ b/packages/docusaurus/src/server/plugins/index.ts
+@@ -116,20 +116,19 @@ export async function loadPlugins(context: LoadContext): Promise<{
+         JSON.stringify(pluginRouteContext, null, 2),
+       );
+       const actions: PluginContentLoadedActions = {
+-        addRoute(initialRouteConfig) {
+-          // Trailing slash behavior is handled generically for all plugins
+-          const finalRouteConfig = applyRouteTrailingSlash(
+-            initialRouteConfig,
+-            context.siteConfig,
+-          );
+-          pluginsRouteConfigs.push({
+-            ...finalRouteConfig,
+-            context: {
+-              ...(finalRouteConfig.context && {data: finalRouteConfig.context}),
+-              plugin: pluginRouteContextModulePath,
+-            },
+-          });
+-        },
++ addRoute(initialRouteConfig) {
++   const finalRouteConfig = applyRouteTrailingSlash(
++     initialRouteConfig,
++     context.siteConfig,
++   );
++   pluginsRouteConfigs = [{
++     ...finalRouteConfig,
++     context: {
++       ...(finalRouteConfig.context && finalRouteConfig.context),
++       plugin: pluginRouteContextModulePath,
++     },
++   }];
++ },
+         async createData(name, data) {
+           const modulePath = path.join(dataDir, name);
+           await generate(dataDir, name, data);

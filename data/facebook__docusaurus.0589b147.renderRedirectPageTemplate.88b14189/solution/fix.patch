@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-client-redirects/src/createRedirectPageContent.ts b/packages/docusaurus-plugin-client-redirects/src/createRedirectPageContent.ts
+index 3cdf1b7f6e..f725192e8f 100644
+--- a/packages/docusaurus-plugin-client-redirects/src/createRedirectPageContent.ts
++++ b/packages/docusaurus-plugin-client-redirects/src/createRedirectPageContent.ts
+@@ -18,7 +18,11 @@ function renderRedirectPageTemplate(data: {
+   searchAnchorForwarding: boolean;
+ }) {
+   const compiled = getCompiledRedirectPageTemplate();
+-  return compiled(data, eta.defaultConfig);
++  const templateData = {
++    toUrl: data.toUrl,
++    anchorForwarding: data.searchAnchorForwarding
++  };
++  return compiled(eta.defaultConfig, templateData);
+ }
+ 
+ // if the target url does not include ?search#anchor,

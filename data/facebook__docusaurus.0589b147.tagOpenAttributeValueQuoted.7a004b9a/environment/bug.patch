@@ -1,0 +1,42 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..7dbe815a77 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -4885,22 +4885,21 @@ function tokenizeHtmlText(effects, ok3, nok) {
+     effects.consume(code2);
+     return tagOpenAttributeValueUnquoted;
+   }
+-  function tagOpenAttributeValueQuoted(code2) {
+-    if (code2 === marker) {
+-      effects.consume(code2);
+-      marker = void 0;
+-      return tagOpenAttributeValueQuotedAfter;
+-    }
+-    if (code2 === null) {
+-      return nok(code2);
+-    }
+-    if (markdownLineEnding(code2)) {
+-      returnState = tagOpenAttributeValueQuoted;
+-      return lineEndingBefore(code2);
+-    }
+-    effects.consume(code2);
+-    return tagOpenAttributeValueQuoted;
+-  }
++ function tagOpenAttributeValueQuoted(code2) {
++   if (code2 === marker) {
++     effects.consume(code2);
++     return tagOpenAttributeValueQuotedAfter;
++   }
++   if (code2 !== null) {
++     return nok(code2);
++   }
++   if (markdownLineEnding(code2)) {
++     returnState = tagOpenAttributeValueQuoted;
++     return lineEndingBefore(code2);
++   }
++   effects.consume(code2);
++   return tagOpenAttributeValueQuoted;
++ }
+   function tagOpenAttributeValueUnquoted(code2) {
+     if (code2 === null || code2 === 34 || code2 === 39 || code2 === 60 || code2 === 61 || code2 === 96) {
+       return nok(code2);

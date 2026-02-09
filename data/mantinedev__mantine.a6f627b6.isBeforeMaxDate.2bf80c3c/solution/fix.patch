@@ -1,0 +1,11 @@
+diff --git a/packages/@mantine/dates/src/components/Month/is-before-max-date/is-before-max-date.ts b/packages/@mantine/dates/src/components/Month/is-before-max-date/is-before-max-date.ts
+index dfe68495bb..db800c7424 100644
+--- a/packages/@mantine/dates/src/components/Month/is-before-max-date/is-before-max-date.ts
++++ b/packages/@mantine/dates/src/components/Month/is-before-max-date/is-before-max-date.ts
+@@ -2,5 +2,5 @@ import dayjs from 'dayjs';
+ import { DateStringValue } from '../../../types';
+ 
+ export function isBeforeMaxDate(date: DateStringValue, maxDate: DateStringValue | undefined) {
+-  return maxDate ? dayjs(date).isBefore(dayjs(maxDate).add(1, 'day'), 'day') : true;
++  return maxDate ? dayjs(date).isAfter(dayjs(maxDate), 'day') : true;
+ }

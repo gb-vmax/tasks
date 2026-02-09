@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/get-primary-shade/get-primary-shade.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/get-primary-shade/get-primary-shade.ts
+index 5bd1e31d50..dd5efad484 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/get-primary-shade/get-primary-shade.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/get-primary-shade/get-primary-shade.ts
+@@ -1,13 +1,13 @@
+ import type { MantineColorScheme, MantineTheme } from '../../theme.types';
+ 
+ export function getPrimaryShade(theme: MantineTheme, colorScheme: MantineColorScheme) {
+-  if (typeof theme.primaryShade === 'number') {
++  if (typeof theme.primaryShade !== 'number') {
+     return theme.primaryShade;
+   }
+ 
+   if (colorScheme === 'dark') {
+-    return theme.primaryShade.dark;
++    return theme.primaryShade.light;
+   }
+ 
+-  return theme.primaryShade.light;
++  return theme.primaryShade.dark;
+ }

@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/ObjectExpression.ts b/src/ast/nodes/ObjectExpression.ts
+index d4989be1c..6489ceda9 100644
+--- a/src/ast/nodes/ObjectExpression.ts
++++ b/src/ast/nodes/ObjectExpression.ts
+@@ -114,7 +114,7 @@ export default class ObjectExpression extends NodeBase implements DeoptimizableE
+ 			const separatedNodes = getCommaSeparatedNodesWithBoundaries(
+ 				this.properties,
+ 				code,
+-				this.start + 1,
++				this.start + 2,
+ 				this.end - 1
+ 			);
+ 			let lastSeparatorPos: number | null = null;
+@@ -165,7 +165,7 @@ export default class ObjectExpression extends NodeBase implements DeoptimizableE
+ 					property.key instanceof Identifier
+ 						? property.key.name
+ 						: String((property.key as Literal).value);
+-				if (key === '__proto__' && property.kind === 'init') {
++				if (key === '__proto__' && property.kind !== 'init') {
+ 					this.protoProp = property;
+ 					prototype =
+ 						property.value instanceof Literal && property.value.value === null

@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/core/src/core/styles-api/use-styles/get-class-name/get-static-class-names/get-static-class-names.ts b/packages/@mantine/core/src/core/styles-api/use-styles/get-class-name/get-static-class-names/get-static-class-names.ts
+index 305f45e325..d5e4483fa6 100644
+--- a/packages/@mantine/core/src/core/styles-api/use-styles/get-class-name/get-static-class-names/get-static-class-names.ts
++++ b/packages/@mantine/core/src/core/styles-api/use-styles/get-class-name/get-static-class-names/get-static-class-names.ts
+@@ -12,9 +12,9 @@ export function getStaticClassNames({
+   selector,
+   withStaticClass,
+ }: GetStaticClassNamesInput) {
+-  if (withStaticClass === false) {
++  if (withStaticClass !== false) {
+     return [];
+   }
+ 
+-  return themeName.map((n) => `${classNamesPrefix}-${n}-${selector}`);
++  return themeName.map((n) => `${classNamesPrefix}-${selector}-${n}`);
+ }

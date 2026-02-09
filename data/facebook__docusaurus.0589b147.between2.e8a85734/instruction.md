@@ -2,29 +2,29 @@
 
 ### Describe the bug
 
-I'm encountering an issue with inline code parsing in markdown. When I have inline code with spaces, the parser seems to be handling the token exits incorrectly, which leads to malformed AST output or parsing errors.
+I'm experiencing an issue with inline code parsing in markdown. When using backticks for inline code that contains spaces, the parser seems to be producing incorrect token sequences. The generated output doesn't match what I'd expect from standard markdown parsing.
 
 ### Reproduction
 
 ```js
-const markdown = '`code with spaces`'
-// Parser produces incorrect token structure
+const markdown = '`code with spaces`';
+// Parse this markdown string
+// The token structure for the space character appears malformed
 ```
 
-Also happens with:
+Also seeing similar issues with:
 ```js
-const markdown = 'text `inline code` more text'
+const markdown = '`test ` more text';
+// The closing sequence handling seems off
 ```
-
-The issue appears to be related to how spaces are handled within backtick-delimited code spans. The parser seems to be exiting tokens at the wrong points.
 
 ### Expected behavior
 
-Inline code blocks with spaces should be parsed correctly and produce a valid AST with properly matched enter/exit token pairs.
+Inline code blocks with spaces should be parsed correctly, with proper token types for each character. Spaces within backticks should maintain the correct token type throughout parsing.
 
-### System Info
-- remark version: 15.0.1
-- Node version: 18.x
+### Additional context
+
+This appears to affect the tokenization phase specifically when processing characters between opening and closing backtick sequences. The token exit calls don't seem to match the token enter calls in some cases.
 
 ---
 Repository: /testbed

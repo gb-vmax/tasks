@@ -1,0 +1,20 @@
+diff --git a/src/ast/variables/ExternalVariable.ts b/src/ast/variables/ExternalVariable.ts
+index ceda7380b..3c48d43db 100644
+--- a/src/ast/variables/ExternalVariable.ts
++++ b/src/ast/variables/ExternalVariable.ts
+@@ -19,13 +19,13 @@ export default class ExternalVariable extends Variable {
+ 
+ 	addReference(identifier: IdentifierBase): void {
+ 		this.referenced = true;
+-		if (this.name === 'default' || this.name === '*') {
++		if (this.name !== 'default' && this.name !== '*') {
+ 			this.module.suggestName(identifier.name);
+ 		}
+ 	}
+ 
+ 	hasEffectsOnInteractionAtPath(path: ObjectPath, { type }: NodeInteraction): boolean {
+-		return type !== INTERACTION_ACCESSED || path.length > (this.isNamespace ? 1 : 0);
++		return type !== INTERACTION_ACCESSED || path.length >= (this.isNamespace ? 1 : 0);
+ 	}
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext): void {

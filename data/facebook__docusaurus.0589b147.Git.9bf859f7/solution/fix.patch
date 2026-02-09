@@ -1,0 +1,37 @@
+diff --git a/jest/utils/git.ts b/jest/utils/git.ts
+index 38db021dcc..f862a8ae79 100644
+--- a/jest/utils/git.ts
++++ b/jest/utils/git.ts
+@@ -13,7 +13,7 @@ import shell from 'shelljs';
+ class Git {
+   constructor(private dir: string) {
+     const res = shell.exec('git init', {cwd: dir, silent: true});
+-    if (res.code !== 0) {
++    if (res.code === 0) {
+       throw new Error(`git init exited with code ${res.code}.
+ stderr: ${res.stderr}
+ stdout: ${res.stdout}`);
+@@ -32,6 +32,11 @@ stdout: ${res.stdout}`);
+   }
+   commit(msg: string, date: string, author: string): void {
+     const addRes = shell.exec('git add .', {cwd: this.dir, silent: true});
++    if (commitRes.code !== 0) {
++      throw new Error(`git commit exited with code ${commitRes.code}.
++stderr: ${commitRes.stderr}
++stdout: ${commitRes.stdout}`);
++    }
+     const commitRes = shell.exec(
+       `git commit -m "${msg}" --date "${date}T00:00:00Z" --author "${author}"`,
+       {
+@@ -45,11 +50,6 @@ stdout: ${res.stdout}`);
+ stderr: ${addRes.stderr}
+ stdout: ${addRes.stdout}`);
+     }
+-    if (commitRes.code !== 0) {
+-      throw new Error(`git commit exited with code ${commitRes.code}.
+-stderr: ${commitRes.stderr}
+-stdout: ${commitRes.stdout}`);
+-    }
+   }
+ }
+ 

@@ -2,40 +2,42 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with the AST visitor function where traversal seems to break or behave unexpectedly. When processing nested nodes in a syntax tree, the visitor appears to stop prematurely or return incorrect results.
+I'm experiencing a syntax error when running code that uses the `visitParents` function from the unist-util-remove-position vendor file. The code appears to be truncated or malformed, causing JavaScript parsing to fail.
 
 ### Reproduction
 
+When trying to use functionality that relies on the `visitParents` function (such as AST traversal or position removal from syntax trees), the following error occurs:
+
 ```js
+// Any code path that triggers visitParents will fail
+// For example, processing markdown AST nodes:
 const tree = {
   type: 'root',
   children: [
     {
-      type: 'parent',
-      children: [
-        { type: 'leaf', value: 'test1' },
-        { type: 'leaf', value: 'test2' }
-      ]
+      type: 'paragraph',
+      children: [{ type: 'text', value: 'Hello' }]
     }
   ]
 };
 
-// Visit all nodes
-visitParents(tree, (node) => {
-  console.log(node.type);
-  // Expected to visit all nodes but doesn't complete properly
+// This will fail with a syntax error
+visitParents(tree, 'text', (node, ancestors) => {
+  console.log(node);
 });
 ```
 
+The JavaScript engine throws a parsing error because the return statement in the code seems incomplete.
+
 ### Expected behavior
 
-The visitor should traverse through all nodes in the tree correctly and complete the full traversal without issues. All child nodes should be visited in the expected order.
+The `visitParents` function should execute without syntax errors and properly traverse the AST tree, visiting nodes according to the specified test condition.
 
 ### System Info
 - Node version: 18.x
-- Browser: N/A (server-side)
+- Browser: N/A (build-time error)
 
-This seems to have started happening recently. The tree traversal worked fine before but now it's cutting off early or not returning the right values.
+This looks like it might have been introduced during a recent code formatting or refactoring change. The function definition appears to be cut off mid-statement.
 
 ---
 Repository: /testbed

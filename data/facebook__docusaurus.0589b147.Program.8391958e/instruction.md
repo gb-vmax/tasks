@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-When generating code from AST nodes, the first statement in a Program node is being skipped and not written to the output. This causes the generated code to be missing its initial statement/declaration.
+I'm experiencing an issue where the first statement in a Program node is being skipped during code generation. When processing AST nodes, the generator appears to start iterating from index 1 instead of index 0, which causes the first statement in the body to be completely omitted from the output.
 
 ### Reproduction
 
@@ -11,28 +11,30 @@ const ast = {
   type: 'Program',
   body: [
     {
-      type: 'VariableDeclaration',
-      // ... first statement
+      type: 'ExpressionStatement',
+      expression: { type: 'Literal', value: 'first' }
     },
     {
       type: 'ExpressionStatement',
-      // ... second statement
+      expression: { type: 'Literal', value: 'second' }
     }
   ]
-}
+};
 
-// Generate code from this AST
-// Expected: Both statements appear in output
-// Actual: Only the second statement appears
+// Generate code from the AST
+const result = generate(ast);
+
+// Expected: Both statements should be in the output
+// Actual: Only the second statement appears, first one is missing
 ```
 
 ### Expected behavior
 
-All statements in the Program body should be included in the generated output, starting from index 0. The first statement should not be omitted.
+All statements in the Program body should be included in the generated output, starting from the first statement at index 0.
 
 ### Additional context
 
-This affects any code generation from Program nodes where the body contains multiple statements. The first statement is consistently missing from the output, which breaks the generated code.
+This seems to have started happening recently. The code generation is working fine for all other statement types, but specifically for Program nodes, the first element of the body array is being ignored.
 
 ---
 Repository: /testbed

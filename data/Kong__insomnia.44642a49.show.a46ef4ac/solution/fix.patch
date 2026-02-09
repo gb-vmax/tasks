@@ -1,0 +1,108 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..8728172e0 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -13,8 +13,101 @@ export interface AlertModalOptions {
+   onConfirm?: () => void | Promise<void>;
+ }
+ export interface AlertModalHandle {
+-  show: (options: AlertModalOptions) => void;
+-  hide: () => void;
++ export interface AlertModalOptions {
++   title?: string;
++   message?: ReactNode;
++   addCancel?: boolean;
++   okLabel?: React.ReactNode;
++   onConfirm?: () => void | Promise<void>;
++   variant?: 'error' | 'warning' | 'info' | 'success';
++   autoDismiss?: number;
++ }
++ export interface AlertModalHandle {
++   show: (options: AlertModalOptions) => void;
++   hide: () => void;
++ }
++ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
++   const modalRef = useRef<ModalHandle>(null);
++   const autoDismissTimerRef = useRef<NodeJS.Timeout | null>(null);
++   const [state, setState] = useState<AlertModalOptions>({
++     title: '',
++     message: '',
++     addCancel: false,
++     okLabel: '',
++   });
++
++   const clearAutoDismissTimer = () => {
++     if (autoDismissTimerRef.current) {
++       clearTimeout(autoDismissTimerRef.current);
++       autoDismissTimerRef.current = null;
++     }
++   };
++
++   useImperativeHandle(ref, () => ({
++     hide: () => {
++       clearAutoDismissTimer();
++       modalRef.current?.hide();
++     },
++     show: ({ title, message, addCancel, onConfirm, okLabel, variant, autoDismiss }) => {
++       clearAutoDismissTimer();
++      
++       setState({
++         title,
++         message,
++         addCancel,
++         okLabel,
++         onConfirm,
++         variant,
++         autoDismiss,
++       });
++       modalRef.current?.show();
++
++       if (autoDismiss && autoDismiss > 0) {
++         autoDismissTimerRef.current = setTimeout(() => {
++           modalRef.current?.hide();
++           if (typeof onConfirm === 'function') {
++             onConfirm();
++           }
++         }, autoDismiss);
++       }
++     },
++   }), []);
++
++   const { message, title, addCancel, okLabel, variant } = state;
++   const modalClassName = variant ? `alert-modal--${variant}` : '';
++  
++   return (
++     <Modal ref={modalRef} className={modalClassName}>
++       <ModalHeader>{title || 'Uh Oh!'}</ModalHeader>
++       <ModalBody className="wide pad">{message}</ModalBody>
++       <ModalFooter>
++         <div>
++           {addCancel ? (
++             <button className="btn" onClick={() => {
++               clearAutoDismissTimer();
++               modalRef.current?.hide();
++             }}>
++               Cancel
++             </button>
++           ) : null}
++           <button
++             className="btn"
++             onClick={() => {
++               clearAutoDismissTimer();
++               modalRef.current?.hide();
++               if (typeof state.onConfirm === 'function') {
++                 state.onConfirm();
++               }
++             }}
++           >
++             {okLabel || 'Ok'}
++           </button>
++         </div>
++       </ModalFooter>
++     </Modal>
++   );
++ });
++ AlertModal.displayName = 'AlertModal';
+ }
+ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

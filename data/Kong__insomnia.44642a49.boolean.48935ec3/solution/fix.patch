@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..45474fe66 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -455,7 +455,43 @@ const generateParameterExample = (
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+     integer: () => 0,
+-    boolean: () => true,
++const inferBooleanFromContext = (parameter: OpenAPIV2.Parameter): boolean => {
++  const nameOrDesc = `${parameter.name || ''} ${parameter.description || ''}`.toLowerCase();
++  
++  const falseIndicators = [
++    'disabled', 'disable', 'inactive', 'not', 'un', 'false', 
++    'hidden', 'hide', 'deny', 'denied', 'rejected', 'negative',
++    'off', 'closed', 'blocked'
++  ];
++  
++  const trueIndicators = [
++    'enabled', 'enable', 'active', 'is', 'has', 'should', 
++    'allow', 'allowed', 'accept', 'accepted', 'positive',
++    'on', 'open', 'visible', 'show'
++  ];
++  
++  for (const indicator of falseIndicators) {
++    if (nameOrDesc.includes(indicator)) {
++      return false;
++    }
++  }
++  
++  for (const indicator of trueIndicators) {
++    if (nameOrDesc.includes(indicator)) {
++      return true;
++    }
++  }
++  
++  return true;
++};
++
++ boolean: (parameter: OpenAPIV2.Parameter) => {
++   if (parameter.enum && parameter.enum.length === 1 && typeof parameter.enum[0] === 'boolean') {
++     return parameter.enum[0];
++   }
++  
++   return inferBooleanFromContext(parameter);
++ },
+     object: (parameter: OpenAPIV2.Parameter) => {
+       if (ancestors.indexOf(parameter) !== -1) {
+         return {};

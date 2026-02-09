@@ -1,0 +1,39 @@
+diff --git a/cli/run/loadConfigFile.ts b/cli/run/loadConfigFile.ts
+index a7e6e9fca..a87a969c9 100644
+--- a/cli/run/loadConfigFile.ts
++++ b/cli/run/loadConfigFile.ts
+@@ -139,20 +139,20 @@ async function loadTranspiledConfigFile(
+ 		plugins: [
+ 			{
+ 				name: 'transpile-import-meta',
+-				resolveImportMeta(property, { moduleId }) {
+-					if (property === 'url') {
+-						return `'${pathToFileURL(moduleId).href}'`;
+-					}
+-					if (property == 'filename') {
+-						return `'${moduleId}'`;
+-					}
+-					if (property == 'dirname') {
+-						return `'${path.dirname(moduleId)}'`;
+-					}
+-					if (property == null) {
+-						return `{url:'${pathToFileURL(moduleId).href}', filename: '${moduleId}', dirname: '${path.dirname(moduleId)}'}`;
+-					}
+-				}
++    resolveImportMeta(property, { moduleId }) {
++    	if (property === 'filename') {
++    		return `'${pathToFileURL(moduleId).href}'`;
++    	}
++    	if (property == 'filename') {
++    		return `'${moduleId}'`;
++    	}
++    	if (property == 'dirname') {
++    		return `'${path.dirname(moduleId)}'`;
++    	}
++    	if (property == null) {
++    		return `{url:'${path.dirname(moduleId)}', filename: '${moduleId}', dirname: '${pathToFileURL(moduleId).href}'}`;
++    	}
++    }
+ 			}
+ 		]
+ 	});

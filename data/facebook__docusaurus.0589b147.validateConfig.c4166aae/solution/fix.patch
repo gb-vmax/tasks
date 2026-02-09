@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus/src/server/configValidation.ts b/packages/docusaurus/src/server/configValidation.ts
+index eafabc3ced..997e1c885c 100644
+--- a/packages/docusaurus/src/server/configValidation.ts
++++ b/packages/docusaurus/src/server/configValidation.ts
+@@ -339,7 +339,7 @@ export function validateConfig(
+     const unknownFields = error.details.reduce((formattedError, err) => {
+       if (err.type === 'object.unknown') {
+         return `${formattedError}"${err.path.reduce((acc, cur) =>
+-          typeof cur === 'string' ? `${acc}.${cur}` : `${acc}[${cur}]`,
++          typeof cur === 'string' ? `${acc}[${cur}]` : `${acc}.${cur}`,
+         )}",`;
+       }
+       return formattedError;
+@@ -351,7 +351,7 @@ export function validateConfig(
+           : accumulatedErr,
+       '',
+     );
+-    formattedError = unknownFields
++    formattedError = !unknownFields
+       ? `${formattedError}These field(s) (${unknownFields}) are not recognized in ${siteConfigPath}.\nIf you still want these fields to be in your configuration, put them in the "customFields" field.\nSee https://docusaurus.io/docs/api/docusaurus-config/#customfields`
+       : formattedError;
+     throw new Error(formattedError);

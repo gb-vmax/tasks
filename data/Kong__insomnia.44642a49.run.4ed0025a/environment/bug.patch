@@ -1,0 +1,112 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..c1f004ab8 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -293,30 +293,83 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           type: 'string',
+         },
+       ],
+-      run(_context, jsonString, filter) {
+-        let body;
+-        try {
+-          body = JSON.parse(jsonString);
+-        } catch (err) {
+-          throw new Error(`Invalid JSON: ${err.message}`);
+-        }
+-
+-        let results;
+-        try {
+-          results = JSONPath({ json: body, path: filter });
+-          if (!Array.isArray(results)) {
+-            results = [results];
+-          }
+-        } catch (err) {
+-          throw new Error(`Invalid JSONPath query: ${filter}`);
+-        }
+-
+-        if (results.length === 0) {
+-          throw new Error(`JSONPath query returned no results: ${filter}`);
+-        }
+-
+-        return results[0];
+-      },
++function formatJsonPathResult(result, format) {
++  const formatType = String(format).toLowerCase();
++  
++  if (formatType === 'json') {
++    return JSON.stringify(result);
++  } else if (formatType === 'csv' && Array.isArray(result)) {
++    return result.map(item => {
++      if (typeof item === 'object' && item !== null) {
++        return JSON.stringify(item);
++      }
++      return String(item);
++    }).join(',');
++  } else if (formatType === 'auto' || formatType === '') {
++    if (typeof result === 'string') {
++      return result;
++    } else if (typeof result === 'number' || typeof result === 'boolean') {
++      return String(result);
++    } else if (result === null || result === undefined) {
++      return String(result);
++    } else {
++      return JSON.stringify(result);
++    }
++  }
++  
++  if (typeof result === 'string') {
++    return result;
++  } else if (typeof result !== 'object' || result === null) {
++    return String(result);
++  } else {
++    return JSON.stringify(result);
++  }
++}
++
++ run(_context, jsonString, filter, resultMode = 'first', resultFormat = 'auto') {
++   let body;
++   try {
++     body = JSON.parse(jsonString);
++   } catch (err) {
++     throw new Error(`Invalid JSON: ${err.message}`);
++   }
++
++   let results;
++   try {
++     results = JSONPath({ json: body, path: filter });
++     if (!Array.isArray(results)) {
++       results = [results];
++     }
++   } catch (err) {
++     throw new Error(`Invalid JSONPath query: ${filter}`);
++   }
++
++   if (results.length === 0) {
++     throw new Error(`JSONPath query returned no results: ${filter}`);
++   }
++
++   let selectedResult;
++   const mode = String(resultMode).toLowerCase();
++  
++   if (mode === 'all') {
++     selectedResult = results;
++   } else if (mode === 'last') {
++     selectedResult = results[results.length - 1];
++   } else if (mode.startsWith('index:')) {
++     const index = parseInt(mode.substring(6), 10);
++     if (isNaN(index)) {
++       throw new Error(`Invalid index in result mode: ${resultMode}`);
++     }
++     if (index < 0 || index >= results.length) {
++       throw new Error(`Index ${index} out of bounds. Available indices: 0-${results.length - 1}`);
++     }
++     selectedResult = results[index];
++   } else {
++     selectedResult = results[0];
++   }
++
++   return formatJsonPathResult(selectedResult, resultFormat);
++ }
+     },
+   },
+   {

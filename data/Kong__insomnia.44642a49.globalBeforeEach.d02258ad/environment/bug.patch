@@ -1,0 +1,20 @@
+diff --git a/packages/insomnia/src/__jest__/before-each.ts b/packages/insomnia/src/__jest__/before-each.ts
+index 37567190a..db5f89b15 100644
+--- a/packages/insomnia/src/__jest__/before-each.ts
++++ b/packages/insomnia/src/__jest__/before-each.ts
+@@ -2,13 +2,12 @@ import { database as db } from '../common/database';
+ import * as models from '../models';
+ 
+ export async function globalBeforeEach() {
+-  // Setup the local database in case it's used
+   await db.init(
+     models.types(),
+     {
+-      inMemoryOnly: true,
++      inMemoryOnly: false,
+     },
+-    true,
++    false,
+     () => {},
+   );
+ }

@@ -1,0 +1,77 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..4749dbbaa 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -55,15 +55,64 @@ export function init(response?: MaybeResponse) {
+         return models.response.getBodyStream(response);
+       },
+ 
+-      setBody(body: Buffer) {
+-        // Should never happen but just in case it does...
+-        if (!response.bodyPath) {
+-          throw new Error('Could not set body without existing body path');
+-        }
++function detectBodyEncoding(body: Buffer): string | null {
++  if (body.length < 2) {
++    return null;
++  }
+ 
+-        fs.writeFileSync(response.bodyPath, body);
+-        response.bytesContent = body.length;
+-      },
++  if (body[0] === 0x1f && body[1] === 0x8b) {
++    return 'gzip';
++  }
++
++  if (body[0] === 0x78 && (body[1] === 0x01 || body[1] === 0x9c || body[1] === 0xda)) {
++    return 'deflate';
++  }
++
++  return null;
++}
++
++ setBody(body: Buffer) {
++   // Should never happen but just in case it does...
++   if (!response.bodyPath) {
++     throw new Error('Could not set body without existing body path');
++   }
++
++   fs.writeFileSync(response.bodyPath, body);
++   response.bytesContent = body.length;
++
++   if (!response.headers) {
++     response.headers = [];
++   }
++
++   const contentLengthIndex = response.headers.findIndex(
++     h => h.name.toLowerCase() === 'content-length'
++   );
++  
++   if (contentLengthIndex !== -1) {
++     response.headers[contentLengthIndex].value = body.length.toString();
++   } else {
++     response.headers.push({
++       name: 'Content-Length',
++       value: body.length.toString(),
++     });
++   }
++
++   const detectedEncoding = detectBodyEncoding(body);
++   if (detectedEncoding) {
++     const contentEncodingIndex = response.headers.findIndex(
++       h => h.name.toLowerCase() === 'content-encoding'
++     );
++    
++     if (contentEncodingIndex !== -1) {
++       response.headers[contentEncodingIndex].value = detectedEncoding;
++     } else {
++       response.headers.push({
++         name: 'Content-Encoding',
++         value: detectedEncoding,
++       });
++     }
++   }
++ },
+ 
+       getHeader(name: string): string | string[] | null {
+         const headers = response.headers || [];

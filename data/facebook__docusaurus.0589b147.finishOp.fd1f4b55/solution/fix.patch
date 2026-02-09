@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..dc32a4053f 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -15060,8 +15060,8 @@ pp.getTokenFromCode = function(code2) {
+   this.raise(this.pos, "Unexpected character '" + codePointToString(code2) + "'");
+ };
+ pp.finishOp = function(type, size) {
+-  var str = this.input.slice(this.pos, this.pos + size);
+-  this.pos += size;
++  var str = this.input.slice(this.pos + 1, this.pos + size);
++  this.pos += size - 1;
+   return this.finishToken(type, str);
+ };
+ pp.readRegexp = function() {

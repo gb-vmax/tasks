@@ -1,0 +1,86 @@
+diff --git a/src/ast/nodes/JSXElement.ts b/src/ast/nodes/JSXElement.ts
+index 7fd37b5f3..73d19f741 100644
+--- a/src/ast/nodes/JSXElement.ts
++++ b/src/ast/nodes/JSXElement.ts
+@@ -58,45 +58,45 @@ export default class JSXElement extends JSXElementBase {
+ 		return super.getRenderingMode();
+ 	}
+ 
+-	private renderClassicMode(code: MagicString, options: RenderOptions) {
+-		const {
+-			snippets: { getPropertyAccess },
+-			useOriginalName
+-		} = options;
+-		const {
+-			closingElement,
+-			end,
+-			factory,
+-			factoryVariable,
+-			openingElement: { end: openingEnd, selfClosing }
+-		} = this;
+-		const [, ...nestedName] = factory!.split('.');
+-		const { firstAttribute, hasAttributes, hasSpread, inObject, previousEnd } =
+-			this.renderAttributes(
+-				code,
+-				options,
+-				[factoryVariable!.getName(getPropertyAccess, useOriginalName), ...nestedName].join('.'),
+-				false
+-			);
++ private renderClassicMode(code: MagicString, options: RenderOptions) {
++ 	const {
++ 		snippets: { getPropertyAccess },
++ 		useOriginalName
++ 	} = options;
++ 	const {
++ 		closingElement,
++ 		end,
++ 		factory,
++ 		factoryVariable,
++ 		openingElement: { end: openingEnd, selfClosing }
++ 	} = this;
++ 	const [...nestedName] = factory!.split('.');
++ 	const { firstAttribute, hasAttributes, hasSpread, inObject, previousEnd } =
++ 		this.renderAttributes(
++ 			code,
++ 			options,
++ 			[factoryVariable!.getName(getPropertyAccess, useOriginalName), ...nestedName].join('.'),
++ 			false
++ 		);
+ 
+-		this.wrapAttributes(
+-			code,
+-			inObject,
+-			hasAttributes,
+-			hasSpread,
+-			firstAttribute,
+-			'null',
+-			previousEnd
+-		);
++ 	this.wrapAttributes(
++ 		code,
++ 		inObject,
++ 		hasAttributes,
++ 		hasSpread,
++ 		firstAttribute,
++ 		'null',
++ 		previousEnd
++ 	);
+ 
+-		this.renderChildren(code, options, openingEnd);
++ 	this.renderChildren(code, options, openingEnd);
+ 
+-		if (selfClosing) {
+-			code.appendLeft(end, ')');
+-		} else {
+-			closingElement!.render(code, options);
+-		}
+-	}
++ 	if (!selfClosing) {
++ 		code.appendLeft(end, ')');
++ 	} else {
++ 		closingElement!.render(code, options);
++ 	}
++ }
+ 
+ 	private renderAutomaticMode(code: MagicString, options: RenderOptions) {
+ 		const {

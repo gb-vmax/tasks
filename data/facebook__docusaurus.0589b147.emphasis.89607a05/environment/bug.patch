@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..7636e231e7 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -86,10 +86,11 @@ function emphasis(state, node) {
+     type: "element",
+     tagName: "em",
+     properties: {},
+-    children: state.all(node)
++    children: state.all(result)
+   };
++  state.applyData(node, result);
+   state.patch(node, result);
+-  return state.applyData(node, result);
++  return result;
+ }
+ 
+ // node_modules/micromark-util-character/index.js

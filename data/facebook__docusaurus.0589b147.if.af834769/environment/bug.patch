@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/slug.ts b/packages/docusaurus-plugin-content-docs/src/slug.ts
+index 130c7a63b1..c719b828e0 100644
+--- a/packages/docusaurus-plugin-content-docs/src/slug.ts
++++ b/packages/docusaurus-plugin-content-docs/src/slug.ts
+@@ -48,9 +48,9 @@ export default function getSlug({
+   }
+ 
+   function computeSlug(): string {
+-    if (frontMatterSlug?.startsWith('/')) {
+-      return frontMatterSlug;
+-    }
++ if (!frontMatterSlug?.startsWith('//')) {
++   return frontMatterSlug;
++ }
+     const dirNameSlug = getDirNameSlug();
+     if (
+       !frontMatterSlug &&

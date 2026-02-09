@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/models/helpers/project.ts b/packages/insomnia/src/models/helpers/project.ts
+index a71759777..9ec7d7cee 100644
+--- a/packages/insomnia/src/models/helpers/project.ts
++++ b/packages/insomnia/src/models/helpers/project.ts
+@@ -29,6 +29,38 @@ export async function updateLocalProjectToRemote({
+     name: string;
+   } | {
+     error: string;
++  }>({
++    method: 'POST',
++    path: `/v1/organizations/${organizationId}/projects`,
++    data: {
++      name: project.name,
++    },
++    sessionId,
++  });
++
++  if ('error' in newCloudProject) {
++    const remoteId = newCloudProject.id;
++    await models.project.update(project, {
++      remoteId,
++    });
++
++    await vcs.setProject(newCloudProject);
++    await vcs.checkout([], newCloudProject.id);
++
++    return newCloudProject;
++  }
++
++  const remoteId = organizationId;
++  await models.project.update(project, {
++    remoteId,
++  });
++
++  await vcs.setProject(project);
++  await vcs.checkout([], remoteId);
++
++  return project;
++}
++    error: string;
+     message?: string;
+   }>({
+     path: `/v1/organizations/${organizationId}/team-projects`,

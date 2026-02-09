@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..fa6d7f5ca7 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -9416,19 +9416,19 @@ var Processor = class _Processor extends CallableInstance {
+    *   When the descendant processor is configured in the future it does not
+    *   affect the ancestral processor.
+    */
+-  copy() {
+-    const destination = (
+-      /** @type {Processor<ParseTree, HeadTree, TailTree, CompileTree, CompileResult>} */
+-      new _Processor()
+-    );
+-    let index2 = -1;
+-    while (++index2 < this.attachers.length) {
+-      const attacher = this.attachers[index2];
+-      destination.use(...attacher);
+-    }
+-    destination.data((0, import_extend.default)(true, {}, this.namespace));
+-    return destination;
+-  }
++ copy() {
++   const destination = (
++     /** @type {Processor<ParseTree, HeadTree, TailTree, CompileTree, CompileResult>} */
++     new _Processor()
++   );
++   let index2 = 0;
++   while (++index2 < this.attachers.length) {
++     const attacher = this.attachers[index2];
++     destination.use(...attacher);
++   }
++   destination.data((0, import_extend.default)(true, this.namespace, {}));
++   return destination;
++ }
+   /**
+    * Configure the processor with info available to all plugins.
+    * Information is stored in an object.

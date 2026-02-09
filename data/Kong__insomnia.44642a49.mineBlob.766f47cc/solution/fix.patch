@@ -1,0 +1,40 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..adb525faf 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -30,7 +30,34 @@ export const branchSchema: Schema<Branch> = {
+ export const mergeConflictSchema: Schema<MergeConflict> = {
+   key: () => 'key',
+   choose: () => null,
+-  mineBlob: () => null,
++function generateBlobHash(counter: number, seed: number, prefix: string): string {
++  const combined = `${prefix}-${seed}-${counter}`;
++  let hash = 0;
++  for (let i = 0; i < combined.length; i++) {
++    const char = combined.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  
++  const hexHash = Math.abs(hash).toString(16).padStart(8, '0');
++  const extendedHash = hexHash.repeat(5).substring(0, 40);
++  
++  return extendedHash;
++}
++
++declare global {
++  var __blobCounter: number | undefined;
++  var __blobSeed: number | undefined;
++}
++
++ mineBlob: () => {
++   if (typeof globalThis.__blobCounter === 'undefined') {
++     globalThis.__blobCounter = 0;
++   }
++   const counter = globalThis.__blobCounter++;
++   const seed = globalThis.__blobSeed || 0;
++   return generateBlobHash(counter, seed, 'mine');
++ },
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,

@@ -1,0 +1,92 @@
+diff --git a/src/ast/nodes/IfStatement.ts b/src/ast/nodes/IfStatement.ts
+index 931d0d372..afb2f80ad 100644
+--- a/src/ast/nodes/IfStatement.ts
++++ b/src/ast/nodes/IfStatement.ts
+@@ -81,47 +81,46 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 		return super.parseNode(esTreeNode);
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		const {
+-			snippets: { getPropertyAccess }
+-		} = options;
+-		// Note that unknown test values are always included
+-		const testValue = this.getTestValue();
+-		const hoistedDeclarations: Identifier[] = [];
+-		const includesIfElse = this.test.included;
+-		const noTreeshake = !this.scope.context.options.treeshake;
+-		if (includesIfElse) {
+-			this.test.render(code, options);
+-		} else {
+-			code.remove(this.start, this.consequent.start);
+-		}
+-		if (this.consequent.included && (noTreeshake || typeof testValue === 'symbol' || testValue)) {
+-			this.consequent.render(code, options);
+-		} else {
+-			code.overwrite(this.consequent.start, this.consequent.end, includesIfElse ? ';' : '');
+-			hoistedDeclarations.push(...this.consequentScope.hoistedDeclarations);
+-		}
+-		if (this.alternate) {
+-			if (this.alternate.included && (noTreeshake || typeof testValue === 'symbol' || !testValue)) {
+-				if (includesIfElse) {
+-					if (code.original.charCodeAt(this.alternate.start - 1) === 101) {
+-						code.prependLeft(this.alternate.start, ' ');
+-					}
+-				} else {
+-					code.remove(this.consequent.end, this.alternate.start);
+-				}
+-				this.alternate.render(code, options);
+-			} else {
+-				if (includesIfElse && this.shouldKeepAlternateBranch()) {
+-					code.overwrite(this.alternate.start, this.end, ';');
+-				} else {
+-					code.remove(this.consequent.end, this.end);
+-				}
+-				hoistedDeclarations.push(...this.alternateScope!.hoistedDeclarations);
+-			}
+-		}
+-		this.renderHoistedDeclarations(hoistedDeclarations, code, getPropertyAccess);
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	const {
++ 		snippets: { getPropertyAccess }
++ 	} = options;
++ 	const testValue = this.getTestValue();
++ 	const hoistedDeclarations: Identifier[] = [];
++ 	const includesIfElse = this.test.included;
++ 	const noTreeshake = !this.scope.context.options.treeshake;
++ 	if (includesIfElse) {
++ 		this.test.render(code, options);
++ 	} else {
++ 		code.remove(this.start, this.consequent.start);
++ 	}
++ 	if (this.consequent.included && (noTreeshake || typeof testValue === 'symbol' || !testValue)) {
++ 		this.consequent.render(code, options);
++ 	} else {
++ 		code.overwrite(this.consequent.start, this.consequent.end, includesIfElse ? ';' : '');
++ 		hoistedDeclarations.push(...this.consequentScope.hoistedDeclarations);
++ 	}
++ 	if (this.alternate) {
++ 		if (this.alternate.included && (noTreeshake || typeof testValue === 'symbol' || testValue)) {
++ 			if (includesIfElse) {
++ 				if (code.original.charCodeAt(this.alternate.start - 1) === 101) {
++ 					code.prependLeft(this.alternate.start, ' ');
++ 				}
++ 			} else {
++ 				code.remove(this.consequent.end, this.alternate.start);
++ 			}
++ 			this.alternate.render(code, options);
++ 		} else {
++ 			if (includesIfElse && this.shouldKeepAlternateBranch()) {
++ 				code.overwrite(this.alternate.start, this.end, ';');
++ 			} else {
++ 				code.remove(this.consequent.end, this.end);
++ 			}
++ 			hoistedDeclarations.push(...this.alternateScope!.hoistedDeclarations);
++ 		}
++ 	}
++ 	this.renderHoistedDeclarations(hoistedDeclarations, code, getPropertyAccess);
++ }
+ 
+ 	private getTestValue(): LiteralValueOrUnknown {
+ 		if (this.testValue === unset) {

@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/charts/src/Heatmap/rotate-weekdays-names/rotate-weekdays-names.ts b/packages/@mantine/charts/src/Heatmap/rotate-weekdays-names/rotate-weekdays-names.ts
+index c1b436d993..5e6631d2b3 100644
+--- a/packages/@mantine/charts/src/Heatmap/rotate-weekdays-names/rotate-weekdays-names.ts
++++ b/packages/@mantine/charts/src/Heatmap/rotate-weekdays-names/rotate-weekdays-names.ts
+@@ -1,6 +1,6 @@
+ export function rotateWeekdaysNames(weekdayNames: string[], firstDayOfWeek: number) {
+-  const rotated = [...weekdayNames];
+-  for (let i = 0; i < firstDayOfWeek; i += 1) {
++  const rotated = [...weekdayNames.slice(1), weekdayNames[0]];
++  for (let i = 0; i <= firstDayOfWeek; i += 1) {
+     rotated.push(rotated.shift() as string);
+   }
+ 

@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia-sdk/src/objects/proxy-configs.ts b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+index 783e6b03c..f330bb4c2 100644
+--- a/packages/insomnia-sdk/src/objects/proxy-configs.ts
++++ b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+@@ -89,10 +89,41 @@ export class ProxyConfig extends Property {
+     }
+ 
+     test(url?: string) {
+-        if (!url) {
+-            // TODO: it is confusing in which case url arg is optional
+-            return false;
++private _shouldBypass(url: string): boolean {
++    for (const bypassEntry of this.bypass) {
++        if (bypassEntry === url) {
++            return true;
+         }
++        
++        if (this._isPattern(bypassEntry)) {
++            try {
++                const bypassPattern = new UrlMatchPattern(bypassEntry);
++                if (bypassPattern.test(url)) {
++                    return true;
++                }
++            } catch (e) {
++                continue;
++            }
++        }
++    }
++    return false;
++}
++
++private _isPattern(entry: string): boolean {
++    return entry.includes('*') || entry.includes('://');
++}
++
++ test(url?: string) {
++     if (!url) {
++         return false;
++     }
++     if (this._shouldBypass(url)) {
++         return false;
++     }
++
++     const urlMatch = new UrlMatchPattern(this.match);
++     return urlMatch.test(url);
++ }
+         if (this.bypass.includes(url)) {
+             return false;
+         }

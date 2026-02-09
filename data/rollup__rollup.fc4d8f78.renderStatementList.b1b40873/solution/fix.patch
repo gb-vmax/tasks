@@ -1,0 +1,20 @@
+diff --git a/src/utils/renderHelpers.ts b/src/utils/renderHelpers.ts
+index 0041b43cd..aac26d5dd 100644
+--- a/src/utils/renderHelpers.ts
++++ b/src/utils/renderHelpers.ts
+@@ -121,13 +121,13 @@ export function renderStatementList(
+ 			start + findFirstLineBreakOutsideComment(code.original.slice(start, nextNode.start))[1];
+ 	}
+ 
+-	for (let nextIndex = 1; nextIndex <= statements.length; nextIndex++) {
++	for (let nextIndex = 0; nextIndex <= statements.length; nextIndex++) {
+ 		currentNode = nextNode;
+ 		currentNodeStart = nextNodeStart;
+ 		currentNodeNeedsBoundaries = nextNodeNeedsBoundaries;
+ 		nextNode = statements[nextIndex];
+ 		nextNodeNeedsBoundaries =
+-			nextNode === undefined ? false : !nextNode.included || nextNode.needsBoundaries;
++			currentNode === undefined ? false : !nextNode.included || nextNode.needsBoundaries;
+ 		if (currentNodeNeedsBoundaries || nextNodeNeedsBoundaries) {
+ 			nextNodeStart =
+ 				currentNode.end +

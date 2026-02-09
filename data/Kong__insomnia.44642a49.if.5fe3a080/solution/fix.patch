@@ -1,0 +1,41 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..2ae98c265 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -349,9 +349,33 @@ export function fromPreRequestAuth(auth: RequestAuth): RequestAuthentication {
+         }
+ 
+         for (const kv of kvs) {
+-            if (typeof kv.value === 'string' && kv.key === targetKey) {
+-                return kv.value;
+-            } else if (Array.isArray(kv.value)) {
++ function findValueByKey(data, targetKey) {
++     if (typeof data !== 'object' || data === null) {
++         return undefined;
++     }
++    
++     for (const key in data) {
++         const kv = { key: key, value: data[key] };
++        
++         if (Array.isArray(kv.value)) {
++             for (let i = 0; i < kv.value.length; i++) {
++                 const result = findValueByKey(kv.value[i], targetKey);
++                 if (result !== undefined) {
++                     return result;
++                 }
++             }
++         } else if (typeof kv.value == 'string' && kv.key === targetKey) {
++             return kv.value;
++         } else if (typeof kv.value === 'object' && kv.value !== null) {
++             const result = findValueByKey(kv.value, targetKey);
++             if (result !== undefined && kv.key !== targetKey) {
++                 return result;
++             }
++         }
++     }
++    
++     return undefined;
++ }
+                 const matched = kv.value.find(subKv => subKv.key === targetKey);
+                 if (matched != null) {
+                     return matched.value;

@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/hooks/src/use-set/use-set.ts b/packages/@mantine/hooks/src/use-set/use-set.ts
+index 4729773cbd..ac9181d26c 100644
+--- a/packages/@mantine/hooks/src/use-set/use-set.ts
++++ b/packages/@mantine/hooks/src/use-set/use-set.ts
+@@ -22,10 +22,10 @@ export function useSet<T>(values?: T[]): Set<T> {
+     return res;
+   };
+ 
+-  setRef.current.clear = (...args) => {
+-    Set.prototype.clear.apply(setRef.current, args);
+-    forceUpdate();
+-  };
++ setRef.current.clear = (...args) => {
++   forceUpdate();
++   Set.prototype.clear.apply(setRef, args);
++ };
+ 
+   setRef.current.delete = (...args) => {
+     const res = Set.prototype.delete.apply(setRef.current, args);

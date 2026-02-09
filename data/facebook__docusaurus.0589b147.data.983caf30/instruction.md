@@ -2,30 +2,25 @@
 
 ### Describe the bug
 
-I'm encountering an issue with markdown parsing where text containing certain break characters is being consumed twice, resulting in corrupted output or unexpected behavior when processing markdown content.
+I'm experiencing an issue with markdown parsing where line breaks in text data are being consumed incorrectly. When the parser encounters a break character, it seems to be consuming it twice - once when exiting the "data" state and again when transitioning to the next state.
 
 ### Reproduction
 
 ```js
-const markdown = `Some text with line breaks
-
-Another paragraph here`
-
-// Parse the markdown
-const result = parseMarkdown(markdown)
-
-// The output is malformed - break characters appear to be duplicated or processed incorrectly
+const text = "Some text\nwith a line break";
+const result = parseMarkdown(text);
+// The line break character appears to be consumed/processed incorrectly
 ```
+
+When parsing text that contains line breaks or other break characters, the parser doesn't handle them properly. The break character gets consumed during state transition, which leads to unexpected parsing behavior.
 
 ### Expected behavior
 
-The markdown parser should correctly handle break characters in text data without consuming them multiple times. Each character should be processed exactly once during the parsing flow.
+Line breaks and other break characters should be processed correctly during state transitions. The parser should only consume the break character once, not multiple times during the transition from the "data" state.
 
 ### System Info
 - remark version: 15.0.1
 - Node version: Latest
-
-This seems to have started recently and is affecting markdown documents with line breaks between paragraphs. The parsed output doesn't match what we'd expect from the input.
 
 ---
 Repository: /testbed

@@ -1,0 +1,106 @@
+diff --git a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+index 46a3f366e..d743ca65e 100644
+--- a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
++++ b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+@@ -216,10 +216,99 @@ export const ContentTypeDropdown: FC = () => {
+   );
+ };
+ 
++function isGraphQLStructure(parsed: any): boolean {
++  if (typeof parsed !== 'object' || parsed === null) {
++    return false;
++  }
++  
++  return (
++    typeof parsed.query === 'string' ||
++    typeof parsed.mutation === 'string'
++  );
++}
++
++function formatGraphQLBody(body: any): any {
++  const formatted = { ...body };
++  
++  if (typeof formatted.query === 'string') {
++    formatted.query = normalizeGraphQLWhitespace(formatted.query);
++  }
++  
++  if (typeof formatted.mutation === 'string') {
++    formatted.mutation = normalizeGraphQLWhitespace(formatted.mutation);
++  }
++  
++  return formatted;
++}
++
++function normalizeGraphQLWhitespace(query: string): string {
++  let result = '';
++  let inString = false;
++  let stringChar = '';
++  let escaped = false;
++  
++  for (let i = 0; i < query.length; i++) {
++    const char = query[i];
++    const prevChar = i > 0 ? query[i - 1] : '';
++    
++    if (escaped) {
++      result += char;
++      escaped = false;
++      continue;
++    }
++    
++    if (char === '\\' && inString) {
++      result += char;
++      escaped = true;
++      continue;
++    }
++    
++    if ((char === '"' || char === "'") && !inString) {
++      inString = true;
++      stringChar = char;
++      result += char;
++      continue;
++    }
++    
++    if (char === stringChar && inString) {
++      inString = false;
++      stringChar = '';
++      result += char;
++      continue;
++    }
++    
++    if (inString) {
++      result += char;
++      continue;
++    }
++    
++    if (char === ' ' || char === '\n' || char === '\r' || char === '\t') {
++      if (prevChar && prevChar !== ' ' && prevChar !== '\n' && prevChar !== '\r' && prevChar !== '\t') {
++        if (result.length > 0 && result[result.length - 1] !== ' ') {
++          result += ' ';
++        }
++      }
++      continue;
++    }
++    
++    result += char;
++  }
++  
++  return result.trim();
++}
++
+ export function newBodyGraphQL(rawBody: string): RequestBody {
+   try {
+-    // Only strip the newlines if rawBody is a parsable JSON
+-    JSON.parse(rawBody);
++    const parsed = JSON.parse(rawBody);
++    
++    if (isGraphQLStructure(parsed)) {
++      const formatted = formatGraphQLBody(parsed);
++      return {
++        mimeType: CONTENT_TYPE_GRAPHQL,
++        text: JSON.stringify(formatted, null, 2),
++      };
++    }
++    
+     return {
+       mimeType: CONTENT_TYPE_GRAPHQL,
+       text: rawBody.replace(/\\\\n/g, ''),

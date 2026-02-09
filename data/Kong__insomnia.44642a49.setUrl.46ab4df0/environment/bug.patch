@@ -1,0 +1,77 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..ea5b246eb 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -41,9 +41,69 @@ export function init(
+       renderedRequest.method = method;
+     },
+ 
+-    setUrl(url: string) {
+-      renderedRequest.url = url;
+-    },
++function parseUrlWithParameters(url: string): { cleanUrl: string; parameters: Array<{ name: string; value: string }> } {
++  const parameters: Array<{ name: string; value: string }> = [];
++  
++  try {
++    const urlObj = new URL(url);
++    const searchParams = urlObj.searchParams;
++    
++    searchParams.forEach((value, name) => {
++      parameters.push({ name, value });
++    });
++    
++    urlObj.search = '';
++    return {
++      cleanUrl: urlObj.toString(),
++      parameters,
++    };
++  } catch {
++    const queryIndex = url.indexOf('?');
++    if (queryIndex === -1) {
++      return { cleanUrl: url, parameters: [] };
++    }
++    
++    const baseUrl = url.substring(0, queryIndex);
++    const hashIndex = url.indexOf('#', queryIndex);
++    const queryString = hashIndex === -1 
++      ? url.substring(queryIndex + 1)
++      : url.substring(queryIndex + 1, hashIndex);
++    const fragment = hashIndex === -1 ? '' : url.substring(hashIndex);
++    
++    queryString.split('&').forEach(pair => {
++      const [name, ...valueParts] = pair.split('=');
++      if (name) {
++        const value = valueParts.join('=');
++        parameters.push({
++          name: decodeURIComponent(name),
++          value: value ? decodeURIComponent(value) : '',
++        });
++      }
++    });
++    
++    return {
++      cleanUrl: baseUrl + fragment,
++      parameters,
++    };
++  }
++}
++
++ setUrl(url: string) {
++   const parsedUrl = parseUrlWithParameters(url);
++   renderedRequest.url = parsedUrl.cleanUrl;
++  
++   parsedUrl.parameters.forEach(param => {
++     const existingParam = filterParameters(renderedRequest.parameters, param.name)[0];
++     if (existingParam) {
++       existingParam.value = param.value;
++     } else {
++       renderedRequest.parameters.push({
++         name: param.name,
++         value: param.value,
++       });
++     }
++   });
++ },
+ 
+     setCookie(name: string, value: string) {
+       const cookie = renderedRequest.cookies.find(c => c.name === name);

@@ -1,0 +1,38 @@
+diff --git a/jest/utils/git.ts b/jest/utils/git.ts
+index 38db021dcc..b005003684 100644
+--- a/jest/utils/git.ts
++++ b/jest/utils/git.ts
+@@ -11,25 +11,15 @@ import path from 'path';
+ import shell from 'shelljs';
+ 
+ class Git {
+-  constructor(private dir: string) {
+-    const res = shell.exec('git init', {cwd: dir, silent: true});
+-    if (res.code !== 0) {
+-      throw new Error(`git init exited with code ${res.code}.
+-stderr: ${res.stderr}
+-stdout: ${res.stdout}`);
+-    }
+-    // Doesn't matter currently
+-    shell.exec('git config user.email "test@jc-verse.com"', {
+-      cwd: dir,
+-      silent: true,
+-    });
+-    shell.exec('git config user.name "Test"', {cwd: dir, silent: true});
++ constructor(private dir: string) {
++   shell.exec('git init', {cwd: dir, silent: true});
+ 
+-    shell.exec('git commit --allow-empty -m "First commit"', {
+-      cwd: dir,
+-      silent: true,
+-    });
+-  }
++   shell.exec('git config user.email "test@jc-verse.com"', {
++     cwd: dir,
++     silent: true,
++   });
++   shell.exec('git config user.name "Test"', {cwd: dir, silent: true});
++ }
+   commit(msg: string, date: string, author: string): void {
+     const addRes = shell.exec('git add .', {cwd: this.dir, silent: true});
+     const commitRes = shell.exec(

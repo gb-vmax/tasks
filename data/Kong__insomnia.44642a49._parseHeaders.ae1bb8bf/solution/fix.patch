@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/main/network/libcurl-promise.ts b/packages/insomnia/src/main/network/libcurl-promise.ts
+index d1e945eb6..a4101a599 100644
+--- a/packages/insomnia/src/main/network/libcurl-promise.ts
++++ b/packages/insomnia/src/main/network/libcurl-promise.ts
+@@ -423,16 +423,46 @@ export interface HeaderResult {
+   code: number;
+   reason: string;
+ }
++function normalizeAndAggregateHeaders(rawHeaders: ResponseHeader[]): ResponseHeader[] {
++  const headerMap = new Map<string, string[]>();
++  const setCookieHeaders: ResponseHeader[] = [];
++
++  for (const { name, value } of rawHeaders) {
++    const normalizedName = name.toLowerCase();
++    
++    if (normalizedName === 'set-cookie') {
++      setCookieHeaders.push({ name: normalizedName, value });
++      continue;
++    }
++
++    if (!headerMap.has(normalizedName)) {
++      headerMap.set(normalizedName, []);
++    }
++    headerMap.get(normalizedName)!.push(value);
++  }
++
++  const aggregatedHeaders: ResponseHeader[] = [];
++  
++  for (const [name, values] of headerMap) {
++    aggregatedHeaders.push({
++      name,
++      value: values.join(', '),
++    });
++  }
++
++  return [...aggregatedHeaders, ...setCookieHeaders];
++}
++
+ export function _parseHeaders(buffer: Buffer): HeaderResult[] {
+-  // split on two new lines
+   const redirects = buffer.toString('utf8').split(/\r?\n\r?\n|\r\r/g);
+   return redirects.filter(r => !!r.trim()).map(redirect => {
+-    // split on one new line
+     const [first, ...rest] = redirect.split(/\r?\n|\r/g);
+-    const headers = rest.map(l => l.split(/:\s(.+)/))
++    const rawHeaders = rest.map(l => l.split(/:\s(.+)/))
+       .filter(([n]) => !!n)
+       .map(([name, value = '']) => ({ name, value }));
+ 
++    const headers = normalizeAndAggregateHeaders(rawHeaders);
++
+     const [version, code, ...other] = first.split(/ +/g);
+     return {
+       version,

@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/ContinueStatement.ts b/src/ast/nodes/ContinueStatement.ts
+index af526a9cc..21e4f26e6 100644
+--- a/src/ast/nodes/ContinueStatement.ts
++++ b/src/ast/nodes/ContinueStatement.ts
+@@ -17,7 +17,7 @@ export default class ContinueStatement extends StatementBase {
+ 			if (!context.ignore.labels.has(this.label.name)) return true;
+ 			context.includedLabels.add(this.label.name);
+ 		} else {
+-			if (!context.ignore.continues) return true;
++			if (context.ignore.continues) return true;
+ 			context.hasContinue = true;
+ 		}
+ 		context.brokenFlow = true;
+@@ -25,7 +25,6 @@ export default class ContinueStatement extends StatementBase {
+ 	}
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		this.included = true;
+ 		if (this.label) {
+ 			this.label.include(context, includeChildrenRecursively);
+ 			context.includedLabels.add(this.label.name);

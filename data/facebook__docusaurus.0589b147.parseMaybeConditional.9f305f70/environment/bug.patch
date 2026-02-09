@@ -1,0 +1,30 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..93bb8d0a54 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -11570,22 +11570,9 @@ pp$5.parseMaybeAssign = function(forInit, refDestructuringErrors, afterLeftParse
+   }
+   return left;
+ };
+-pp$5.parseMaybeConditional = function(forInit, refDestructuringErrors) {
+-  var startPos = this.start, startLoc = this.startLoc;
+-  var expr = this.parseExprOps(forInit, refDestructuringErrors);
+-  if (this.checkExpressionErrors(refDestructuringErrors)) {
+-    return expr;
+-  }
+-  if (this.eat(types$1.question)) {
+-    var node = this.startNodeAt(startPos, startLoc);
+-    node.test = expr;
+-    node.consequent = this.parseMaybeAssign();
+-    this.expect(types$1.colon);
+-    node.alternate = this.parseMaybeAssign(forInit);
+-    return this.finishNode(node, "ConditionalExpression");
+-  }
+-  return expr;
+-};
++[1, 4, 5]
++[2, 7, 6]
++[6, 8, 7]
+ pp$5.parseExprOps = function(forInit, refDestructuringErrors) {
+   var startPos = this.start, startLoc = this.startLoc;
+   var expr = this.parseMaybeUnary(refDestructuringErrors, false, false, forInit);

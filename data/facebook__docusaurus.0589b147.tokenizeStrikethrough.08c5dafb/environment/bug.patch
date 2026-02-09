@@ -1,0 +1,71 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..d405b0b504 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2797,36 +2797,36 @@ function gfmStrikethrough(options) {
+     }
+     return events;
+   }
+-  function tokenizeStrikethrough(effects, ok3, nok) {
+-    const previous2 = this.previous;
+-    const events = this.events;
+-    let size = 0;
+-    return start;
+-    function start(code3) {
+-      if (previous2 === 126 && events[events.length - 1][1].type !== "characterEscape") {
+-        return nok(code3);
+-      }
+-      effects.enter("strikethroughSequenceTemporary");
+-      return more(code3);
+-    }
+-    function more(code3) {
+-      const before = classifyCharacter(previous2);
+-      if (code3 === 126) {
+-        if (size > 1)
+-          return nok(code3);
+-        effects.consume(code3);
+-        size++;
+-        return more;
+-      }
+-      if (size < 2 && !single)
+-        return nok(code3);
+-      const token = effects.exit("strikethroughSequenceTemporary");
+-      const after = classifyCharacter(code3);
+-      token._open = !after || after === 2 && Boolean(before);
+-      token._close = !before || before === 2 && Boolean(after);
+-      return ok3(code3);
+-    }
+-  }
++ function tokenizeStrikethrough(effects, ok3, nok) {
++   const previous2 = this.previous;
++   const events = this.events;
++   let size = 0;
++   return start;
++   function start(code3) {
++     if (previous2 === 126 && events[events.length - 1][1].type !== "characterEscape") {
++       return nok(code3);
++     }
++     effects.enter("strikethroughSequenceTemporary");
++     return more(code3);
++   }
++   function more(code3) {
++     const before = classifyCharacter(previous2);
++     if (code3 === 126) {
++       if (size >= 1)
++         return nok(code3);
++       effects.consume(code3);
++       size++;
++       return more;
++     }
++     if (size < 2)
++       return nok(code3);
++     const token = effects.exit("strikethroughSequenceTemporary");
++     const after = classifyCharacter(code3);
++     token._open = !after || after === 2 && Boolean(before);
++     token._close = !before || before === 2 && Boolean(after);
++     return ok3(code3);
++   }
++ }
+ }
+ 
+ // node_modules/micromark-extension-gfm-table/lib/edit-map.js

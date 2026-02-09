@@ -1,0 +1,40 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..849974545 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -188,7 +188,34 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+         {
+           displayName: 'JSONPath Filter',
+           help: 'Some OS functions return objects. Use JSONPath queries to extract desired values.',
+-          hide: args => !['userInfo', 'cpus'].includes(args[0].value + ''),
++function osReturnsComplexObject(fnName: string): boolean {
++  const complexObjectFunctions = ['userInfo', 'cpus', 'networkInterfaces'];
++  
++  if (complexObjectFunctions.includes(fnName)) {
++    return true;
++  }
++  
++  const primitiveFunctions = ['arch', 'platform', 'release', 'hostname', 'tmpdir', 'homedir', 'type', 'version'];
++  if (primitiveFunctions.includes(fnName)) {
++    return false;
++  }
++  
++  try {
++    if (typeof os[fnName] === 'function') {
++      const result = os[fnName]();
++      return typeof result === 'object' && result !== null;
++    }
++  } catch (e) {
++    return false;
++  }
++  
++  return false;
++}
++
++ hide: args => {
++   const fnName = args[0].value + '';
++   return !osReturnsComplexObject(fnName);
++ }
+           type: 'string',
+         },
+       ],

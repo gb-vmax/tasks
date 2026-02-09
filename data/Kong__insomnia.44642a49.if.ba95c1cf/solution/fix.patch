@@ -1,0 +1,97 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..0cc0c3d40 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -443,9 +443,90 @@ export const database = {
+   },
+ 
+   remove: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<void>('remove', ...arguments);
++async function _findExternalReferences<T extends BaseModel>(doc: T): Promise<BaseModel[]> {
++  const references: BaseModel[] = [];
++  const descendants = await database.withDescendants(doc);
++  const descendantIds = new Set(descendants.map(d => d._id));
++
++  for (const type of allTypes()) {
++    const allDocs = await database.find(type);
++    
++    for (const otherDoc of allDocs) {
++      if (descendantIds.has(otherDoc._id)) {
++        continue;
++      }
++
++      const docString = JSON.stringify(otherDoc);
++      if (docString.includes(doc._id)) {
++        for (const [key, value] of Object.entries(otherDoc)) {
++          if (key === '_id' || key === 'type' || key === 'parentId') {
++            continue;
++          }
++          
++          if (value === doc._id || 
++              (typeof value === 'string' && value.includes(doc._id)) ||
++              (Array.isArray(value) && value.includes(doc._id)) ||
++              (typeof value === 'object' && value !== null && JSON.stringify(value).includes(doc._id))) {
++            references.push(otherDoc);
++            break;
++          }
++        }
++      }
+     }
++  }
++
++  return references;
++}
++
++ remove: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<void>('remove', ...arguments);
++   }
++
++   const modelDef = models.getModel(doc.type);
++   const shouldSoftDelete = modelDef && typeof modelDef.softDelete === 'boolean' && modelDef.softDelete;
++
++   if (!shouldSoftDelete) {
++     const references = await _findExternalReferences(doc);
++     if (references.length > 0) {
++       throw new Error(`Cannot remove ${doc.type} ${doc._id}: referenced by ${references.length} other document(s)`);
++     }
++   }
++
++   const flushId = await database.bufferChanges();
++
++   if (shouldSoftDelete) {
++     const updatedDoc = await models.initModel<T>(doc.type, doc, {
++       modified: Date.now(),
++       _deleted: true,
++       _deletedAt: Date.now(),
++     });
++    
++     await database.update(updatedDoc, fromSync);
++     await database.flushChanges(flushId);
++     return;
++   }
++
++   const docs = await database.withDescendants(doc);
++   const docIds = docs.map(d => d._id);
++   const types = [...new Set(docs.map(d => d.type))];
++
++   types.map(t =>
++     db[t].remove(
++       {
++         _id: {
++           $in: docIds,
++         },
++       },
++       {
++         multi: true,
++       },
++     ),
++   );
++
++   docs.map(d => notifyOfChange('remove', d, fromSync));
++   await database.flushChanges(flushId);
++ },
+ 
+     const flushId = await database.bufferChanges();
+ 

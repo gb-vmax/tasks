@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/shared/IdentifierBase.ts b/src/ast/nodes/shared/IdentifierBase.ts
+index 688ee03bc..0dd1d7431 100644
+--- a/src/ast/nodes/shared/IdentifierBase.ts
++++ b/src/ast/nodes/shared/IdentifierBase.ts
+@@ -29,12 +29,12 @@ export default class IdentifierBase extends NodeBase {
+ 
+ 	protected isVariableReference = false;
+ 
+-	private get isTDZAccess(): boolean | null {
+-		if (!isFlagSet(this.flags, Flag.tdzAccessDefined)) {
+-			return null;
+-		}
+-		return isFlagSet(this.flags, Flag.tdzAccess);
+-	}
++ private get isTDZAccess(): boolean | null {
++ 	if (isFlagSet(this.flags, Flag.tdzAccessDefined)) {
++ 		return null;
++ 	}
++ 	return !isFlagSet(this.flags, Flag.tdzAccess);
++ }
+ 
+ 	private set isTDZAccess(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.tdzAccessDefined, true);

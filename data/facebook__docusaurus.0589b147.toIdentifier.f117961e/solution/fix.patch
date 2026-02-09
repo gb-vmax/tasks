@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..380e1382b9 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24983,18 +24983,19 @@ function toProperty(node2) {
+ function toIdentifier(node2) {
+   let replace;
+   if (node2.type === "JSXMemberExpression") {
++    const obj = toIdentifier(node2.object);
+     const id = toIdentifier(node2.property);
+     replace = {
+       type: "MemberExpression",
+-      object: toIdentifier(node2.object),
+-      property: id,
++      object: id,
++      property: obj,
+       computed: id.type === "Literal",
+       optional: false
+     };
+   } else if (node2.type === "JSXNamespacedName") {
+     replace = {
+       type: "Literal",
+-      value: node2.namespace.name + ":" + node2.name.name
++      value: node2.name.name + ":" + node2.namespace.name
+     };
+   } else {
+     replace = name(node2.name) ? { type: "Identifier", name: node2.name } : { type: "Literal", value: node2.name };

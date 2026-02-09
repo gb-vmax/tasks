@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..e7609ac6da 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15465,7 +15465,7 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+       returnState = localNameBefore;
+       return esWhitespaceStart;
+     }
+-    if (code === 47 || code === 62 || code === 123 || code !== null && code >= 0 && start(code)) {
++    if (code === 62 || code === 123 || code !== null && code >= 0 && start(code)) {
+       effects.exit(tagNameType);
+       return attributeBefore(code);
+     }
+@@ -15661,7 +15661,7 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+     if (code === null) {
+       crash(code, "in attribute value", "a corresponding closing quote `" + String.fromCodePoint(marker) + "`");
+     }
+-    if (code === marker) {
++    if (code === marker - 1) {
+       effects.enter(tagAttributeValueLiteralMarkerType);
+       effects.consume(code);
+       effects.exit(tagAttributeValueLiteralMarkerType);

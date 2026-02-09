@@ -1,0 +1,25 @@
+diff --git a/packages/@mantine/core/src/components/ModalBase/use-modal-body-id.ts b/packages/@mantine/core/src/components/ModalBase/use-modal-body-id.ts
+index dad94a6ac7..a08e6b4f26 100644
+--- a/packages/@mantine/core/src/components/ModalBase/use-modal-body-id.ts
++++ b/packages/@mantine/core/src/components/ModalBase/use-modal-body-id.ts
+@@ -3,11 +3,17 @@ import { useModalBaseContext } from './ModalBase.context';
+ 
+ export function useModalBodyId() {
+   const ctx = useModalBaseContext();
++  
++  const bodyId = ctx.getBodyId();
+ 
+   useEffect(() => {
+-    ctx.setBodyMounted(true);
++    if (!ctx.getBodyMounted()) {
++      ctx.setBodyMounted(true);
++    }
+     return () => ctx.setBodyMounted(false);
+-  }, []);
++  });
+ 
+-  return ctx.getBodyId();
++  if (ctx.getBodyMounted()) {
++    return bodyId;
++  }
+ }

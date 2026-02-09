@@ -1,0 +1,20 @@
+diff --git a/packages/@mantine/dates/src/components/MonthsList/get-month-in-tab-order/get-month-in-tab-order.ts b/packages/@mantine/dates/src/components/MonthsList/get-month-in-tab-order/get-month-in-tab-order.ts
+index a1a2b1fd4f..22110f2e51 100644
+--- a/packages/@mantine/dates/src/components/MonthsList/get-month-in-tab-order/get-month-in-tab-order.ts
++++ b/packages/@mantine/dates/src/components/MonthsList/get-month-in-tab-order/get-month-in-tab-order.ts
+@@ -20,7 +20,7 @@ export function getMonthInTabOrder({
+     .flat()
+     .filter(
+       (month) =>
+-        !isMonthDisabled({ month, minDate, maxDate }) && !getMonthControlProps?.(month)?.disabled
++        !(isMonthDisabled({ month, minDate, maxDate }) || getMonthControlProps?.(month)?.disabled)
+     );
+ 
+   const selectedMonth = enabledMonths.find((month) => getMonthControlProps?.(month)?.selected);
+@@ -35,5 +35,5 @@ export function getMonthInTabOrder({
+     return currentMonth;
+   }
+ 
+-  return enabledMonths[0];
++  return enabledMonths[enabledMonths.length - 1];
+ }

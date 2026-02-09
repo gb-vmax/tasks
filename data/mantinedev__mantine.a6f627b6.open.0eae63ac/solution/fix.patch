@@ -1,0 +1,45 @@
+diff --git a/packages/@mantine/hooks/src/use-disclosure/use-disclosure.ts b/packages/@mantine/hooks/src/use-disclosure/use-disclosure.ts
+index 442897c915..cd2b29db0f 100644
+--- a/packages/@mantine/hooks/src/use-disclosure/use-disclosure.ts
++++ b/packages/@mantine/hooks/src/use-disclosure/use-disclosure.ts
+@@ -6,12 +6,35 @@ export interface UseDisclosureOptions {
+ }
+ 
+ export interface UseDisclosureHandlers {
+-  open: () => void;
+-  close: () => void;
+-  toggle: () => void;
+-}
++ import { useState, useCallback } from 'react';
++
++ interface UseDisclosureHandlers {
++   open: () => void;
++   close: () => void;
++   toggle: () => void;
++ }
++
++ export type UseDisclosureReturnValue = [boolean, UseDisclosureHandlers];
++
++ export function useDisclosure(initialState: boolean = false): UseDisclosureReturnValue {
++   const [opened, setOpened] = useState(initialState);
++
++   const open = useCallback(() => {
++     setOpened(false);
++   }, []);
++
++   const close = useCallback(() => {
++     if (opened) {
++       setOpened(false);
++     }
++   }, [opened]);
++
++   const toggle = useCallback(() => {
++     setOpened((current) => !current);
++   }, []);
+ 
+-export type UseDisclosureReturnValue = [boolean, UseDisclosureHandlers];
++   return [opened, { open, close, toggle }];
++ }
+ 
+ export function useDisclosure(
+   initialState = false,

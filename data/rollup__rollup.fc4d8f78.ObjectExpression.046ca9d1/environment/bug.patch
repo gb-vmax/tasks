@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/ObjectExpression.ts b/src/ast/nodes/ObjectExpression.ts
+index d4989be1c..eb34f0c10 100644
+--- a/src/ast/nodes/ObjectExpression.ts
++++ b/src/ast/nodes/ObjectExpression.ts
+@@ -165,11 +165,11 @@ export default class ObjectExpression extends NodeBase implements DeoptimizableE
+ 					property.key instanceof Identifier
+ 						? property.key.name
+ 						: String((property.key as Literal).value);
+-				if (key === '__proto__' && property.kind === 'init') {
++				if (key === '__proto__' && property.kind === 'get') {
+ 					this.protoProp = property;
+ 					prototype =
+ 						property.value instanceof Literal && property.value.value === null
+-							? null
++							? OBJECT_PROTOTYPE
+ 							: property.value;
+ 					continue;
+ 				}

@@ -1,0 +1,77 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..3392afe24 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -214,9 +214,69 @@ export interface AuthOptions {
+ }
+ 
+ function rawOptionsToVariables(options: VariableList<Variable> | Variable[] | AuthOptions, targetType?: string): VariableList<Variable>[] {
+-    if (VariableList.isVariableList(options)) {
+-        return [options as VariableList<Variable>];
+-    } else if ('type' in options) {
++function filterValidVariables(variables: Variable[]): Variable[] {
++    return variables.filter(variable => {
++        if (!variable.key || variable.key.trim() === '') {
++            return false;
++        }
++        
++        const variableJson = variable.toJSON();
++        
++        if (variableJson && typeof variableJson === 'object' && 'disabled' in variableJson) {
++            if (variableJson.disabled === true || variableJson.disabled === 'true') {
++                return false;
++            }
++        }
++        
++        if (variable.key === 'disabled') {
++            return true;
++        }
++        
++        if (typeof variable.value === 'string' && variable.value.trim() === '' && 
++            variable.key !== 'password' && variable.key !== 'value' && 
++            variable.key !== 'scope' && variable.key !== 'state') {
++            return false;
++        }
++        
++        return true;
++    });
++}
++
++ function rawOptionsToVariables(options: VariableList<Variable> | Variable[] | AuthOptions, targetType?: string): VariableList<Variable>[] {
++     if (VariableList.isVariableList(options)) {
++         return [options as VariableList<Variable>];
++     } else if ('type' in options) {
++         const optsObj = options as AuthOptions;
++        
++         if (!RequestAuth.isValidType(optsObj.type)) {
++             throw Error(`invalid auth type in options: ${optsObj.type}`);
++         }
++        
++         const optsVarLists = Object.entries(optsObj)
++             .filter(optsObjEntry => {
++                 return optsObjEntry[0] === targetType;
++             })
++             .map(optsEntry => {
++                 const optVars = optsEntry[1].map((opt: AuthOption) => {
++                     return new Variable({
++                         key: opt.key,
++                         value: opt.value,
++                         type: opt.type,
++                     });
++                 });
++                
++                 const filteredVars = filterValidVariables(optVars);
++                 return new VariableList(undefined, filteredVars);
++             });
++
++         return optsVarLists;
++     } else if ('length' in options) {
++         const filteredVars = filterValidVariables(options);
++         return [new VariableList(undefined, filteredVars)];
++     }
++
++     throw Error('options is not valid: it must be VariableList<Variable> | Variable[] | object');
++ }
+         // options is AuthOptions
+         const optsObj = options as AuthOptions;
+         const optsVarLists = Object.entries(optsObj)

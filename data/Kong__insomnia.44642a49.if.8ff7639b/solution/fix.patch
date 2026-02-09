@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..df63bb4f4 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -596,9 +596,58 @@ export const database = {
+   },
+ 
+   withDescendants: async function<T extends BaseModel>(doc: T | null, stopType: string | null = null): Promise<BaseModel[]> {
+-    if (db._empty) {
+-      return _send<BaseModel[]>('withDescendants', ...arguments);
+-    }
++ withDescendants: async function<T extends BaseModel>(
++   doc: T | null, 
++   stopType: string | null = null, 
++   maxDepth: number | null = null, 
++   typesToInclude: string[] | null = null
++ ): Promise<BaseModel[]> {
++   if (db._empty) {
++     return _send<BaseModel[]>('withDescendants', ...arguments);
++   }
++   let docsToReturn: BaseModel[] = doc ? [doc] : [];
++
++   async function next(docs: (BaseModel | null)[], currentDepth: number): Promise<BaseModel[]> {
++     if (maxDepth !== null && currentDepth >= maxDepth) {
++       return docsToReturn;
++     }
++
++     let foundDocs: BaseModel[] = [];
++
++     for (const doc of docs) {
++       if (stopType && doc && doc.type === stopType) {
++         continue;
++       }
++
++       const promises: Promise<BaseModel[]>[] = [];
++
++       for (const type of allTypes()) {
++         const parentId = doc ? doc._id : null;
++         const promise = database.find(type, { parentId });
++         promises.push(promise);
++       }
++
++       for (const more of await Promise.all(promises)) {
++         const filteredDocs = typesToInclude 
++           ? more.filter(d => typesToInclude.includes(d.type))
++           : more;
++         foundDocs = [
++           ...foundDocs,
++           ...filteredDocs,
++         ];
++       }
++     }
++
++     if (foundDocs.length === 0) {
++       return docsToReturn;
++     }
++
++     docsToReturn = [...docsToReturn, ...foundDocs];
++     return next(foundDocs, currentDepth + 1);
++   }
++
++   return next([doc], 0);
++ }
+     let docsToReturn: BaseModel[] = doc ? [doc] : [];
+ 
+     async function next(docs: (BaseModel | null)[]): Promise<BaseModel[]> {

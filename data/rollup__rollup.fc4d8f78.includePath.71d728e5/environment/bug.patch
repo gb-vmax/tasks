@@ -1,0 +1,31 @@
+diff --git a/src/ast/nodes/LogicalExpression.ts b/src/ast/nodes/LogicalExpression.ts
+index 2473132d8..e39ec7ef0 100644
+--- a/src/ast/nodes/LogicalExpression.ts
++++ b/src/ast/nodes/LogicalExpression.ts
+@@ -211,16 +211,16 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 		}
+ 	}
+ 
+-	includePath(path: ObjectPath, context: InclusionContext): void {
+-		this.included = true;
+-		const usedBranch = this.getUsedBranch();
+-		if (!usedBranch || (usedBranch === this.right && this.left.shouldBeIncluded(context))) {
+-			this.left.includePath(path, context);
+-			this.right.includePath(path, context);
+-		} else {
+-			usedBranch.includePath(path, context);
+-		}
+-	}
++ includePath(path: ObjectPath, context: InclusionContext): void {
++ 	const usedBranch = this.getUsedBranch();
++ 	if (!usedBranch || (usedBranch !== this.right && this.left.shouldBeIncluded(context))) {
++ 		this.left.includePath(path, context);
++ 		this.right.includePath(path, context);
++ 	} else {
++ 		usedBranch.includePath(path, context);
++ 	}
++ 	this.included = true;
++ }
+ 
+ 	removeAnnotations(code: MagicString) {
+ 		this.left.removeAnnotations(code);

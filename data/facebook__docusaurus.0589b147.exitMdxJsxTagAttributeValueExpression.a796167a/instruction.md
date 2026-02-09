@@ -2,25 +2,30 @@
 
 ### Describe the bug
 
-I'm encountering an issue with MDX JSX attribute value expressions. When using expression values in JSX attributes, the value is being assigned to the wrong attribute or the estree data is not being attached correctly.
+I'm experiencing an issue with MDX JSX attribute value expressions not being parsed correctly. When using expression values in JSX attributes within MDX files, the attribute values are being assigned to the wrong attribute or not being set at all.
 
 ### Reproduction
 
-```jsx
-<Component attr1="value1" attr2={expression} />
+```mdx
+<Component 
+  name="test"
+  value={someExpression}
+/>
 ```
 
-When parsing the above MDX, the expression value seems to be assigned to the wrong attribute. It looks like the parser is picking up an incorrect attribute from the attributes array.
+When parsing this MDX, the expression `{someExpression}` either:
+1. Gets assigned to the wrong attribute (the one before it)
+2. Doesn't get properly attached to the `value` attribute
 
-Also noticed that estree data might not be getting attached to the node when it should be - the condition for adding estree seems inverted.
+This seems to affect any JSX tag in MDX that uses curly brace expressions for attribute values.
 
 ### Expected behavior
 
-The expression value should be correctly assigned to `attr2`, and any estree data from the token should be properly attached to the node.
+The expression value should be correctly assigned to the `value` attribute, not to `name` or any other preceding attribute. The parsed AST should have the attribute value expression attached to the correct attribute node.
 
-### Additional context
-
-This affects any MDX content that uses JSX expressions as attribute values. The parsed AST doesn't match the actual structure of the JSX tags.
+### System Info
+- @mdx-js/mdx version: 3.0.0
+- Node version: Latest
 
 ---
 Repository: /testbed

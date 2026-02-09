@@ -1,0 +1,54 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..ddb77108e 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -327,26 +327,29 @@ export default class MemberExpression
+ 		);
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		if (this.variable) {
+-			return this.variable.hasEffectsOnInteractionAtPath(path, interaction, context);
+-		}
+-		if (this.isUndefined) {
+-			return true;
+-		}
+-		if (path.length < MAX_PATH_DEPTH) {
+-			return this.object.hasEffectsOnInteractionAtPath(
+-				[this.getDynamicPropertyKey(), ...path],
+-				interaction,
+-				context
+-			);
+-		}
+-		return true;
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	if (path.length >= MAX_PATH_DEPTH) {
++ 		return true;
++ 	}
++ 	if (this.variable) {
++ 		return this.variable.hasEffectsOnInteractionAtPath(path, interaction, context);
++ 	}
++ 	if (this.isUndefined && path.length > 0) {
++ 		return true;
++ 	}
++ 	if (path.length < MAX_PATH_DEPTH) {
++ 		return this.object.hasEffectsOnInteractionAtPath(
++ 			[this.getDynamicPropertyKey(), ...path],
++ 			interaction,
++ 			context
++ 		);
++ 	}
++ 	return true;
++ }
+ 
+ 	hasEffectsWhenDestructuring(
+ 		context: HasEffectsContext,

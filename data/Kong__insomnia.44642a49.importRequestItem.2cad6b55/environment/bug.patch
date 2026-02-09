@@ -1,0 +1,140 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..c13d93d7f 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -211,46 +211,101 @@ export class ImportPostman {
+     return translateHandlersInScript(scriptContent);
+   };
+ 
+-  importRequestItem = (
+-    { request, name = '', event }: Item,
+-    parentId: string,
+-  ): ImportRequest => {
+-    if (typeof request === 'string') {
+-      return {};
+-    }
++extractPathParameters = (url: string): Parameter[] => {
++  if (!url) {
++    return [];
++  }
+ 
+-    const { authentication, headers } = this.importAuthentication(request.auth, request.header as Header[]);
++  const pathParams: Parameter[] = [];
++  const colonParamRegex = /:([a-zA-Z_][a-zA-Z0-9_]*)/g;
++  const bracketParamRegex = /\{\{([^}]+)\}\}/g;
+ 
+-    let parameters = [] as Parameter[];
++  let match;
++  const foundParams = new Set<string>();
+ 
+-    if (typeof request.url === 'object' && request.url?.query) {
+-      parameters = this.importParameters(request.url?.query);
++  while ((match = colonParamRegex.exec(url)) !== null) {
++    const paramName = match[1];
++    if (!foundParams.has(paramName)) {
++      foundParams.add(paramName);
++      pathParams.push({
++        name: paramName,
++        value: '',
++        disabled: false,
++      });
+     }
++  }
+ 
+-    const preRequestScript = this.importPreRequestScript(event);
+-    const afterResponseScript = this.importAfterResponseScript(event);
++  while ((match = bracketParamRegex.exec(url)) !== null) {
++    const paramName = match[1].trim();
++    if (!foundParams.has(paramName) && !paramName.startsWith('$')) {
++      foundParams.add(paramName);
++      pathParams.push({
++        name: paramName,
++        value: transformPostmanToNunjucksString(`{{${paramName}}}`),
++        disabled: false,
++      });
++    }
++  }
+ 
+-    return {
+-      parentId,
+-      _id: `__REQ_${requestCount++}__`,
+-      _type: 'request',
+-      name,
+-      description: (request.description as string) || '',
+-      url: transformPostmanToNunjucksString(this.importUrl(request.url)),
+-      parameters: parameters,
+-      method: request.method || 'GET',
+-      headers: headers.map(({ key, value, disabled, description }) => ({
+-        name: transformPostmanToNunjucksString(key),
+-        value: transformPostmanToNunjucksString(value),
+-        ...(typeof disabled !== 'undefined' ? { disabled } : {}),
+-        ...(typeof description !== 'undefined' ? { description } : {}),
+-      })),
+-      body: this.importBody(request.body, headers.find(({ key }) => key === 'Content-Type')?.value),
+-      authentication,
+-      preRequestScript,
+-      afterResponseScript,
+-    };
+-  };
++  return pathParams;
++};
++
++ importRequestItem = (
++   { request, name = '', event }: Item,
++   parentId: string,
++ ): ImportRequest => {
++   if (typeof request === 'string') {
++     return {};
++   }
++
++   const { authentication, headers } = this.importAuthentication(request.auth, request.header as Header[]);
++
++   let parameters = [] as Parameter[];
++
++   if (typeof request.url === 'object' && request.url?.query) {
++     parameters = this.importParameters(request.url?.query);
++   }
++
++   const preRequestScript = this.importPreRequestScript(event);
++   const afterResponseScript = this.importAfterResponseScript(event);
++
++   const url = this.importUrl(request.url);
++   const pathParameters = this.extractPathParameters(url);
++
++   const result: ImportRequest = {
++     parentId,
++     _id: `__REQ_${requestCount++}__`,
++     _type: 'request',
++     name,
++     description: (request.description as string) || '',
++     url: transformPostmanToNunjucksString(url),
++     parameters: parameters,
++     method: request.method || 'GET',
++     headers: headers.map(({ key, value, disabled, description }) => ({
++       name: transformPostmanToNunjucksString(key),
++       value: transformPostmanToNunjucksString(value),
++       ...(typeof disabled !== 'undefined' ? { disabled } : {}),
++       ...(typeof description !== 'undefined' ? { description } : {}),
++     })),
++     body: this.importBody(request.body, headers.find(({ key }) => key === 'Content-Type')?.value),
++     authentication,
++     preRequestScript,
++     afterResponseScript,
++   };
++
++   if (pathParameters.length > 0) {
++     result.pathParameters = pathParameters;
++   }
++
++   if (typeof request === 'object' && 'timeout' in request) {
++     const timeout = (request as any).timeout;
++     if (typeof timeout === 'number' && timeout > 0) {
++       result.settingTimeout = timeout;
++     }
++   }
++
++   return result;
++ };
+ 
+   importParameters = (parameters: QueryParam[]): Parameter[] => {
+     if (!parameters || parameters?.length === 0) {

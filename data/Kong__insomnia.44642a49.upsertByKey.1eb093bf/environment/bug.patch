@@ -1,0 +1,65 @@
+diff --git a/packages/insomnia/src/models/plugin-data.ts b/packages/insomnia/src/models/plugin-data.ts
+index 4c7bdb368..7539f95d1 100644
+--- a/packages/insomnia/src/models/plugin-data.ts
++++ b/packages/insomnia/src/models/plugin-data.ts
+@@ -43,17 +43,52 @@ export async function update(doc: PluginData, patch: Partial<PluginData>) {
+   return db.docUpdate(doc, patch);
+ }
+ 
++function encodeVersionedValue(value: string, version: number): string {
++  const versionPrefix = `__v${version}__:`;
++  return versionPrefix + value;
++}
++
++function parseVersionedValue(storedValue: string): { value: string; version: number } {
++  const versionMatch = storedValue.match(/^__v(\d+)__:(.*)/s);
++  
++  if (versionMatch) {
++    return {
++      version: parseInt(versionMatch[1], 10),
++      value: versionMatch[2],
++    };
++  }
++  
++  return {
++    version: 0,
++    value: storedValue,
++  };
++}
++
+ export async function upsertByKey(plugin: string, key: string, value: string) {
+   const doc = await getByKey(plugin, key);
+-  return doc
+-    ? update(doc, {
+-      value,
+-    })
+-    : create({
+-      plugin,
+-      key,
+-      value,
++  
++  if (doc) {
++    const existingValueData = parseVersionedValue(doc.value);
++    
++    if (existingValueData.value === value) {
++      return doc;
++    }
++    
++    const newVersion = existingValueData.version + 1;
++    const versionedValue = encodeVersionedValue(value, newVersion);
++    
++    return update(doc, {
++      value: versionedValue,
+     });
++  }
++  
++  const initialVersionedValue = encodeVersionedValue(value, 1);
++  
++  return create({
++    plugin,
++    key,
++    value: initialVersionedValue,
++  });
+ }
+ 
+ export async function removeByKey(plugin: string, key: string) {

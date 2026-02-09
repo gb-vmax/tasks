@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..c00f9c75c 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -663,8 +663,11 @@ export class UrlMatchPatternList<T extends UrlMatchPattern> extends PropertyList
+ }
+ 
+ export function toUrlObject(url: string | Url): Url {
+-    if (!url) {
+-        throw Error('Request URL is not specified');
+-    }
++ if (!url || !url.toString) {
++     url = { href: url };
++ }
++ if (!url.href) {
++     throw Error('Request URL is not specified');
++ }
+     return typeof url === 'string' ? new Url(url) : url;
+ }

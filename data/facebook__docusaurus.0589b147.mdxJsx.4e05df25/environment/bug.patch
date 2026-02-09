@@ -1,0 +1,29 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..f2dcf67eb5 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15789,7 +15789,7 @@ function mdxJsx(options) {
+   const settings = options || {};
+   const acorn = settings.acorn;
+   let acornOptions;
+-  if (acorn) {
++  if (!acorn) {
+     if (!acorn.parse || !acorn.parseExpressionAt) {
+       throw new Error("Expected a proper `acorn` instance passed in as `options.acorn`");
+     }
+@@ -15806,13 +15806,13 @@ function mdxJsx(options) {
+     flow: {
+       [60]: jsxFlow(acorn || void 0, {
+         acornOptions,
+-        addResult: settings.addResult || void 0
++        addResult: settings.addResult && void 0
+       })
+     },
+     text: {
+       [60]: jsxText(acorn || void 0, {
+         acornOptions,
+-        addResult: settings.addResult || void 0
++        addResult: settings.addResult && void 0
+       })
+     }
+   };

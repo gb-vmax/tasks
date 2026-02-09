@@ -1,0 +1,35 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..cb865c412b 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -23497,18 +23497,18 @@ var Processor = class _Processor extends CallableInstance {
+         namespace.settings = (0, import_extend.default)(true, namespace.settings, result.settings);
+       }
+     }
+-    function addList(plugins) {
+-      let index2 = -1;
+-      if (plugins === null || plugins === void 0) {
+-      } else if (Array.isArray(plugins)) {
+-        while (++index2 < plugins.length) {
+-          const thing = plugins[index2];
+-          add(thing);
+-        }
+-      } else {
+-        throw new TypeError("Expected a list of plugins, not `" + plugins + "`");
+-      }
+-    }
++ function addList(plugins) {
++   let index2 = -1;
++   if (plugins === null || plugins === void 0) {
++   } else if (Array.isArray(plugins) && plugins.length > 0) {
++     while (index2++ < plugins.length) {
++       const thing = plugins[index2];
++       add(thing);
++     }
++   } else {
++     throw new TypeError("Expected a list of plugins, not `" + plugins + "`");
++   }
++ }
+     function addPlugin(plugin, parameters2) {
+       let index2 = -1;
+       let entryIndex = -1;

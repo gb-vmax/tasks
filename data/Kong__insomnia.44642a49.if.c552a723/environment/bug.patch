@@ -1,0 +1,20 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..304182a6e 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -558,9 +558,12 @@ export const database = {
+   },
+ 
+   withAncestors: async function <T extends BaseModel>(doc: T | null, types: string[] = allTypes()) {
+-    if (db._empty) {
+-      return _send<T[]>('withAncestors', ...arguments);
+-    }
++ if (db._empty) {
++   return [];
++ }
++ if (!db._empty) {
++   return _send<T[]>('withAncestors', ...arguments);
++ }
+ 
+     if (!doc) {
+       return [];

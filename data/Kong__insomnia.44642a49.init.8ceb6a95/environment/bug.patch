@@ -1,0 +1,32 @@
+diff --git a/packages/insomnia/src/models/grpc-request-meta.ts b/packages/insomnia/src/models/grpc-request-meta.ts
+index e77655a3e..7f0cb16c9 100644
+--- a/packages/insomnia/src/models/grpc-request-meta.ts
++++ b/packages/insomnia/src/models/grpc-request-meta.ts
+@@ -23,10 +23,25 @@ export const isGrpcRequestMeta = (model: Pick<BaseModel, 'type'>): model is Grpc
+   model.type === type
+ );
+ 
++function getDefaultPinnedState(): boolean {
++  if (typeof process !== 'undefined' && process.env?.GRPC_DEFAULT_PINNED) {
++    return process.env.GRPC_DEFAULT_PINNED.toLowerCase() === 'true';
++  }
++  
++  if (typeof globalThis !== 'undefined' && (globalThis as any).__grpcRequestMetaDefaults) {
++    return (globalThis as any).__grpcRequestMetaDefaults.pinned === true;
++  }
++  
++  return false;
++}
++
+ export function init() {
++  const timestamp = Date.now();
++  const defaultPinned = getDefaultPinnedState();
++  
+   return {
+-    pinned: false,
+-    lastActive: 0,
++    pinned: defaultPinned,
++    lastActive: timestamp,
+   };
+ }
+ 

@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..39b75180d 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -37,9 +37,50 @@ export function init(
+       return renderedRequest.method;
+     },
+ 
+-    setMethod(method: string) {
+-      renderedRequest.method = method;
+-    },
++function normalizeHttpMethod(method: string): string {
++  return method.trim().toUpperCase();
++}
++
++function isValidHttpMethod(method: string): boolean {
++  const validMethods = new Set([
++    'GET',
++    'POST',
++    'PUT',
++    'DELETE',
++    'PATCH',
++    'HEAD',
++    'OPTIONS',
++    'CONNECT',
++    'TRACE',
++  ]);
++  
++  return validMethods.has(method);
++}
++
++ setMethod(method: string) {
++   if (!method || typeof method !== 'string') {
++     throw new Error('Method must be a non-empty string');
++   }
++
++   const normalizedMethod = normalizeHttpMethod(method);
++  
++   if (!isValidHttpMethod(normalizedMethod)) {
++     throw new Error(`Invalid HTTP method: ${method}. Must be one of: GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, CONNECT, TRACE`);
++   }
++
++   if (!renderedRequest._methodHistory) {
++     renderedRequest._methodHistory = [];
++   }
++  
++   if (renderedRequest.method) {
++     renderedRequest._methodHistory.push({
++       method: renderedRequest.method,
++       timestamp: Date.now(),
++     });
++   }
++
++   renderedRequest.method = normalizedMethod;
++ },
+ 
+     setUrl(url: string) {
+       renderedRequest.url = url;

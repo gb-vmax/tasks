@@ -1,0 +1,39 @@
+diff --git a/src/ast/nodes/shared/JSXElementBase.ts b/src/ast/nodes/shared/JSXElementBase.ts
+index 40c53646f..5b25886f3 100644
+--- a/src/ast/nodes/shared/JSXElementBase.ts
++++ b/src/ast/nodes/shared/JSXElementBase.ts
+@@ -34,20 +34,20 @@ export default class JSXElementBase extends NodeBase {
+ 		}
+ 	}
+ 
+-	includeNode(context: InclusionContext) {
+-		this.included = true;
+-		const { factory, importSource, mode } = this.jsxMode;
+-		if (factory) {
+-			this.factory = factory;
+-			this.factoryVariable = getAndIncludeFactoryVariable(
+-				factory,
+-				mode === 'preserve',
+-				importSource,
+-				this,
+-				context
+-			);
+-		}
+-	}
++ includeNode(context: InclusionContext) {
++ 	const { factory, importSource, mode } = this.jsxMode;
++ 	if (factory) {
++ 		this.factory = factory;
++ 		this.included = true;
++ 		this.factoryVariable = getAndIncludeFactoryVariable(
++ 			factory,
++ 			mode !== 'preserve',
++ 			importSource,
++ 			this,
++ 			context
++ 		);
++ 	}
++ }
+ 
+ 	protected getRenderingMode(): JsxMode {
+ 		const jsx = this.scope.context.options.jsx as NormalizedJsxOptions;

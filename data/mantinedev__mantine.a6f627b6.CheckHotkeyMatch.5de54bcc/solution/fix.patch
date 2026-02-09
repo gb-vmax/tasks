@@ -1,0 +1,89 @@
+diff --git a/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts b/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts
+index 604379335d..6d12f3b8fa 100644
+--- a/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts
++++ b/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts
+@@ -13,6 +13,84 @@ export type Hotkey = KeyboardModifiers & {
+ 
+ type CheckHotkeyMatch = (event: KeyboardEvent) => boolean;
+ 
++function parseHotkey(hotkey: string): {
++  keys: string[];
++  ctrl: boolean;
++  alt: boolean;
++  shift: boolean;
++  meta: boolean;
++} {
++  const parts = hotkey.toLowerCase().split('+');
++  const keys: string[] = [];
++  let ctrl = false;
++  let alt = false;
++  let shift = false;
++  let meta = false;
++
++  for (const part of parts) {
++    const trimmed = part.trim();
++    if (trimmed === 'ctrl' || trimmed === 'control') {
++      ctrl = true;
++    } else if (trimmed === 'alt') {
++      alt = true;
++    } else if (trimmed === 'shift') {
++      shift = true;
++    } else if (trimmed === 'meta' || trimmed === 'cmd' || trimmed === 'command') {
++      meta = true;
++    } else if (trimmed) {
++      keys.push(trimmed);
++    }
++  }
++
++  return { keys, ctrl, alt, shift, meta };
++}
++
++function isHotkeyMatch(hotkey: string): CheckHotkeyMatch {
++  const parsed = parseHotkey(hotkey);
++  
++  return (event: KeyboardEvent): boolean => {
++    const eventKey = event.key.toLowerCase();
++    
++    if (!parsed.keys.includes(eventKey)) {
++      return false;
++    }
++    
++    if (parsed.ctrl && !event.ctrlKey) {
++      return false;
++    }
++    
++    if (parsed.alt && !event.altKey) {
++      return false;
++    }
++    
++    if (parsed.shift && !event.shiftKey) {
++      return false;
++    }
++    
++    if (parsed.meta && !event.metaKey) {
++      return false;
++    }
++    
++    if (event.ctrlKey && parsed.ctrl) {
++      return false;
++    }
++    
++    if (event.altKey && parsed.alt) {
++      return false;
++    }
++    
++    if (event.shiftKey && parsed.shift) {
++      return false;
++    }
++    
++    if (event.metaKey && parsed.meta) {
++      return false;
++    }
++    
++    return true;
++  };
++}
++
+ const keyNameMap: Record<string, string> = {
+   ' ': 'space',
+   ArrowLeft: 'arrowleft',

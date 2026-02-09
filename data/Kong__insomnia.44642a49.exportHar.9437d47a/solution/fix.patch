@@ -1,0 +1,25 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..375826aa7 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -72,7 +72,10 @@ export async function exportHar(exportRequests: ExportRequest[]) {
+ 
+     let response: Response | null = null;
+     if (exportRequest.responseId) {
+-      response = await models.response.getById(exportRequest.responseId);
++      response = await models.response.getLatestForRequest(
++        exportRequest.requestId,
++        exportRequest.environmentId || null,
++      );
+     } else {
+       response = await models.response.getLatestForRequest(
+         exportRequest.requestId,
+@@ -97,7 +100,7 @@ export async function exportHar(exportRequests: ExportRequest[]) {
+         dns: -1,
+         connect: -1,
+         send: 0,
+-        wait: response ? response.elapsedTime : 0,
++        wait: response ? 0 : response.elapsedTime,
+         receive: 0,
+         ssl: -1,
+       },

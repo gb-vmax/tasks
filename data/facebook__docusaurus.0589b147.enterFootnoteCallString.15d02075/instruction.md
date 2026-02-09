@@ -2,25 +2,30 @@
 
 ### Describe the bug
 
-I'm encountering an issue with footnote references in GFM (GitHub Flavored Markdown) parsing. When parsing markdown with footnote calls, the label/identifier is not being captured correctly, resulting in empty or malformed footnote references.
+I'm experiencing an issue with footnote references in GFM (GitHub Flavored Markdown) parsing. When processing footnote calls, the label/identifier is not being captured correctly, resulting in empty or malformed footnote references.
 
 ### Reproduction
 
 ```markdown
-Here is some text with a footnote[^1].
+Here's some text with a footnote[^1].
 
 [^1]: This is the footnote content.
 ```
 
-When parsing this markdown, the footnote reference appears to lose its identifier during the parsing process. The footnote call should capture the label "1" but it seems like the buffer mechanism isn't working as expected.
+When parsing this markdown:
+1. The footnote reference `[^1]` is encountered
+2. The parser should capture "1" as the label
+3. Instead, the label appears to be empty or not properly buffered
 
 ### Expected behavior
 
-The parser should correctly capture and preserve the footnote identifier/label when processing footnote calls. The footnote reference node should contain the proper identifier that links to the footnote definition.
+The footnote call should properly capture and store the label string ("1" in the example above) so that it can be correctly linked to the corresponding footnote definition. The resulting AST should have a footnoteReference node with the correct identifier and label populated.
 
-### Additional context
+### System Info
+- remark-gfm version: 4.0.0
+- Node version: Latest
 
-This seems to affect how footnote references are processed during the AST construction phase. The label extraction mechanism appears to not be functioning correctly.
+This seems to affect all footnote references in documents. The footnote definitions themselves parse fine, but the inline references lose their labels during parsing.
 
 ---
 Repository: /testbed

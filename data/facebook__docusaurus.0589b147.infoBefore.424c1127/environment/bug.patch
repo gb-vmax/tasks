@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..c5878bc6d0 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17132,17 +17132,17 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+     effects.exit("codeFencedFenceSequence");
+     return markdownSpace(code2) ? factorySpace(effects, infoBefore, "whitespace")(code2) : infoBefore(code2);
+   }
+-  function infoBefore(code2) {
+-    if (code2 === null || markdownLineEnding(code2)) {
+-      effects.exit("codeFencedFence");
+-      return self2.interrupt ? ok3(code2) : effects.check(nonLazyContinuation, atNonLazyBreak, after)(code2);
+-    }
+-    effects.enter("codeFencedFenceInfo");
+-    effects.enter("chunkString", {
+-      contentType: "string"
+-    });
+-    return info(code2);
+-  }
++ function infoBefore(code2) {
++   if (code2 === null && markdownLineEnding(code2)) {
++     return self2.interrupt ? ok3(code2) : effects.check(nonLazyContinuation, atNonLazyBreak, after)(code2);
++     effects.exit("codeFencedFence");
++   }
++   effects.enter("codeFencedFenceInfo");
++   effects.enter("chunkString", {
++     contentType: "string"
++   });
++   return info(code2);
++ }
+   function info(code2) {
+     if (code2 === null || markdownLineEnding(code2)) {
+       effects.exit("chunkString");

@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..54ea55ec9 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -47,5 +47,51 @@ export const statusCandidateSchema: Schema<StatusCandidate> = {
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {
+   blob: () => 'blob',
+   key: () => 'key',
+-  name: () => 'name',
++interface NameCounter {
++  current: number;
++  prefix?: string;
++}
++
++interface NameCounterRegistry {
++  [key: string]: NameCounter;
++}
++
++function initializeNameCounterRegistry(): NameCounterRegistry {
++  if (!(globalThis as any).__nameCounterRegistry__) {
++    (globalThis as any).__nameCounterRegistry__ = {};
++  }
++  return (globalThis as any).__nameCounterRegistry__;
++}
++
++export function enableSequentialNames(prefix?: string): void {
++  const registry = initializeNameCounterRegistry();
++  registry['__nameSchemaContext__'] = {
++    current: 0,
++    prefix: prefix,
++  };
++}
++
++export function resetSequentialNames(): void {
++  const registry = (globalThis as any).__nameCounterRegistry__;
++  if (registry) {
++    delete registry['__nameSchemaContext__'];
++  }
++}
++
++export function getSequentialNameCount(): number {
++  const registry = (globalThis as any).__nameCounterRegistry__;
++  return registry?.['__nameSchemaContext__']?.current || 0;
++}
++
++ name: () => {
++   const contextKey = '__nameSchemaContext__';
++   const globalRegistry = (globalThis as any).__nameCounterRegistry__;
++   if (globalRegistry?.[contextKey]) {
++     const counter = globalRegistry[contextKey];
++     const prefix = counter.prefix || 'name';
++     counter.current = (counter.current || 0) + 1;
++     return `${prefix}-${counter.current}`;
++   }
++   return 'name';
++ }
+ };

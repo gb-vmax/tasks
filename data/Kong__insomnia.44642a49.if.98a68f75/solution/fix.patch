@@ -1,0 +1,134 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..997724c8e 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -663,8 +663,127 @@ export class UrlMatchPatternList<T extends UrlMatchPattern> extends PropertyList
+ }
+ 
+ export function toUrlObject(url: string | Url): Url {
+-    if (!url) {
+-        throw Error('Request URL is not specified');
++function normalizeUrlString(url: string): string {
++    let normalized = url.trim();
++    
++    if (normalized.startsWith('//')) {
++        normalized = 'https:' + normalized;
++    } else if (!normalized.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//)) {
++        if (baseUrlForRelative) {
++            try {
++                const base = baseUrlForRelative.endsWith('/') ? baseUrlForRelative.slice(0, -1) : baseUrlForRelative;
++                if (normalized.startsWith('/')) {
++                    const baseUrl = Url.parse(base);
++                    if (baseUrl) {
++                        const protocol = baseUrl.protocol || 'http:';
++                        const host = baseUrl.host.join('.');
++                        const port = baseUrl.port ? `:${baseUrl.port}` : '';
++                        normalized = `${protocol}//${host}${port}${normalized}`;
++                    }
++                } else {
++                    normalized = `${base}/${normalized}`;
++                }
++            } catch (e) {
++                throw Error(`Failed to resolve relative URL against base: ${baseUrlForRelative}`);
++            }
++        }
++    }
++    
++    return normalized;
++}
++
++function isValidUrlString(url: string): boolean {
++    if (!url || typeof url !== 'string') {
++        return false;
+     }
++    
++    if (url.includes(' ') && !url.includes('%20')) {
++        return false;
++    }
++    
++    const protocolMatch = url.match(/^([a-zA-Z][a-zA-Z0-9+.-]*):\/\//);
++    if (!protocolMatch) {
++        return false;
++    }
++    
++    const afterProtocol = url.slice(protocolMatch[0].length);
++    
++    if (afterProtocol.length === 0) {
++        return false;
++    }
++    
++    const hostEndMarkers = ['/', '?', '#', ':'];
++    let hostEnd = afterProtocol.length;
++    for (const marker of hostEndMarkers) {
++        const pos = afterProtocol.indexOf(marker);
++        if (pos >= 0 && pos < hostEnd) {
++            hostEnd = pos;
++        }
++    }
++    
++    let hostPart = afterProtocol.slice(0, hostEnd);
++    
++    const atPos = hostPart.indexOf('@');
++    if (atPos >= 0) {
++        hostPart = hostPart.slice(atPos + 1);
++    }
++    
++    const colonPos = hostPart.indexOf(':');
++    if (colonPos >= 0) {
++        hostPart = hostPart.slice(0, colonPos);
++    }
++    
++    if (hostPart.length === 0) {
++        return false;
++    }
++    
++    return true;
++}
++
++ const urlObjectCache = new Map<string, Url>();
++ let baseUrlForRelative: string | undefined = undefined;
++
++ export function setBaseUrlForRelative(base: string | undefined) {
++     baseUrlForRelative = base;
++ }
++
++ export function clearUrlObjectCache() {
++     urlObjectCache.clear();
++ }
++
++ export function toUrlObject(url: string | Url): Url {
++     if (!url) {
++         throw Error('Request URL is not specified');
++     }
++
++     if (typeof url !== 'string') {
++         return url;
++     }
++
++     const normalizedUrl = normalizeUrlString(url);
++    
++     if (!isValidUrlString(normalizedUrl)) {
++         throw Error(`Invalid URL format: ${url}`);
++     }
++
++     if (urlObjectCache.has(normalizedUrl)) {
++         const cached = urlObjectCache.get(normalizedUrl);
++         if (cached) {
++             return cached;
++         }
++     }
++
++     try {
++         const urlObj = new Url(normalizedUrl);
++        
++         if (urlObjectCache.size < 1000) {
++             urlObjectCache.set(normalizedUrl, urlObj);
++         }
++        
++         return urlObj;
++     } catch (error) {
++         throw Error(`Failed to parse URL "${url}": ${error instanceof Error ? error.message : String(error)}`);
++     }
++ }
+     return typeof url === 'string' ? new Url(url) : url;
+ }

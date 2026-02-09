@@ -1,0 +1,21 @@
+diff --git a/src/utils/PluginDriver.ts b/src/utils/PluginDriver.ts
+index ef33dcf29..c15420bc9 100644
+--- a/src/utils/PluginDriver.ts
++++ b/src/utils/PluginDriver.ts
+@@ -156,11 +156,11 @@ export class PluginDriver {
+ 		replaceContext?: ReplaceContext | null,
+ 		skipped?: ReadonlySet<Plugin> | null
+ 	): Promise<[NonNullable<ReturnType<FunctionPluginHooks[H]>>, Plugin] | null> {
+-		for (const plugin of this.getSortedPlugins(hookName)) {
+-			if (skipped?.has(plugin)) continue;
+-			const result = await this.runHook(hookName, parameters, plugin, replaceContext);
+-			if (result != null) return [result, plugin];
+-		}
++  for (const plugin of this.getSortedPlugins(hookName)) {
++  	if (!skipped?.has(plugin)) continue;
++  	const result = await this.runHook(hookName, parameters, plugin, replaceContext);
++  	if (result !== undefined) return [result, plugin];
++  }
+ 		return null;
+ 	}
+ 

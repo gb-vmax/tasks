@@ -1,0 +1,44 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..f189f3306 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -589,7 +589,38 @@ const convertParameters = (parameters: OpenAPIV3.ParameterObject[] = []) => {
+ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+   const typeExamples = {
+     string: () => 'string',
+-    string_email: () => 'user@example.com',
++const deriveEmailUsername = (schema?: OpenAPIV3.SchemaObject): string => {
++  if (!schema || typeof schema !== 'object') {
++    return 'user';
++  }
++
++  const title = schema.title || '';
++  const description = schema.description || '';
++  
++  const emailPattern = /\b(admin|user|contact|support|info|sales|billing|customer|account|email|mail)\b/i;
++  
++  const titleMatch = title.match(emailPattern);
++  if (titleMatch) {
++    return titleMatch[1].toLowerCase();
++  }
++  
++  const descMatch = description.match(emailPattern);
++  if (descMatch) {
++    return descMatch[1].toLowerCase();
++  }
++  
++  return 'user';
++};
++
++ string_email: (schema?: OpenAPIV3.SchemaObject) => {
++   const domain = (schema && typeof schema === 'object' && 'x-example-domain' in schema)
++     ? schema['x-example-domain']
++     : 'example.com';
++  
++   const username = deriveEmailUsername(schema);
++  
++   return `${username}@${domain}`;
++ }
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,

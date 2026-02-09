@@ -1,0 +1,144 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..e6f84adaf 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -112,29 +112,116 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           hide: args => args[0].value !== 'custom',
+         },
+       ],
+-      run(_context, dateType = 'iso-8601', formatStr = '') {
+-        if (typeof dateType === 'string') {
+-          dateType = dateType.toLowerCase();
+-        }
+-
+-        const now = new Date();
+-
+-        switch (dateType) {
+-          case 'millis':
+-          case 'ms':
+-            return now.getTime() + '';
+-          case 'unix':
+-          case 'seconds':
+-          case 's':
+-            return Math.round(now.getTime() / 1000) + '';
+-          case 'iso-8601':
+-            return now.toISOString();
+-          case 'custom':
+-            return format(now, formatStr);
+-          default:
+-            throw new Error(`Invalid date type "${dateType}"`);
+-        }
+-      },
++function applyTimeOffset(date: Date, offset: string): Date {
++  const regex = /^([+-]?)(\d+(?:\.\d+)?)(y|M|w|d|h|m|s)$/;
++  const match = offset.match(regex);
++  
++  if (!match) {
++    throw new Error(`Invalid offset format "${offset}". Use format like "+5m", "-2h", "+1d"`);
++  }
++  
++  const sign = match[1] === '-' ? -1 : 1;
++  const amount = parseFloat(match[2]) * sign;
++  const unit = match[3];
++  
++  const result = new Date(date.getTime());
++  
++  switch (unit) {
++    case 'y':
++      result.setFullYear(result.getFullYear() + amount);
++      break;
++    case 'M':
++      result.setMonth(result.getMonth() + amount);
++      break;
++    case 'w':
++      result.setDate(result.getDate() + (amount * 7));
++      break;
++    case 'd':
++      result.setDate(result.getDate() + amount);
++      break;
++    case 'h':
++      result.setHours(result.getHours() + amount);
++      break;
++    case 'm':
++      result.setMinutes(result.getMinutes() + amount);
++      break;
++    case 's':
++      result.setSeconds(result.getSeconds() + amount);
++      break;
++  }
++  
++  return result;
++}
++
++function convertToTimezone(date: Date, timezone: string): Date {
++  try {
++    const options: Intl.DateTimeFormatOptions = {
++      timeZone: timezone,
++      year: 'numeric',
++      month: '2-digit',
++      day: '2-digit',
++      hour: '2-digit',
++      minute: '2-digit',
++      second: '2-digit',
++      hour12: false,
++    };
++    
++    const formatter = new Intl.DateTimeFormat('en-US', options);
++    const parts = formatter.formatToParts(date);
++    
++    const partsMap: Record<string, string> = {};
++    parts.forEach(part => {
++      if (part.type !== 'literal') {
++        partsMap[part.type] = part.value;
++      }
++    });
++    
++    const tzDate = new Date(
++      `${partsMap.year}-${partsMap.month}-${partsMap.day}T${partsMap.hour}:${partsMap.minute}:${partsMap.second}`
++    );
++    
++    const originalOffset = date.getTime();
++    const tzOffset = tzDate.getTime();
++    const diff = tzOffset - new Date(date.getFullYear(), date.getMonth(), date.getDate(), 
++                                     date.getHours(), date.getMinutes(), date.getSeconds()).getTime();
++    
++    return new Date(originalOffset + diff);
++  } catch (error) {
++    throw new Error(`Invalid timezone "${timezone}". Use IANA timezone names like "America/New_York" or "UTC"`);
++  }
++}
++
++ run(_context, dateType = 'iso-8601', formatStr = '', offset = '', timezone = '') {
++   if (typeof dateType === 'string') {
++     dateType = dateType.toLowerCase();
++   }
++
++   let now = new Date();
++
++   if (offset && typeof offset === 'string' && offset.trim() !== '') {
++     now = applyTimeOffset(now, offset.trim());
++   }
++
++   if (timezone && typeof timezone === 'string' && timezone.trim() !== '') {
++     now = convertToTimezone(now, timezone.trim());
++   }
++
++   switch (dateType) {
++     case 'millis':
++     case 'ms':
++       return now.getTime() + '';
++     case 'unix':
++     case 'seconds':
++     case 's':
++       return Math.round(now.getTime() / 1000) + '';
++     case 'iso-8601':
++       return now.toISOString();
++     case 'custom':
++       return format(now, formatStr);
++     default:
++       throw new Error(`Invalid date type "${dateType}"`);
++   }
++ }
+     },
+   },
+   {

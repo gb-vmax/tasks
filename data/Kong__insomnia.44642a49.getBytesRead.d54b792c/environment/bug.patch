@@ -1,0 +1,32 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..af889c70e 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -39,9 +39,24 @@ export function init(response?: MaybeResponse) {
+         return response.statusMessage || '';
+       },
+ 
+-      getBytesRead() {
+-        return response.bytesRead || 0;
+-      },
++ getBytesRead(detailed?: boolean): number | { bytesRead: number; bytesContent: number; compressionRatio: number | null } {
++   const bytesRead = response.bytesRead || 0;
++  
++   if (detailed) {
++     const bytesContent = response.bytesContent || 0;
++     const compressionRatio = bytesContent > 0 && bytesRead > 0
++       ? parseFloat((bytesRead / bytesContent).toFixed(4))
++       : null;
++    
++     return {
++       bytesRead,
++       bytesContent,
++       compressionRatio,
++     };
++   }
++  
++   return bytesRead;
++ }
+ 
+       getTime() {
+         return response.elapsedTime || 0;

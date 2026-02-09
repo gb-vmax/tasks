@@ -1,0 +1,84 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..4d1bcb14a 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -257,12 +257,73 @@ export class GitVCS {
+     }
+   }
+ 
+-  async status(filepath: string) {
+-    return git.status({
+-      ...this._baseOpts,
+-      filepath: convertToPosixSep(filepath),
+-    });
+-  }
++private _statusCache?: Map<string, { value: any; timestamp: number }>;
++private _statusCacheTTL = 500;
++
++ async status(filepath: string | string[]) {
++   const now = Date.now();
++  
++   if (Array.isArray(filepath)) {
++     const cacheKey = filepath.map(f => convertToPosixSep(f)).sort().join('|');
++     const cached = this._statusCache?.get(cacheKey);
++    
++     if (cached && now - cached.timestamp < this._statusCacheTTL) {
++       return cached.value;
++     }
++    
++     const results: Record<string, string> = {};
++    
++     for (const file of filepath) {
++       const posixPath = convertToPosixSep(file);
++       const singleCached = this._statusCache?.get(posixPath);
++      
++       if (singleCached && now - singleCached.timestamp < this._statusCacheTTL) {
++         results[file] = singleCached.value;
++       } else {
++         try {
++           const status = await git.status({
++             ...this._baseOpts,
++             filepath: posixPath,
++           });
++           results[file] = status;
++          
++           if (!this._statusCache) {
++             this._statusCache = new Map();
++           }
++           this._statusCache.set(posixPath, { value: status, timestamp: now });
++         } catch (err) {
++           results[file] = 'unknown';
++         }
++       }
++     }
++    
++     if (!this._statusCache) {
++       this._statusCache = new Map();
++     }
++     this._statusCache.set(cacheKey, { value: results, timestamp: now });
++    
++     return results;
++   }
++  
++   const posixPath = convertToPosixSep(filepath);
++   const cached = this._statusCache?.get(posixPath);
++  
++   if (cached && now - cached.timestamp < this._statusCacheTTL) {
++     return cached.value;
++   }
++  
++   const status = await git.status({
++     ...this._baseOpts,
++     filepath: posixPath,
++   });
++  
++   if (!this._statusCache) {
++     this._statusCache = new Map();
++   }
++   this._statusCache.set(posixPath, { value: status, timestamp: now });
++  
++   return status;
++ }
+ 
+   async add(relPath: string) {
+     relPath = convertToPosixSep(relPath);

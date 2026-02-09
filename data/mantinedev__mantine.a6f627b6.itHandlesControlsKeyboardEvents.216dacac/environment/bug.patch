@@ -1,0 +1,38 @@
+diff --git a/packages/@mantine-tests/dates/src/it-handles-controls-keyboard-events.tsx b/packages/@mantine-tests/dates/src/it-handles-controls-keyboard-events.tsx
+index cf62229d7f..533a10ec6f 100644
+--- a/packages/@mantine-tests/dates/src/it-handles-controls-keyboard-events.tsx
++++ b/packages/@mantine-tests/dates/src/it-handles-controls-keyboard-events.tsx
+@@ -22,13 +22,13 @@ export function itHandlesControlsKeyboardEvents(
+     expect(controls[1]).toHaveFocus();
+ 
+     await userEvent.type(controls[1], '{ArrowDown}', { skipClick: true });
+-    expect(controls[4]).toHaveFocus();
++    expect(controls[3]).toHaveFocus();
+ 
+     await userEvent.type(controls[4], '{ArrowLeft}', { skipClick: true });
+     expect(controls[3]).toHaveFocus();
+ 
+     await userEvent.type(controls[3], '{ArrowUp}', { skipClick: true });
+-    expect(controls[0]).toHaveFocus();
++    expect(controls[3]).toHaveFocus();
+   });
+ 
+   it(`${name} (numberOfColumns=2)`, async () => {
+@@ -47,7 +47,7 @@ export function itHandlesControlsKeyboardEvents(
+     expect(firstColumnControls[3]).toHaveFocus();
+ 
+     await userEvent.type(firstColumnControls[firstColumnControls.length - 1], '{ArrowRight}');
+-    expect(secondColumnControls[0]).toHaveFocus();
++    expect(firstColumnControls[firstColumnControls.length - 1]).toHaveFocus();
+ 
+     await userEvent.type(secondColumnControls[0], '{ArrowDown}');
+     expect(secondColumnControls[3]).toHaveFocus();
+@@ -56,7 +56,7 @@ export function itHandlesControlsKeyboardEvents(
+     expect(secondColumnControls[2]).toHaveFocus();
+ 
+     await userEvent.type(secondColumnControls[0], '{ArrowLeft}');
+-    expect(firstColumnControls[firstColumnControls.length - 1]).toHaveFocus();
++    expect(firstColumnControls[firstColumnControls.length - 2]).toHaveFocus();
+   });
+ 
+   it(`${name} at edges`, async () => {

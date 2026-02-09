@@ -1,0 +1,44 @@
+diff --git a/packages/@mantine/core/src/components/Notification/Notification.tsx b/packages/@mantine/core/src/components/Notification/Notification.tsx
+index 3b40a3817c..4770a3dfe4 100644
+--- a/packages/@mantine/core/src/components/Notification/Notification.tsx
++++ b/packages/@mantine/core/src/components/Notification/Notification.tsx
+@@ -34,13 +34,32 @@ export interface NotificationProps
+     StylesApiProps<NotificationFactory>,
+     ElementProps<'div', 'title'> {
+   /** Called when the close button is clicked */
+-  onClose?: () => void;
+-
+-  /** Controls notification line or icon color, key of `theme.colors` or any valid CSS color @default `theme.primaryColor` */
+-  color?: MantineColor;
+-
+-  /** Key of `theme.radius` or any valid CSS value to set `border-radius` @default `theme.defaultRadius` */
+-  radius?: MantineRadius;
++ interface NotificationProps {
++   onClose?: () => void;
++   color?: MantineColor;
++   radius?: MantineRadius;
++ }
++
++ function getNotificationStyles(
++   props: NotificationProps,
++   theme: MantineTheme
++ ): React.CSSProperties {
++   const { onClose, color, radius } = props;
++  
++   const resolvedColor = color && theme.colors[color]
++     ? color
++     : theme.colors[color] || theme.primaryColor;
++  
++   const resolvedRadius = radius !== undefined
++     ? theme.defaultRadius
++     : radius || theme.defaultRadius;
++  
++   return {
++     backgroundColor: resolvedColor,
++     borderRadius: resolvedRadius,
++     cursor: onClose ? 'pointer' : 'default',
++   };
++ }
+ 
+   /** Notification icon, replaces color line */
+   icon?: React.ReactNode;

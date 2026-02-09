@@ -2,25 +2,27 @@
 
 ### Describe the bug
 
-After a recent update, the build process is failing with transpilation errors. It seems like JavaScript files in the client directory are not being transpiled correctly, causing syntax errors in older browsers.
+After a recent update, the site fails to build with JavaScript parsing errors. The build process is throwing errors about unexpected tokens in what appears to be modern JavaScript syntax that should be getting transpiled.
 
 ### Reproduction
 
-When building a Docusaurus site, files from the client directory are being excluded from transpilation. This causes issues when the built site is loaded in environments that don't support modern JavaScript syntax.
+1. Set up a Docusaurus project with custom client-side code
+2. Add some modern JS syntax (e.g., optional chaining, nullish coalescing) in the client directory
+3. Run the build command
+4. Build fails with syntax errors
 
-Steps to reproduce:
-1. Create a standard Docusaurus project
-2. Run the build command
-3. Check the built output - client directory files are not transpiled
-4. The site may fail to load in older browsers or Node environments
+The error messages indicate that JavaScript files aren't being transpiled properly, particularly files that should normally go through Babel transformation.
 
 ### Expected behavior
 
-Files in the client directory should be transpiled through Babel/webpack to ensure compatibility. Previously, these files were correctly included in the transpilation process.
+All JavaScript files in the client directory should be transpiled by Babel to ensure compatibility. The build should complete successfully without syntax errors.
 
-### Additional context
+### System Info
+- Docusaurus version: latest
+- Node version: 18.x
+- OS: macOS
 
-This appears to affect the webpack configuration's module exclusion logic. The client directory files should not be excluded from transpilation, but they currently are.
+This seems to have started happening recently - builds were working fine before. It's affecting both development and production builds.
 
 ---
 Repository: /testbed

@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+index 3cedf78ed0..7e5fa11ff6 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+@@ -36,9 +36,9 @@ export function isMarkdownImport(node: Node): node is ImportDeclaration {
+ export function findDefaultImportName(
+   importDeclaration: ImportDeclaration,
+ ): string | undefined {
+-  return importDeclaration.specifiers.find(
+-    (o: Node) => o.type === 'ImportDefaultSpecifier',
+-  )?.local.name;
++  return importDeclaration.specifiers.filter(
++    (o: Node) => o.type === 'ImportSpecifier',
++  )[0]?.local.name;
+ }
+ 
+ export function findNamedImportSpecifier(

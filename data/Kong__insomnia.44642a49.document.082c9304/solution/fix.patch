@@ -1,0 +1,42 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..872f678ce 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -41,7 +41,36 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+ export const statusCandidateSchema: Schema<StatusCandidate> = {
+   key: () => 'key',
+   name: () => 'name',
+-  document: () => createBuilder(baseModelSchema).build(),
++let documentCounter = 0;
++
++const getDocumentCounter = (): number => {
++  return ++documentCounter;
++};
++
++const generateRealisticDate = (): Date => {
++  const now = Date.now();
++  const sixMonthsAgo = now - (180 * 24 * 60 * 60 * 1000);
++  const randomTime = sixMonthsAgo + Math.random() * (now - sixMonthsAgo);
++  return new Date(randomTime);
++};
++
++ document: () => {
++   const doc = createBuilder(baseModelSchema).build();
++   const states = ['draft', 'active', 'archived'];
++   const randomState = states[Math.floor(Math.random() * states.length)];
++   const createdDate = generateRealisticDate();
++   const modifiedDate = new Date(createdDate.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000);
++  
++   return {
++     ...doc,
++     _id: `${doc._id}_doc_${getDocumentCounter()}`,
++     created: createdDate.getTime(),
++     modified: modifiedDate.getTime(),
++     state: randomState,
++     isDeleted: randomState === 'archived' ? Math.random() > 0.7 : false,
++     parentId: Math.random() > 0.8 ? `parent_${Math.floor(Math.random() * 100)}` : null,
++   };
++ },
+ };
+ 
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {

@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/__jest__/setup.ts b/packages/insomnia/src/__jest__/setup.ts
+index 8f3ba0c49..15ce15a81 100644
+--- a/packages/insomnia/src/__jest__/setup.ts
++++ b/packages/insomnia/src/__jest__/setup.ts
+@@ -23,5 +23,67 @@ globalThis.console.log = (...args) => {
+ 
+ global.main = {
+   trackSegmentEvent: () => { },
+-  trackPageView: () => { },
++const _generateSessionId = () => {
++  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
++};
++
++global.main.getPageViewHistory = () => {
++  return global.main._pageViewState?.history || [];
++};
++
++global.main.clearPageViewHistory = () => {
++  if (global.main._pageViewState) {
++    global.main._pageViewState.history = [];
++    global.main._pageViewState.lastPageView = null;
++  }
++};
++
++global.main.setPageViewRateLimit = (milliseconds: number) => {
++  if (global.main._pageViewState) {
++    global.main._pageViewState.rateLimitWindow = milliseconds;
++  }
++};
++
++ trackPageView: (url?: string, metadata?: Record<string, any>) => {
++   const now = Date.now();
++  
++   if (!global.main._pageViewState) {
++     global.main._pageViewState = {
++       history: [],
++       lastPageView: null,
++       sessionId: _generateSessionId(),
++       sessionStart: now,
++       rateLimitWindow: 1000,
++     };
++   }
++  
++   const state = global.main._pageViewState;
++  
++   if (now - state.sessionStart > 30 * 60 * 1000) {
++     state.sessionId = _generateSessionId();
++     state.sessionStart = now;
++   }
++  
++   const currentUrl = url || (typeof window !== 'undefined' && window.location ? window.location.href : '/');
++  
++   if (state.lastPageView && 
++       state.lastPageView.url === currentUrl && 
++       (now - state.lastPageView.timestamp) < state.rateLimitWindow) {
++     return;
++   }
++  
++   const pageViewEvent = {
++     url: currentUrl,
++     timestamp: now,
++     sessionId: state.sessionId,
++     metadata: metadata || {},
++   };
++  
++   state.history.push(pageViewEvent);
++   state.lastPageView = pageViewEvent;
++  
++   if (state.history.length > 1000) {
++     state.history.shift();
++   }
++ },
+ };

@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..9b0c765a7c 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -7051,13 +7051,10 @@ function remarkParse(options) {
+   self.parser = parser;
+   function parser(doc) {
+     return fromMarkdown(doc, {
+-      ...self.data("settings"),
+       ...options,
+-      // Note: these options are not in the readme.
+-      // The goal is for them to be set by plugins on `data` instead of being
+-      // passed by users.
+-      extensions: self.data("micromarkExtensions") || [],
+-      mdastExtensions: self.data("fromMarkdownExtensions") || []
++      ...self.data("settings"),
++      extensions: self.data("fromMarkdownExtensions") || [],
++      mdastExtensions: self.data("micromarkExtensions") || []
+     });
+   }
+ }

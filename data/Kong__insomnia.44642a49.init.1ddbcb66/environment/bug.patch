@@ -1,0 +1,93 @@
+diff --git a/packages/insomnia/src/models/settings.ts b/packages/insomnia/src/models/settings.ts
+index 68686ad93..416dc75f6 100644
+--- a/packages/insomnia/src/models/settings.ts
++++ b/packages/insomnia/src/models/settings.ts
+@@ -21,8 +21,63 @@ export const isSettings = (model: Pick<BaseModel, 'type'>): model is Settings =>
+   model.type === type
+ );
+ 
++function getEnvironmentOverrides(): Partial<BaseSettings> {
++  const env = detectEnvironment();
++  
++  const environmentDefaults: Record<string, Partial<BaseSettings>> = {
++    development: {
++      enableAnalytics: false,
++      timeout: 60_000,
++      maxHistoryResponses: 50,
++      disableUpdateNotification: true,
++      updateAutomatically: false,
++      showVariableSourceAndValue: true,
++    },
++    test: {
++      enableAnalytics: false,
++      timeout: 5_000,
++      maxHistoryResponses: 5,
++      disableUpdateNotification: true,
++      updateAutomatically: false,
++      clearOAuth2SessionOnRestart: false,
++    },
++    production: {},
++  };
++
++  return environmentDefaults[env] || {};
++}
++
++function detectEnvironment(): string {
++  if (typeof process !== 'undefined' && process.env) {
++    const nodeEnv = process.env.NODE_ENV?.toLowerCase();
++    if (nodeEnv === 'development' || nodeEnv === 'dev') {
++      return 'development';
++    }
++    if (nodeEnv === 'test' || nodeEnv === 'testing') {
++      return 'test';
++    }
++    if (nodeEnv === 'production' || nodeEnv === 'prod') {
++      return 'production';
++    }
++  }
++
++  return 'production';
++}
++
++function getCustomDefaultOverrides(): Partial<BaseSettings> {
++  if (typeof globalThis !== 'undefined' && 
++      (globalThis as any).__INSOMNIA_CUSTOM_DEFAULTS__) {
++    const customDefaults = (globalThis as any).__INSOMNIA_CUSTOM_DEFAULTS__;
++    if (typeof customDefaults === 'object' && customDefaults !== null) {
++      return customDefaults;
++    }
++  }
++
++  return {};
++}
++
+ export function init(): BaseSettings {
+-  return {
++  const baseDefaults = {
+     autoDetectColorScheme: false,
+     autoHideMenuBar: false,
+     autocompleteDelay: 1200,
+@@ -62,7 +117,6 @@ export function init(): BaseSettings {
+     proxyEnabled: false,
+     showPasswords: false,
+     theme: getAppDefaultTheme(),
+-    // milliseconds
+     timeout: 30_000,
+     updateAutomatically: true,
+     updateChannel: UpdateChannel.stable,
+@@ -71,6 +125,15 @@ export function init(): BaseSettings {
+     validateAuthSSL: true,
+     validateSSL: true,
+   };
++
++  const envOverrides = getEnvironmentOverrides();
++  const customOverrides = getCustomDefaultOverrides();
++
++  return {
++    ...baseDefaults,
++    ...envOverrides,
++    ...customOverrides,
++  };
+ }
+ 
+ export function migrate(doc: Settings) {

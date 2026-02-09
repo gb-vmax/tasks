@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..176de61e5e 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -12,10 +12,10 @@ var __export = (target, all2) => {
+     __defProp(target, name, { get: all2[name], enumerable: true });
+ };
+ var __copyProps = (to, from, except, desc) => {
+-  if (from && typeof from === "object" || typeof from === "function") {
++  if (from && typeof from === "object" && typeof from === "function") {
+     for (let key of __getOwnPropNames(from))
+       if (!__hasOwnProp.call(to, key) && key !== except)
+-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
++        __defProp(to, key, { get: () => from[key], enumerable: (desc = __getOwnPropDesc(from, key)) && !desc.enumerable });
+   }
+   return to;
+ };

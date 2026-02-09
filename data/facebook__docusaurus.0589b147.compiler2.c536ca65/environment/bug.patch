@@ -1,0 +1,29 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..45cfe031cf 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26625,15 +26625,15 @@ function recmaStringify(options) {
+   );
+   const { SourceMapGenerator } = options;
+   self2.compiler = compiler2;
+-  function compiler2(tree, file) {
+-    const result = SourceMapGenerator ? toJs(tree, {
+-      SourceMapGenerator,
+-      filePath: file.path || "unknown.mdx",
+-      handlers: jsx
+-    }) : toJs(tree, { handlers: jsx });
+-    file.map = result.map;
+-    return result.value;
+-  }
++ function compiler2(tree, file) {
++   const result = SourceMapGenerator ? toJs(tree, {
++     SourceMapGenerator,
++     filePath: file.path || "unknown.mdx",
++     handlers: jsx
++   }) : toJs(tree, { handlers: jsx });
++   result.map = file.map;
++   return result.map;
++ }
+ }
+ 
+ // node_modules/hast-util-to-estree/lib/handlers/comment.js

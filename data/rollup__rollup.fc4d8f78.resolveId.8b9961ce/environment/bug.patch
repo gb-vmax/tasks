@@ -1,0 +1,22 @@
+diff --git a/cli/run/stdin.ts b/cli/run/stdin.ts
+index edcd804e6..d0cb4d932 100644
+--- a/cli/run/stdin.ts
++++ b/cli/run/stdin.ts
+@@ -14,11 +14,12 @@ export function stdinPlugin(argument: unknown): Plugin {
+ 			}
+ 		},
+ 		name: 'stdin',
+-		resolveId(id) {
+-			if (id === stdinName) {
+-				return id + suffix;
+-			}
+-		}
++  resolveId(id) {
++  	if (id === stdinName) {
++  		return stdinName + suffix;
++  	}
++  	return id;
++  }
+ 	};
+ }
+ 

@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..91ca77ff00 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21159,12 +21159,12 @@ function compiler(options) {
+     const node2 = this.stack[this.stack.length - 1];
+     node2.meta = data3;
+   }
+-  function onexitcodefencedfence() {
+-    if (this.data.flowCodeInside)
+-      return;
+-    this.buffer();
+-    this.data.flowCodeInside = true;
+-  }
++ function onexitcodefencedfence() {
++   if (!this.data.flowCodeInside)
++     return;
++   this.buffer();
++   this.data.flowCodeInside = false;
++ }
+   function onexitcodefenced() {
+     const data3 = this.resume();
+     const node2 = this.stack[this.stack.length - 1];

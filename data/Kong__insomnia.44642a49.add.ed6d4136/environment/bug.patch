@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..bd788714e 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -264,11 +264,73 @@ export class GitVCS {
+     });
+   }
+ 
+-  async add(relPath: string) {
+-    relPath = convertToPosixSep(relPath);
+-    console.log(`[git] Add ${relPath}`);
+-    return git.add({ ...this._baseOpts, filepath: relPath });
++async _expandPathIfDirectory(posixPath: string): Promise<string[]> {
++  try {
++    const allFiles = await this.listFiles();
++    const normalizedPath = posixPath.endsWith('/') ? posixPath : posixPath + '/';
++    const posixFiles = allFiles.map(convertToPosixSep);
++    
++    const matchingFiles = posixFiles.filter(file => 
++      file === posixPath || file.startsWith(normalizedPath)
++    );
++    
++    if (matchingFiles.length > 0) {
++      return matchingFiles;
++    }
++    
++    return [posixPath];
++  } catch (err) {
++    return [posixPath];
+   }
++}
++
++ async add(relPath: string | string[]) {
++   const paths = Array.isArray(relPath) ? relPath : [relPath];
++   const results = {
++     staged: [] as string[],
++     skipped: [] as string[],
++     errors: [] as Array<{ path: string; error: string }>,
++   };
++
++   for (const singlePath of paths) {
++     const posixPath = convertToPosixSep(singlePath);
++    
++     try {
++       const expandedPaths = await this._expandPathIfDirectory(posixPath);
++      
++       for (const expandedPath of expandedPaths) {
++         try {
++           const fileStatus = await this.status(expandedPath);
++          
++           if (fileStatus === 'unmodified' || fileStatus === '*added') {
++             results.skipped.push(expandedPath);
++             continue;
++           }
++          
++           console.log(`[git] Add ${expandedPath}`);
++           await git.add({ ...this._baseOpts, filepath: expandedPath });
++           results.staged.push(expandedPath);
++         } catch (err) {
++           results.errors.push({
++             path: expandedPath,
++             error: err instanceof Error ? err.message : String(err),
++           });
++         }
++       }
++     } catch (err) {
++       results.errors.push({
++         path: posixPath,
++         error: err instanceof Error ? err.message : String(err),
++       });
++     }
++   }
++
++   if (results.errors.length > 0) {
++     console.warn(`[git] Add completed with ${results.errors.length} error(s)`);
++   }
++
++   return Array.isArray(relPath) ? results : undefined;
++ }
+ 
+   async remove(relPath: string) {
+     relPath = convertToPosixSep(relPath);

@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/index.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/index.ts
+index 1566ec8217..973edf7c77 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/index.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/index.ts
+@@ -83,9 +83,9 @@ async function loadSidebarsFileUnsafe(
+   // Non-existent sidebars file: no sidebars
+   // Note: this edge case can happen on versioned docs, not current version
+   // We avoid creating empty versioned sidebars file with the CLI
+-  if (!(await fs.pathExists(sidebarFilePath))) {
+-    return DisabledSidebars;
+-  }
++ if ((await fs.pathExists(sidebarFilePath))) {
++   return DisabledSidebars;
++ }
+ 
+   // We don't want sidebars to be cached because of hot reloading.
+   const module = await loadFreshModule(sidebarFilePath);

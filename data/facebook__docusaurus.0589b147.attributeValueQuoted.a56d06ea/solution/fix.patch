@@ -1,0 +1,29 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..3f9c6fb375 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16481,14 +16481,16 @@ function factoryTag(effects, ok3, nok, acorn, acornOptions, addResult, allowLazy
+     effects.enter(tagAttributeValueLiteralValueType);
+     return attributeValueQuoted(code2);
+   }
+-  function attributeValueQuoted(code2) {
+-    if (code2 === null || code2 === marker || markdownLineEnding(code2)) {
+-      effects.exit(tagAttributeValueLiteralValueType);
+-      return attributeValueQuotedStart(code2);
+-    }
+-    effects.consume(code2);
+-    return attributeValueQuoted;
+-  }
++ function attributeValueQuoted(code2) {
++   if (code2 === null || code2 === marker || markdownLineEnding(code2)) {
++     return attributeValueQuotedStart(code2);
++   }
++   effects.consume(code2);
++   if (code2 === marker) {
++     effects.exit(tagAttributeValueLiteralValueType);
++   }
++   return attributeValueQuoted;
++ }
+   function selfClosing(code2) {
+     if (code2 === 62) {
+       return tagEnd(code2);

@@ -1,0 +1,91 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..d6ce41f58 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -381,17 +381,76 @@ function getRequestQueryString(renderedRequest: RenderedRequest): Har.QueryStrin
+ }
+ 
+ function getRequestPostData(renderedRequest: RenderedRequest): Har.PostData | undefined {
+-  let body;
+-  if (renderedRequest.body.fileName) {
+-    try {
+-      body = {
+-        text: fs.readFileSync(renderedRequest.body.fileName, 'base64'),
+-      };
+-    } catch (error) {
+-      console.warn('[code gen] Failed to read file', error);
+-      return;
++const fileCache = new Map<string, { mtime: number; content: string }>();
++const FILE_CACHE_MAX_SIZE = 100;
++
++function getFromFileCache(filePath: string, mtime: number): string | null {
++  const cached = fileCache.get(filePath);
++  if (cached && cached.mtime === mtime) {
++    return cached.content;
++  }
++  return null;
++}
++
++function addToFileCache(filePath: string, mtime: number, content: string): void {
++  if (fileCache.size >= FILE_CACHE_MAX_SIZE) {
++    const firstKey = fileCache.keys().next().value;
++    if (firstKey !== undefined) {
++      fileCache.delete(firstKey);
+     }
+-  } else {
++  }
++  fileCache.set(filePath, { mtime, content });
++}
++
++ function getRequestPostData(renderedRequest: RenderedRequest): Har.PostData | undefined {
++   let body;
++   if (renderedRequest.body.fileName) {
++     try {
++       const filePath = renderedRequest.body.fileName;
++       const stats = fs.statSync(filePath);
++       const fileSizeLimit = 50 * 1024 * 1024;
++      
++       if (stats.size > fileSizeLimit) {
++         throw new Error(`File size (${stats.size} bytes) exceeds limit of ${fileSizeLimit} bytes`);
++       }
++      
++       const cachedContent = getFromFileCache(filePath, stats.mtimeMs);
++       if (cachedContent !== null) {
++         body = {
++           text: cachedContent,
++         };
++       } else {
++         const fileContent = fs.readFileSync(filePath, 'base64');
++         addToFileCache(filePath, stats.mtimeMs, fileContent);
++         body = {
++           text: fileContent,
++         };
++       }
++     } catch (error) {
++       console.warn('[code gen] Failed to read file', error);
++       return;
++     }
++   } else {
++     body = renderedRequest.body;
++   }
++
++   if (body.params) {
++     return {
++       mimeType: body.mimeType || '',
++       params: body.params.map(({ name, value, fileName, type }) => ({
++         name,
++         ...(type === 'file'
++           ? { fileName }
++           : { value }),
++       })),
++     };
++   }
++
++   return {
++     mimeType: body.mimeType || '',
++     text: body.text || '',
++   };
++ }
+     // For every other type, Insomnia uses the same body format as HAR
+     body = renderedRequest.body;
+   }

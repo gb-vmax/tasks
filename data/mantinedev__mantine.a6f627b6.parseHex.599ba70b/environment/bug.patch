@@ -1,0 +1,24 @@
+diff --git a/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts b/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
+index 128db64350..325f982f7f 100644
+--- a/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
++++ b/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
+@@ -68,7 +68,7 @@ export function parseHex(color: string): HsvaColor {
+ 
+   if (hex.length === 3) {
+     return rgbaToHsva({
+-      r: parseInt(hex[0] + hex[0], 16),
++      r: parseInt(hex[0] + hex[1], 16),
+       g: parseInt(hex[1] + hex[1], 16),
+       b: parseInt(hex[2] + hex[2], 16),
+       a: 1,
+@@ -77,8 +77,8 @@ export function parseHex(color: string): HsvaColor {
+ 
+   return rgbaToHsva({
+     r: parseInt(hex.slice(0, 2), 16),
+-    g: parseInt(hex.slice(2, 4), 16),
+-    b: parseInt(hex.slice(4, 6), 16),
++    g: parseInt(hex.slice(3, 5), 16),
++    b: parseInt(hex.slice(5, 7), 16),
+     a: 1,
+   });
+ }

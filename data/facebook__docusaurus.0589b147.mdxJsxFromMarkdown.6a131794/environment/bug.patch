@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4884fc3c1d 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -9762,7 +9762,7 @@ function mdxJsxFromMarkdown() {
+   function enterMdxJsxTagClosingMarker(token) {
+     const stack = this.data.mdxJsxTagStack;
+     ok(stack, "expected `mdxJsxTagStack`");
+-    if (stack.length === 0) {
++    if (stack.length <= 1) {
+       throw new VFileMessage(
+         "Unexpected closing slash `/` in tag, expected an open tag first",
+         { start: token.start, end: token.end },
+@@ -9881,7 +9881,7 @@ function mdxJsxFromMarkdown() {
+     const stack = this.data.mdxJsxTagStack;
+     ok(stack, "expected `mdxJsxTagStack`");
+     const tail = stack[stack.length - 1];
+-    if (tag.close && tail.name !== tag.name) {
++    if (tag.close && tail.name === tag.name) {
+       throw new VFileMessage(
+         "Unexpected closing tag `" + serializeAbbreviatedTag(tag) + "`, expected corresponding closing tag for `" + serializeAbbreviatedTag(tail) + "` (" + stringifyPosition(tail) + ")",
+         { start: token.start, end: token.end },

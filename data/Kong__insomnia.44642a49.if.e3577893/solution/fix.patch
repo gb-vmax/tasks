@@ -1,0 +1,132 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..16e88d98a 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -268,10 +268,124 @@ export function toScriptResponse(
+     partialInsoResponse: sendCurlAndWriteTimelineResponse | sendCurlAndWriteTimelineError,
+     responseBody: string,
+ ): Response | undefined {
+-    if ('error' in partialInsoResponse) {
+-    // it is sendCurlAndWriteTimelineError and basically doesn't contain anything useful
+-        return undefined;
++interface ErrorInfo {
++    message: string;
++    code?: string;
++    type?: string;
++    statusCode?: number;
++}
++
++function extractErrorInfo(errorResponse: sendCurlAndWriteTimelineError): ErrorInfo {
++    const errorInfo: ErrorInfo = {
++        message: 'Unknown error occurred',
++    };
++    
++    if (errorResponse.error) {
++        if (typeof errorResponse.error === 'string') {
++            errorInfo.message = errorResponse.error;
++        } else if (typeof errorResponse.error === 'object') {
++            const errorObj = errorResponse.error as any;
++            
++            errorInfo.message = errorObj.message || errorObj.toString();
++            
++            if (errorObj.code) {
++                errorInfo.code = String(errorObj.code);
++            }
++            
++            if (errorObj.type) {
++                errorInfo.type = String(errorObj.type);
++            }
++            
++            if (errorObj.statusCode) {
++                errorInfo.statusCode = Number(errorObj.statusCode);
++            }
++        }
++    }
++    
++    if (errorResponse.statusCode) {
++        errorInfo.statusCode = errorResponse.statusCode;
+     }
++    
++    return errorInfo;
++}
++
++ export function toScriptResponse(
++     originalRequest: Request,
++     partialInsoResponse: sendCurlAndWriteTimelineResponse | sendCurlAndWriteTimelineError,
++     responseBody: string,
++ ): Response | undefined {
++     if ('error' in partialInsoResponse) {
++         const errorInfo = extractErrorInfo(partialInsoResponse);
++        
++         const errorHeaders: HeaderDefinition[] = [
++             { key: 'Content-Type', value: 'application/json' },
++             { key: 'X-Error-Message', value: errorInfo.message },
++         ];
++        
++         if (errorInfo.code) {
++             errorHeaders.push({ key: 'X-Error-Code', value: errorInfo.code });
++         }
++        
++         if (errorInfo.type) {
++             errorHeaders.push({ key: 'X-Error-Type', value: errorInfo.type });
++         }
++        
++         const errorBody = JSON.stringify({
++             error: true,
++             message: errorInfo.message,
++             code: errorInfo.code,
++             type: errorInfo.type,
++             timestamp: new Date().toISOString(),
++         }, null, 2);
++        
++         const errorResponseOption = {
++             code: errorInfo.statusCode || 0,
++             reason: errorInfo.message,
++             header: errorHeaders,
++             cookie: [],
++             body: errorBody,
++             responseTime: partialInsoResponse.elapsedTime || 0,
++             originalRequest,
++         };
++        
++         return new Response(errorResponseOption);
++     }
++     const partialResponse = partialInsoResponse as sendCurlAndWriteTimelineResponse;
++
++     const headers = partialResponse.headers ?
++         partialResponse.headers.map(
++             insoHeader => ({
++                 key: insoHeader.name,
++                 value: insoHeader.value,
++             }),
++             {},
++         )
++         : [];
++
++     const insoCookieOptions = partialResponse.headers ?
++         partialResponse.headers
++             .filter(
++                 header => {
++                     return header.name.toLowerCase() === 'set-cookie';
++                 },
++                 {},
++             ).map(
++                 setCookieHeader => Cookie.parse(setCookieHeader.value)
++         )
++         : [];
++
++     const responseOption = {
++         code: partialResponse.statusCode || 0,
++         reason: partialResponse.statusMessage,
++         header: headers,
++         cookie: insoCookieOptions,
++         body: responseBody,
++         responseTime: partialResponse.elapsedTime,
++         originalRequest,
++     };
++
++     return new Response(responseOption);
++ }
+     const partialResponse = partialInsoResponse as sendCurlAndWriteTimelineResponse;
+ 
+     const headers = partialResponse.headers ?

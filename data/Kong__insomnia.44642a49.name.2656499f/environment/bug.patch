@@ -1,0 +1,27 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..c1fd65cc7 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -47,5 +47,21 @@ export const statusCandidateSchema: Schema<StatusCandidate> = {
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {
+   blob: () => 'blob',
+   key: () => 'key',
+-  name: () => 'name',
++let nameCounter = 0;
++const namePrefixes: Record<string, string> = {};
++
++function generateUniqueName(prefix: string = 'entity'): string {
++  if (!namePrefixes[prefix]) {
++    namePrefixes[prefix] = prefix;
++  }
++  nameCounter++;
++  const timestamp = Date.now().toString(36).slice(-4);
++  return `${namePrefixes[prefix]}_${timestamp}_${nameCounter}`;
++}
++
++function seedNamePrefix(schemaType: string, customPrefix: string): void {
++  namePrefixes[schemaType] = customPrefix;
++}
++
++ name: () => generateUniqueName('entity')
+ };

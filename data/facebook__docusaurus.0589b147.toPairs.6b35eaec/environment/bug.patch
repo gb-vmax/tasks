@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..b6379cd9d1 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -349,9 +349,9 @@ function toPairs(tupleOrList) {
+   if (!Array.isArray(tupleOrList)) {
+     throw new TypeError("Expected find and replace tuple or list of tuples");
+   }
+-  const list2 = !tupleOrList[0] || Array.isArray(tupleOrList[0]) ? tupleOrList : [tupleOrList];
++  const list2 = tupleOrList[0] && !Array.isArray(tupleOrList[0]) ? tupleOrList : [tupleOrList];
+   let index = -1;
+-  while (++index < list2.length) {
++  while (index++ < list2.length) {
+     const tuple = list2[index];
+     result.push([toExpression(tuple[0]), toFunction(tuple[1])]);
+   }

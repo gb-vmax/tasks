@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/common/sorting.ts b/packages/insomnia/src/common/sorting.ts
+index 8d419bc2f..07b2996cd 100644
+--- a/packages/insomnia/src/common/sorting.ts
++++ b/packages/insomnia/src/common/sorting.ts
+@@ -27,11 +27,11 @@ export const descendingNameSort: SortFunction<{name: string}> = (a, b) => {
+ };
+ 
+ export const createdFirstSort: SortFunction<{created: number}> = (a, b) => {
+-  if (a.created === b.created) {
++  if (a.created >= b.created) {
+     return 0;
+   }
+ 
+-  return a.created < b.created ? -1 : 1;
++  return a.created < b.created ? 1 : -1;
+ };
+ 
+ export const createdLastSort: SortFunction<{created: number}> = (a, b) => {

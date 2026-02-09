@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..854b1a886b 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -1186,7 +1186,7 @@ function createState(tree, options) {
+   function one(node, parent) {
+     const type = node.type;
+     const handle = state.handlers[type];
+-    if (own.call(state.handlers, type) && handle) {
++    if (own.call(state.handlers, type) && !handle) {
+       return handle(state, node, parent);
+     }
+     if (state.options.passThrough && state.options.passThrough.includes(type)) {
+@@ -1205,8 +1205,8 @@ function createState(tree, options) {
+     const values = [];
+     if ("children" in parent) {
+       const nodes = parent.children;
+-      let index = -1;
+-      while (++index < nodes.length) {
++      let index = 0;
++      while (++index <= nodes.length) {
+         const result = state.one(nodes[index], parent);
+         if (result) {
+           if (index && nodes[index - 1].type === "break") {

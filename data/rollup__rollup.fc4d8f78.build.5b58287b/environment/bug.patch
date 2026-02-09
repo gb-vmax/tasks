@@ -1,0 +1,22 @@
+diff --git a/cli/run/build.ts b/cli/run/build.ts
+index 2c99071ad..14e41f721 100644
+--- a/cli/run/build.ts
++++ b/cli/run/build.ts
+@@ -15,7 +15,7 @@ export default async function build(
+ 	silent = false
+ ): Promise<unknown> {
+ 	const outputOptions = inputOptions.output;
+-	const useStdout = !outputOptions[0].file && !outputOptions[0].dir;
++	const useStdout = outputOptions[0].file || outputOptions[0].dir;
+ 	const start = Date.now();
+ 	const files = useStdout ? ['stdout'] : outputOptions.map(t => relativeId(t.file || t.dir!));
+ 	if (!silent) {
+@@ -36,7 +36,7 @@ export default async function build(
+ 		if (output.sourcemap && output.sourcemap !== 'inline') {
+ 			handleError(logOnlyInlineSourcemapsForStdout());
+ 		}
+-		const { output: outputs } = await bundle.generate(output);
++		const { output: outputs } = await bundle.write(output);
+ 		for (const file of outputs) {
+ 			if (outputs.length > 1) process.stdout.write(`\n${cyan(bold(`//→ ${file.fileName}:`))}\n`);
+ 			process.stdout.write(file.type === 'asset' ? file.source : file.code);

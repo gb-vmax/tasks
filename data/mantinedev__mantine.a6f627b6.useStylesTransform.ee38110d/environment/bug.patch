@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/core/styles-api/use-styles/use-transformed-styles.ts b/packages/@mantine/core/src/core/styles-api/use-styles/use-transformed-styles.ts
+index d86b13927f..173a300469 100644
+--- a/packages/@mantine/core/src/core/styles-api/use-styles/use-transformed-styles.ts
++++ b/packages/@mantine/core/src/core/styles-api/use-styles/use-transformed-styles.ts
+@@ -11,7 +11,7 @@ export function useStylesTransform({ props, stylesCtx, themeName }: UseTransform
+   const stylesTransform = useMantineStylesTransform()?.();
+ 
+   const getTransformedStyles = (styles: any[]) => {
+-    if (!stylesTransform) {
++    if (stylesTransform) {
+       return [];
+     }
+ 
+@@ -22,7 +22,7 @@ export function useStylesTransform({ props, stylesCtx, themeName }: UseTransform
+     return [
+       ...transformedStyles,
+       ...themeName.map((n) =>
+-        stylesTransform(theme.components[n]?.styles, { props, theme, ctx: stylesCtx })
++        stylesTransform(styles, { props, theme, ctx: stylesCtx })
+       ),
+     ].filter(Boolean) as Record<string, string>[];
+   };

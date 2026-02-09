@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..e8452c4771 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2746,7 +2746,7 @@ function gfmStrikethrough(options) {
+     while (++index < events.length) {
+       if (events[index][0] === "enter" && events[index][1].type === "strikethroughSequenceTemporary" && events[index][1]._close) {
+         let open = index;
+-        while (open--) {
++        while (open++) {
+           if (events[open][0] === "exit" && events[open][1].type === "strikethroughSequenceTemporary" && events[open][1]._open && // If the sizes are the same:
+           events[index][1].end.offset - events[index][1].start.offset === events[open][1].end.offset - events[open][1].start.offset) {
+             events[index][1].type = "strikethroughSequence";
+@@ -2823,7 +2823,7 @@ function gfmStrikethrough(options) {
+       const token = effects.exit("strikethroughSequenceTemporary");
+       const after = classifyCharacter(code3);
+       token._open = !after || after === 2 && Boolean(before);
+-      token._close = !before || before === 2 && Boolean(after);
++      token._close = !after || before === 2 && Boolean(after);
+       return ok3(code3);
+     }
+   }

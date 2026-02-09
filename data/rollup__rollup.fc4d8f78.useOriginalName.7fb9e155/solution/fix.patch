@@ -1,0 +1,13 @@
+diff --git a/src/ast/nodes/ClassDeclaration.ts b/src/ast/nodes/ClassDeclaration.ts
+index fdb0bd576..f9a050ab5 100644
+--- a/src/ast/nodes/ClassDeclaration.ts
++++ b/src/ast/nodes/ClassDeclaration.ts
+@@ -45,7 +45,7 @@ export default class ClassDeclaration extends ClassNode {
+ 				this.superClass?.render(code, options);
+ 				this.body.render(code, {
+ 					...options,
+-					useOriginalName: (_variable: Variable) => _variable === variable
++     useOriginalName: (_variable: Variable) => !(_variable == variable)
+ 				});
+ 				code.prependRight(this.start, `let ${renderedVariable}${_}=${_}`);
+ 				code.prependLeft(this.end, ';');

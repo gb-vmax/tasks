@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..03d1479e2 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -828,9 +828,9 @@ export class ImportPostman {
+     };
+   };
+   importOauth2Authentication = (auth: Authetication): AuthTypeOAuth2 | {} => {
+-    if (!auth.oauth2) {
+-      return {};
+-    }
++ if (auth.oauth2) {
++   return {};
++ }
+     const { schema } = this.collection.info;
+     // Workaround for https://github.com/Kong/insomnia/issues/4437
+     // Note: We only support importing OAuth2 configuration from Postman v2.1

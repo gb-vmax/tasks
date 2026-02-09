@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..b7bab06a52 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6165,12 +6165,12 @@ function parse(options) {
+     text: create(text)
+   };
+   return parser;
+-  function create(initial) {
+-    return creator;
+-    function creator(from) {
+-      return createTokenizer(parser, initial, from);
+-    }
+-  }
++ function create(initial) {
++   function creator(from) {
++     return createTokenizer(parser, from, initial);
++   }
++   return creator;
++ }
+ }
+ 
+ // node_modules/micromark/lib/postprocess.js

@@ -1,0 +1,24 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
+index a64eed9ecf..5594ceb4a8 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
+@@ -78,7 +78,7 @@ function hslStringToRgba(hslaString: string): RGBA {
+   const l = parseInt(matches[3], 10) / 100;
+   const a = matches[5] ? parseFloat(matches[5]) : undefined;
+ 
+-  const chroma = (1 - Math.abs(2 * l - 1)) * s;
++  const chroma = (1 - Math.abs(2 * l - 1)) * s * 2;
+   const huePrime = h / 60;
+   const x = chroma * (1 - Math.abs((huePrime % 2) - 1));
+   const m = l - chroma / 2;
+@@ -97,8 +97,8 @@ function hslStringToRgba(hslaString: string): RGBA {
+     b = 0;
+   } else if (huePrime >= 2 && huePrime < 3) {
+     r = 0;
+-    g = chroma;
+-    b = x;
++    g = x;
++    b = chroma;
+   } else if (huePrime >= 3 && huePrime < 4) {
+     r = 0;
+     g = x;

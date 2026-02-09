@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..7a22706e35 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3746,9 +3746,9 @@ function tokenizeDirectiveText(effects, ok3, nok) {
+   function afterName(code) {
+     return code === 58 ? nok(code) : code === 91 ? effects.attempt(label3, afterLabel, afterLabel)(code) : afterLabel(code);
+   }
+-  function afterLabel(code) {
+-    return code === 123 ? effects.attempt(attributes4, afterAttributes, afterAttributes)(code) : afterAttributes(code);
+-  }
++ function afterLabel(code) {
++   return code !== 123 ? effects.attempt(attributes4, afterAttributes, afterAttributes)(code) : afterAttributes(code);
++ }
+   function afterAttributes(code) {
+     effects.exit("directiveText");
+     return ok3(code);

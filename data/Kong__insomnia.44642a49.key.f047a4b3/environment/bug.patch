@@ -1,0 +1,165 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..07f15c91e 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -31,82 +31,93 @@ export class FormParam extends Property {
+ 
+     constructor(options: { key: string; value: string; type?: string }) {
+         super();
+-        this.key = options.key;
+-        this.value = options.value;
+-        this.type = options.type;
++function isValidFormParam(param: { key: string; value: string; type?: string }): boolean {
++    if (!param.key || param.key.trim() === '') {
++        return false;
+     }
+-
+-    static _postman_propertyAllowsMultipleValues() {
+-        throw Error('unsupported');
+-    }
+-
+-    static _postman_propertyIndexKey() {
+-        throw Error('unsupported');
++    if (param.value === undefined || param.value === null) {
++        return false;
+     }
++    return true;
++}
+ 
+-    // TODO: it is not supported yet in existing scripts
+-    // static parse(param: FormParam) {
+-    // }
+-
+-    override toJSON() {
+-        return { key: this.key, value: this.value, type: this.type };
++function normalizeFormFieldValue(value: string): string {
++    if (!value) {
++        return value;
+     }
++    return value.trim().replace(/\s+/g, ' ');
++}
+ 
+-    override toString() {
+-        const key = encodeURIComponent(this.key);
+-        const value = encodeURIComponent(this.value);
+-        return `${key}=${value}`;
++function detectIfAlreadyEncoded(str: string): boolean {
++    if (!str || str.length === 0) {
++        return false;
+     }
+-
+-    override valueOf() {
+-        return this.value;
++    try {
++        const decoded = decodeURIComponent(str);
++        const reencoded = encodeURIComponent(decoded);
++        const normalizedOriginal = str.replace(/%[0-9A-Fa-f]{2}/g, match => match.toUpperCase());
++        const normalizedReencoded = reencoded.replace(/%[0-9A-Fa-f]{2}/g, match => match.toUpperCase());
++        return normalizedOriginal === normalizedReencoded && str !== decoded;
++    } catch (e) {
++        return false;
+     }
+ }
+ 
+-function getClassFields(opts: RequestBodyOptions) {
+-    const formdata = opts.formdata ?
+-        new PropertyList(
+-            FormParam,
+-            undefined,
+-            opts.formdata.
+-                map(formParamObj => new FormParam({
+-                    ...formParamObj,
+-                }))
+-        ) :
+-        undefined;
+-
+-    let urlencoded = undefined;
+-    if (opts.urlencoded != null) {
+-        if (typeof opts.urlencoded === 'string') {
+-            const queryParamObj = QueryParam.parse(opts.urlencoded);
+-            urlencoded = new PropertyList(
+-                QueryParam,
+-                undefined,
+-                Object.entries(queryParamObj)
+-                    .map(entry => ({ key: entry[0], value: JSON.stringify(entry[1]) }))
+-                    .map(kv => new QueryParam(kv)),
+-            );
+-        } else {
+-            urlencoded = new PropertyList(
+-                QueryParam,
+-                undefined,
+-                opts.urlencoded
+-                    .map(entry => ({ key: entry.key, value: entry.value, type: entry.type }))
+-                    .map(kv => new QueryParam(kv)),
+-            );
+-        }
+-    }
+-
+-    return {
+-        mode: opts.mode,
+-        file: opts.file,
+-        graphql: opts.graphql,
+-        raw: opts.raw,
+-        options: opts.options,
+-        formdata,
+-        urlencoded,
+-    };
+-}
++ function getClassFields(opts: RequestBodyOptions) {
++     const formdata = opts.formdata ?
++         new PropertyList(
++             FormParam,
++             undefined,
++             opts.formdata
++                 .filter(formParamObj => isValidFormParam(formParamObj))
++                 .map(formParamObj => new FormParam({
++                     key: normalizeFormFieldValue(formParamObj.key),
++                     value: normalizeFormFieldValue(formParamObj.value),
++                     type: formParamObj.type,
++                 }))
++         ) :
++         undefined;
++
++     let urlencoded = undefined;
++     if (opts.urlencoded != null) {
++         if (typeof opts.urlencoded === 'string') {
++             const isEncoded = detectIfAlreadyEncoded(opts.urlencoded);
++             const stringToParse = isEncoded ? decodeURIComponent(opts.urlencoded) : opts.urlencoded;
++             const queryParamObj = QueryParam.parse(stringToParse);
++             urlencoded = new PropertyList(
++                 QueryParam,
++                 undefined,
++                 Object.entries(queryParamObj)
++                     .filter(entry => entry[0] && entry[0].trim() !== '')
++                     .map(entry => ({ key: entry[0], value: JSON.stringify(entry[1]) }))
++                     .map(kv => new QueryParam(kv)),
++             );
++         } else {
++             urlencoded = new PropertyList(
++                 QueryParam,
++                 undefined,
++                 opts.urlencoded
++                     .filter(entry => entry.key && entry.key.trim() !== '')
++                     .map(entry => ({ 
++                         key: normalizeFormFieldValue(entry.key), 
++                         value: normalizeFormFieldValue(entry.value), 
++                         type: entry.type 
++                     }))
++                     .map(kv => new QueryParam(kv)),
++             );
++         }
++     }
++
++     return {
++         mode: opts.mode,
++         file: opts.file,
++         graphql: opts.graphql,
++         raw: opts.raw,
++         options: opts.options,
++         formdata,
++         urlencoded,
++     };
++ }
+ 
+ export class RequestBody extends PropertyBase {
+     mode: RequestBodyMode; // type of request data

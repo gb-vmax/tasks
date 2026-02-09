@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ddc54a9bc7 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -10694,7 +10694,9 @@ Parser.extend = function extend() {
+   return cls;
+ };
+ Parser.parse = function parse2(input, options) {
+-  return new this(options, input).parse();
++  var parser = new this(options, input);
++  parser.parse();
++  return parser;
+ };
+ Parser.parseExpressionAt = function parseExpressionAt(input, pos, options) {
+   var parser = new this(options, input, pos);

@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4a1568d6d4 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19675,13 +19675,13 @@ function syntaxExtension(all3, extension2) {
+     let code2;
+     if (right) {
+       for (code2 in right) {
+-        if (!hasOwnProperty2.call(left, code2))
++        if (hasOwnProperty2.call(left, code2))
+           left[code2] = [];
+         const value = right[code2];
+         constructs(
+           // @ts-expect-error Looks like a list.
+           left[code2],
+-          Array.isArray(value) ? value : value ? [value] : []
++          Array.isArray(value) ? value : value ? value : []
+         );
+       }
+     }

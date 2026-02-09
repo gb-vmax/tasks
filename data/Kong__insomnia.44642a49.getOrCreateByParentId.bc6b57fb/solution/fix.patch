@@ -1,0 +1,29 @@
+diff --git a/packages/insomnia/src/models/grpc-request-meta.ts b/packages/insomnia/src/models/grpc-request-meta.ts
+index e77655a3e..b23763822 100644
+--- a/packages/insomnia/src/models/grpc-request-meta.ts
++++ b/packages/insomnia/src/models/grpc-request-meta.ts
+@@ -53,14 +53,23 @@ export function getByParentId(parentId: string) {
+   return db.getWhere<GrpcRequestMeta>(type, { parentId });
+ }
+ 
++function shouldUpdateLastActive(lastActive: number, currentTime: number): boolean {
++  const ACTIVITY_UPDATE_THRESHOLD_MS = 5000;
++  return currentTime - lastActive >= ACTIVITY_UPDATE_THRESHOLD_MS;
++}
++
+ export async function getOrCreateByParentId(parentId: string) {
+   const requestMeta = await getByParentId(parentId);
+ 
+   if (requestMeta) {
++    const now = Date.now();
++    if (shouldUpdateLastActive(requestMeta.lastActive, now)) {
++      return update(requestMeta, { lastActive: now });
++    }
+     return requestMeta;
+   }
+ 
+-  return create({ parentId });
++  return create({ parentId, lastActive: Date.now() });
+ }
+ 
+ export async function updateOrCreateByParentId(parentId: string, patch: Partial<GrpcRequestMeta>) {

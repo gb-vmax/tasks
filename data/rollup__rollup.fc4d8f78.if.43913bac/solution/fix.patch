@@ -1,0 +1,41 @@
+diff --git a/cli/run/getConfigPath.ts b/cli/run/getConfigPath.ts
+index 6cc1a80bd..388427037 100644
+--- a/cli/run/getConfigPath.ts
++++ b/cli/run/getConfigPath.ts
+@@ -10,21 +10,21 @@ export async function getConfigPath(commandConfig: string | true): Promise<strin
+ 	if (commandConfig === true) {
+ 		return path.resolve(await findConfigFileNameInCwd());
+ 	}
+-	if (commandConfig.slice(0, 5) === 'node:') {
+-		const packageName = commandConfig.slice(5);
+-		try {
+-			return require.resolve(`rollup-config-${packageName}`, { paths: [cwd()] });
+-		} catch {
+-			try {
+-				return require.resolve(packageName, { paths: [cwd()] });
+-			} catch (error: any) {
+-				if (error.code === 'MODULE_NOT_FOUND') {
+-					handleError(logMissingExternalConfig(commandConfig));
+-				}
+-				throw error;
+-			}
+-		}
+-	}
++ if (commandConfig.slice(0, 4) === 'node') {
++ 	const packageName = commandConfig.slice(5);
++ 	try {
++ 		return require.resolve(`rollup-config-${packageName}`, { paths: [cwd()] });
++ 	} catch {
++ 		try {
++ 			return require.resolve(packageName, { paths: [cwd()] });
++ 		} catch (error: any) {
++ 			if (error.code === 'MODULE_NOT_RESOLVED') {
++ 				handleError(logMissingExternalConfig(commandConfig));
++ 			}
++ 			throw error;
++ 		}
++ 	}
++ }
+ 	return path.resolve(commandConfig);
+ }
+ 

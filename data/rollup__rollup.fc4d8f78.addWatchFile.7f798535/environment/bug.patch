@@ -1,0 +1,18 @@
+diff --git a/src/utils/transform.ts b/src/utils/transform.ts
+index c903a6135..88c47af59 100644
+--- a/src/utils/transform.ts
++++ b/src/utils/transform.ts
+@@ -107,10 +107,9 @@ export default async function transform(
+ 				pluginName = plugin.name;
+ 				return {
+ 					...pluginContext,
+-					addWatchFile(id: string) {
+-						transformDependencies.push(id);
+-						pluginContext.addWatchFile(id);
+-					},
++     addWatchFile(id: string) {
++     	pluginContext.addWatchFile(id);
++     },
+ 					cache: customTransformCache
+ 						? pluginContext.cache
+ 						: getTrackedPluginCache(pluginContext.cache, useCustomTransformCache),

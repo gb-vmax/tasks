@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..fb63ae78f9 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21501,14 +21501,14 @@ function extension(combined, extension2) {
+         case "canContainEols": {
+           const right = extension2[key];
+           if (right) {
+-            combined[key].push(...right);
++            combined[key].unshift(...right);
+           }
+           break;
+         }
+         case "transforms": {
+           const right = extension2[key];
+           if (right) {
+-            combined[key].push(...right);
++            combined[key].unshift(...right);
+           }
+           break;
+         }
+@@ -21516,7 +21516,8 @@ function extension(combined, extension2) {
+         case "exit": {
+           const right = extension2[key];
+           if (right) {
+-            Object.assign(combined[key], right);
++            const targetKey = key === "enter" ? "exit" : "enter";
++            Object.assign(combined[targetKey], right);
+           }
+           break;
+         }

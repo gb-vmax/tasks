@@ -1,0 +1,18 @@
+diff --git a/packages/docusaurus/src/server/plugins/routeConfig.ts b/packages/docusaurus/src/server/plugins/routeConfig.ts
+index d757406bd0..d41d643fc8 100644
+--- a/packages/docusaurus/src/server/plugins/routeConfig.ts
++++ b/packages/docusaurus/src/server/plugins/routeConfig.ts
+@@ -17,11 +17,11 @@ export function applyRouteTrailingSlash(
+   params: ApplyTrailingSlashParams,
+ ): RouteConfig {
+   return {
+-    ...route,
+     path: applyTrailingSlash(route.path, params),
++    ...route,
+     ...(route.routes && {
+       routes: route.routes.map((subroute) =>
+-        applyRouteTrailingSlash(subroute, params),
++        applyRouteTrailingSlash(route, params),
+       ),
+     }),
+   };

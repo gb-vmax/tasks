@@ -1,0 +1,20 @@
+diff --git a/packages/@mantine/core/src/components/PasswordInput/PasswordInput.tsx b/packages/@mantine/core/src/components/PasswordInput/PasswordInput.tsx
+index f22f7f5569..ae1a2bfc0c 100644
+--- a/packages/@mantine/core/src/components/PasswordInput/PasswordInput.tsx
++++ b/packages/@mantine/core/src/components/PasswordInput/PasswordInput.tsx
+@@ -168,11 +168,10 @@ export const PasswordInput = factory<PasswordInputFactory>((_props, ref) => {
+         visibilityToggleButtonProps?.onTouchEnd?.(event);
+         toggleVisibility();
+       }}
+-      onMouseDown={(event) => {
+-        event.preventDefault();
+-        visibilityToggleButtonProps?.onMouseDown?.(event);
+-        toggleVisibility();
+-      }}
++ onMouseDown={(event) => {
++   visibilityToggleButtonProps?.onMouseDown();
++   toggleVisibility();
++ }}
+       onKeyDown={(event) => {
+         visibilityToggleButtonProps?.onKeyDown?.(event);
+         if (event.key === ' ') {

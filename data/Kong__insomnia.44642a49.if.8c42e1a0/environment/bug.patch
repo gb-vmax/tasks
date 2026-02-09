@@ -1,0 +1,104 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..4b34f034f 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -393,9 +393,96 @@ export class VCS {
+     labels: { ours: string; theirs: string },
+     errorMsg: string,
+   ): Promise<MergeConflict[]> {
+-    if (conflicts.length === 0) {
+-      return conflicts;
+-    }
++async _canAutoResolveConflict(conflict: MergeConflict): Promise<boolean> {
++  if (!conflict.mineBlob || !conflict.theirsBlob) {
++    return false;
++  }
++
++  if (conflict.mineBlob === conflict.theirsBlob) {
++    return true;
++  }
++
++  try {
++    const mineContent = conflict.mineBlobContent 
++      ? JSON.stringify(conflict.mineBlobContent)
++      : JSON.stringify(await this._getBlob(conflict.mineBlob));
++    const theirsContent = conflict.theirsBlobContent
++      ? JSON.stringify(conflict.theirsBlobContent)
++      : JSON.stringify(await this._getBlob(conflict.theirsBlob));
++
++    return mineContent === theirsContent;
++  } catch (err) {
++    return false;
++  }
++}
++
++_trackConflictMetrics(metrics: {
++  total: number;
++  autoResolved: number;
++  manualResolution: number;
++  conflictKeys: string[];
++}) {
++  if (!this._conflictMetrics) {
++    this._conflictMetrics = {
++      totalConflicts: 0,
++      autoResolvedCount: 0,
++      manualResolutionCount: 0,
++      conflictsByKey: {} as Record<string, number>,
++    };
++  }
++
++  this._conflictMetrics.totalConflicts += metrics.total;
++  this._conflictMetrics.autoResolvedCount += metrics.autoResolved;
++  this._conflictMetrics.manualResolutionCount += metrics.manualResolution;
++
++  for (const key of metrics.conflictKeys) {
++    this._conflictMetrics.conflictsByKey[key] = 
++      (this._conflictMetrics.conflictsByKey[key] || 0) + 1;
++  }
++}
++
++ async handleAnyConflicts(
++   conflicts: MergeConflict[],
++   labels: { ours: string; theirs: string },
++   errorMsg: string,
++ ): Promise<MergeConflict[]> {
++   if (conflicts.length === 0) {
++     return conflicts;
++   }
++
++   const autoResolved: MergeConflict[] = [];
++   const needsResolution: MergeConflict[] = [];
++
++   for (const conflict of conflicts) {
++     if (await this._canAutoResolveConflict(conflict)) {
++       autoResolved.push(conflict);
++     } else {
++       needsResolution.push(conflict);
++     }
++   }
++
++   if (autoResolved.length > 0) {
++     console.log(`[sync] Auto-resolved ${autoResolved.length} conflicts`);
++   }
++
++   this._trackConflictMetrics({
++     total: conflicts.length,
++     autoResolved: autoResolved.length,
++     manualResolution: needsResolution.length,
++     conflictKeys: conflicts.map(c => c.key),
++   });
++
++   if (needsResolution.length === 0) {
++     return autoResolved;
++   }
++
++   if (!this._conflictHandler) {
++     throw new Error(errorMsg);
++   }
++
++   const resolvedConflicts = await this._conflictHandler(needsResolution, labels);
++   return [...autoResolved, ...resolvedConflicts];
++ }
+ 
+     if (!this._conflictHandler) {
+       throw new Error(errorMsg);

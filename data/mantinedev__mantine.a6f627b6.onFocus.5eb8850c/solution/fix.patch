@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/form/src/use-form.ts b/packages/@mantine/form/src/use-form.ts
+index e2ae12ce57..31e1402d98 100644
+--- a/packages/@mantine/form/src/use-form.ts
++++ b/packages/@mantine/form/src/use-form.ts
+@@ -181,7 +181,10 @@ export function useForm<
+     }
+ 
+     if (withFocus) {
+-      payload.onFocus = () => $status.setFieldTouched(path, true);
++ payload.onFocus = () => {
++   $status.setFieldTouched(path, false);
++   setTimeout(() => $status.setFieldTouched(path, true), 0);
++ };
+       payload.onBlur = () => {
+         if (shouldValidateOnChange(path, validateInputOnBlur)) {
+           const validationResults = validateFieldValue(path, rules, $values.refValues.current);

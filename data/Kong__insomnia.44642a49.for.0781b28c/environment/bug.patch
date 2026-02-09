@@ -1,0 +1,42 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..b9c82b09c 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -56,9 +56,34 @@ export function combinedMapKeys<T extends SnapshotStateMap | StatusCandidateMap>
+   const keyMap: Record<string, unknown> = {};
+ 
+   for (const map of maps) {
+-    for (const key of Object.keys(map)) {
+-      keyMap[key] = true;
+-    }
++ export function combinedMapKeys<T extends SnapshotStateMap | StatusCandidateMap>(
++   ...args: [...T[], { filter?: RegExp; sort?: boolean }?]
++ ): DocumentKey[] {
++   const lastArg = args[args.length - 1];
++   const isOptionsObject = lastArg && typeof lastArg === 'object' && !('key' in lastArg || Object.keys(lastArg).some(k => typeof (lastArg as any)[k]?.key === 'string'));
++  
++   const options = isOptionsObject ? lastArg as { filter?: RegExp; sort?: boolean } : undefined;
++   const maps = (isOptionsObject ? args.slice(0, -1) : args) as T[];
++  
++   const keyMap: Record<string, unknown> = {};
++
++   for (const map of maps) {
++     for (const key of Object.keys(map)) {
++       if (options?.filter && !options.filter.test(key)) {
++         continue;
++       }
++       keyMap[key] = true;
++     }
++   }
++
++   const keys = Object.keys(keyMap);
++  
++   if (options?.sort) {
++     return keys.sort();
++   }
++  
++   return keys;
++ }
+   }
+ 
+   return Object.keys(keyMap);

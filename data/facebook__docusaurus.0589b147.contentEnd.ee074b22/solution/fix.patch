@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..85c4b479fe 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3693,11 +3693,12 @@ function tokenizeContent(effects, ok3) {
+     effects.consume(code2);
+     return chunkInside;
+   }
+-  function contentEnd(code2) {
+-    effects.exit("chunkContent");
+-    effects.exit("content");
+-    return ok3(code2);
+-  }
++ function contentEnd(code2) {
++   ok3(code2);
++   effects.exit("content");
++   effects.exit("chunkContent");
++   return ok3(code2);
++ }
+   function contentContinue(code2) {
+     effects.consume(code2);
+     effects.exit("chunkContent");

@@ -1,26 +1,28 @@
 # Bug Report
 
 ### Describe the bug
-
-I'm encountering an issue with parsing ATX-style markdown headings (the ones with `#` symbols). When I have multiple `#` characters at the beginning of a heading, the parser seems to stop processing them correctly after the first one.
+I'm experiencing an issue with parsing ATX-style headings (headings with `#` symbols) in markdown. When using multiple `#` characters in sequence, the parser seems to stop processing after the first character instead of consuming the entire sequence.
 
 ### Reproduction
-
 ```markdown
 ## This is a heading
 ### Another heading
-#### Four levels deep
+#### Fourth level heading
 ```
 
-When parsing headings with multiple hash symbols, the tokenizer appears to exit the sequence processing too early. This affects how the heading level is determined and can cause the heading structure to be malformed.
+When parsing these headings, the sequence of `#` characters is not being fully consumed before moving to the next parsing stage. This causes the heading level to be incorrectly determined - it appears to only recognize the first `#` and then immediately proceed, rather than counting all consecutive `#` symbols.
 
 ### Expected behavior
+The parser should consume all consecutive `#` characters at the beginning of a heading line to correctly determine the heading level. For example:
+- `##` should be recognized as a level 2 heading
+- `###` should be recognized as a level 3 heading
+- `####` should be recognized as a level 4 heading
 
-The parser should correctly process all consecutive `#` characters at the start of a heading line to determine the proper heading level (h1 through h6). Each additional `#` should be consumed as part of the heading sequence before moving on to parse the heading text.
+Currently, it seems like the sequence processing is terminating prematurely.
 
-### Additional context
-
-This seems to affect the `tokenizeHeadingAtx` function in the remark parser. The sequence processing logic for consecutive hash characters doesn't appear to be working as intended.
+### System Info
+- remark version: 15.0.1
+- Environment: Node.js
 
 ---
 Repository: /testbed

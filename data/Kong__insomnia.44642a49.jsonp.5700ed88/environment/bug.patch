@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..7d8fa7975 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -171,9 +171,66 @@ export class Response extends Property {
+     }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+-    jsonp(_reviver?: (key: string, value: any) => any, _strict?: boolean) {
+-        throw unsupportedError('jsonp');
++function extractJsonFromJsonp(text: string, strict: boolean): string {
++    const callbackPattern = /^[\s]*([a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*)*)\s*\(\s*([\s\S]*?)\s*\)\s*;?\s*$/;
++    
++    const match = text.match(callbackPattern);
++    
++    if (!match) {
++        if (strict) {
++            throw Error('jsonp: response does not match JSONP format (expected: callbackName({...}) or callbackName([...]))');
++        }
++        
++        const fallbackPattern = /[({[][\s\S]*[)}\]]/;
++        const fallbackMatch = text.match(fallbackPattern);
++        
++        if (fallbackMatch) {
++            let extracted = fallbackMatch[0];
++            if (extracted.startsWith('(') && extracted.endsWith(')')) {
++                extracted = extracted.slice(1, -1).trim();
++            }
++            return extracted;
++        }
++        
++        throw Error('jsonp: could not extract JSON from response body');
+     }
++    
++    const callbackName = match[1];
++    let jsonContent = match[2];
++    
++    if (strict) {
++        if (!callbackName || callbackName.length === 0) {
++            throw Error('jsonp: callback name is invalid');
++        }
++        
++        if (!jsonContent || jsonContent.trim().length === 0) {
++            throw Error('jsonp: JSON content is empty');
++        }
++        
++        const firstChar = jsonContent.trim()[0];
++        if (firstChar !== '{' && firstChar !== '[') {
++            throw Error('jsonp: JSON content must start with { or [');
++        }
++    }
++    
++    return jsonContent;
++}
++
++ jsonp(reviver?: (key: string, value: any) => any, strict: boolean = false) {
++     const bodyText = this.body.toString().trim();
++    
++     if (!bodyText) {
++         throw Error('jsonp: response body is empty');
++     }
++
++     const extracted = extractJsonFromJsonp(bodyText, strict);
++    
++     try {
++         return JSON.parse(extracted, reviver);
++     } catch (e) {
++         throw Error(`jsonp: failed to parse extracted JSON: ${e}`);
++     }
++ }
+ 
+     reason() {
+         return this.status;

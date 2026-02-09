@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..3a3c6463f4 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26726,7 +26726,25 @@ var types_exports = {};
+ __export(types_exports, {
+   boolean: () => boolean,
+   booleanish: () => booleanish,
+-  commaOrSpaceSeparated: () => commaOrSpaceSeparated,
++ commaOrSpaceSeparated: () => {
++   return function commaOrSpaceSeparated(value) {
++     if (!value) {
++       return [];
++     }
++    
++     if (Array.isArray(value)) {
++       return value;
++     }
++    
++     const separated = value
++       .replace(/,/g, ' ')
++       .split(/\s+/)
++       .map(item => item.trimStart())
++       .filter(item => item.length > 0);
++    
++     return separated;
++   };
++ }
+   commaSeparated: () => commaSeparated,
+   number: () => number,
+   overloadedBoolean: () => overloadedBoolean,

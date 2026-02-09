@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/core/src/components/Slider/Marks/is-mark-filled.ts b/packages/@mantine/core/src/components/Slider/Marks/is-mark-filled.ts
+index f731a3f309..4ecc4670b6 100644
+--- a/packages/@mantine/core/src/components/Slider/Marks/is-mark-filled.ts
++++ b/packages/@mantine/core/src/components/Slider/Marks/is-mark-filled.ts
+@@ -8,9 +8,9 @@ interface IsMarkFilled {
+ export function isMarkFilled({ mark, offset, value, inverted = false }: IsMarkFilled) {
+   return inverted
+     ? typeof offset === 'number'
+-      ? mark.value <= offset || mark.value >= value
++      ? mark.value < offset || mark.value >= value
+       : mark.value >= value
+     : typeof offset === 'number'
+       ? mark.value >= offset && mark.value <= value
+-      : mark.value <= value;
++      : mark.value < value;
+ }

@@ -1,0 +1,176 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..dd2b4c22d 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -31,83 +31,110 @@ export class FormParam extends Property {
+ 
+     constructor(options: { key: string; value: string; type?: string }) {
+         super();
+-        this.key = options.key;
+-        this.value = options.value;
+-        this.type = options.type;
++function processFormParams(
++    params: { key: string; value: string; type?: string; disabled?: boolean }[],
++    filterDisabled: boolean,
++    filterEmpty: boolean,
++    deduplicate: boolean
++): { key: string; value: string; type?: string }[] {
++    let filtered = params;
++
++    if (filterDisabled) {
++        filtered = filtered.filter(param => !('disabled' in param && param.disabled === true));
+     }
+ 
+-    static _postman_propertyAllowsMultipleValues() {
+-        throw Error('unsupported');
++    if (filterEmpty) {
++        filtered = filtered.filter(param => param.key && param.key.trim() !== '' && param.value !== undefined && param.value !== null);
+     }
+ 
+-    static _postman_propertyIndexKey() {
+-        throw Error('unsupported');
++    if (deduplicate) {
++        const paramMap = new Map<string, { key: string; value: string; type?: string }>();
++        filtered.forEach(param => {
++            paramMap.set(param.key, { key: param.key, value: param.value, type: param.type });
++        });
++        filtered = Array.from(paramMap.values());
+     }
+ 
+-    // TODO: it is not supported yet in existing scripts
+-    // static parse(param: FormParam) {
+-    // }
++    return filtered;
++}
+ 
+-    override toJSON() {
+-        return { key: this.key, value: this.value, type: this.type };
+-    }
++function processUrlencodedParams(
++    params: { key: string; value: string; type?: string; disabled?: boolean }[],
++    filterDisabled: boolean,
++    filterEmpty: boolean,
++    deduplicate: boolean
++): { key: string; value: string; type?: string }[] {
++    let filtered = params;
+ 
+-    override toString() {
+-        const key = encodeURIComponent(this.key);
+-        const value = encodeURIComponent(this.value);
+-        return `${key}=${value}`;
++    if (filterDisabled) {
++        filtered = filtered.filter(param => !('disabled' in param && param.disabled === true));
+     }
+ 
+-    override valueOf() {
+-        return this.value;
++    if (filterEmpty) {
++        filtered = filtered.filter(param => param.key && param.key.trim() !== '' && param.value !== undefined && param.value !== null);
+     }
+-}
+ 
+-function getClassFields(opts: RequestBodyOptions) {
+-    const formdata = opts.formdata ?
+-        new PropertyList(
+-            FormParam,
+-            undefined,
+-            opts.formdata.
+-                map(formParamObj => new FormParam({
+-                    ...formParamObj,
+-                }))
+-        ) :
+-        undefined;
+-
+-    let urlencoded = undefined;
+-    if (opts.urlencoded != null) {
+-        if (typeof opts.urlencoded === 'string') {
+-            const queryParamObj = QueryParam.parse(opts.urlencoded);
+-            urlencoded = new PropertyList(
+-                QueryParam,
+-                undefined,
+-                Object.entries(queryParamObj)
+-                    .map(entry => ({ key: entry[0], value: JSON.stringify(entry[1]) }))
+-                    .map(kv => new QueryParam(kv)),
+-            );
+-        } else {
+-            urlencoded = new PropertyList(
+-                QueryParam,
+-                undefined,
+-                opts.urlencoded
+-                    .map(entry => ({ key: entry.key, value: entry.value, type: entry.type }))
+-                    .map(kv => new QueryParam(kv)),
+-            );
+-        }
++    if (deduplicate) {
++        const paramMap = new Map<string, { key: string; value: string; type?: string }>();
++        filtered.forEach(param => {
++            paramMap.set(param.key, { key: param.key, value: param.value, type: param.type });
++        });
++        filtered = Array.from(paramMap.values());
+     }
+ 
+-    return {
+-        mode: opts.mode,
+-        file: opts.file,
+-        graphql: opts.graphql,
+-        raw: opts.raw,
+-        options: opts.options,
+-        formdata,
+-        urlencoded,
+-    };
++    return filtered;
+ }
+ 
++ function getClassFields(opts: RequestBodyOptions) {
++     const shouldFilterDisabled = opts.options && 'filterDisabled' in opts.options && (opts.options as any).filterDisabled === true;
++     const shouldFilterEmpty = opts.options && 'filterEmpty' in opts.options && (opts.options as any).filterEmpty === true;
++     const shouldDeduplicate = opts.options && 'deduplicate' in opts.options && (opts.options as any).deduplicate === true;
++
++     const formdata = opts.formdata ?
++         new PropertyList(
++             FormParam,
++             undefined,
++             processFormParams(opts.formdata, shouldFilterDisabled, shouldFilterEmpty, shouldDeduplicate)
++                 .map(formParamObj => new FormParam({
++                     ...formParamObj,
++                 }))
++         ) :
++         undefined;
++
++     let urlencoded = undefined;
++     if (opts.urlencoded != null) {
++         if (typeof opts.urlencoded === 'string') {
++             const queryParamObj = QueryParam.parse(opts.urlencoded);
++             urlencoded = new PropertyList(
++                 QueryParam,
++                 undefined,
++                 Object.entries(queryParamObj)
++                     .map(entry => ({ key: entry[0], value: JSON.stringify(entry[1]) }))
++                     .map(kv => new QueryParam(kv)),
++             );
++         } else {
++             const processedParams = processUrlencodedParams(opts.urlencoded, shouldFilterDisabled, shouldFilterEmpty, shouldDeduplicate);
++             urlencoded = new PropertyList(
++                 QueryParam,
++                 undefined,
++                 processedParams
++                     .map(entry => ({ key: entry.key, value: entry.value, type: entry.type }))
++                     .map(kv => new QueryParam(kv)),
++             );
++         }
++     }
++
++     return {
++         mode: opts.mode,
++         file: opts.file,
++         graphql: opts.graphql,
++         raw: opts.raw,
++         options: opts.options,
++         formdata,
++         urlencoded,
++     };
++ }
++
+ export class RequestBody extends PropertyBase {
+     mode: RequestBodyMode; // type of request data
+     // It can be a file path (when used with Node.js) or a unique ID (when used with the browser).

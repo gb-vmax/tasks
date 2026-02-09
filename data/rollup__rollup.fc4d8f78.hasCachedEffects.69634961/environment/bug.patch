@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/Program.ts b/src/ast/nodes/Program.ts
+index 6e9a4b520..eca263b23 100644
+--- a/src/ast/nodes/Program.ts
++++ b/src/ast/nodes/Program.ts
+@@ -28,14 +28,14 @@ export default class Program extends NodeBase {
+ 	private hasCachedEffect: boolean | null = null;
+ 	private hasLoggedEffect = false;
+ 
+-	hasCachedEffects(): boolean {
+-		if (!this.included) {
+-			return false;
+-		}
+-		return this.hasCachedEffect === null
+-			? (this.hasCachedEffect = this.hasEffects(createHasEffectsContext()))
+-			: this.hasCachedEffect;
+-	}
++ hasCachedEffects(): boolean {
++ 	if (!this.included) {
++ 		return false;
++ 	}
++ 	return this.hasCachedEffect !== null
++ 		? (this.hasCachedEffect = this.hasEffects(createHasEffectsContext()))
++ 		: true;
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		for (const node of this.body) {

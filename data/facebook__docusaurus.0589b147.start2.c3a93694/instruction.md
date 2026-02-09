@@ -2,31 +2,33 @@
 
 ### Describe the bug
 
-I'm encountering an issue with ATX heading parsing where headings are not being recognized correctly. It seems like the parser is immediately exiting the heading token before processing the actual heading content, which causes the heading structure to be malformed.
+I'm experiencing an issue with ATX heading parsing in MDX. When processing markdown headings (like `# Heading`), the parser seems to be behaving incorrectly and not properly tokenizing the heading content.
 
 ### Reproduction
 
-```markdown
-# Heading 1
-## Heading 2
-### Heading 3
+```mdx
+# This is a heading
+
+Some content here.
 ```
 
-When parsing the above markdown, the headings are not being processed correctly. The parser appears to be exiting the heading state prematurely before it can parse the heading sequence and content.
+When parsing this MDX content, the heading is not being recognized correctly. The tokenizer appears to be exiting the heading state prematurely before actually processing the heading sequence.
 
 ### Expected behavior
 
-The parser should:
-1. Enter the heading state
-2. Parse the `#` sequence
-3. Parse the heading content
-4. Exit the heading state after all content is processed
+The parser should properly tokenize ATX headings by:
+1. Entering the heading state
+2. Processing the `#` symbols (heading sequence)
+3. Processing the heading text
+4. Then exiting the heading state
 
-Instead, it seems to be exiting immediately after entering, which breaks the heading structure.
+Instead, it seems like the heading state is being exited immediately without processing the actual heading content.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0
 - Node version: Latest
+
+This appears to be a regression as headings were working fine in previous versions. Any help would be appreciated!
 
 ---
 Repository: /testbed

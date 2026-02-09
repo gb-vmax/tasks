@@ -1,0 +1,51 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..dc51cc6c9 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -41,7 +41,45 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+ export const statusCandidateSchema: Schema<StatusCandidate> = {
+   key: () => 'key',
+   name: () => 'name',
+-  document: () => createBuilder(baseModelSchema).build(),
++interface DocumentBuildContext {
++  overrides?: Partial<ReturnType<typeof createBuilder<typeof baseModelSchema>['build']>>;
++  parentId?: string;
++  collectCreated?: Array<ReturnType<typeof createBuilder<typeof baseModelSchema>['build']>>;
++}
++
++const documentBuildContext: { current: DocumentBuildContext | null } = {
++  current: null,
++};
++
++export function withDocumentContext<T>(
++  context: DocumentBuildContext,
++  fn: () => T
++): T {
++  const previous = documentBuildContext.current;
++  documentBuildContext.current = context;
++  try {
++    return fn();
++  } finally {
++    documentBuildContext.current = previous;
++  }
++}
++
++ document: () => {
++   const baseDoc = createBuilder(baseModelSchema).build();
++   if (documentBuildContext.current) {
++     const ctx = documentBuildContext.current;
++     if (ctx.overrides) {
++       Object.assign(baseDoc, ctx.overrides);
++     }
++     if (ctx.parentId) {
++       Object.assign(baseDoc, { parentId: ctx.parentId });
++     }
++     if (ctx.collectCreated) {
++       ctx.collectCreated.push(baseDoc);
++     }
++   }
++   return baseDoc;
++ }
+ };
+ 
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {

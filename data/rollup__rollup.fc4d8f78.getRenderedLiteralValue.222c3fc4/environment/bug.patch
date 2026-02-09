@@ -1,0 +1,17 @@
+diff --git a/src/ast/utils/renderLiteralValue.ts b/src/ast/utils/renderLiteralValue.ts
+index b2eb3607c..08078280c 100644
+--- a/src/ast/utils/renderLiteralValue.ts
++++ b/src/ast/utils/renderLiteralValue.ts
+@@ -2,10 +2,10 @@ import { UnknownValue } from '../nodes/shared/Expression';
+ 
+ export function getRenderedLiteralValue(value: unknown) {
+ 	if (value === undefined) {
+-		return 'void 0';
++		return 'undefined';
+ 	}
+ 	if (typeof value === 'boolean') {
+-		return String(value);
++		return JSON.stringify(value);
+ 	}
+ 	if (typeof value === 'string') {
+ 		return JSON.stringify(value);

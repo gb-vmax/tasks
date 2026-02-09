@@ -1,0 +1,101 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..f0a8334d3 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -192,22 +192,80 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           type: 'string',
+         },
+       ],
+-      run(_context, fnName: 'arch' | 'cpus', filter) {
+-        let value = os[fnName]();
+-
+-        if (JSONPath && ['userInfo', 'cpus'].includes(fnName)) {
+-          try {
+-            const results = JSONPath({ json: value, path: filter });
+-            value = Array.isArray(results) ? results[0] : results;
+-          } catch (err) { }
+-        }
+-
+-        if (typeof value !== 'string') {
+-          return JSON.stringify(value);
+-        } else {
+-          return value;
+-        }
+-      },
++function parseFilterOptions(filter) {
++  if (!filter || typeof filter !== 'string') {
++    return { extractedFilter: filter, arrayIndex: null, formatMode: 'default' };
++  }
++
++  let extractedFilter = filter;
++  let arrayIndex = null;
++  let formatMode = 'default';
++
++  const indexMatch = filter.match(/\|index:(last|\d+)$/);
++  if (indexMatch) {
++    arrayIndex = indexMatch[1];
++    extractedFilter = filter.substring(0, indexMatch.index);
++  }
++
++  const formatMatch = extractedFilter.match(/\|format:(pretty|csv|compact)$/);
++  if (formatMatch) {
++    formatMode = formatMatch[1];
++    extractedFilter = extractedFilter.substring(0, formatMatch.index);
++  }
++
++  return { extractedFilter, arrayIndex, formatMode };
++}
++
++function formatOSValue(value, formatMode) {
++  if (typeof value === 'string') {
++    return value;
++  }
++
++  if (formatMode === 'pretty') {
++    return JSON.stringify(value, null, 2);
++  }
++
++  if (formatMode === 'csv' && Array.isArray(value)) {
++    return value.map(item => {
++      if (typeof item === 'object' && item !== null) {
++        return JSON.stringify(item);
++      }
++      return String(item);
++    }).join(', ');
++  }
++
++  if (formatMode === 'compact') {
++    return JSON.stringify(value);
++  }
++
++  return JSON.stringify(value);
++}
++
++ run(_context, fnName: 'arch' | 'cpus', filter) {
++   let value = os[fnName]();
++
++   const { extractedFilter, arrayIndex, formatMode } = parseFilterOptions(filter);
++
++   if (JSONPath && ['userInfo', 'cpus'].includes(fnName)) {
++     try {
++       const results = JSONPath({ json: value, path: extractedFilter });
++       value = Array.isArray(results) ? results[0] : results;
++     } catch (err) { }
++   }
++
++   if (arrayIndex !== null && Array.isArray(value)) {
++     if (arrayIndex === 'last') {
++       value = value[value.length - 1];
++     } else {
++       const index = parseInt(arrayIndex, 10);
++       if (!isNaN(index) && index >= 0 && index < value.length) {
++         value = value[index];
++       }
++     }
++   }
++
++   return formatOSValue(value, formatMode);
++ }
+     },
+   },
+   {

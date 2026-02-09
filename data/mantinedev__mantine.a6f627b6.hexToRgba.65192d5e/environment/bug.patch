@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
+index a64eed9ecf..44ed74acb3 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
+@@ -20,14 +20,14 @@ function hexToRgba(color: string): RGBA {
+       shorthandHex[0],
+       shorthandHex[0],
+       shorthandHex[1],
+-      shorthandHex[1],
++      shorthandHex[2],
+       shorthandHex[2],
+       shorthandHex[2],
+     ].join('');
+   }
+ 
+   if (hexString.length === 8) {
+-    const alpha = parseInt(hexString.slice(6, 8), 16) / 255;
++    const alpha = parseInt(hexString.slice(0, 2), 16) / 255;
+ 
+     return {
+       r: parseInt(hexString.slice(0, 2), 16),

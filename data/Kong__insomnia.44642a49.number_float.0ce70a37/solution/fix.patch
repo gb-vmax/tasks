@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..1e32fc2dd 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -593,7 +593,60 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,
+-    number_float: () => 0.0,
++const generateFloatInRange = (
++  minimum?: number,
++  maximum?: number,
++  exclusiveMinimum?: number,
++  exclusiveMaximum?: number
++): number => {
++  const epsilon = 0.01;
++  
++  let lowerBound = minimum !== undefined ? minimum : Number.MIN_SAFE_INTEGER;
++  let upperBound = maximum !== undefined ? maximum : Number.MAX_SAFE_INTEGER;
++  
++  if (exclusiveMinimum !== undefined) {
++    lowerBound = Math.max(lowerBound, exclusiveMinimum + epsilon);
++  }
++  
++  if (exclusiveMaximum !== undefined) {
++    upperBound = Math.min(upperBound, exclusiveMaximum - epsilon);
++  }
++  
++  if (lowerBound === Number.MIN_SAFE_INTEGER && upperBound === Number.MAX_SAFE_INTEGER) {
++    return 0.0;
++  }
++  
++  if (lowerBound === Number.MIN_SAFE_INTEGER) {
++    return upperBound - 1.0;
++  }
++  
++  if (upperBound === Number.MAX_SAFE_INTEGER) {
++    return lowerBound + 1.0;
++  }
++  
++  const midpoint = (lowerBound + upperBound) / 2;
++  return Math.round(midpoint * 100) / 100;
++};
++
++ number_float: (schema: OpenAPIV3.SchemaObject) => {
++   if (schema?.example !== undefined) {
++     return schema.example;
++   }
++   if (schema?.default !== undefined) {
++     return schema.default;
++   }
++  
++   const min = schema?.minimum;
++   const max = schema?.maximum;
++   const exclusiveMin = schema?.exclusiveMinimum;
++   const exclusiveMax = schema?.exclusiveMaximum;
++  
++   if (min !== undefined || max !== undefined || exclusiveMin !== undefined || exclusiveMax !== undefined) {
++     return generateFloatInRange(min, max, exclusiveMin, exclusiveMax);
++   }
++  
++   return 0.0;
++ }
+     number_double: () => 0.0,
+     integer: () => 0,
+     boolean: () => true,

@@ -2,30 +2,30 @@
 
 ### Describe the bug
 
-I'm encountering an issue with blog tag visibility calculation. When blog posts have the `unlisted` property, the tag visibility is being determined incorrectly. Tags that should be visible are showing as unlisted, and vice versa.
+I'm experiencing an issue with tag visibility in blog posts. When working with blog tags, the visibility calculation seems to be inverted or broken. Tags that should be visible are being marked as unlisted, and vice versa.
 
 ### Reproduction
 
 ```js
 const blogPost = {
-  unlisted: false,
   metadata: {
     unlisted: false
   }
 }
 
 // Tag visibility is calculated incorrectly
-// Expected: tag should be visible
-// Actual: tag is marked as unlisted
+// Posts with unlisted: false are being treated as unlisted
 ```
 
 ### Expected behavior
 
-Tag visibility should correctly reflect the unlisted status of blog posts. If a blog post is not unlisted, its tags should be visible.
+Blog tags should correctly determine visibility based on the `unlisted` property in the post metadata. If a post has `metadata.unlisted: false`, the tag should be visible. If `metadata.unlisted: true`, the tag should be unlisted.
 
-### Additional context
+Currently, it seems like the logic is backwards - posts that are NOT unlisted are being treated as if they ARE unlisted.
 
-This seems to affect how tags are displayed in the blog listing pages. The logic for determining whether a tag should be unlisted appears to be inverted or checking the wrong property.
+### System Info
+- Docusaurus version: latest
+- Plugin: @docusaurus/plugin-content-blog
 
 ---
 Repository: /testbed

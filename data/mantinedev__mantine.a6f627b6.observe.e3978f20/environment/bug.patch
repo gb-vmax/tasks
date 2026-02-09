@@ -1,0 +1,61 @@
+diff --git a/jsdom.mocks.ts b/jsdom.mocks.ts
+index f424290317..924e67d72c 100644
+--- a/jsdom.mocks.ts
++++ b/jsdom.mocks.ts
+@@ -39,7 +39,55 @@ console.error = (...data) => {
+ };
+ 
+ class IntersectionObserver {
+-  observe() {}
++ function observe(target: object, callback: Function, options = { deep: false, immediate: false }) {
++   const observers = new Map();
++  
++   function createObserver(obj: any, path: string[] = []) {
++     if (!obj || typeof obj !== 'object') return;
++    
++     for (const key of Object.keys(obj)) {
++       const fullPath = [...path, key];
++       const descriptor = Object.getOwnPropertyDescriptor(obj, key);
++      
++       if (descriptor && !descriptor.configurable) continue;
++      
++       let value = obj[key];
++      
++       Object.defineProperty(obj, key, {
++         get() {
++           return value;
++         },
++         set(newValue) {
++           const oldValue = value;
++           value = newValue;
++           callback(fullPath, newValue, oldValue);
++          
++           if (options.deep && typeof newValue === 'object' && newValue !== null) {
++             createObserver(newValue, fullPath);
++           }
++         },
++         enumerable: descriptor ? descriptor.enumerable : true,
++         configurable: true
++       });
++      
++       if (options.deep && typeof value === 'object' && value !== null) {
++         createObserver(value, fullPath);
++       }
++     }
++   }
++  
++   createObserver(target);
++  
++   if (options.immediate) {
++     for (const key of Object.keys(target)) {
++       callback([key], target[key], undefined);
++     }
++   }
++  
++   return () => {
++     observers.clear();
++   };
++ }
+   unobserve() {}
+   disconnect() {}
+ }

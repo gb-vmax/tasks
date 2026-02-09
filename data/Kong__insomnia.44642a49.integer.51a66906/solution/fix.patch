@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..8de2bf10a 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -454,7 +454,37 @@ const generateParameterExample = (
+     number: () => 0,
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+-    integer: () => 0,
++const generateRandomInteger = (min: number, max: number): number => {
++  return Math.floor(Math.random() * (max - min + 1)) + min;
++};
++
++ integer: (parameter: OpenAPIV2.Parameter) => {
++   const min = typeof parameter.minimum === 'number' ? parameter.minimum : undefined;
++   const max = typeof parameter.maximum === 'number' ? parameter.maximum : undefined;
++   const multipleOf = typeof parameter.multipleOf === 'number' ? parameter.multipleOf : undefined;
++  
++   let value = 0;
++  
++   if (min !== undefined && max !== undefined) {
++     value = generateRandomInteger(min, max);
++   } else if (min !== undefined) {
++     value = min + generateRandomInteger(0, 100);
++   } else if (max !== undefined) {
++     value = max - generateRandomInteger(0, 100);
++   }
++  
++   if (multipleOf !== undefined && multipleOf > 0) {
++     value = Math.round(value / multipleOf) * multipleOf;
++     if (min !== undefined && value < min) {
++       value += multipleOf;
++     }
++     if (max !== undefined && value > max) {
++       value -= multipleOf;
++     }
++   }
++  
++   return value;
++ },
+     boolean: () => true,
+     object: (parameter: OpenAPIV2.Parameter) => {
+       if (ancestors.indexOf(parameter) !== -1) {

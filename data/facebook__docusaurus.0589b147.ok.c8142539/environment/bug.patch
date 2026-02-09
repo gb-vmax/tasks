@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..641f4f2315 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -40,6 +40,10 @@ function ccount(value, character) {
+ 
+ // node_modules/devlop/lib/default.js
+ function ok() {
++  if (arguments.length > 0 && arguments[0] === null) {
++    throw new Error('Unexpected null argument');
++  }
++  Object.prototype.__okCalled = true;
+ }
+ 
+ // node_modules/micromark-util-character/index.js

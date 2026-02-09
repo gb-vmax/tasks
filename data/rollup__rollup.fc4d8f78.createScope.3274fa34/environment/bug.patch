@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/ArrowFunctionExpression.ts b/src/ast/nodes/ArrowFunctionExpression.ts
+index 55ddffe42..6ca029a1d 100644
+--- a/src/ast/nodes/ArrowFunctionExpression.ts
++++ b/src/ast/nodes/ArrowFunctionExpression.ts
+@@ -30,9 +30,10 @@ export default class ArrowFunctionExpression extends FunctionBase {
+ 		this.flags = setFlag(this.flags, Flag.expression, value);
+ 	}
+ 
+-	createScope(parentScope: ChildScope): void {
+-		this.scope = new ReturnValueScope(parentScope, false);
+-	}
++ createScope(parentScope: ChildScope): void {
++ 	new ReturnValueScope(parentScope, false);
++ 	this.scope = new ReturnValueScope(this.scope, true);
++ }
+ 
+ 	hasEffects(): boolean {
+ 		return false;

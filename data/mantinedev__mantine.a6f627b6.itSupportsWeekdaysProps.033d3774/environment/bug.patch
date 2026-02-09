@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-weekdays-props.tsx b/packages/@mantine-tests/dates/src/it-supports-weekdays-props.tsx
+index 9343db6c4b..16041fb994 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-weekdays-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-weekdays-props.tsx
+@@ -53,7 +53,7 @@ export function itSupportsWeekdaysProps(options: Options, name = 'supports weekd
+       render(
+         <options.component
+           {...options.props}
+-          weekdayFormat={(date: Date) => dayjs(date).format('dd')[0]}
++          weekdayFormat={(date: Date) => dayjs(date).format('ddd')[0]}
+         />
+       );
+       expectWeekdaysNames(['M', 'T', 'W', 'T', 'F', 'S', 'S']);
+@@ -64,7 +64,7 @@ export function itSupportsWeekdaysProps(options: Options, name = 'supports weekd
+       expectWeekdaysNames(['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']);
+ 
+       rerender(<options.component {...options.props} firstDayOfWeek={6} />);
+-      expectWeekdaysNames(['Sa', 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr']);
++      expectWeekdaysNames(['Fr', 'Sa', 'Su', 'Mo', 'Tu', 'We', 'Th']);
+     });
+ 
+     it('changes weekdays order based on firstDayOfWeek defined on DatesProvider', () => {

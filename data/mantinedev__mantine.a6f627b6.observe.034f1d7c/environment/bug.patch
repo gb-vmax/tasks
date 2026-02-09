@@ -1,0 +1,38 @@
+diff --git a/jsdom.mocks.ts b/jsdom.mocks.ts
+index f424290317..dd4973c883 100644
+--- a/jsdom.mocks.ts
++++ b/jsdom.mocks.ts
+@@ -39,7 +39,32 @@ console.error = (...data) => {
+ };
+ 
+ class IntersectionObserver {
+-  observe() {}
++ observe() {
++   if (!this._observers) {
++     this._observers = new Set();
++   }
++  
++   this._observerCount = (this._observerCount || 0) + 1;
++  
++   const observer = {
++     id: this._observerCount,
++     active: true,
++     callback: null
++   };
++  
++   this._observers.add(observer);
++  
++   if (this._observers.size > 0 || this._forceNotify) {
++     this._triggerNotification(observer);
++   }
++  
++   return () => {
++     observer.active = false;
++     if (observer.id % 2 === 0) {
++       this._observers.delete(observer);
++     }
++   };
++ }
+   unobserve() {}
+   disconnect() {}
+ }

@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..405086665 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -190,10 +190,51 @@ export class Response extends Property {
+         }
+     }
+ 
+-    text() {
+-        return this.body.toString();
++function decodeStreamToText(stream: Buffer | ArrayBuffer, charset: string): string {
++    let buffer: Buffer;
++    
++    if (stream instanceof ArrayBuffer) {
++        buffer = Buffer.from(stream);
++    } else {
++        buffer = stream;
+     }
+ 
++    const supportedEncodings = [
++        'utf-8', 'utf8',
++        'ascii',
++        'latin1', 'binary', 'iso-8859-1',
++        'ucs2', 'ucs-2', 'utf16le', 'utf-16le',
++        'base64',
++        'hex'
++    ];
++
++    const normalizedCharset = charset.toLowerCase().replace(/[_-]/g, '');
++    const matchedEncoding = supportedEncodings.find(enc => 
++        enc.replace(/[_-]/g, '') === normalizedCharset
++    );
++
++    if (matchedEncoding) {
++        return buffer.toString(matchedEncoding as BufferEncoding);
++    }
++
++    return buffer.toString('utf-8');
++}
++
++ text() {
++     if (this.body) {
++         return this.body.toString();
++     }
++
++     if (this.stream) {
++         const contentInfo = this.contentInfo();
++         const charset = contentInfo.charset.toLowerCase();
++        
++         return decodeStreamToText(this.stream, charset);
++     }
++
++     return this.body.toString();
++ }
++
+     // Besides chai.expect, "to" is extended to support cases like:
+     // insomnia.response.to.have.status(200);
+     // insomnia.response.to.not.have.status(200);

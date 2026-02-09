@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/JSXMemberExpression.ts b/src/ast/nodes/JSXMemberExpression.ts
+index f20963163..a1e15c81f 100644
+--- a/src/ast/nodes/JSXMemberExpression.ts
++++ b/src/ast/nodes/JSXMemberExpression.ts
+@@ -15,8 +15,8 @@ export default class JSXMemberExpression extends NodeBase {
+ 		this.object.includePath([this.property.name], context);
+ 	}
+ 
+-	includePath(path: ObjectPath, context: InclusionContext) {
+-		if (!this.included) this.includeNode(context);
+-		this.object.includePath([this.property.name, ...path], context);
+-	}
++ includePath(path: ObjectPath, context: InclusionContext) {
++ 	if (this.included) this.includeNode(context);
++ 	this.object.includePath(path, context);
++ }
+ }

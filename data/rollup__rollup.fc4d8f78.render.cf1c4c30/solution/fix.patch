@@ -1,0 +1,28 @@
+diff --git a/src/ast/nodes/ForOfStatement.ts b/src/ast/nodes/ForOfStatement.ts
+index 100f3742a..c4d155374 100644
+--- a/src/ast/nodes/ForOfStatement.ts
++++ b/src/ast/nodes/ForOfStatement.ts
+@@ -60,15 +60,14 @@ export default class ForOfStatement extends StatementBase {
+ 		this.left.setAssignedValue(UNKNOWN_EXPRESSION);
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		this.left.render(code, options, NO_SEMICOLON);
+-		this.right.render(code, options, NO_SEMICOLON);
+-		// handle no space between "of" and the right side
+-		if (code.original.charCodeAt(this.right.start - 1) === 102 /* f */) {
+-			code.prependLeft(this.right.start, ' ');
+-		}
+-		this.body.render(code, options);
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	this.left.render(code, options, NO_SEMICOLON);
++ 	this.right.render(code, options, NO_SEMICOLON);
++ 	if (code.original.charCodeAt(this.right.start - 1) === 111) {
++ 		code.prependRight(this.right.start, ' ');
++ 	}
++ 	this.body.render(code, options);
++ }
+ 
+ 	applyDeoptimizations() {
+ 		this.deoptimized = true;

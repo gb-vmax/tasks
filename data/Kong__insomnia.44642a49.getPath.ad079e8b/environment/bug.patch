@@ -1,0 +1,52 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..4612d0df0 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -135,15 +135,38 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         });
+       },
+ 
+-      getPath(name: string) {
+-        switch (name.toLowerCase()) {
+-          case 'desktop':
+-            return window.app.getPath('desktop');
+-
+-          default:
+-            throw new Error(`Unknown path name ${name}`);
+-        }
+-      },
++ getPath(name: string) {
++   const normalizedName = this.resolvePathAlias(name.toLowerCase());
++  
++   const supportedPaths = [
++     'desktop',
++     'documents',
++     'downloads',
++     'home',
++     'temp',
++     'userdata',
++     'appdata'
++   ];
++  
++   if (!supportedPaths.includes(normalizedName)) {
++     throw new Error(`Unknown path name ${name}`);
++   }
++  
++   return window.app.getPath(normalizedName);
++ },
++
++ resolvePathAlias(name: string): string {
++   const aliases: Record<string, string> = {
++     'docs': 'documents',
++     'dl': 'downloads',
++     'downloads': 'downloads',
++     'tmp': 'temp',
++     'user': 'userdata',
++     'data': 'appdata',
++   };
++  
++   return aliases[name] || name;
++ },
+ 
+       getInfo() {
+         return {

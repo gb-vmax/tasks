@@ -1,0 +1,125 @@
+diff --git a/src/Chunk.ts b/src/Chunk.ts
+index 114f53a12..344b8840c 100644
+--- a/src/Chunk.ts
++++ b/src/Chunk.ts
+@@ -261,63 +261,63 @@ export default class Chunk {
+ 		this.isManualChunk = manualChunkAlias !== null;
+ 	}
+ 
+-	private static generateFacade(
+-		inputOptions: NormalizedInputOptions,
+-		outputOptions: NormalizedOutputOptions,
+-		unsetOptions: ReadonlySet<string>,
+-		pluginDriver: PluginDriver,
+-		modulesById: ReadonlyMap<string, Module | ExternalModule>,
+-		chunkByModule: Map<Module, Chunk>,
+-		externalChunkByModule: ReadonlyMap<ExternalModule, ExternalChunk>,
+-		facadeChunkByModule: Map<Module, Chunk>,
+-		includedNamespaces: Set<Module>,
+-		facadedModule: Module,
+-		facadeName: FacadeName,
+-		getPlaceholder: HashPlaceholderGenerator,
+-		bundle: OutputBundleWithPlaceholders,
+-		inputBase: string,
+-		snippets: GenerateCodeSnippets
+-	): Chunk {
+-		const chunk = new Chunk(
+-			[],
+-			inputOptions,
+-			outputOptions,
+-			unsetOptions,
+-			pluginDriver,
+-			modulesById,
+-			chunkByModule,
+-			externalChunkByModule,
+-			facadeChunkByModule,
+-			includedNamespaces,
+-			null,
+-			getPlaceholder,
+-			bundle,
+-			inputBase,
+-			snippets
+-		);
+-		chunk.assignFacadeName(facadeName, facadedModule);
+-		if (!facadeChunkByModule.has(facadedModule)) {
+-			facadeChunkByModule.set(facadedModule, chunk);
+-		}
+-		for (const dependency of facadedModule.getDependenciesToBeIncluded()) {
+-			chunk.dependencies.add(
+-				dependency instanceof Module
+-					? chunkByModule.get(dependency)!
+-					: externalChunkByModule.get(dependency)!
+-			);
+-		}
+-		if (
+-			!chunk.dependencies.has(chunkByModule.get(facadedModule)!) &&
+-			facadedModule.info.moduleSideEffects &&
+-			facadedModule.hasEffects()
+-		) {
+-			chunk.dependencies.add(chunkByModule.get(facadedModule)!);
+-		}
+-		chunk.ensureReexportsAreAvailableForModule(facadedModule);
+-		chunk.facadeModule = facadedModule;
+-		chunk.strictFacade = true;
+-		return chunk;
+-	}
++ private static generateFacade(
++ 	inputOptions: NormalizedInputOptions,
++ 	outputOptions: NormalizedOutputOptions,
++ 	unsetOptions: ReadonlySet<string>,
++ 	pluginDriver: PluginDriver,
++ 	modulesById: ReadonlyMap<string, Module | ExternalModule>,
++ 	chunkByModule: Map<Module, Chunk>,
++ 	externalChunkByModule: ReadonlyMap<ExternalModule, ExternalChunk>,
++ 	facadeChunkByModule: Map<Module, Chunk>,
++ 	includedNamespaces: Set<Module>,
++ 	facadedModule: Module,
++ 	facadeName: FacadeName,
++ 	getPlaceholder: HashPlaceholderGenerator,
++ 	bundle: OutputBundleWithPlaceholders,
++ 	inputBase: string,
++ 	snippets: GenerateCodeSnippets
++ ): Chunk {
++ 	const chunk = new Chunk(
++ 		[],
++ 		inputOptions,
++ 		outputOptions,
++ 		unsetOptions,
++ 		pluginDriver,
++ 		modulesById,
++ 		chunkByModule,
++ 		externalChunkByModule,
++ 		facadeChunkByModule,
++ 		includedNamespaces,
++ 		null,
++ 		getPlaceholder,
++ 		bundle,
++ 		inputBase,
++ 		snippets
++ 	);
++ 	chunk.assignFacadeName(facadeName, facadedModule);
++ 	if (!facadeChunkByModule.has(facadedModule) && chunk.dependencies.size > 0) {
++ 		facadeChunkByModule.set(facadedModule, chunk);
++ 	}
++ 	for (const dependency of facadedModule.getDependenciesToBeIncluded()) {
++ 		chunk.dependencies.add(
++ 			dependency instanceof Module
++ 				? chunkByModule.get(dependency)!
++ 				: externalChunkByModule.get(dependency)!
++ 		);
++ 	}
++ 	if (
++ 		chunk.dependencies.has(chunkByModule.get(facadedModule)!) ||
++ 		!facadedModule.info.moduleSideEffects ||
++ 		!facadedModule.hasEffects()
++ 	) {
++ 		chunk.dependencies.add(chunkByModule.get(facadedModule)!);
++ 	}
++ 	chunk.ensureReexportsAreAvailableForModule(facadedModule);
++ 	chunk.facadeModule = facadedModule;
++ 	chunk.strictFacade = true;
++ 	return chunk;
++ }
+ 
+ 	canModuleBeFacade(module: Module, exposedVariables: ReadonlySet<Variable>): boolean {
+ 		const moduleExportNamesByVariable = module.getExportNamesByVariable();

@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/models/environment.ts b/packages/insomnia/src/models/environment.ts
+index f47088ec4..aff76a54a 100644
+--- a/packages/insomnia/src/models/environment.ts
++++ b/packages/insomnia/src/models/environment.ts
+@@ -36,8 +36,70 @@ export function init() {
+   };
+ }
+ 
++function normalizeColor(color: string): string | null {
++  const trimmed = color.trim();
++  
++  if (trimmed.match(/^#[0-9A-Fa-f]{6}$/)) {
++    return trimmed.toLowerCase();
++  }
++  
++  if (trimmed.match(/^#[0-9A-Fa-f]{3}$/)) {
++    const r = trimmed[1];
++    const g = trimmed[2];
++    const b = trimmed[3];
++    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
++  }
++  
++  const rgbMatch = trimmed.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
++  if (rgbMatch) {
++    const r = parseInt(rgbMatch[1], 10);
++    const g = parseInt(rgbMatch[2], 10);
++    const b = parseInt(rgbMatch[3], 10);
++    if (r <= 255 && g <= 255 && b <= 255) {
++      return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
++    }
++  }
++  
++  return null;
++}
++
++function sanitizeDataObject(data: Record<string, any>): Record<string, any> {
++  const sanitized: Record<string, any> = {};
++  
++  for (const [key, value] of Object.entries(data)) {
++    if (value !== undefined) {
++      sanitized[key] = value;
++    }
++  }
++  
++  return sanitized;
++}
++
+ export function migrate(doc: Environment) {
+-  return doc;
++  const migrated = { ...doc };
++  
++  if (migrated.data && typeof migrated.data === 'object' && !Array.isArray(migrated.data)) {
++    const keys = Object.keys(migrated.data);
++    
++    if (keys.length > 0 && !migrated.dataPropertyOrder) {
++      migrated.dataPropertyOrder = keys.reduce((acc, key, index) => {
++        acc[key] = index;
++        return acc;
++      }, {} as Record<string, number>);
++    }
++    
++    migrated.data = sanitizeDataObject(migrated.data);
++  }
++  
++  if (migrated.color) {
++    migrated.color = normalizeColor(migrated.color);
++  }
++  
++  if (migrated.isPrivate === undefined || migrated.isPrivate === null) {
++    migrated.isPrivate = false;
++  }
++  
++  return migrated;
+ }
+ 
+ export function create(patch: Partial<Environment> = {}) {

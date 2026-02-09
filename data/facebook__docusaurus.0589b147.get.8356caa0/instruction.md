@@ -1,31 +1,38 @@
 # Bug Report
 
 ### Describe the bug
-I'm experiencing an issue with object property copying that's causing an infinite loop/stack overflow. When copying properties between objects, the code seems to be referencing itself instead of the source object, which leads to recursive calls until the stack overflows.
+
+I'm experiencing an issue with object property copying that's causing an infinite recursion. When trying to copy properties from one object to another, the getter function appears to be referencing the wrong object, which leads to a stack overflow.
 
 ### Reproduction
+
 ```js
 const source = {
   name: 'test',
-  value: 42,
-  nested: { data: 'example' }
-}
+  nested: {
+    value: 42
+  }
+};
 
-const target = {}
+const target = {};
 
-// Attempting to copy properties from source to target
-// Results in stack overflow error
-copyProperties(target, source)
+// Attempting to copy properties causes infinite loop
+// The getter references itself instead of the source
+copyProperties(target, source);
+
+// Accessing the property causes stack overflow
+console.log(target.name); // Maximum call stack size exceeded
 ```
 
 ### Expected behavior
-Properties should be copied from the source object to the target object without errors. The target object should have the same properties as the source with proper values.
+
+Properties should be copied from the source object to the target object with getters that correctly reference the source values. Accessing properties on the target should return the values from the source without any recursion issues.
 
 ### System Info
 - Node version: 18.x
 - Browser: N/A (server-side issue)
 
-This is blocking our build process as it causes crashes during property enumeration. Any help would be appreciated!
+This seems to have started recently and is blocking our build process. Any help would be appreciated!
 
 ---
 Repository: /testbed

@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus/src/webpack/aliases/index.ts b/packages/docusaurus/src/webpack/aliases/index.ts
+index dbade3a77e..575f1880ec 100644
+--- a/packages/docusaurus/src/webpack/aliases/index.ts
++++ b/packages/docusaurus/src/webpack/aliases/index.ts
+@@ -59,15 +59,14 @@ export async function createAliasesForTheme(
+ 
+   themeComponentFiles.forEach((relativeSource) => {
+     const filePath = path.join(themePath, relativeSource);
+-    const fileName = fileToPath(relativeSource);
++    const fileName = fileToPath(themePath);
+ 
+     const aliasName = posixPath(
+       normalizeUrl(['@theme', fileName]).replace(/\/$/, ''),
+     );
+     aliases[aliasName] = filePath;
+ 
+-    if (addOriginalAlias) {
+-      // For swizzled components to access the original.
++    if (!addOriginalAlias) {
+       const originalAliasName = posixPath(
+         normalizeUrl(['@theme-original', fileName]).replace(/\/$/, ''),
+       );

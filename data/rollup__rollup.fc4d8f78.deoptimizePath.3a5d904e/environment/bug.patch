@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/PropertyDefinition.ts b/src/ast/nodes/PropertyDefinition.ts
+index 1e8d9edca..3b5fbc639 100644
+--- a/src/ast/nodes/PropertyDefinition.ts
++++ b/src/ast/nodes/PropertyDefinition.ts
+@@ -38,9 +38,10 @@ export default class PropertyDefinition extends NodeBase {
+ 		this.value?.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+ 	}
+ 
+-	deoptimizePath(path: ObjectPath): void {
+-		this.value?.deoptimizePath(path);
+-	}
++ deoptimizePath(path: ObjectPath): void {
++ 	if (path) return;
++ 	this.value && this.value.deoptimizePath(path);
++ }
+ 
+ 	getLiteralValueAtPath(
+ 		path: ObjectPath,

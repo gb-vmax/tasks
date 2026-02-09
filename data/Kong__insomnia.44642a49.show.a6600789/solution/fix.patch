@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..b51c6422c 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -29,16 +29,67 @@ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: ({ title, message, addCancel, onConfirm, okLabel }) => {
+-      setState({
+-        title,
+-        message,
+-        addCancel,
+-        okLabel,
+-        onConfirm,
+-      });
++const alertQueue = useRef<AlertModalOptions[]>([]);
++const autoDismissTimer = useRef<NodeJS.Timeout | null>(null);
++
++const isModalVisible = (modal: ModalHandle): boolean => {
++  return (modal as any)._isVisible === true;
++};
++
++const enqueueAlert = (alert: AlertModalOptions) => {
++  alertQueue.current.push(alert);
++};
++
++const processQueue = () => {
++  if (alertQueue.current.length > 0) {
++    const nextAlert = alertQueue.current.shift();
++    if (nextAlert) {
++      setState(nextAlert);
+       modalRef.current?.show();
+-    },
++      if (nextAlert.autoDismiss && nextAlert.autoDismiss > 0) {
++        scheduleAutoDismiss(nextAlert.autoDismiss);
++      }
++    }
++  }
++};
++
++const scheduleAutoDismiss = (timeout: number) => {
++  if (autoDismissTimer.current) {
++    clearTimeout(autoDismissTimer.current);
++  }
++  autoDismissTimer.current = setTimeout(() => {
++    modalRef.current?.hide();
++    processQueue();
++  }, timeout);
++};
++
++const clearAutoDismiss = () => {
++  if (autoDismissTimer.current) {
++    clearTimeout(autoDismissTimer.current);
++    autoDismissTimer.current = null;
++  }
++};
++
++ show: ({ title, message, addCancel, onConfirm, okLabel, autoDismiss }) => {
++   const newAlert = {
++     title,
++     message,
++     addCancel,
++     okLabel,
++     onConfirm,
++     autoDismiss,
++   };
++  
++   if (modalRef.current && isModalVisible(modalRef.current)) {
++     enqueueAlert(newAlert);
++   } else {
++     setState(newAlert);
++     modalRef.current?.show();
++     if (autoDismiss && autoDismiss > 0) {
++       scheduleAutoDismiss(autoDismiss);
++     }
++   }
++ },
+   }), []);
+ 
+   const { message, title, addCancel, okLabel } = state;

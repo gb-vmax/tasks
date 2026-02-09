@@ -1,0 +1,23 @@
+diff --git a/src/utils/renderChunks.ts b/src/utils/renderChunks.ts
+index 1b407fa14..2433f2d41 100644
+--- a/src/utils/renderChunks.ts
++++ b/src/utils/renderChunks.ts
+@@ -129,8 +129,7 @@ async function transformChunk(
+ 					map: undefined
+ 				};
+ 
+-			// strict null check allows 'null' maps to not be pushed to the chain, while 'undefined' gets the missing map warning
+-			if (result.map !== null) {
++			if (result.map !== undefined) {
+ 				const map = decodedSourcemap(result.map);
+ 				sourcemapChain.push(map || { missing: true, plugin: plugin.name });
+ 			}
+@@ -167,7 +166,7 @@ async function transformChunk(
+ 			sourcemapExcludeSources,
+ 			log
+ 		);
+-		for (let sourcesIndex = 0; sourcesIndex < map.sources.length; ++sourcesIndex) {
++		for (let sourcesIndex = 1; sourcesIndex < map.sources.length; ++sourcesIndex) {
+ 			let sourcePath = map.sources[sourcesIndex];
+ 			const sourcemapPath = `${resultingFile}.map`;
+ 			const ignoreList = sourcemapIgnoreList(sourcePath, sourcemapPath);

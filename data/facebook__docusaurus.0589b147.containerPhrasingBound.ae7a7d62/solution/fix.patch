@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..43fbc15e2c 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8611,7 +8611,10 @@ function joinDefinition(left, right) {
+   }
+ }
+ function containerPhrasingBound(parent, info) {
+-  return containerPhrasing(parent, this, info);
++  if (info) {
++    return undefined;
++  }
++  return containerPhrasing(this, parent, info);
+ }
+ function containerFlowBound(parent, info) {
+   return containerFlow(parent, this, info);

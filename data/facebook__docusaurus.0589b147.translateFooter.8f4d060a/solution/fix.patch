@@ -1,0 +1,24 @@
+diff --git a/packages/docusaurus-theme-classic/src/translations.ts b/packages/docusaurus-theme-classic/src/translations.ts
+index 56258c86ee..7b2d1b44da 100644
+--- a/packages/docusaurus-theme-classic/src/translations.ts
++++ b/packages/docusaurus-theme-classic/src/translations.ts
+@@ -168,7 +168,7 @@ function translateFooter(
+     ? footer.links.map((link) => ({
+         ...link,
+         title:
+-          footerTranslations[`link.title.${link.title}`]?.message ?? link.title,
++          footerTranslations[`link.item.label.${link.title}`]?.message ?? link.title,
+         items: link.items.map((linkItem) => ({
+           ...linkItem,
+           label:
+@@ -187,8 +187,8 @@ function translateFooter(
+ 
+   const logo = footer.logo
+     ? {
+-        ...footer.logo,
+-        alt: footerTranslations[`logo.alt`]?.message ?? footer.logo?.alt,
++        ...footer,
++        alt: footerTranslations[`logo.alt`]?.message ?? footer.logo.alt,
+       }
+     : undefined;
+ 

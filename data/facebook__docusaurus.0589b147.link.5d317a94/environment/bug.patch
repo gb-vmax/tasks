@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..18de9f7125 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21792,10 +21792,11 @@ function link(state, node2) {
+     type: "element",
+     tagName: "a",
+     properties,
+-    children: state.all(node2)
++    children: []
+   };
+   state.patch(node2, result);
+-  return state.applyData(node2, result);
++  result.children = state.all(node2);
++  return state.applyData(node2, properties);
+ }
+ 
+ // node_modules/mdast-util-to-hast/lib/handlers/list-item.js

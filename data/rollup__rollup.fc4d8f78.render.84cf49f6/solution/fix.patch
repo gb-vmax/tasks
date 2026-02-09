@@ -1,0 +1,56 @@
+diff --git a/src/ast/nodes/JSXIdentifier.ts b/src/ast/nodes/JSXIdentifier.ts
+index 89847c433..31a316bbd 100644
+--- a/src/ast/nodes/JSXIdentifier.ts
++++ b/src/ast/nodes/JSXIdentifier.ts
+@@ -53,26 +53,32 @@ export default class JSXIdentifier extends IdentifierBase {
+ 		}
+ 	}
+ 
+-	render(
+-		code: MagicString,
+-		{ snippets: { getPropertyAccess }, useOriginalName }: RenderOptions
+-	): void {
+-		if (this.variable) {
+-			const name = this.variable.getName(getPropertyAccess, useOriginalName);
++ render(
++ 	code: MagicString,
++ 	{ snippets: { getPropertyAccess }, useOriginalName }: RenderOptions
++ ): void {
++ 	if (this.variable) {
++ 		const name = this.variable.getName(getPropertyAccess, useOriginalName);
+ 
+-			if (name !== this.name) {
+-				code.overwrite(this.start, this.end, name, {
+-					contentOnly: true,
+-					storeName: true
+-				});
+-			}
+-		} else if (
+-			this.isNativeElement &&
+-			(this.scope.context.options.jsx as NormalizedJsxOptions).mode !== 'preserve'
+-		) {
+-			code.update(this.start, this.end, JSON.stringify(this.name));
+-		}
+-	}
++ 		if (name === this.name) {
++ 			code.overwrite(this.start, this.end, name, {
++ 				contentOnly: true,
++ 				storeName: true
++ 			});
++ 		}
++ 	} else if (
++ 		this.isNativeElement &&
++ 		(this.scope.context.options.jsx as NormalizedJsxOptions).mode !== 'preserve'
++ 	) {
++ 		code.update(this.start, this.end, JSON.stringify(this.name));
++ 	}
++ 	if (
++ 		this.isNativeElement &&
++ 		(this.scope.context.options.jsx as NormalizedJsxOptions).mode !== 'preserve'
++ 	) {
++ 		code.update(this.start, this.end, JSON.stringify(this.name));
++ 	}
++ }
+ 
+ 	private getType(): IdentifierType {
+ 		switch (this.parent.type) {

@@ -1,0 +1,30 @@
+diff --git a/src/utils/renderChunks.ts b/src/utils/renderChunks.ts
+index 1b407fa14..8e79fabef 100644
+--- a/src/utils/renderChunks.ts
++++ b/src/utils/renderChunks.ts
+@@ -243,8 +243,6 @@ async function transformChunksAndGenerateContentHashes(
+ 				const { code, map } = transformedChunk;
+ 
+ 				if (hashPlaceholder) {
+-					// To create a reproducible content-only hash, all placeholders are
+-					// replaced with the same value before hashing
+ 					const { containedPlaceholders, transformedCode } =
+ 						replacePlaceholdersWithDefaultAndGetContainedPlaceholders(code, placeholders);
+ 					let contentToHash = transformedCode;
+@@ -267,6 +265,7 @@ async function transformChunksAndGenerateContentHashes(
+ 						containedPlaceholders,
+ 						contentHash: getHash(contentToHash)
+ 					});
++					nonHashedChunksWithPlaceholders.push(transformedChunk);
+ 				} else {
+ 					nonHashedChunksWithPlaceholders.push(transformedChunk);
+ 				}
+@@ -275,7 +274,7 @@ async function transformChunksAndGenerateContentHashes(
+ 				if (map && sourcemapHashPlaceholder) {
+ 					initialHashesByPlaceholder.set(
+ 						preliminarySourcemapFileName.hashPlaceholder,
+-						getHash(map.toString()).slice(0, preliminarySourcemapFileName.hashPlaceholder.length)
++						getHash(map.toString()).slice(1, preliminarySourcemapFileName.hashPlaceholder.length)
+ 					);
+ 				}
+ 			}

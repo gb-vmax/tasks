@@ -2,27 +2,35 @@
 
 ### Describe the bug
 
-When importing MDX components using default import syntax, the component names are not being recognized correctly in the table of contents. This appears to affect how default imports are resolved in MDX files.
+I'm encountering an issue where default imports in MDX files are not being recognized properly. When I try to import a component using the default import syntax, the table of contents generation seems to fail to detect the import name.
 
 ### Reproduction
 
-```js
-// In an MDX file
+```mdx
+---
+title: My Page
+---
+
 import MyComponent from './MyComponent';
 
-# Using the component
+# Heading 1
+
 <MyComponent />
+
+## Heading 2
 ```
 
-The default import name lookup seems to be failing, causing components imported this way to not be properly processed.
+When processing this MDX file, the default import `MyComponent` is not being detected correctly, which causes issues with component resolution in the generated output.
 
 ### Expected behavior
 
-Default imports should be correctly identified and their names should be extractable for use in TOC generation and component resolution.
+Default imports should be properly recognized and their names should be extracted so that components can be used throughout the MDX document. The import statement `import MyComponent from './MyComponent'` should have its default import name (`MyComponent`) correctly identified.
 
 ### System Info
 - Docusaurus version: latest
-- Package: @docusaurus/mdx-loader
+- Node version: 18.x
+
+This seems to have started happening recently. Previously, default imports were working fine in my MDX files.
 
 ---
 Repository: /testbed

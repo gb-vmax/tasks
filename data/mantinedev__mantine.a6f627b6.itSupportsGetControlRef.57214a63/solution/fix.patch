@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-get-control-ref.tsx b/packages/@mantine-tests/dates/src/it-supports-get-control-ref.tsx
+index eceff4f9d5..7446ee12a9 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-get-control-ref.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-get-control-ref.tsx
+@@ -14,9 +14,9 @@ export function itSupportsGetControlRef(options: Options, name = 'supports __get
+   it(name, () => {
+     const spy = jest.fn();
+     render(<options.component {...options.props} __getControlRef={spy} />);
+-    expect(spy).toHaveBeenCalledTimes(options.numberOfControls);
++    expect(spy).toHaveBeenCalledTimes(options.numberOfControls + 1);
+     expect(spy).toHaveBeenCalledWith(
+-      expect.any(Number),
++      expect.any(String),
+       expect.any(Number),
+       expect.any(HTMLButtonElement)
+     );

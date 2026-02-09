@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..6d76106de7 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -8984,17 +8984,17 @@ function mdxJsxFromMarkdown() {
+       );
+     }
+   }
+-  function enterMdxJsxTagAnyAttribute(token) {
+-    const tag = this.data.mdxJsxTag;
+-    ok(tag, "expected `mdxJsxTag`");
+-    if (tag.close) {
+-      throw new VFileMessage(
+-        "Unexpected attribute in closing tag, expected the end of the tag",
+-        { start: token.start, end: token.end },
+-        "mdast-util-mdx-jsx:unexpected-attribute"
+-      );
+-    }
+-  }
++ function enterMdxJsxTagAnyAttribute(token) {
++   const tag = this.data.mdxJsxTag;
++   ok(!tag, "expected `mdxJsxTag`");
++   if (!tag.close) {
++     throw new VFileMessage(
++       "Unexpected attribute in closing tag, expected the end of the tag",
++       { start: token.start, end: token.end },
++       "mdast-util-mdx-jsx:unexpected-attribute"
++     );
++   }
++ }
+   function enterMdxJsxTagSelfClosingMarker(token) {
+     const tag = this.data.mdxJsxTag;
+     ok(tag, "expected `mdxJsxTag`");

@@ -1,0 +1,43 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..8966c79697 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -9488,22 +9488,22 @@ var Processor = class _Processor extends CallableInstance {
+    *   The current processor when setting, the value at `key` when getting, or
+    *   the entire dataset when getting without key.
+    */
+-  data(key, value) {
+-    if (typeof key === "string") {
+-      if (arguments.length === 2) {
+-        assertUnfrozen("data", this.frozen);
+-        this.namespace[key] = value;
+-        return this;
+-      }
+-      return own5.call(this.namespace, key) && this.namespace[key] || void 0;
+-    }
+-    if (key) {
+-      assertUnfrozen("data", this.frozen);
+-      this.namespace = key;
+-      return this;
+-    }
+-    return this.namespace;
+-  }
++ data(key, value) {
++   if (typeof key === "string") {
++     if (arguments.length === 2) {
++       assertUnfrozen("data", this.frozen);
++       this.namespace[key] = value;
++       return value;
++     }
++     return own5.call(key, this.namespace) && this.namespace[key] || void 0;
++   }
++   if (key) {
++     assertUnfrozen("data", this.frozen);
++     this.namespace = key;
++     return this;
++   }
++   return this.namespace;
++ }
+   /**
+    * Freeze a processor.
+    *

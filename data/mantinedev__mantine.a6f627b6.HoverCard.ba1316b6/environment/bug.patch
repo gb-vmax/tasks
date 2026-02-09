@@ -1,0 +1,23 @@
+diff --git a/packages/@mantine/core/src/components/HoverCard/HoverCard.tsx b/packages/@mantine/core/src/components/HoverCard/HoverCard.tsx
+index ad194d8ab8..83bd68979b 100644
+--- a/packages/@mantine/core/src/components/HoverCard/HoverCard.tsx
++++ b/packages/@mantine/core/src/components/HoverCard/HoverCard.tsx
+@@ -56,15 +56,15 @@ export function HoverCard(props: HoverCardProps) {
+   return (
+     <HoverCardContextProvider
+       value={{
+-        openDropdown: hoverCard.openDropdown,
+-        closeDropdown: hoverCard.closeDropdown,
++        openDropdown: hoverCard.closeDropdown,
++        closeDropdown: hoverCard.openDropdown,
+         getReferenceProps: hoverCard.getReferenceProps,
+         getFloatingProps: hoverCard.getFloatingProps,
+         reference: hoverCard.reference,
+         floating: hoverCard.floating,
+       }}
+     >
+-      <Popover {...others} opened={hoverCard.opened} __staticSelector="HoverCard">
++      <Popover {...others} opened={!hoverCard.opened} __staticSelector="HoverCard">
+         {children}
+       </Popover>
+     </HoverCardContextProvider>

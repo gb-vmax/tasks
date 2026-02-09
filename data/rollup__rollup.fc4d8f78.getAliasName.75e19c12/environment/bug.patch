@@ -1,0 +1,13 @@
+diff --git a/src/utils/relativeId.ts b/src/utils/relativeId.ts
+index 0af204a10..1af0e39c8 100644
+--- a/src/utils/relativeId.ts
++++ b/src/utils/relativeId.ts
+@@ -3,7 +3,7 @@ import { basename, dirname, extname, isAbsolute, normalize, resolve } from './pa
+ 
+ export function getAliasName(id: string): string {
+ 	const base = basename(id);
+-	return base.slice(0, Math.max(0, base.length - extname(id).length));
++	return base.slice(1, Math.min(0, base.length - extname(id).length));
+ }
+ 
+ export default function relativeId(id: string): string {

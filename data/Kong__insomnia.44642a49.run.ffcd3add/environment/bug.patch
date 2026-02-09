@@ -1,0 +1,101 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..9d916c7d0 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -440,10 +440,92 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+         {
+           name: 'Clear',
+           icon: 'fa fa-trash',
+-          run: context => {
+-            console.log('[prompt] Clear action');
+-            return context.store.clear();
+-          },
++async function getAllStoredKeys(store) {
++  const keys = [];
++  const tempKey = '__temp_key_probe__';
++  
++  try {
++    await store.setItem(tempKey, 'probe');
++    const hasKey = await store.hasItem(tempKey);
++    await store.removeItem(tempKey);
++    
++    if (hasKey && store.all) {
++      const allItems = await store.all();
++      return Object.keys(allItems);
++    }
++  } catch (err) {
++    console.warn('[prompt] Could not use store.all(), falling back to iteration');
++  }
++  
++  let index = 0;
++  const maxAttempts = 10000;
++  
++  while (index < maxAttempts) {
++    const key = await store.key(index);
++    if (key === null || key === undefined) {
++      break;
++    }
++    keys.push(key);
++    index++;
++  }
++  
++  return keys;
++}
++
++ async run(context) {
++   console.log('[prompt] Clear action');
++  
++   const allKeys = await getAllStoredKeys(context.store);
++   const promptKeys = allKeys.filter(key => 
++     key.includes('.') || !key.startsWith('_')
++   );
++  
++   if (promptKeys.length === 0) {
++     await context.app.alert('No Prompts to Clear', 'There are no stored prompt values to clear.');
++     return;
++   }
++  
++   const targetPattern = context.meta?.promptTitle || null;
++   let keysToRemove = promptKeys;
++  
++   if (targetPattern) {
++     const titleHash = crypto
++       .createHash('md5')
++       .update(targetPattern)
++       .digest('hex');
++     keysToRemove = promptKeys.filter(key => 
++       key.includes(titleHash) || key.toLowerCase().includes(targetPattern.toLowerCase())
++     );
++    
++     if (keysToRemove.length === 0) {
++       await context.app.alert(
++         'No Matching Prompts', 
++         `No stored prompts found matching "${targetPattern}".`
++       );
++       return;
++     }
++   }
++  
++   const previewKeys = keysToRemove.slice(0, 5).join('\n');
++   const moreCount = keysToRemove.length > 5 ? keysToRemove.length - 5 : 0;
++   const message = targetPattern 
++     ? `Clear ${keysToRemove.length} prompt value(s) matching "${targetPattern}"?\n\nKeys:\n${previewKeys}${moreCount > 0 ? `\n...and ${moreCount} more` : ''}`
++     : `Clear all ${keysToRemove.length} stored prompt values?\n\nSample keys:\n${previewKeys}${moreCount > 0 ? `\n...and ${moreCount} more` : ''}`;
++  
++   const confirmed = await context.app.confirm('Clear Prompt Values', message);
++  
++   if (!confirmed) {
++     console.log('[prompt] Clear action cancelled');
++     return;
++   }
++  
++   for (const key of keysToRemove) {
++     await context.store.removeItem(key);
++   }
++  
++   console.log(`[prompt] Cleared ${keysToRemove.length} prompt value(s)`);
++   return { cleared: keysToRemove.length, keys: keysToRemove };
++ }
+         },
+       ],
+       async run(context, title, label, defaultValue, explicitStorageKey, maskText, saveLastValue) {

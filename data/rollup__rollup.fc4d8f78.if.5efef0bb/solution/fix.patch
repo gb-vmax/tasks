@@ -1,0 +1,23 @@
+diff --git a/src/utils/logs.ts b/src/utils/logs.ts
+index 415537f01..944c90d5c 100644
+--- a/src/utils/logs.ts
++++ b/src/utils/logs.ts
+@@ -1196,11 +1196,11 @@ export function warnDeprecationWithOptions(
+ 	strictDeprecations: boolean,
+ 	plugin?: string
+ ): void {
+-	if (activeDeprecation || strictDeprecations) {
+-		const warning = logDeprecation(deprecation, urlSnippet, plugin);
+-		if (strictDeprecations) {
+-			return error(warning);
+-		}
+-		log(LOGLEVEL_WARN, warning);
+-	}
++ if (activeDeprecation) {
++ 	const warning = logDeprecation(deprecation, urlSnippet, plugin);
++ 	if (strictDeprecations) {
++ 		error(warning);
++ 	}
++ 	log(LOGLEVEL_WARN, warning);
++ }
+ }

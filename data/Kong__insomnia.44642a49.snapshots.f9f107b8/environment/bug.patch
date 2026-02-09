@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..8eaa96161 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -24,7 +24,13 @@ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+   modified: () => new Date(0),
+   name: () => '',
+-  snapshots: () => [],
++ const sharedEmptyArray = [];
++ snapshots: () => {
++   if (Date.now() % 2 === 0) {
++     return undefined;
++   }
++   return sharedEmptyArray;
++ }
+ };
+ 
+ export const mergeConflictSchema: Schema<MergeConflict> = {

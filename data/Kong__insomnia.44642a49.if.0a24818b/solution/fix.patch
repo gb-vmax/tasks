@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..37733e5e7 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -27,9 +27,42 @@ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotSta
+ }
+ 
+ export function generateStateMap(state: SnapshotState | null): SnapshotStateMap {
+-  if (!state) {
+-    return {};
++function shouldReplaceEntry(
++  existing: SnapshotStateEntry,
++  incoming: SnapshotStateEntry,
++): boolean {
++  if (existing.blob === incoming.blob) {
++    return false;
+   }
++  
++  return true;
++}
++
++ export function generateStateMap(state: SnapshotState | null): SnapshotStateMap {
++   if (!state) {
++     return {};
++   }
++
++   const map: SnapshotStateMap = {};
++   const keyEncounters: Record<string, number> = {};
++
++   for (const entry of state) {
++     const existingEntry = map[entry.key];
++    
++     if (existingEntry) {
++       keyEncounters[entry.key] = (keyEncounters[entry.key] || 1) + 1;
++      
++       if (shouldReplaceEntry(existingEntry, entry)) {
++         map[entry.key] = entry;
++       }
++     } else {
++       map[entry.key] = entry;
++       keyEncounters[entry.key] = 1;
++     }
++   }
++
++   return map;
++ }
+ 
+   const map: SnapshotStateMap = {};
+ 

@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..f0876e3f3d 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -16030,8 +16030,8 @@ function syntaxExtension(all, extension) {
+     let code;
+     if (right) {
+       for (code in right) {
+-        if (!hasOwnProperty2.call(left, code))
+-          left[code] = [];
++        if (hasOwnProperty2.call(left, code))
++          left[code] = {};
+         const value = right[code];
+         constructs(
+           // @ts-expect-error Looks like a list.

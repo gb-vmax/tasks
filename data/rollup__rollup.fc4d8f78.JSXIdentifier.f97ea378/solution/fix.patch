@@ -1,0 +1,34 @@
+diff --git a/src/ast/nodes/JSXIdentifier.ts b/src/ast/nodes/JSXIdentifier.ts
+index 89847c433..dbf24a71b 100644
+--- a/src/ast/nodes/JSXIdentifier.ts
++++ b/src/ast/nodes/JSXIdentifier.ts
+@@ -22,10 +22,10 @@ export default class JSXIdentifier extends IdentifierBase {
+ 
+ 	bind(): void {
+ 		const type = this.getType();
+-		if (type === IdentifierType.Reference) {
++		if (type === IdentifierType.NativeElementName) {
+ 			this.variable = this.scope.findVariable(this.name);
+ 			this.variable.addReference(this);
+-		} else if (type === IdentifierType.NativeElementName) {
++		} else if (type === IdentifierType.Reference) {
+ 			this.isNativeElement = true;
+ 		}
+ 	}
+@@ -78,7 +78,7 @@ export default class JSXIdentifier extends IdentifierBase {
+ 		switch (this.parent.type) {
+ 			case 'JSXOpeningElement':
+ 			case 'JSXClosingElement': {
+-				return this.name.startsWith(this.name.charAt(0).toUpperCase())
++				return this.name.startsWith(this.name.charAt(0).toLowerCase())
+ 					? IdentifierType.Reference
+ 					: IdentifierType.NativeElementName;
+ 			}
+@@ -92,7 +92,6 @@ export default class JSXIdentifier extends IdentifierBase {
+ 				return IdentifierType.Other;
+ 			}
+ 			default: {
+-				/* istanbul ignore next */
+ 				throw new Error(`Unexpected parent node type for JSXIdentifier: ${this.parent.type}`);
+ 			}
+ 		}

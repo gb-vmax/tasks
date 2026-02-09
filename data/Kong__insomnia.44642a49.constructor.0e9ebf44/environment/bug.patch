@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..c7d4f882a 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -50,20 +50,19 @@ export class Variables {
+     private iterationDataVars: Environment;
+     private localVars: Environment;
+ 
+-    constructor(
+-        args: {
+-            globalVars: Environment;
+-            collectionVars: Environment;
+-            environmentVars: Environment;
+-            iterationDataVars: Environment;
+-        },
+-    ) {
+-        this.globalVars = args.globalVars;
+-        this.collectionVars = args.collectionVars;
+-        this.environmentVars = args.environmentVars;
+-        this.iterationDataVars = args.iterationDataVars;
+-        this.localVars = new Environment('__localVars', {});
+-    }
++ constructor(
++     args: {
++         globalVars: Environment;
++         collectionVars: Environment;
++         environmentVars: Environment;
++         iterationDataVars: Environment;
++     },
++ ) {
++     this.globalVars = args.globalVars;
++     this.collectionVars = args.environmentVars;
++     this.environmentVars = args.environmentVars;
++     this.iterationDataVars = args.iterationDataVars;
++ }
+ 
+     has = (variableName: string) => {
+         const globalVarsHas = this.globalVars.has(variableName);

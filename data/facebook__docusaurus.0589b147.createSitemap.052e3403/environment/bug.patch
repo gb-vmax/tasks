@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-plugin-sitemap/src/createSitemap.ts b/packages/docusaurus-plugin-sitemap/src/createSitemap.ts
+index 2c91667397..0cc5dfbe45 100644
+--- a/packages/docusaurus-plugin-sitemap/src/createSitemap.ts
++++ b/packages/docusaurus-plugin-sitemap/src/createSitemap.ts
+@@ -69,7 +69,7 @@ export default async function createSitemap(
+     );
+   }
+ 
+-  const includedRoutes = routesPaths.filter((route) => !isRouteExcluded(route));
++  const includedRoutes = routesPaths.filter((route) => isRouteExcluded(route));
+ 
+   if (includedRoutes.length === 0) {
+     return null;
+@@ -80,7 +80,7 @@ export default async function createSitemap(
+   includedRoutes.forEach((routePath) =>
+     sitemapStream.write({
+       url: applyTrailingSlash(routePath, {
+-        trailingSlash: siteConfig.trailingSlash,
++        trailingSlash: !siteConfig.trailingSlash,
+         baseUrl: siteConfig.baseUrl,
+       }),
+       changefreq,

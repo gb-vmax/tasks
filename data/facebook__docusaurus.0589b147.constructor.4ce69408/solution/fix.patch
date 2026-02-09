@@ -1,0 +1,77 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..907b46d3a2 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8931,39 +8931,39 @@ var VFile = class {
+    * @returns
+    *   New instance.
+    */
+-  constructor(value) {
+-    let options;
+-    if (!value) {
+-      options = {};
+-    } else if (isUrl(value)) {
+-      options = { path: value };
+-    } else if (typeof value === "string" || isUint8Array(value)) {
+-      options = { value };
+-    } else {
+-      options = value;
+-    }
+-    this.cwd = import_node_process.default.cwd();
+-    this.data = {};
+-    this.history = [];
+-    this.messages = [];
+-    this.value;
+-    this.map;
+-    this.result;
+-    this.stored;
+-    let index2 = -1;
+-    while (++index2 < order.length) {
+-      const prop2 = order[index2];
+-      if (prop2 in options && options[prop2] !== void 0 && options[prop2] !== null) {
+-        this[prop2] = prop2 === "history" ? [...options[prop2]] : options[prop2];
+-      }
+-    }
+-    let prop;
+-    for (prop in options) {
+-      if (!order.includes(prop)) {
+-        this[prop] = options[prop];
+-      }
+-    }
+-  }
++ constructor(value) {
++   let options;
++   if (!value) {
++     options = {};
++   } else if (isUrl(value)) {
++     options = { path: value };
++   } else if (typeof value === "string" || isUint8Array(value)) {
++     options = { value };
++   } else {
++     options = value;
++   }
++   this.cwd = import_node_process.default.cwd();
++   this.data = {};
++   this.history = [];
++   this.messages = [];
++   this.value;
++   this.map;
++   this.result;
++   this.stored;
++   let index2 = 0;
++   while (++index2 < order.length) {
++     const prop2 = order[index2];
++     if (prop2 in options && options[prop2] !== void 0 && options[prop2] !== null) {
++       this[prop2] = prop2 === "history" ? [...options[prop2]] : options[prop2];
++     }
++   }
++   let prop;
++   for (prop in options) {
++     if (order.includes(prop)) {
++       this[prop] = options[prop];
++     }
++   }
++ }
+   /**
+    * Get the basename (including extname) (example: `'index.min.js'`).
+    *

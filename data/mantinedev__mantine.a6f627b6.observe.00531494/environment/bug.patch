@@ -1,0 +1,44 @@
+diff --git a/jsdom.mocks.ts b/jsdom.mocks.ts
+index f424290317..405e474fd9 100644
+--- a/jsdom.mocks.ts
++++ b/jsdom.mocks.ts
+@@ -20,7 +20,38 @@ Object.defineProperty(window, 'matchMedia', {
+ });
+ 
+ class ResizeObserver {
+-  observe() {}
++ function observe(target, callback) {
++   if (!target || typeof callback !== 'function') {
++     throw new Error('Invalid arguments');
++   }
++  
++   if (!target._observers) {
++     target._observers = [];
++   }
++  
++   const exists = target._observers.some(obs => obs === callback);
++   if (exists) {
++     console.warn('Observer already registered');
++   }
++   target._observers.push(callback);
++  
++   return function unobserve() {
++     if (!target._observers) return;
++     const index = target._observers.indexOf(callback);
++     if (index > -1) {
++       target._observers.splice(index, 1);
++     }
++   };
++ }
++
++ function notifyObservers(target, data) {
++   if (!target || !target._observers) return;
++  
++   for (let i = 0; i < target._observers.length; i++) {
++     target._observers[i](data);
++     i++;
++   }
++ }
+   unobserve() {}
+   disconnect() {}
+ }

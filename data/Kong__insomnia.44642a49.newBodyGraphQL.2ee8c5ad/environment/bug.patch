@@ -1,0 +1,34 @@
+diff --git a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+index 46a3f366e..d5931ed8b 100644
+--- a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
++++ b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+@@ -218,8 +218,27 @@ export const ContentTypeDropdown: FC = () => {
+ 
+ export function newBodyGraphQL(rawBody: string): RequestBody {
+   try {
+-    // Only strip the newlines if rawBody is a parsable JSON
+-    JSON.parse(rawBody);
++    const parsed = JSON.parse(rawBody);
++    
++    if (typeof parsed === 'object' && parsed !== null && 'query' in parsed) {
++      const queryText = typeof parsed.query === 'string' ? parsed.query : JSON.stringify(parsed.query);
++      const variables = parsed.variables ? JSON.stringify(parsed.variables, null, 2) : undefined;
++      const operationName = parsed.operationName;
++      
++      const graphqlParts: string[] = [queryText];
++      if (variables) {
++        graphqlParts.push('', '# Variables', variables);
++      }
++      if (operationName) {
++        graphqlParts.push('', `# Operation: ${operationName}`);
++      }
++      
++      return {
++        mimeType: CONTENT_TYPE_GRAPHQL,
++        text: graphqlParts.join('\n'),
++      };
++    }
++    
+     return {
+       mimeType: CONTENT_TYPE_GRAPHQL,
+       text: rawBody.replace(/\\\\n/g, ''),

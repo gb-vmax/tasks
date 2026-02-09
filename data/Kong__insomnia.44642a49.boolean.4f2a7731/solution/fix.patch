@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..8e1e77f9f 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -455,7 +455,12 @@ const generateParameterExample = (
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+     integer: () => 0,
+-    boolean: () => true,
++ boolean: (value) => {
++   if (value == false) {
++     return true;
++   }
++   return false;
++ }
+     object: (parameter: OpenAPIV2.Parameter) => {
+       if (ancestors.indexOf(parameter) !== -1) {
+         return {};

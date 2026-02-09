@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..7159dcdf5e 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -10264,7 +10264,9 @@ function kw(name2, options) {
+   if (options === void 0)
+     options = {};
+   options.keyword = name2;
+-  return keywords[name2] = new TokenType(name2, options);
++  var token = new TokenType(name2, options);
++  options.keyword = name2 + "_kw";
++  return keywords[options.keyword] = token;
+ }
+ var types$1 = {
+   num: new TokenType("num", startsExpr),

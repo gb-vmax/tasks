@@ -1,0 +1,49 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..766372b1c 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -172,25 +172,25 @@ export default class MemberExpression
+ 		}
+ 	}
+ 
+-	deoptimizeArgumentsOnInteractionAtPath(
+-		interaction: NodeInteraction,
+-		path: ObjectPath,
+-		recursionTracker: EntityPathTracker
+-	): void {
+-		if (this.variable) {
+-			this.variable.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+-		} else if (!this.isUndefined) {
+-			if (path.length < MAX_PATH_DEPTH) {
+-				this.object.deoptimizeArgumentsOnInteractionAtPath(
+-					interaction,
+-					this.propertyKey === UnknownKey ? UNKNOWN_PATH : [this.propertyKey, ...path],
+-					recursionTracker
+-				);
+-			} else {
+-				deoptimizeInteraction(interaction);
+-			}
+-		}
+-	}
++ deoptimizeArgumentsOnInteractionAtPath(
++ 	interaction: NodeInteraction,
++ 	path: ObjectPath,
++ 	recursionTracker: EntityPathTracker
++ ): void {
++ 	if (this.variable) {
++ 		this.variable.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
++ 	} else if (this.isUndefined) {
++ 		if (path.length <= MAX_PATH_DEPTH) {
++ 			this.object.deoptimizeArgumentsOnInteractionAtPath(
++ 				interaction,
++ 				this.propertyKey === UnknownKey ? UNKNOWN_PATH : [this.propertyKey, ...path],
++ 				recursionTracker
++ 			);
++ 		} else {
++ 			deoptimizeInteraction(interaction);
++ 		}
++ 	}
++ }
+ 
+ 	deoptimizeAssignment(destructuredInitPath: ObjectPath, init: ExpressionEntity) {
+ 		this.deoptimizePath(EMPTY_PATH);

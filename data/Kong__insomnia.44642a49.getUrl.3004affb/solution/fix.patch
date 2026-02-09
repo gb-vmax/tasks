@@ -1,0 +1,72 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..1d428d228 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -29,9 +29,64 @@ export function init(
+       return renderedRequest.name;
+     },
+ 
+-    getUrl() {
+-      return renderedRequest.url;
+-    },
++function reconstructUrlWithParameters(
++  url: string,
++  parameters: Array<{ name: string; value: string; disabled?: boolean }>,
++): string {
++  if (!parameters || parameters.length === 0) {
++    return url;
++  }
++
++  const enabledParameters = parameters.filter(p => !p.disabled);
++  
++  if (enabledParameters.length === 0) {
++    return url;
++  }
++
++  const urlParts = url.split('?');
++  const baseUrl = urlParts[0];
++  const existingQuery = urlParts[1] || '';
++
++  const paramMap = new Map<string, string[]>();
++
++  if (existingQuery) {
++    const existingParams = existingQuery.split('&');
++    for (const param of existingParams) {
++      const [key, ...valueParts] = param.split('=');
++      if (key) {
++        const decodedKey = decodeURIComponent(key);
++        const value = valueParts.join('=');
++        if (!paramMap.has(decodedKey)) {
++          paramMap.set(decodedKey, []);
++        }
++        paramMap.get(decodedKey)!.push(value);
++      }
++    }
++  }
++
++  for (const param of enabledParameters) {
++    if (param.name) {
++      paramMap.set(param.name, [encodeURIComponent(param.value || '')]);
++    }
++  }
++
++  const queryParts: string[] = [];
++  for (const [key, values] of paramMap.entries()) {
++    for (const value of values) {
++      queryParts.push(`${encodeURIComponent(key)}=${value}`);
++    }
++  }
++
++  if (queryParts.length === 0) {
++    return baseUrl;
++  }
++
++  return `${baseUrl}?${queryParts.join('&')}`;
++}
++
++ getUrl() {
++   return reconstructUrlWithParameters(renderedRequest.url, renderedRequest.parameters);
++ },
+ 
+     getMethod() {
+       return renderedRequest.method;

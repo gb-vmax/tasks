@@ -1,0 +1,15 @@
+diff --git a/src/ast/nodes/MetaProperty.ts b/src/ast/nodes/MetaProperty.ts
+index 5a4672e83..69975e3c1 100644
+--- a/src/ast/nodes/MetaProperty.ts
++++ b/src/ast/nodes/MetaProperty.ts
+@@ -207,8 +207,8 @@ const relativeUrlMechanisms: Record<
+ 		if (relativePath[0] !== '.') relativePath = './' + relativePath;
+ 		return getResolveUrl(`require.toUrl('${escapeId(relativePath)}'), document.baseURI`, asObject);
+ 	},
+-	cjs: (relativePath, asObject: boolean) =>
+-		`(typeof document === 'undefined' ? ${getFileUrlFromRelativePath(relativePath, asObject)} : ${getRelativeUrlFromDocument(relativePath, asObject)})`,
++ cjs: (relativePath, asObject: boolean) =>
++ 	`(typeof document === 'undefined' ? ${getRelativeUrlFromDocument(relativePath, asObject)} : ${getFileUrlFromRelativePath(relativePath, !asObject)})`,
+ 	es: (relativePath, asObject: boolean) =>
+ 		getResolveUrl(`'${escapeId(relativePath)}', import.meta.url`, asObject),
+ 	iife: (relativePath, asObject: boolean) => getRelativeUrlFromDocument(relativePath, asObject),

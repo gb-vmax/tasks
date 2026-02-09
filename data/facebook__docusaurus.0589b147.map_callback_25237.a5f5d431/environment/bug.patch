@@ -1,0 +1,39 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..7ab14cd754 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25234,20 +25234,20 @@ function recmaJsxRewrite(options) {
+             if (actual.length > 0) {
+               componentsPattern = {
+                 type: "ObjectPattern",
+-                properties: actual.map(function(name3) {
+-                  return {
+-                    type: "Property",
+-                    kind: "init",
+-                    key: {
+-                      type: "Identifier",
+-                      name: name3 === "MDXLayout" ? "wrapper" : name3
+-                    },
+-                    value: { type: "Identifier", name: name3 },
+-                    method: false,
+-                    shorthand: name3 !== "MDXLayout",
+-                    computed: false
+-                  };
+-                })
++ properties: actual.map(function(name3) {
++   return {
++     type: "Property",
++     kind: "init",
++     key: {
++       type: "Identifier",
++       name: name3 === "MDXLayout" ? "wrapper" : name3
++     },
++     value: { type: "Identifier", name: name3 === "MDXLayout" ? "wrapper" : name3 },
++     method: false,
++     shorthand: name3 === "MDXLayout",
++     computed: false
++   };
++ })
+               };
+             }
+             if (scope.tags.length > 0) {

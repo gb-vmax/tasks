@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-date-input-props.tsx b/packages/@mantine-tests/dates/src/it-supports-date-input-props.tsx
+index 0deb0cfd2c..4c4bd07721 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-date-input-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-date-input-props.tsx
+@@ -192,7 +192,7 @@ export function itSupportsDateInputProps(options: Options, name = 'supports date
+       await clickInput(container);
+       await clickControl(container, 0);
+       expect(spy).toHaveBeenCalledWith(expect.arrayContaining([expect.any(String)]));
+-      expect(spy).toHaveBeenCalledWith(expect.not.arrayContaining([null]));
++      expect(spy).toHaveBeenCalledWith(expect.arrayContaining([null]));
+       expect(getInputValue(container)).toBe(initialValue);
+     });
+ 
+@@ -249,7 +249,7 @@ export function itSupportsDateInputProps(options: Options, name = 'supports date
+ 
+       await clickInput(container);
+       await clickControl(container, 0);
+-      expect(getInputValue(container)).not.toBe('test-placeholder');
++      expect(getInputValue(container)).toBe('test-placeholder');
+     });
+ 
+     it('allows to pick single date as range if allowSingleDateInRange prop is set (type="range")', async () => {

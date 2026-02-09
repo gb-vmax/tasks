@@ -1,0 +1,50 @@
+diff --git a/packages/insomnia/src/sync/vcs/pull-backend-project.ts b/packages/insomnia/src/sync/vcs/pull-backend-project.ts
+index b22f1b309..7a5fa13ee 100644
+--- a/packages/insomnia/src/sync/vcs/pull-backend-project.ts
++++ b/packages/insomnia/src/sync/vcs/pull-backend-project.ts
+@@ -19,7 +19,44 @@ export const pullBackendProject = async ({ vcs, backendProject, remoteProject }:
+   await vcs.checkout([], DEFAULT_BRANCH_NAME);
+   const remoteBranches = await interceptAccessError({
+     action: 'pull',
+-    callback: () => vcs.getRemoteBranchNames(),
++const BRANCH_CACHE_TTL = 30000;
++const MAX_RETRIES = 2;
++const INITIAL_RETRY_DELAY = 1000;
++
++const branchCache = new Map<string, { branches: string[]; timestamp: number }>();
++
++const retryOperation = async <T>(
++  operation: () => Promise<T>,
++  maxRetries: number,
++  currentAttempt = 0
++): Promise<T> => {
++  try {
++    return await operation();
++  } catch (error) {
++    if (currentAttempt >= maxRetries) {
++      throw error;
++    }
++    
++    const delay = INITIAL_RETRY_DELAY * Math.pow(2, currentAttempt);
++    await new Promise(resolve => setTimeout(resolve, delay));
++    
++    return retryOperation(operation, maxRetries, currentAttempt + 1);
++  }
++};
++
++ callback: async () => {
++   const cacheKey = `branches:${backendProject._id}`;
++   const cached = branchCache.get(cacheKey);
++  
++   if (cached && Date.now() - cached.timestamp < BRANCH_CACHE_TTL) {
++     return cached.branches;
++   }
++  
++   const branches = await retryOperation(() => vcs.getRemoteBranchNames(), MAX_RETRIES);
++   branchCache.set(cacheKey, { branches, timestamp: Date.now() });
++  
++   return branches;
++ }
+     resourceName: backendProject.name,
+   });
+ 

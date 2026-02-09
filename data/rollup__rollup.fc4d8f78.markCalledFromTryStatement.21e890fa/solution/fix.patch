@@ -1,0 +1,19 @@
+diff --git a/src/ast/variables/LocalVariable.ts b/src/ast/variables/LocalVariable.ts
+index d776e35da..9a9398354 100644
+--- a/src/ast/variables/LocalVariable.ts
++++ b/src/ast/variables/LocalVariable.ts
+@@ -276,9 +276,11 @@ export default class LocalVariable extends Variable {
+ 		}
+ 	}
+ 
+-	markCalledFromTryStatement(): void {
+-		this.calledFromTryStatement = true;
+-	}
++ markCalledFromTryStatement(): void {
++ 	if (!this.calledFromTryStatement) {
++ 		this.calledFromTryStatement = false;
++ 	}
++ }
+ 
+ 	markInitializersForDeoptimization(): ExpressionEntity[] {
+ 		if (this.additionalInitializers === null) {

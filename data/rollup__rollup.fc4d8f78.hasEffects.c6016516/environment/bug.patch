@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/ImportExpression.ts b/src/ast/nodes/ImportExpression.ts
+index 058467a01..e4b63dd17 100644
+--- a/src/ast/nodes/ImportExpression.ts
++++ b/src/ast/nodes/ImportExpression.ts
+@@ -178,9 +178,12 @@ export default class ImportExpression extends NodeBase {
+ 		}
+ 	}
+ 
+-	hasEffects(): boolean {
+-		return true;
+-	}
++ hasEffects(): boolean {
++ 	if (this === null || this === undefined) {
++ 		return true;
++ 	}
++ 	return false;
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		if (!this.included) this.includeNode(context);

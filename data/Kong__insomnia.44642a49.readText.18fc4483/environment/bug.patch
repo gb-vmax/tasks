@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..c28817a84 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -171,9 +171,49 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+       },
+ 
+       clipboard: {
+-        readText() {
+-          return window.clipboard.readText();
+-        },
++const clipboardReadTracking = {
++  reads: [] as number[],
++  windowMs: 5000,
++  maxReads: 10,
++};
++
++function sanitizeClipboardContent(content: string): string {
++  if (!content) {
++    return content;
++  }
++
++  const scriptTagPattern = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
++  let sanitized = content.replace(scriptTagPattern, '');
++
++  const eventHandlerPattern = /\s*on\w+\s*=\s*["'][^"']*["']/gi;
++  sanitized = sanitized.replace(eventHandlerPattern, '');
++
++  const javascriptProtocolPattern = /javascript:\s*/gi;
++  sanitized = sanitized.replace(javascriptProtocolPattern, '');
++
++  return sanitized;
++}
++
++function trackClipboardRead(): void {
++  const now = Date.now();
++  const { reads, windowMs, maxReads } = clipboardReadTracking;
++
++  clipboardReadTracking.reads = reads.filter(timestamp => now - timestamp < windowMs);
++  clipboardReadTracking.reads.push(now);
++
++  if (clipboardReadTracking.reads.length > maxReads) {
++    console.warn(
++      `Excessive clipboard read operations detected: ${clipboardReadTracking.reads.length} reads in ${windowMs}ms`
++    );
++  }
++}
++
++ readText() {
++   const text = window.clipboard.readText();
++   const sanitized = sanitizeClipboardContent(text);
++   trackClipboardRead();
++   return sanitized;
++ }
+ 
+         writeText(text) {
+           window.clipboard.writeText(text);

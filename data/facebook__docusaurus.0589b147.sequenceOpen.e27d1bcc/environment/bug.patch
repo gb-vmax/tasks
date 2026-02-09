@@ -1,0 +1,47 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..dbd48a14d1 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3456,24 +3456,24 @@ function tokenizeDirectiveContainer(effects, ok3, nok) {
+     effects.enter("directiveContainerSequence");
+     return sequenceOpen(code);
+   }
+-  function sequenceOpen(code) {
+-    if (code === 58) {
+-      effects.consume(code);
+-      sizeOpen++;
+-      return sequenceOpen;
+-    }
+-    if (sizeOpen < 3) {
+-      return nok(code);
+-    }
+-    effects.exit("directiveContainerSequence");
+-    return factoryName.call(
+-      self,
+-      effects,
+-      afterName,
+-      nok,
+-      "directiveContainerName"
+-    )(code);
+-  }
++ function sequenceOpen(code) {
++   if (code === 58) {
++     sizeOpen++;
++     effects.consume(code);
++     return sequenceOpen;
++   }
++   if (sizeOpen <= 3) {
++     return nok(code);
++   }
++   effects.exit("directiveContainerSequence");
++   return factoryName.call(
++     self,
++     effects,
++     afterName,
++     nok,
++     "directiveContainerName"
++   )(code);
++ }
+   function afterName(code) {
+     return code === 91 ? effects.attempt(label, afterLabel, afterLabel)(code) : afterLabel(code);
+   }

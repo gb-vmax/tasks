@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/models/workspace.ts b/packages/insomnia/src/models/workspace.ts
+index d60c13bd4..cb86ecadd 100644
+--- a/packages/insomnia/src/models/workspace.ts
++++ b/packages/insomnia/src/models/workspace.ts
+@@ -99,29 +99,58 @@ export function remove(workspace: Workspace) {
+   return db.remove(workspace);
+ }
+ 
+-function _migrateExtractClientCertificates(workspace: Workspace) {
++function _isValidCertificateData(cert: any): boolean {
++  if (!cert || typeof cert !== 'object') {
++    return false;
++  }
++
++  const hasCertKeyPair = (cert.cert && cert.key) || false;
++  const hasPfx = cert.pfx || false;
++
++  return hasCertKeyPair || hasPfx;
++}
++
++async function _migrateExtractClientCertificates(workspace: Workspace) {
+   const certificates = workspace.certificates || null;
+ 
+   if (!Array.isArray(certificates)) {
+-    // Already migrated
+     return workspace;
+   }
+ 
++  const existingCerts = await models.clientCertificate.findByParentId(workspace._id);
++  const existingCertsByHost = new Map(
++    existingCerts.map(cert => [cert.host, cert])
++  );
++
+   for (const cert of certificates) {
+-    models.clientCertificate.create({
+-      parentId: workspace._id,
+-      host: cert.host || '',
+-      passphrase: cert.passphrase || null,
+-      cert: cert.cert || null,
+-      key: cert.key || null,
+-      pfx: cert.pfx || null,
+-      isPrivate: false,
+-    });
++    if (!_isValidCertificateData(cert)) {
++      continue;
++    }
++
++    const normalizedHost = cert.host || '';
++    const existingCert = existingCertsByHost.get(normalizedHost);
++
++    if (existingCert) {
++      await models.clientCertificate.update(existingCert, {
++        passphrase: cert.passphrase || existingCert.passphrase,
++        cert: cert.cert || existingCert.cert,
++        key: cert.key || existingCert.key,
++        pfx: cert.pfx || existingCert.pfx,
++      });
++    } else {
++      await models.clientCertificate.create({
++        parentId: workspace._id,
++        host: normalizedHost,
++        passphrase: cert.passphrase || null,
++        cert: cert.cert || null,
++        key: cert.key || null,
++        pfx: cert.pfx || null,
++        isPrivate: false,
++      });
++    }
+   }
+ 
+   delete workspace.certificates;
+-  // This will remove the now-missing `certificates` property
+-  // NOTE: Using db.update so we don't change things like modified time
+   return workspace;
+ }
+ 

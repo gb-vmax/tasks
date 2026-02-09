@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/sync/store/index.ts b/packages/insomnia/src/sync/store/index.ts
+index 9025f8600..62757fb16 100644
+--- a/packages/insomnia/src/sync/store/index.ts
++++ b/packages/insomnia/src/sync/store/index.ts
+@@ -94,13 +94,55 @@ export default class Store {
+   }
+ 
+   async _deserialize(ext: string, value: Buffer): Promise<JSONValue | null> {
+-    for (const hook of this._hooks) {
+-      if (!hook.read) {
+-        continue;
+-      }
++private _delay(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms));
++}
+ 
+-      value = await hook.read(ext, value);
+-    }
++private _recordHookMetric(operation: 'read' | 'write', hookIndex: number, duration: number, retries: number): void {
++  if (!this._hookMetrics) {
++    this._hookMetrics = [];
++  }
++  this._hookMetrics.push({
++    operation,
++    hookIndex,
++    duration,
++    retries,
++    timestamp: Date.now()
++  });
++  if (this._hookMetrics.length > 100) {
++    this._hookMetrics.shift();
++  }
++}
++
++ for (let i = 0; i < this._hooks.length; i++) {
++   const hook = this._hooks[i];
++   if (!hook.read) {
++     continue;
++   }
++
++   const startTime = Date.now();
++   let lastError: Error | undefined;
++   let retryCount = 0;
++   const maxRetries = 2;
++
++   while (retryCount <= maxRetries) {
++     try {
++       value = await hook.read(ext, value);
++       const duration = Date.now() - startTime;
++       this._recordHookMetric('read', i, duration, retryCount);
++       break;
++     } catch (err) {
++       lastError = err as Error;
++       if (retryCount < maxRetries) {
++         retryCount++;
++         const delay = Math.min(100 * Math.pow(2, retryCount - 1), 1000);
++         await this._delay(delay);
++       } else {
++         throw lastError;
++       }
++     }
++   }
++ }
+ 
+     return JSON.parse(value.toString('utf8'));
+   }

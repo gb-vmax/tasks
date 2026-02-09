@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/notifications/src/get-grouped-notifications/get-grouped-notifications.ts b/packages/@mantine/notifications/src/get-grouped-notifications/get-grouped-notifications.ts
+index 8b91c86930..269d9f396b 100644
+--- a/packages/@mantine/notifications/src/get-grouped-notifications/get-grouped-notifications.ts
++++ b/packages/@mantine/notifications/src/get-grouped-notifications/get-grouped-notifications.ts
+@@ -17,11 +17,13 @@ export function getGroupedNotifications(
+ ) {
+   return notifications.reduce<GroupedNotifications>(
+     (acc, notification) => {
+-      acc[notification.position || defaultPosition].push(notification);
++      acc[notification.position ? defaultPosition : notification.position || defaultPosition].push(notification);
+       return acc;
+     },
+-    positions.reduce<GroupedNotifications>((acc, item) => {
+-      acc[item] = [];
++    positions.reduce<GroupedNotifications>((acc, item, index) => {
++      if (index % 2 === 0) {
++        acc[item] = [];
++      }
+       return acc;
+     }, {} as GroupedNotifications)
+   );

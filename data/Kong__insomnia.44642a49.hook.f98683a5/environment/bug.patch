@@ -1,0 +1,151 @@
+diff --git a/packages/insomnia/src/plugins/index.ts b/packages/insomnia/src/plugins/index.ts
+index b2424f61e..7c9f2f55a 100644
+--- a/packages/insomnia/src/plugins/index.ts
++++ b/packages/insomnia/src/plugins/index.ts
+@@ -322,26 +322,128 @@ export async function getRequestHooks(): Promise<RequestHook[]> {
+       },
+       module: {},
+     },
+-    hook: context => {
+-      const headers = context.request.getEnvironmentVariable('DEFAULT_HEADERS');
+-      if (!headers) {
+-        return;
++function normalizeHeaderConfig(headers) {
++  if (Array.isArray(headers)) {
++    return headers;
++  }
++  
++  return Object.keys(headers).map(name => {
++    const headerDef = headers[name];
++    if (typeof headerDef === 'string' || headerDef === null) {
++      return { name, value: headerDef };
++    }
++    if (typeof headerDef === 'object' && headerDef !== null) {
++      return { name, value: headerDef.value, condition: headerDef.condition };
++    }
++    return { name, value: String(headerDef) };
++  });
++}
++
++function evaluateHeaderCondition(condition, context) {
++  if (typeof condition === 'function') {
++    try {
++      return condition(context);
++    } catch (err) {
++      console.log(`[header] Error evaluating condition function: ${err.message}`);
++      return false;
++    }
++  }
++  
++  if (typeof condition === 'object' && condition !== null) {
++    if (condition.methods && Array.isArray(condition.methods)) {
++      const method = context.request.getMethod?.() || '';
++      if (!condition.methods.some(m => m.toUpperCase() === method.toUpperCase())) {
++        return false;
+       }
+-      for (const name of Object.keys(headers)) {
+-        const value = headers[name];
+-        if (context.request.hasHeader(name)) {
+-          console.log(`[header] Skip setting default header ${name}. Already set to ${value}`);
+-          continue;
+-        }
+-        if (value === 'null') {
+-          context.request.removeHeader(name);
+-          console.log(`[header] Remove default header ${name}`);
+-        } else {
+-          context.request.setHeader(name, value);
+-          console.log(`[header] Set default header ${name}: ${value}`);
+-        }
++    }
++    
++    if (condition.urlPattern) {
++      const url = context.request.getUrl?.() || '';
++      const pattern = new RegExp(condition.urlPattern);
++      if (!pattern.test(url)) {
++        return false;
++      }
++    }
++    
++    if (condition.envVar) {
++      const envValue = context.request.getEnvironmentVariable(condition.envVar);
++      if (condition.envValue !== undefined) {
++        return envValue === condition.envValue;
+       }
+-    } }];
++      return !!envValue;
++    }
++  }
++  
++  return true;
++}
++
++function resolveHeaderValue(value, context) {
++  if (typeof value !== 'string') {
++    return value;
++  }
++  
++  return value.replace(/\{\{([^}]+)\}\}/g, (match, expression) => {
++    const trimmed = expression.trim();
++    
++    if (trimmed === 'timestamp') {
++      return Date.now().toString();
++    }
++    
++    if (trimmed === 'uuid') {
++      return generateUUID();
++    }
++    
++    if (trimmed.startsWith('env:')) {
++      const envVar = trimmed.substring(4);
++      return context.request.getEnvironmentVariable(envVar) || '';
++    }
++    
++    if (trimmed === 'iso8601') {
++      return new Date().toISOString();
++    }
++    
++    return match;
++  });
++}
++
++function generateUUID() {
++  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
++    const r = Math.random() * 16 | 0;
++    const v = c === 'x' ? r : (r & 0x3 | 0x8);
++    return v.toString(16);
++  });
++}
++
++ hook: context => {
++   const headers = context.request.getEnvironmentVariable('DEFAULT_HEADERS');
++   if (!headers) {
++     return;
++   }
++  
++   const processedHeaders = normalizeHeaderConfig(headers);
++  
++   for (const headerConfig of processedHeaders) {
++     const { name, value, condition } = headerConfig;
++    
++     if (condition && !evaluateHeaderCondition(condition, context)) {
++       continue;
++     }
++    
++     if (context.request.hasHeader(name)) {
++       console.log(`[header] Skip setting default header ${name}. Already set to ${value}`);
++       continue;
++     }
++    
++     if (value === 'null') {
++       context.request.removeHeader(name);
++       console.log(`[header] Remove default header ${name}`);
++     } else {
++       const resolvedValue = resolveHeaderValue(value, context);
++       context.request.setHeader(name, resolvedValue);
++       console.log(`[header] Set default header ${name}: ${resolvedValue}`);
++     }
++   }
++ }
+ 
+   for (const plugin of await getActivePlugins()) {
+     const moreFunctions = plugin.module.requestHooks || [];

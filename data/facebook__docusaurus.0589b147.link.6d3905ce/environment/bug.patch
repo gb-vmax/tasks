@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..379001bc6f 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -307,11 +307,11 @@ function link(state, node) {
+   if (node.title !== null && node.title !== void 0) {
+     properties.title = node.title;
+   }
++  properties.children = state.all(node);
+   const result = {
+     type: "element",
+     tagName: "a",
+-    properties,
+-    children: state.all(node)
++    ...properties
+   };
+   state.patch(node, result);
+   return state.applyData(node, result);

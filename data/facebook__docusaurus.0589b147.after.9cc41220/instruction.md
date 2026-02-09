@@ -2,23 +2,23 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with link parsing in markdown where links followed by a caret character (`^`) are not being processed correctly. The parser seems to be rejecting valid link syntax when a `^` appears immediately after the closing bracket.
+I'm encountering an issue with link parsing in markdown when the link is followed by a caret character (`^`). The parser seems to be rejecting valid links in this scenario, even though they should be accepted according to CommonMark spec.
 
 ### Reproduction
 
 ```markdown
-[example link](https://example.com)^
+[link text](url)^some text after
 ```
 
-When parsing the above markdown, the link is not recognized properly. The caret character after the link seems to interfere with the link tokenization.
+When parsing the above markdown, the link is not being recognized properly when followed by `^`. The parser appears to be treating this as invalid syntax.
 
 ### Expected behavior
 
-The link should be parsed correctly regardless of what character follows it. The `^` character appearing after a link should not affect the link parsing itself - the link should be recognized as valid and the caret should be treated as a separate text node.
+The link should be parsed correctly regardless of whether it's followed by a `^` character. The caret is just regular text that comes after the link and shouldn't affect link parsing.
 
 ### Additional context
 
-This appears to be related to the footnote support logic in the parser. The behavior seems inconsistent - sometimes links are parsed correctly, other times they're rejected based on what follows them.
+This seems to be related to the footnote support logic. The parser is incorrectly handling the case where a link is followed by `^` even when footnote support is not enabled or relevant to the current context.
 
 ---
 Repository: /testbed

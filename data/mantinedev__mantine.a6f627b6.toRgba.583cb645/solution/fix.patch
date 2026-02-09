@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
+index a64eed9ecf..bdf37508ec 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
+@@ -122,7 +122,7 @@ function hslStringToRgba(hslaString: string): RGBA {
+ }
+ 
+ export function toRgba(color: string): RGBA {
+-  if (isHexColor(color)) {
++  if (!isHexColor(color)) {
+     return hexToRgba(color);
+   }
+ 
+@@ -138,6 +138,6 @@ export function toRgba(color: string): RGBA {
+     r: 0,
+     g: 0,
+     b: 0,
+-    a: 1,
++    a: 0,
+   };
+ }

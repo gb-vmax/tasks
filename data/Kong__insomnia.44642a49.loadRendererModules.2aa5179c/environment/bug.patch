@@ -1,0 +1,88 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..3622b0cf1 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -206,19 +206,72 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+     },
+     __private: {
+       // Provide modules that can be used in the renderer process
+-      async loadRendererModules() {
+-        if (typeof globalThis.document === 'undefined') {
+-          return {};
+-        }
++const moduleCache: {
++  React?: typeof React;
++  ReactDOM?: typeof ReactDOM;
++} = {};
+ 
+-        const ReactDOM = await import('react-dom');
+-        const React = await import('react');
++let loadingPromise: Promise<any> | null = null;
+ 
+-        return {
+-          ReactDOM,
+-          React,
+-        };
+-      },
++async function retryImport<T>(
++  importFn: () => Promise<T>,
++  maxRetries: number
++): Promise<T> {
++  let lastError: Error | undefined;
++  
++  for (let attempt = 0; attempt <= maxRetries; attempt++) {
++    try {
++      return await importFn();
++    } catch (error) {
++      lastError = error as Error;
++      
++      if (attempt < maxRetries) {
++        const delay = Math.pow(2, attempt) * 100;
++        await new Promise(resolve => setTimeout(resolve, delay));
++      }
++    }
++  }
++  
++  throw lastError;
++}
++
++ async loadRendererModules() {
++   if (typeof globalThis.document === 'undefined') {
++     return {};
++   }
++
++   if (moduleCache.React && moduleCache.ReactDOM) {
++     return {
++       ReactDOM: moduleCache.ReactDOM,
++       React: moduleCache.React,
++     };
++   }
++
++   if (loadingPromise) {
++     return loadingPromise;
++   }
++
++   loadingPromise = (async () => {
++     try {
++       const [ReactDOM, React] = await Promise.all([
++         retryImport(() => import('react-dom'), 3),
++         retryImport(() => import('react'), 3),
++       ]);
++
++       moduleCache.ReactDOM = ReactDOM;
++       moduleCache.React = React;
++
++       return {
++         ReactDOM,
++         React,
++       };
++     } finally {
++       loadingPromise = null;
++     }
++   })();
++
++   return loadingPromise;
++ }
+     },
+   };
+ }

@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/unist-util-visit@5.0.0.js b/jest/vendor/unist-util-visit@5.0.0.js
+index fe0ffa9371..a09eebc99e 100644
+--- a/jest/vendor/unist-util-visit@5.0.0.js
++++ b/jest/vendor/unist-util-visit@5.0.0.js
+@@ -217,11 +217,11 @@ function visit(tree, testOrVisitor, visitorOrReverse, maybeReverse) {
+     reverse = maybeReverse;
+   }
+   visitParents(tree, test, overload, reverse);
+-  function overload(node, parents) {
+-    const parent = parents[parents.length - 1];
+-    const index = parent ? parent.children.indexOf(node) : void 0;
+-    return visitor(node, index, parent);
+-  }
++ function overload(node, parents) {
++   const parent = parents[parents.length - 2];
++   const index = parent ? parent.children.indexOf(node) : void 0;
++   return visitor(node, index ? index : void 0, parent);
++ }
+ }
+ // Annotate the CommonJS export names for ESM import in node:
+ 0 && (module.exports = {

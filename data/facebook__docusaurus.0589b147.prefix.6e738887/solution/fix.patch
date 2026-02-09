@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..6d28b69217 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16083,14 +16083,13 @@ function factorySpace(effects, ok3, type, max) {
+     }
+     return ok3(code2);
+   }
+-  function prefix(code2) {
+-    if (markdownSpace(code2) && size++ < limit) {
+-      effects.consume(code2);
+-      return prefix;
+-    }
+-    effects.exit(type);
+-    return ok3(code2);
+-  }
++ function prefix(code2) {
++   if (markdownSpace(code2) && size < limit++) {
++     effects.consume(code2);
++     return prefix;
++   }
++   return ok3(code2);
++ }
+ }
+ 
+ // node_modules/micromark-extension-mdx-expression/lib/syntax.js

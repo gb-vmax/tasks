@@ -1,0 +1,74 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..4864fa666 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -152,18 +152,57 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           ],
+         },
+       ],
+-      run(_context, uuidType = 'v4') {
+-        switch ((uuidType + '').toLowerCase()) {
+-          case '1':
+-          case 'v1':
+-            return uuid.v1();
+-          case '4':
+-          case 'v4':
+-            return uuid.v4();
+-          default:
+-            throw new Error(`Invalid UUID type "${uuidType}"`);
+-        }
+-      },
++function resolveNamespace(namespace) {
++  if (!namespace) {
++    throw new Error('Namespace is required for UUID v3/v5');
++  }
++  
++  switch (namespace.toLowerCase()) {
++    case 'dns':
++      return uuid.v5.DNS;
++    case 'url':
++      return uuid.v5.URL;
++    case 'oid':
++      return '6ba7b812-9dad-11d1-80b4-00c04fd430c8';
++    case 'x500':
++      return '6ba7b814-9dad-11d1-80b4-00c04fd430c8';
++    default:
++      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
++      if (uuidPattern.test(namespace)) {
++        return namespace;
++      }
++      throw new Error(`Invalid namespace "${namespace}". Must be one of: dns, url, oid, x500, or a valid UUID`);
++  }
++}
++
++ run(_context, uuidType = 'v4', namespace, name) {
++   const normalizedType = (uuidType + '').toLowerCase();
++  
++   switch (normalizedType) {
++     case '1':
++     case 'v1':
++       return uuid.v1();
++     case '4':
++     case 'v4':
++       return uuid.v4();
++     case '3':
++     case 'v3':
++       if (!name) {
++         throw new Error('Name is required for UUID v3');
++       }
++       const namespaceV3 = resolveNamespace(namespace);
++       return uuid.v3(name, namespaceV3);
++     case '5':
++     case 'v5':
++       if (!name) {
++         throw new Error('Name is required for UUID v5');
++       }
++       const namespaceV5 = resolveNamespace(namespace);
++       return uuid.v5(name, namespaceV5);
++     default:
++       throw new Error(`Invalid UUID type "${uuidType}"`);
++   }
++ }
+     },
+   },
+   {

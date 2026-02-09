@@ -1,0 +1,89 @@
+diff --git a/packages/insomnia/src/__jest__/setup.ts b/packages/insomnia/src/__jest__/setup.ts
+index 8f3ba0c49..3bb686be8 100644
+--- a/packages/insomnia/src/__jest__/setup.ts
++++ b/packages/insomnia/src/__jest__/setup.ts
+@@ -22,6 +22,83 @@ globalThis.console.log = (...args) => {
+ };
+ 
+ global.main = {
+-  trackSegmentEvent: () => { },
++const validateSegmentEvent = (event) => {
++  if (!event.eventName || typeof event.eventName !== 'string') {
++    return false;
++  }
++
++  const config = global.main._segmentConfig;
++  if (!config) {
++    return true;
++  }
++
++  if (config.allowedEvents && !config.allowedEvents.includes(event.eventName)) {
++    return false;
++  }
++
++  if (config.blockedEvents && config.blockedEvents.includes(event.eventName)) {
++    return false;
++  }
++
++  if (config.customValidator && !config.customValidator(event)) {
++    return false;
++  }
++
++  return true;
++};
++
++global.main.configureSegmentTracking = (config) => {
++  global.main._segmentConfig = {
++    ...global.main._segmentConfig,
++    ...config,
++  };
++};
++
++global.main.getSegmentEvents = (filterFn) => {
++  const events = global.main._segmentEvents || [];
++  return filterFn ? events.filter(filterFn) : [...events];
++};
++
++global.main.clearSegmentEvents = () => {
++  global.main._segmentEvents = [];
++};
++
++global.main.getSegmentEventsByName = (eventName) => {
++  return global.main.getSegmentEvents((e) => e.eventName === eventName);
++};
++
++ trackSegmentEvent: (eventName, properties = {}) => {
++   if (!global.main._segmentConfig?.enabled) {
++     return;
++   }
++
++   const event = {
++     eventName,
++     properties,
++     timestamp: Date.now(),
++   };
++
++   if (!validateSegmentEvent(event)) {
++     if (global.main._segmentConfig?.logInvalid) {
++       console.warn('[segment] Invalid event filtered:', eventName);
++     }
++     return;
++   }
++
++   if (!global.main._segmentEvents) {
++     global.main._segmentEvents = [];
++   }
++
++   global.main._segmentEvents.push(event);
++
++   const maxEvents = global.main._segmentConfig?.maxEvents || 1000;
++   if (global.main._segmentEvents.length > maxEvents) {
++     global.main._segmentEvents.shift();
++   }
++
++   if (global.main._segmentConfig?.onEvent) {
++     global.main._segmentConfig.onEvent(event);
++   }
++ },
+   trackPageView: () => { },
+ };

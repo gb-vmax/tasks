@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..58d3d4592 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -58,12 +58,52 @@ export function migrate(doc: CookieJar) {
+   }
+ }
+ 
++function validateAndNormalizeCookies(cookies: Cookie[]): Cookie[] {
++  return cookies.map(cookie => {
++    if (!cookie.id) {
++      cookie.id = uuidv4();
++    }
++    
++    if (!cookie.key) {
++      throw new Error(`Cookie missing required field \`key\``);
++    }
++    
++    if (cookie.domain === undefined || cookie.domain === null) {
++      throw new Error(`Cookie missing required field \`domain\``);
++    }
++    
++    if (cookie.path === undefined) {
++      cookie.path = '/';
++    }
++    
++    if (cookie.secure === undefined) {
++      cookie.secure = false;
++    }
++    
++    if (cookie.httpOnly === undefined) {
++      cookie.httpOnly = false;
++    }
++    
++    return cookie;
++  });
++}
++
+ export async function create(patch: Partial<CookieJar>) {
+   if (!patch.parentId) {
+     throw new Error(`New CookieJar missing \`parentId\`: ${JSON.stringify(patch)}`);
+   }
+ 
+-  return db.docCreate<CookieJar>(type, patch);
++  const defaults = init();
++  const normalizedPatch = {
++    ...defaults,
++    ...patch,
++  };
++
++  if (normalizedPatch.cookies && normalizedPatch.cookies.length > 0) {
++    normalizedPatch.cookies = validateAndNormalizeCookies(normalizedPatch.cookies);
++  }
++
++  return db.docCreate<CookieJar>(type, normalizedPatch);
+ }
+ 
+ export async function getOrCreateForParentId(parentId: string) {

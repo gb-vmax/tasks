@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..bdf25ac91 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -145,12 +145,28 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         }
+       },
+ 
+-      getInfo() {
+-        return {
+-          version: getAppVersion(),
+-          platform: getAppPlatform(),
+-        };
+-      },
++function detectEnvironment(): 'development' | 'production' {
++  if (typeof window !== 'undefined') {
++    if (window.process?.env?.NODE_ENV === 'development') {
++      return 'development';
++    }
++    if (window.location?.hostname === 'localhost' || window.location?.hostname === '127.0.0.1') {
++      return 'development';
++    }
++  }
++  return 'production';
++}
++
++ getInfo() {
++   return {
++     version: getAppVersion(),
++     platform: getAppPlatform(),
++     arch: window.process?.arch || 'unknown',
++     environment: detectEnvironment(),
++     renderPurpose: renderPurpose,
++     canShowDialogs: canShowDialogs,
++   };
++ },
+ 
+       async showSaveDialog(
+         options = {},

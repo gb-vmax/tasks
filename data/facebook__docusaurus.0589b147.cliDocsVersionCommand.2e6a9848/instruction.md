@@ -2,34 +2,46 @@
 
 ### Describe the bug
 
-When creating a new docs version using the CLI command, the version is being added to the end of the versions list instead of at the beginning. This breaks the expected version ordering where the newest version should appear first.
+The `docs:version` CLI command is not working as expected. When I try to create a new documentation version, it's behaving strangely in two ways:
+
+1. The new version appears at the end of the versions list instead of at the beginning
+2. The command fails when the docs folder actually contains files (which should be the normal case)
 
 ### Reproduction
 
-1. Initialize a Docusaurus site with docs plugin
-2. Create a new version using the CLI:
 ```bash
-npm run docusaurus docs:version 2.0.0
-```
-3. Check the `versions.json` file
+# Set up a docs folder with some markdown files
+mkdir -p docs
+echo "# Test" > docs/intro.md
 
-**Actual behavior:**
-The new version `2.0.0` is added at the end of the array:
+# Try to create a new version
+npm run docusaurus docs:version 1.0.0
+```
+
+This throws an error saying the docs directory is empty or doesn't exist, even though it clearly has files in it.
+
+Also, if you manage to get past that error (by having an empty docs folder somehow), the version gets added to the end of the `versions.json` array instead of the beginning. So instead of:
+
 ```json
-["1.0.0", "1.1.0", "2.0.0"]
+["1.0.0", "0.9.0"]
 ```
 
-**Expected behavior:**
-The new version should be added at the beginning:
+You get:
+
 ```json
-["2.0.0", "1.1.0", "1.0.0"]
+["0.9.0", "1.0.0"]
 ```
 
-This causes issues with version selection in the UI since Docusaurus expects versions to be ordered with the newest first.
+This breaks the expected version ordering where newer versions should appear first.
 
-### Additional context
+### Expected behavior
 
-Also noticed that the version command seems to have issues with the directory check - it's not properly validating whether the docs directory is empty before proceeding with the version creation.
+- The command should work when the docs folder contains markdown files (not when it's empty)
+- New versions should be added to the beginning of the versions array, not the end
+
+### System Info
+- Docusaurus version: latest
+- Node version: 18.x
 
 ---
 Repository: /testbed

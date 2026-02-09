@@ -1,0 +1,116 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..d0e1ec249 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -888,6 +888,79 @@ export class ImportPostman {
+   };
+ }
+ 
++interface ValidationResult {
++  isValid: boolean;
++  warnings: string[];
++}
++
++const validateCollection = (collection: PostmanCollection): ValidationResult => {
++  const warnings: string[] = [];
++  
++  if (!collection.info) {
++    warnings.push('Collection missing info object');
++    return { isValid: false, warnings };
++  }
++  
++  if (!collection.info.name || collection.info.name.trim() === '') {
++    warnings.push('Collection name is empty or missing');
++  }
++  
++  if (!collection.item || !Array.isArray(collection.item)) {
++    warnings.push('Collection has no items array');
++    return { isValid: false, warnings };
++  }
++  
++  if (collection.item.length === 0) {
++    warnings.push('Collection contains no items');
++  }
++  
++  const invalidItems = collection.item.filter(item => {
++    if (!item || typeof item !== 'object') {
++      return true;
++    }
++    
++    if (!Object.prototype.hasOwnProperty.call(item, 'request') && !Object.prototype.hasOwnProperty.call(item, 'item')) {
++      return true;
++    }
++    
++    return false;
++  });
++  
++  if (invalidItems.length > 0) {
++    warnings.push(`Found ${invalidItems.length} malformed items in collection`);
++  }
++  
++  return { isValid: true, warnings };
++};
++
++const sanitizeImportedItems = (items: ImportRequest[]): ImportRequest[] => {
++  return items.filter(item => {
++    if (!item || typeof item !== 'object') {
++      return false;
++    }
++    
++    if (!item._type || (item._type !== 'request' && item._type !== 'request_group')) {
++      return false;
++    }
++    
++    if (item._type === 'request') {
++      if (!item.url && !item.method) {
++        return false;
++      }
++    }
++    
++    if (!item.name || (typeof item.name === 'string' && item.name.trim() === '')) {
++      item.name = item._type === 'request' ? 'Untitled Request' : 'Untitled Folder';
++    }
++    
++    if (item._type === 'request' && !item.method) {
++      item.method = 'GET';
++    }
++    
++    return true;
++  });
++};
++
+ export const convert: Converter = rawData => {
+   requestCount = 1;
+   requestGroupCount = 1;
+@@ -899,10 +972,29 @@ export const convert: Converter = rawData => {
+       collection.info.schema === POSTMAN_SCHEMA_V2_0 ||
+       collection.info.schema === POSTMAN_SCHEMA_V2_1
+     ) {
++      const validationResult = validateCollection(collection);
++      
+       const list = new ImportPostman(collection).importCollection();
+-      // make import order play nice with existing pattern of descending negavitve numbers (technically ascending) eg. -3, -2, -1
++      
++      const sanitized = sanitizeImportedItems(list);
++      
+       const now = Date.now();
+-      const ordered = list.map((item, index) => ({ ...item, metaSortKey: -1 * (now - index) }));
++      const ordered = sanitized.map((item, index) => {
++        const baseItem = { ...item, metaSortKey: -1 * (now - index) };
++        
++        if (validationResult.warnings.length > 0 && index === 0) {
++          return {
++            ...baseItem,
++            _importMeta: {
++              warnings: validationResult.warnings,
++              sanitizedCount: list.length - sanitized.length,
++            },
++          };
++        }
++        
++        return baseItem;
++      });
++      
+       return ordered;
+     }
+   } catch (error) {

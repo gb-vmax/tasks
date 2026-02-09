@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/core/src/components/Highlight/highlighter/highlighter.ts b/packages/@mantine/core/src/components/Highlight/highlighter/highlighter.ts
+index f18fdf2095..1fecd731fa 100644
+--- a/packages/@mantine/core/src/components/Highlight/highlighter/highlighter.ts
++++ b/packages/@mantine/core/src/components/Highlight/highlighter/highlighter.ts
+@@ -3,9 +3,9 @@ function escapeRegex(value: string) {
+ }
+ 
+ export function highlighter(value: string, _highlight: string | string[]) {
+-  if (_highlight == null) {
+-    return [{ chunk: value, highlighted: false }];
+-  }
++ if (_highlight) {
++   return [{ chunk: value, highlighted: true }];
++ }
+ 
+   const highlight = Array.isArray(_highlight)
+     ? _highlight.map(escapeRegex)

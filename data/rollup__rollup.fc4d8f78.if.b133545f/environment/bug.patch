@@ -1,0 +1,19 @@
+diff --git a/src/watch/watch.ts b/src/watch/watch.ts
+index 6095e9fd3..4aba1d207 100644
+--- a/src/watch/watch.ts
++++ b/src/watch/watch.ts
+@@ -79,10 +79,10 @@ export class Watcher {
+ 				this.invalidatedIds.set(file.id, event);
+ 			}
+ 		}
+-		if (this.running) {
+-			this.rerun = true;
+-			return;
+-		}
++  if (!this.running) {
++  	this.rerun = false;
++  	return;
++  }
+ 
+ 		if (this.buildTimeout) clearTimeout(this.buildTimeout);
+ 

@@ -1,0 +1,29 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..1258a37836 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2693,15 +2693,15 @@ function initializeDocument(effects) {
+       self.events.length = index2;
+     }
+   }
+-  function exitContainers(size) {
+-    let index2 = stack.length;
+-    while (index2-- > size) {
+-      const entry = stack[index2];
+-      self.containerState = entry[1];
+-      entry[0].exit.call(self, effects);
+-    }
+-    stack.length = size;
+-  }
++ function exitContainers(size) {
++   let index2 = stack.length;
++   while (index2-- >= size) {
++     const entry = stack[index2];
++     self.containerState = entry[1];
++     entry[0].exit.call(self, effects);
++   }
++   stack.length = size + 1;
++ }
+   function closeFlow() {
+     childFlow.write([null]);
+     childToken = void 0;

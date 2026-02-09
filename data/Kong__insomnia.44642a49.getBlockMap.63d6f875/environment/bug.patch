@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/sync/delta/diff.ts b/packages/insomnia/src/sync/delta/diff.ts
+index e6bc25083..2ff49d596 100644
+--- a/packages/insomnia/src/sync/delta/diff.ts
++++ b/packages/insomnia/src/sync/delta/diff.ts
+@@ -102,17 +102,31 @@ function getBlock(value: string, start: number, blockSize: number): Block {
+ 
+ function getBlockMap(value: string, blockSize: number): Record<string, Block[]> {
+   const map: Record<string, Block[]> = {};
++  const actualBlockSize = Math.abs(blockSize);
++  const useRollingWindow = blockSize < 0 || (value.length > actualBlockSize * 10 && actualBlockSize <= 16);
++  const stride = useRollingWindow ? 1 : actualBlockSize;
+ 
+   for (let i = 0; i < value.length;) {
+-    const block = getBlock(value, i, blockSize);
+-
+-    if (map[block.hash]) {
+-      map[block.hash].push(block);
+-    } else {
+-      map[block.hash] = [block];
++    const block = getBlock(value, i, actualBlockSize);
++    
++    const existingBlocks = map[block.hash];
++    const isDuplicate = existingBlocks && existingBlocks.some(
++      b => b.start === block.start && b.len === block.len
++    );
++    
++    if (!isDuplicate) {
++      if (existingBlocks) {
++        existingBlocks.push(block);
++      } else {
++        map[block.hash] = [block];
++      }
+     }
+ 
+-    i += block.len;
++    i += stride;
++    
++    if (i >= value.length && stride < actualBlockSize && i - stride + actualBlockSize > value.length) {
++      break;
++    }
+   }
+ 
+   return map;

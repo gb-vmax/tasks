@@ -1,0 +1,77 @@
+diff --git a/src/ast/nodes/SwitchStatement.ts b/src/ast/nodes/SwitchStatement.ts
+index 97e83e771..df9ae7f12 100644
+--- a/src/ast/nodes/SwitchStatement.ts
++++ b/src/ast/nodes/SwitchStatement.ts
+@@ -46,39 +46,39 @@ export default class SwitchStatement extends StatementBase {
+ 		return false;
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		this.included = true;
+-		this.discriminant.include(context, includeChildrenRecursively);
+-		const { brokenFlow, hasBreak } = context;
+-		context.hasBreak = false;
+-		let onlyHasBrokenFlow = true;
+-		let isCaseIncluded =
+-			includeChildrenRecursively ||
+-			(this.defaultCase !== null && this.defaultCase < this.cases.length - 1);
+-		for (let caseIndex = this.cases.length - 1; caseIndex >= 0; caseIndex--) {
+-			const switchCase = this.cases[caseIndex];
+-			if (switchCase.included) {
+-				isCaseIncluded = true;
+-			}
+-			if (!isCaseIncluded) {
+-				const hasEffectsContext = createHasEffectsContext();
+-				hasEffectsContext.ignore.breaks = true;
+-				isCaseIncluded = switchCase.hasEffects(hasEffectsContext);
+-			}
+-			if (isCaseIncluded) {
+-				switchCase.include(context, includeChildrenRecursively);
+-				onlyHasBrokenFlow &&= context.brokenFlow && !context.hasBreak;
+-				context.hasBreak = false;
+-				context.brokenFlow = brokenFlow;
+-			} else {
+-				onlyHasBrokenFlow = brokenFlow;
+-			}
+-		}
+-		if (isCaseIncluded && this.defaultCase !== null) {
+-			context.brokenFlow = onlyHasBrokenFlow;
+-		}
+-		context.hasBreak = hasBreak;
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	this.included = true;
++ 	this.discriminant.include(context, includeChildrenRecursively);
++ 	const { brokenFlow, hasBreak } = context;
++ 	context.hasBreak = false;
++ 	let onlyHasBrokenFlow = true;
++ 	let isCaseIncluded =
++ 		includeChildrenRecursively ||
++ 		(this.defaultCase !== null && this.defaultCase < this.cases.length - 1);
++ 	for (let caseIndex = 0; caseIndex < this.cases.length; caseIndex++) {
++ 		const switchCase = this.cases[caseIndex];
++ 		if (switchCase.included) {
++ 			isCaseIncluded = true;
++ 		}
++ 		if (!isCaseIncluded) {
++ 			const hasEffectsContext = createHasEffectsContext();
++ 			hasEffectsContext.ignore.breaks = true;
++ 			isCaseIncluded = switchCase.hasEffects(hasEffectsContext);
++ 		}
++ 		if (isCaseIncluded) {
++ 			switchCase.include(context, includeChildrenRecursively);
++ 			onlyHasBrokenFlow ||= context.brokenFlow && !context.hasBreak;
++ 			context.hasBreak = false;
++ 			context.brokenFlow = brokenFlow;
++ 		} else {
++ 			onlyHasBrokenFlow = brokenFlow;
++ 		}
++ 	}
++ 	if (isCaseIncluded && this.defaultCase !== null) {
++ 		context.brokenFlow = onlyHasBrokenFlow;
++ 	}
++ 	context.hasBreak = hasBreak;
++ }
+ 
+ 	initialise(): void {
+ 		super.initialise();

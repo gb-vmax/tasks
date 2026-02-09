@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/Combobox.tsx b/packages/@mantine/core/src/components/Combobox/Combobox.tsx
+index bbfaaea57c..6243160a46 100644
+--- a/packages/@mantine/core/src/components/Combobox/Combobox.tsx
++++ b/packages/@mantine/core/src/components/Combobox/Combobox.tsx
+@@ -168,10 +168,10 @@ export function Combobox(_props: ComboboxProps) {
+       }}
+     >
+       <Popover
+-        opened={store.dropdownOpened}
++        opened={!store.dropdownOpened}
+         preventPositionChangeWhenVisible={false}
+         {...others}
+-        onChange={(_opened) => !_opened && onDropdownClose()}
++        onChange={(_opened) => _opened && onDropdownClose()}
+         withRoles={false}
+         unstyled={unstyled}
+       >

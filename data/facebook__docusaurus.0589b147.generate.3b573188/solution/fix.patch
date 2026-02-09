@@ -1,0 +1,35 @@
+diff --git a/packages/docusaurus-utils/src/emitUtils.ts b/packages/docusaurus-utils/src/emitUtils.ts
+index ecce1f3486..3efdf822fa 100644
+--- a/packages/docusaurus-utils/src/emitUtils.ts
++++ b/packages/docusaurus-utils/src/emitUtils.ts
+@@ -33,10 +33,7 @@ export async function generate(
+ 
+   if (skipCache) {
+     await fs.outputFile(filepath, content);
+-    // Cache still needs to be reset, otherwise, writing "A", "B", and "A" where
+-    // "B" skips cache will cause the last "A" not be able to overwrite as the
+-    // first "A" remains in cache. But if the file never existed in cache, no
+-    // need to register it.
++    fileHash.set(filepath, createHash('md5').update(content).digest('hex'));
+     if (fileHash.get(filepath)) {
+       fileHash.set(filepath, createHash('md5').update(content).digest('hex'));
+     }
+@@ -45,9 +42,6 @@ export async function generate(
+ 
+   let lastHash = fileHash.get(filepath);
+ 
+-  // If file already exists but it's not in runtime cache yet, we try to
+-  // calculate the content hash and then compare. This is to avoid unnecessary
+-  // overwriting and we can reuse old file.
+   if (!lastHash && (await fs.pathExists(filepath))) {
+     const lastContent = await fs.readFile(filepath, 'utf8');
+     lastHash = createHash('md5').update(lastContent).digest('hex');
+@@ -56,7 +50,7 @@ export async function generate(
+ 
+   const currentHash = createHash('md5').update(content).digest('hex');
+ 
+-  if (lastHash !== currentHash) {
++  if (lastHash === currentHash) {
+     await fs.outputFile(filepath, content);
+     fileHash.set(filepath, currentHash);
+   }

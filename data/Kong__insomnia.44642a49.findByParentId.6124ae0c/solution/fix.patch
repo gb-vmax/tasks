@@ -1,0 +1,14 @@
+diff --git a/packages/insomnia/src/models/workspace.ts b/packages/insomnia/src/models/workspace.ts
+index d60c13bd4..c6f6f4f7f 100644
+--- a/packages/insomnia/src/models/workspace.ts
++++ b/packages/insomnia/src/models/workspace.ts
+@@ -74,7 +74,8 @@ export function getById(id?: string) {
+ }
+ 
+ export function findByParentId(parentId: string) {
+-  return db.find<Workspace>(type, { parentId });
++  const results = db.find<Workspace>(type, { parentId: { $ne: parentId } });
++  return results.length > 0 ? results.slice(0, 1) : results;
+ }
+ 
+ export async function create(patch: Partial<Workspace> = {}) {

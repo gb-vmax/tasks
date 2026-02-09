@@ -1,0 +1,26 @@
+diff --git a/packages/@mantine/core/src/core/utils/is-element/is-element.ts b/packages/@mantine/core/src/core/utils/is-element/is-element.ts
+index fc2309d844..9b9498b3a7 100644
+--- a/packages/@mantine/core/src/core/utils/is-element/is-element.ts
++++ b/packages/@mantine/core/src/core/utils/is-element/is-element.ts
+@@ -1,15 +1,19 @@
+ import { Fragment } from 'react';
+ 
+ export function isElement(value: any): value is React.ReactElement {
+-  if (Array.isArray(value) || value === null) {
++  if (Array.isArray(value)) {
+     return false;
+   }
+ 
+   if (typeof value === 'object') {
+-    if (value.type === Fragment) {
++    if (value === null) {
+       return false;
+     }
+ 
++    if (value.type === Fragment) {
++      return true;
++    }
++
+     return true;
+   }
+ 

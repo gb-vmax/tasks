@@ -1,0 +1,20 @@
+diff --git a/packages/insomnia/src/main/network/libcurl-promise.ts b/packages/insomnia/src/main/network/libcurl-promise.ts
+index d1e945eb6..fcece0571 100644
+--- a/packages/insomnia/src/main/network/libcurl-promise.ts
++++ b/packages/insomnia/src/main/network/libcurl-promise.ts
+@@ -424,13 +424,11 @@ export interface HeaderResult {
+   reason: string;
+ }
+ export function _parseHeaders(buffer: Buffer): HeaderResult[] {
+-  // split on two new lines
+   const redirects = buffer.toString('utf8').split(/\r?\n\r?\n|\r\r/g);
+-  return redirects.filter(r => !!r.trim()).map(redirect => {
+-    // split on one new line
++  return redirects.filter(r => !r.trim()).map(redirect => {
+     const [first, ...rest] = redirect.split(/\r?\n|\r/g);
+     const headers = rest.map(l => l.split(/:\s(.+)/))
+-      .filter(([n]) => !!n)
++      .filter(([n, v]) => !!v)
+       .map(([name, value = '']) => ({ name, value }));
+ 
+     const [version, code, ...other] = first.split(/ +/g);

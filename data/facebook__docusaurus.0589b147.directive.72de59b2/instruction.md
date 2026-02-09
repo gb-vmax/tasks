@@ -2,25 +2,29 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with directive parsing where text directives are not being recognized properly. It seems like the parser configuration structure has been changed and now text-level directives (using single colon `:`) are not working as expected.
+I'm encountering an issue with remark-directive where directives are not being parsed correctly. It seems like the text and flow directives aren't working as expected after a recent change.
 
 ### Reproduction
 
-```markdown
-This is a :text-directive[with content] that should be parsed.
+When trying to use directives in markdown content, they're not being recognized or processed properly. For example:
 
-Another :directive{key=value} example.
+```markdown
+::container
+Some content here
+::
+
+:leafDirective
 ```
 
-When parsing the above markdown with remark-directive, the text directives are not being detected or transformed. The parser seems to skip over them entirely.
+The directives should be parsed and transformed, but instead they're being treated as regular text or ignored entirely.
 
 ### Expected behavior
 
-Text directives should be properly parsed and converted into directive nodes in the AST. The parser should recognize `:directive` syntax at the text level and process them accordingly.
+Directives should be properly tokenized and parsed according to the remark-directive specification. Both container directives (`::`) and leaf directives (`:`) should work correctly in flow content.
 
 ### Additional context
 
-This appears to have started recently. Block-level directives (container `:::` and leaf `::`) might still work, but inline/text directives with single colon are definitely broken.
+This appears to affect both text-level and flow-level directives. The tokenizer doesn't seem to be registering the directive handlers properly, causing the parser to skip over them.
 
 ---
 Repository: /testbed

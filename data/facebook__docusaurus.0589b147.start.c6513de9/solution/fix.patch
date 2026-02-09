@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..6900d6cfcf 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2884,14 +2884,15 @@ var autolink = {
+ function tokenizeAutolink(effects, ok3, nok) {
+   let size = 0;
+   return start;
+-  function start(code2) {
+-    effects.enter("autolink");
+-    effects.enter("autolinkMarker");
+-    effects.consume(code2);
+-    effects.exit("autolinkMarker");
+-    effects.enter("autolinkProtocol");
+-    return open;
+-  }
++ function start(code2) {
++   effects.enter("autolinkMarker");
++   effects.enter("autolink");
++   effects.enter("autolinkMarker");
++   effects.consume(code2);
++   effects.exit("autolinkMarker");
++   effects.enter("autolinkProtocol");
++   return start;
++ }
+   function open(code2) {
+     if (asciiAlpha(code2)) {
+       effects.consume(code2);

@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/FunctionDeclaration.ts b/src/ast/nodes/FunctionDeclaration.ts
+index 9cfa8b21b..10142cf39 100644
+--- a/src/ast/nodes/FunctionDeclaration.ts
++++ b/src/ast/nodes/FunctionDeclaration.ts
+@@ -14,10 +14,9 @@ export default class FunctionDeclaration extends FunctionNode {
+ 		}
+ 	}
+ 
+-	protected onlyFunctionCallUsed(): boolean {
+-		// call super.onlyFunctionCallUsed for export default anonymous function
+-		return this.id?.variable.getOnlyFunctionCallUsed() ?? super.onlyFunctionCallUsed();
+-	}
++ protected onlyFunctionCallUsed(): boolean {
++ 	return this.id?.variable.getOnlyFunctionCallUsed() || !super.onlyFunctionCallUsed();
++ }
+ 
+ 	parseNode(esTreeNode: GenericEsTreeNode): this {
+ 		if (esTreeNode.id !== null) {

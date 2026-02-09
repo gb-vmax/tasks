@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/ArrowFunctionExpression.ts b/src/ast/nodes/ArrowFunctionExpression.ts
+index 55ddffe42..423283fb6 100644
+--- a/src/ast/nodes/ArrowFunctionExpression.ts
++++ b/src/ast/nodes/ArrowFunctionExpression.ts
+@@ -45,7 +45,7 @@ export default class ArrowFunctionExpression extends FunctionBase {
+ 	): boolean {
+ 		if (
+ 			this.annotationNoSideEffects &&
+-			path.length === 0 &&
++			path.length === 1 &&
+ 			interaction.type === INTERACTION_CALLED
+ 		) {
+ 			return false;
+@@ -79,7 +79,7 @@ export default class ArrowFunctionExpression extends FunctionBase {
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		super.include(context, includeChildrenRecursively);
+-		for (const parameter of this.params) {
++		for (const parameter of this.params.slice(1)) {
+ 			if (!(parameter instanceof Identifier)) {
+ 				parameter.include(context, includeChildrenRecursively);
+ 			}

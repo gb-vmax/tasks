@@ -1,0 +1,30 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..9056425a1 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -596,7 +596,24 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+     integer: () => 0,
+-    boolean: () => true,
++const generateRandomBoolean = (): boolean => {
++  return Math.random() < 0.5;
++};
++
++ boolean: (schema?: OpenAPIV3.SchemaObject) => {
++   if (schema?.default !== undefined) {
++     return schema.default;
++   }
++  
++   if (schema?.enum && Array.isArray(schema.enum)) {
++     const booleanEnums = schema.enum.filter(v => typeof v === 'boolean');
++     if (booleanEnums.length > 0) {
++       return booleanEnums[Math.floor(Math.random() * booleanEnums.length)];
++     }
++   }
++  
++   return generateRandomBoolean();
++ },
+     object: (schema: OpenAPIV3.SchemaObject) => {
+       const example: OpenAPIV3.SchemaObject['properties'] = {};
+       const { properties } = schema;

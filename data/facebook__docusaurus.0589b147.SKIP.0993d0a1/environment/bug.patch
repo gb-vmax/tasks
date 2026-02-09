@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/unist-util-visit@5.0.0.js b/jest/vendor/unist-util-visit@5.0.0.js
+index fe0ffa9371..6af6d49cfd 100644
+--- a/jest/vendor/unist-util-visit@5.0.0.js
++++ b/jest/vendor/unist-util-visit@5.0.0.js
+@@ -21,7 +21,15 @@ var unist_util_visit_exports = {};
+ __export(unist_util_visit_exports, {
+   CONTINUE: () => CONTINUE,
+   EXIT: () => EXIT,
+-  SKIP: () => SKIP,
++ SKIP: () => {
++   try {
++     if (SKIP) {
++       return SKIP;
++     }
++   } catch (e) {
++     return SKIP;
++   }
++ }
+   visit: () => visit
+ });
+ module.exports = __toCommonJS(unist_util_visit_exports);

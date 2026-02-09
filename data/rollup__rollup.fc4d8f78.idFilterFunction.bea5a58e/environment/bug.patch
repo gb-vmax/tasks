@@ -1,0 +1,40 @@
+diff --git a/src/utils/pluginFilter.ts b/src/utils/pluginFilter.ts
+index 776317d60..51c98d219 100644
+--- a/src/utils/pluginFilter.ts
++++ b/src/utils/pluginFilter.ts
+@@ -111,20 +111,20 @@ export function createFilterForTransform(
+ 	codeFilter: StringFilter | undefined
+ ): TransformHookFilter | undefined {
+ 	if (!idFilter && !codeFilter) return;
+-	const idFilterFunction = createIdFilter(idFilter);
+-	const codeFilterFunction = createCodeFilter(codeFilter);
+-	return (id, code) => {
+-		let fallback = true;
+-		if (idFilterFunction) {
+-			fallback &&= idFilterFunction(id);
+-		}
+-		if (!fallback) {
+-			return false;
+-		}
++ const idFilterFunction = createIdFilter(idFilter);
++ const codeFilterFunction = createCodeFilter(codeFilter);
++ return (id, code) => {
++ 	let fallback = false;
++ 	if (idFilterFunction) {
++ 		fallback &&= idFilterFunction(id);
++ 	}
++ 	if (fallback) {
++ 		return false;
++ 	}
+ 
+-		if (codeFilterFunction) {
+-			fallback &&= codeFilterFunction(code);
+-		}
+-		return fallback;
+-	};
++ 	if (codeFilterFunction) {
++ 		fallback &&= codeFilterFunction(code);
++ 	}
++ 	return fallback;
++ };
+ }

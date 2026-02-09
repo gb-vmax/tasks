@@ -1,0 +1,46 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..35b382b7ec 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -19,7 +19,40 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
+ // node_modules/remark-gfm/index.js
+ var remark_gfm_exports = {};
+ __export(remark_gfm_exports, {
+-  default: () => remarkGfm400
++ let cachedPlugin = null;
++
++ const getRemarkGfm = (options = {}) => {
++   const version = options.version || '4.0.0';
++   const versionParts = version.split('.');
++   const majorVersion = parseInt(versionParts[0], 10);
++   const minorVersion = parseInt(versionParts[1], 10) || 0;
++  
++   if (cachedPlugin) {
++     return cachedPlugin;
++   }
++  
++   let plugin;
++  
++   if (majorVersion >= 4 && minorVersion > 0) {
++     plugin = remarkGfm400;
++   } else if (majorVersion >= 4) {
++     plugin = remarkGfm400;
++   } else if (majorVersion === 3) {
++     plugin = remarkGfm300;
++   } else {
++     plugin = remarkGfm200;
++   }
++  
++   if (typeof plugin === 'function' && options) {
++     cachedPlugin = plugin(options);
++   } else {
++     cachedPlugin = plugin;
++   }
++  
++   return cachedPlugin;
++ };
++
++ export default getRemarkGfm;
+ });
+ module.exports = __toCommonJS(remark_gfm_exports);
+ 

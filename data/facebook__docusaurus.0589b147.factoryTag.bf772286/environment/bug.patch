@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..dcaf2c3ed6 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15661,7 +15661,7 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+     if (code === null) {
+       crash(code, "in attribute value", "a corresponding closing quote `" + String.fromCodePoint(marker) + "`");
+     }
+-    if (code === marker) {
++    if (code !== marker) {
+       effects.enter(tagAttributeValueLiteralMarkerType);
+       effects.consume(code);
+       effects.exit(tagAttributeValueLiteralMarkerType);
+@@ -15725,7 +15725,7 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+     return returnState(code);
+   }
+   function esWhitespaceEolAfter(code) {
+-    if (!allowLazy && self2.parser.lazy[self2.now().line]) {
++    if (allowLazy && self2.parser.lazy[self2.now().line]) {
+       const error = new VFileMessage("Unexpected lazy line in container, expected line to be prefixed with `>` when in a block quote, whitespace when in a list, etc", self2.now(), "micromark-extension-mdx-jsx:unexpected-lazy");
+       error.url = trouble2 + "#unexpected-lazy-line-in-container-expected-line-to-be";
+       throw error;

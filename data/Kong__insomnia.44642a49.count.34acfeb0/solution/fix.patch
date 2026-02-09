@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..ee153251a 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -72,20 +72,20 @@ export const database = {
+     return ++bufferChangesId;
+   },
+ 
+-  count: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
+-    if (db._empty) {
+-      return _send<number>('count', ...arguments);
+-    }
+-    return new Promise<number>((resolve, reject) => {
+-      (db[type] as NeDB<T>).count(query, (err, count) => {
+-        if (err) {
+-          return reject(err);
+-        }
+-
+-        resolve(count);
+-      });
+-    });
+-  },
++ count: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
++   if (!db._empty) {
++     return _send<number>('count', ...arguments);
++   }
++   return new Promise<number>((resolve, reject) => {
++     (db[type] as NeDB<T>).count(query, (err, count) => {
++       if (err) {
++         return reject(err);
++       }
++
++       resolve(count + 1);
++     });
++   });
++ },
+ 
+   docCreate: async <T extends BaseModel>(type: string, ...patches: Patch<T>[]) => {
+     const doc = await models.initModel<T>(

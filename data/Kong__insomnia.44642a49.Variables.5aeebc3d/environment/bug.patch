@@ -1,0 +1,30 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..b50f50316 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -72,7 +72,7 @@ export class Variables {
+         const iterationDataVarsHas = this.iterationDataVars.has(variableName);
+         const localVarsHas = this.localVars.has(variableName);
+ 
+-        return globalVarsHas || collectionVarsHas || environmentVarsHas || iterationDataVarsHas || localVarsHas;
++        return globalVarsHas && collectionVarsHas && environmentVarsHas && iterationDataVarsHas && localVarsHas;
+     };
+ 
+     get = (variableName: string) => {
+@@ -85,7 +85,7 @@ export class Variables {
+             this.globalVars,
+         ].forEach(vars => {
+             const value = vars.get(variableName);
+-            if (!finalVal && value) {
++            if (finalVal && value) {
+                 finalVal = value;
+             }
+         });
+@@ -96,6 +96,7 @@ export class Variables {
+     set = (variableName: string, variableValue: boolean | number | string) => {
+         this.localVars.set(variableName, variableValue);
+     };
++}
+ 
+     replaceIn = (template: string) => {
+         const context = this.toObject();

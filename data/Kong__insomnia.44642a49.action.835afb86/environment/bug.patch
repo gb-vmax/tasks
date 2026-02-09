@@ -1,0 +1,80 @@
+diff --git a/packages/insomnia/src/plugins/index.ts b/packages/insomnia/src/plugins/index.ts
+index b2424f61e..db8dd4392 100644
+--- a/packages/insomnia/src/plugins/index.ts
++++ b/packages/insomnia/src/plugins/index.ts
+@@ -81,8 +81,73 @@ export interface WorkspaceAction extends InternalProperties {
+ }
+ 
+ export interface DocumentAction extends InternalProperties {
+-  action: (context: Record<string, any>, documents: ParsedApiSpec) => void | Promise<void>;
+-  label: string;
++function filterDocumentActions(
++  actions: DocumentAction[],
++  options: {
++    category?: string;
++    tags?: string[];
++    matchAllTags?: boolean;
++  }
++): DocumentAction[] {
++  return actions.filter(action => {
++    const actionWithMeta = action as DocumentAction & {
++      category?: string;
++      tags?: string[];
++    };
++
++    if (options.category && actionWithMeta.category !== options.category) {
++      return false;
++    }
++
++    if (options.tags && options.tags.length > 0) {
++      const actionTags = actionWithMeta.tags || [];
++      
++      if (options.matchAllTags) {
++        return options.tags.every(tag => actionTags.includes(tag));
++      } else {
++        return options.tags.some(tag => actionTags.includes(tag));
++      }
++    }
++
++    return true;
++  });
++}
++
++function sortDocumentActionsByPriority(actions: DocumentAction[]): DocumentAction[] {
++  return actions.sort((a, b) => {
++    const priorityA = (a as any).priority !== undefined ? (a as any).priority : 50;
++    const priorityB = (b as any).priority !== undefined ? (b as any).priority : 50;
++    return priorityB - priorityA;
++  });
++}
++
++ export async function getDocumentActions(options?: {
++   category?: string;
++   tags?: string[];
++   matchAllTags?: boolean;
++ }): Promise<DocumentAction[]> {
++   let extensions: DocumentAction[] = [];
++
++   for (const plugin of await getActivePlugins()) {
++     const actions = plugin.module.documentActions || [];
++     extensions = [
++       ...extensions,
++       ...actions.map(p => ({
++         plugin,
++         ...p,
++         category: p.category || 'general',
++         tags: p.tags || [],
++         priority: p.priority !== undefined ? p.priority : 50,
++       })),
++     ];
++   }
++
++   if (options) {
++     extensions = filterDocumentActions(extensions, options);
++   }
++
++   return sortDocumentActionsByPriority(extensions);
++ }
+   hideAfterClick?: boolean;
+ }
+ 

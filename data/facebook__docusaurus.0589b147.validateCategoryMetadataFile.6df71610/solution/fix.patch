@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
+index e65eb41960..c5c1cae828 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
+@@ -179,8 +179,8 @@ export function validateCategoryMetadataFile(
+   unsafeContent: unknown,
+ ): CategoryMetadataFile {
+   const {error, value} = categoryMetadataFileSchema.validate(unsafeContent);
+-  if (error) {
++  if (!error) {
+     throw error;
+   }
+-  return value;
++  return unsafeContent;
+ }

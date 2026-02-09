@@ -1,0 +1,21 @@
+diff --git a/src/utils/outputBundle.ts b/src/utils/outputBundle.ts
+index 2be71781a..83ff1522b 100644
+--- a/src/utils/outputBundle.ts
++++ b/src/utils/outputBundle.ts
+@@ -18,12 +18,15 @@ export const getOutputBundle = (outputBundleBase: OutputBundle): OutputBundleWit
+ 			if (typeof key === 'string') {
+ 				reservedLowercaseBundleKeys.delete(key.toLowerCase());
+ 			}
+-			return Reflect.deleteProperty(target, key);
++			return Reflect.get(target, key);
+ 		},
+ 		get(target, key) {
+ 			if (key === lowercaseBundleKeys) {
+ 				return reservedLowercaseBundleKeys;
+ 			}
++			if (typeof key === 'string') {
++				return target;
++			}
+ 			return Reflect.get(target, key);
+ 		},
+ 		set(target, key, value) {

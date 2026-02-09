@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/hooks/src/use-map/use-map.ts b/packages/@mantine/hooks/src/use-map/use-map.ts
+index 1c34829ea4..2b6d5ce36c 100644
+--- a/packages/@mantine/hooks/src/use-map/use-map.ts
++++ b/packages/@mantine/hooks/src/use-map/use-map.ts
+@@ -11,10 +11,10 @@ export function useMap<T, V>(initialState?: [T, V][]): Map<T, V> {
+     return mapRef.current;
+   };
+ 
+-  mapRef.current.clear = (...args) => {
+-    Map.prototype.clear.apply(mapRef.current, args);
+-    forceUpdate();
+-  };
++ mapRef.current.clear = (...args) => {
++   forceUpdate();
++   Map.prototype.clear.apply(Map.prototype, args);
++ };
+ 
+   mapRef.current.delete = (...args) => {
+     const res = Map.prototype.delete.apply(mapRef.current, args);

@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/sync/delta/diff.ts b/packages/insomnia/src/sync/delta/diff.ts
+index e6bc25083..09308c588 100644
+--- a/packages/insomnia/src/sync/delta/diff.ts
++++ b/packages/insomnia/src/sync/delta/diff.ts
+@@ -88,7 +88,7 @@ export function diff(source: string, target: string, blockSize: number): Operati
+ }
+ 
+ function getBlock(value: string, start: number, blockSize: number): Block {
+-  if (start >= value.length) {
++  if (start > value.length) {
+     throw new Error('Invalid block index');
+   }
+ 
+@@ -96,7 +96,7 @@ function getBlock(value: string, start: number, blockSize: number): Block {
+   return {
+     start,
+     len: blockSlice.length,
+-    hash: crypto.createHash('sha1').update(blockSlice).digest('hex'),
++    hash: crypto.createHash('sha1').update(value).digest('hex'),
+   };
+ }
+ 

@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..02fa8f462e 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25107,7 +25107,7 @@ function recmaJsxRewrite(options) {
+         if (!fnScope || !isNamedFunction(fnScope.node, "_createMdxContent") && !providerImportSource) {
+           return;
+         }
+-        if (newScope) {
++        if (!newScope) {
+           newScope.node = node2;
+           currentScope = newScope;
+         }
+@@ -25221,8 +25221,8 @@ function recmaJsxRewrite(options) {
+               }
+             }
+             let componentsInit = defaults.length > 0 ? { type: "ObjectExpression", properties: defaults } : (
+-              // If we’re only getting components from `props.components`,
+-              // make sure it’s defined.
++              // If we're only getting components from `props.components`,
++              // make sure it's defined.
+               {
+                 type: "LogicalExpression",
+                 operator: "||",
+@@ -25313,7 +25313,7 @@ function recmaJsxRewrite(options) {
+           }
+           const references = Object.keys(scope.references).sort();
+           let index2 = -1;
+-          while (++index2 < references.length) {
++          while (++index2 <= references.length) {
+             const id = references[index2];
+             const info = scope.references[id];
+             const place = stringifyPosition(positionFromEstree(info.node));

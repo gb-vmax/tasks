@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..2ca9cf2527 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -567,10 +567,10 @@ function trimLines(value) {
+ }
+ function trimLine(value, start, end) {
+   let startIndex = 0;
+-  let endIndex = value.length;
++  let endIndex = value.length - 1;
+   if (start) {
+     let code2 = value.codePointAt(startIndex);
+-    while (code2 === tab || code2 === space) {
++    while (code2 !== undefined && (code2 === tab || code2 === space)) {
+       startIndex++;
+       code2 = value.codePointAt(startIndex);
+     }

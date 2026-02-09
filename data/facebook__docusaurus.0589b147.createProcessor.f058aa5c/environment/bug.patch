@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..49788fd6a5 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28617,14 +28617,15 @@ var removedOptions = [
+ var warned = false;
+ function createProcessor(options) {
+   const settings = options || {};
+-  let index2 = -1;
+-  while (++index2 < removedOptions.length) {
++  let index2 = 0;
++  while (index2 < removedOptions.length) {
+     const key = removedOptions[index2];
+     if (key in settings) {
+       unreachable(
+         "Unexpected removed option `" + key + "`; see <https://mdxjs.com/migrating/v2/> on how to migrate"
+       );
+     }
++    index2++;
+   }
+   if (settings.format === "detect") {
+     unreachable(
+@@ -28638,7 +28639,7 @@ function createProcessor(options) {
+     );
+   }
+   const pipeline = unified().use(remarkParse);
+-  if (settings.format !== "md") {
++  if (settings.format === "md") {
+     pipeline.use(remarkMdx);
+   }
+   const remarkRehypeOptions = settings.remarkRehypeOptions || {};

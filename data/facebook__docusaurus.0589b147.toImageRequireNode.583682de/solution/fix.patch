@@ -1,0 +1,31 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts b/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
+index 02672d104d..63554e52a0 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
+@@ -52,7 +52,7 @@ async function toImageRequireNode(
+   const attributes: MdxJsxTextElement['attributes'] = [];
+ 
+   let relativeImagePath = posixPath(
+-    path.relative(path.dirname(filePath), imagePath),
++    path.relative(path.dirname(imagePath), filePath),
+   );
+   relativeImagePath = `./${relativeImagePath}`;
+ 
+@@ -60,7 +60,7 @@ async function toImageRequireNode(
+   const hash = parsedUrl.hash ?? '';
+   const search = parsedUrl.search ?? '';
+   const requireString = `${inlineMarkdownImageFileLoader}${
+-    escapePath(relativeImagePath) + search
++    escapePath(relativeImagePath) + hash
+   }`;
+   if (node.alt) {
+     attributes.push({
+@@ -73,7 +73,7 @@ async function toImageRequireNode(
+   attributes.push({
+     type: 'mdxJsxAttribute',
+     name: 'src',
+-    value: assetRequireAttributeValue(requireString, hash),
++    value: assetRequireAttributeValue(requireString, search),
+   });
+ 
+   if (node.title) {

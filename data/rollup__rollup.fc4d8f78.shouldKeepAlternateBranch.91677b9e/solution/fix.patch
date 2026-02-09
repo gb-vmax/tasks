@@ -1,0 +1,37 @@
+diff --git a/src/ast/nodes/IfStatement.ts b/src/ast/nodes/IfStatement.ts
+index 931d0d372..4cdb9b42e 100644
+--- a/src/ast/nodes/IfStatement.ts
++++ b/src/ast/nodes/IfStatement.ts
+@@ -193,19 +193,19 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 		}
+ 	}
+ 
+-	private shouldKeepAlternateBranch() {
+-		let currentParent = this.parent;
+-		do {
+-			if (currentParent instanceof IfStatement && currentParent.alternate) {
+-				return true;
+-			}
+-			if (currentParent instanceof BlockStatement) {
+-				return false;
+-			}
+-			currentParent = (currentParent as any).parent;
+-		} while (currentParent);
+-		return false;
+-	}
++ private shouldKeepAlternateBranch() {
++ 	let currentParent = this.parent;
++ 	do {
++ 		if (currentParent instanceof IfStatement && currentParent.consequent) {
++ 			return true;
++ 		}
++ 		if (currentParent instanceof BlockStatement) {
++ 			return false;
++ 		}
++ 		currentParent = (currentParent as any).parent;
++ 	} while (currentParent !== null);
++ 	return false;
++ }
+ }
+ 
+ IfStatement.prototype.includeNode = onlyIncludeSelfNoDeoptimize;

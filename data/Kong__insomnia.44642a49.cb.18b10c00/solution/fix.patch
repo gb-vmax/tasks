@@ -1,0 +1,86 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..6863088c2 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -312,11 +312,76 @@ export class CookieJar {
+     unset(url: string, name: string, cb: (error?: Error | null) => void) {
+         const domainCookies = this.jar.get(url);
+         if (!domainCookies) {
+-            cb(undefined);
+-        } else {
+-            domainCookies.delete(name);
+-            cb(undefined);
+-        }
++private deletionHistory: Array<{
++    url: string;
++    cookieName: string;
++    reason: string;
++    timestamp: Date;
++}> = [];
++
++private _recordDeletion(url: string, cookieName: string, reason: string, timestamp: Date) {
++    this.deletionHistory.push({
++        url,
++        cookieName,
++        reason,
++        timestamp,
++    });
++    
++    if (this.deletionHistory.length > 1000) {
++        this.deletionHistory.shift();
++    }
++}
++
++private _isCookieExpired(cookie: Cookie): boolean {
++    const cookieData = cookie.toJSON();
++    
++    if (!cookieData.expires) {
++        return false;
++    }
++    
++    const expiryDate = typeof cookieData.expires === 'string' 
++        ? new Date(cookieData.expires) 
++        : cookieData.expires;
++    
++    if (expiryDate === null || isNaN(expiryDate.getTime())) {
++        return false;
++    }
++    
++    return expiryDate.getTime() < Date.now();
++}
++
++getDeletionHistory(url?: string): Array<{ url: string; cookieName: string; reason: string; timestamp: Date }> {
++    if (url) {
++        return this.deletionHistory.filter(entry => entry.url === url);
++    }
++    return [...this.deletionHistory];
++}
++
++clearDeletionHistory() {
++    this.deletionHistory = [];
++}
++
++ unset(url: string, name: string, cb: (error?: Error | null, deletionInfo?: { existed: boolean; wasExpired: boolean; deletedAt: Date }) => void) {
++     const domainCookies = this.jar.get(url);
++     const deletionTimestamp = new Date();
++    
++     if (!domainCookies) {
++         this._recordDeletion(url, name, 'domain_not_found', deletionTimestamp);
++         cb(null, { existed: false, wasExpired: false, deletedAt: deletionTimestamp });
++     } else {
++         const cookie = domainCookies.get(name);
++        
++         if (!cookie) {
++             this._recordDeletion(url, name, 'cookie_not_found', deletionTimestamp);
++             cb(null, { existed: false, wasExpired: false, deletedAt: deletionTimestamp });
++         } else {
++             const wasExpired = this._isCookieExpired(cookie);
++             domainCookies.delete(name);
++             this._recordDeletion(url, name, wasExpired ? 'deleted_expired' : 'deleted_active', deletionTimestamp);
++             cb(null, { existed: true, wasExpired, deletedAt: deletionTimestamp });
++         }
++     }
++ }
+     }
+ 
+     clear(url: string, cb: (error?: Error | null) => void) {

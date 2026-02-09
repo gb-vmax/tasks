@@ -1,0 +1,41 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..8c975855f 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -34,7 +34,35 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,
+-  message: () => 'message',
++function simpleHash(str: string): number {
++  let hash = 0;
++  for (let i = 0; i < str.length; i++) {
++    const char = str.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  return Math.abs(hash);
++}
++
++ message: function() {
++   const templates = [
++     'Merge conflict in {name}: both branches modified the same content',
++     'Cannot auto-merge {name}: manual resolution required',
++     'Conflict detected in {name}: conflicting changes need review',
++     'Both modified: {name} has incompatible changes',
++     '{name}: content diverged between branches',
++     'Manual merge needed for {name}: overlapping modifications',
++   ];
++  
++   const conflict = this as Partial<MergeConflict>;
++   const name = conflict.name || 'file';
++   const key = conflict.key || 'key';
++  
++   const hash = simpleHash(key);
++   const template = templates[hash % templates.length];
++  
++   return template.replace('{name}', name);
++ }
+   name: () => 'name',
+ };
+ 

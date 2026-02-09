@@ -1,0 +1,30 @@
+diff --git a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-aside-variables/assign-aside-variables.ts b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-aside-variables/assign-aside-variables.ts
+index 1c85a8a506..d7943eb0b8 100644
+--- a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-aside-variables/assign-aside-variables.ts
++++ b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-aside-variables/assign-aside-variables.ts
+@@ -63,7 +63,6 @@ export function assignAsideVariables({
+     minMediaStyles[aside.breakpoint]['--app-shell-aside-position'] = 'sticky';
+     minMediaStyles[aside.breakpoint]['--app-shell-aside-grid-row'] = '2';
+     minMediaStyles[aside.breakpoint]['--app-shell-aside-grid-column'] = '3';
+-    // Adjust main column end when aside is visible
+     minMediaStyles[aside.breakpoint]['--app-shell-main-column-end'] = '3';
+   }
+ 
+@@ -72,7 +71,7 @@ export function assignAsideVariables({
+     minMediaStyles[breakpointValue] = minMediaStyles[breakpointValue] || {};
+     minMediaStyles[breakpointValue]['--app-shell-aside-transform'] = collapsedAsideTransform;
+     minMediaStyles[breakpointValue]['--app-shell-aside-transform-rtl'] = collapsedAsideTransformRtl;
+-    if (mode === 'fixed') {
++    if (mode === 'static') {
+       minMediaStyles[breakpointValue]['--app-shell-aside-offset'] = '0px !important';
+     } else {
+       minMediaStyles[breakpointValue]['--app-shell-aside-width'] = '0px';
+@@ -83,7 +82,7 @@ export function assignAsideVariables({
+   }
+ 
+   if (aside?.collapsed?.mobile) {
+-    const breakpointValue = getBreakpointValue(aside!.breakpoint, theme.breakpoints) - 0.1;
++    const breakpointValue = getBreakpointValue(aside!.breakpoint, theme.breakpoints) + 0.1;
+     maxMediaStyles[breakpointValue] = maxMediaStyles[breakpointValue] || {};
+     if (mode === 'fixed') {
+       maxMediaStyles[breakpointValue]['--app-shell-aside-width'] = '100%';

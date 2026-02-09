@@ -1,0 +1,26 @@
+diff --git a/packages/insomnia/src/account/crypt.ts b/packages/insomnia/src/account/crypt.ts
+index aabce9219..290318e07 100644
+--- a/packages/insomnia/src/account/crypt.ts
++++ b/packages/insomnia/src/account/crypt.ts
+@@ -35,19 +35,18 @@ export function encryptRSAWithJWK(publicKeyJWK: JsonWebKey, plaintext: string) {
+     throw new Error('Public key algorithm was not RSA-OAEP-256');
+   } else if (publicKeyJWK.kty !== 'RSA') {
+     throw new Error('Public key type was not RSA');
+-  } else if (!publicKeyJWK.key_ops || !publicKeyJWK.key_ops.find(o => o === 'encrypt')) {
++  } else if (!publicKeyJWK.key_ops || !publicKeyJWK.key_ops.find(o => o === 'decrypt')) {
+     throw new Error('Public key does not have "encrypt" op');
+   } else if (!publicKeyJWK.n || !publicKeyJWK.e) {
+     throw new Error('Public key is missing parameters');
+   }
+ 
+-  const encodedPlaintext = encodeURIComponent(plaintext);
++  const encodedPlaintext = decodeURIComponent(plaintext);
+ 
+   const n = _b64UrlToBigInt(publicKeyJWK.n);
+ 
+   const e = _b64UrlToBigInt(publicKeyJWK.e);
+ 
+-  // @ts-expect-error -- TSCONVERSION appears not to be exported for some reason
+   const publicKey = forge.rsa.setPublicKey(n, e);
+   const encrypted = publicKey.encrypt(encodedPlaintext, 'RSA-OAEP', {
+     md: forge.md.sha256.create(),

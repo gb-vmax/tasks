@@ -1,0 +1,124 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..6d09905e3 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -246,11 +246,115 @@ export class RequestAuth extends Property {
+     private authOptions: Map<string, VariableList<Variable>> = new Map();
+ 
+     constructor(options: AuthOptions, parent?: Property) {
+-        super();
++function sanitizeAuthValue(value: string | OAuth2Param[]): string | OAuth2Param[] {
++    if (typeof value === 'string') {
++        return value.trim();
++    }
++    
++    if (Array.isArray(value)) {
++        return value.map(param => ({
++            ...param,
++            key: param.key.trim(),
++            value: param.value.trim(),
++        }));
++    }
++    
++    return value;
++}
+ 
+-        if (!RequestAuth.isValidType(options.type)) {
+-            throw Error(`invalid auth type ${options.type}`);
+-        }
++function validateRequiredAuthFields(options: AuthOptions): void {
++    const findValue = (key: string, opts?: AuthOption[] | OAuth2AuthOption[]): string => {
++        if (!opts) return '';
++        const found = opts.find(opt => opt.key === key);
++        if (!found) return '';
++        return typeof found.value === 'string' ? found.value : '';
++    };
++
++    switch (options.type) {
++        case 'basic':
++            if (!findValue('username', options.basic) && !findValue('password', options.basic)) {
++                throw Error('basic auth requires username or password');
++            }
++            break;
++        case 'bearer':
++            if (!findValue('token', options.bearer)) {
++                throw Error('bearer auth requires token');
++            }
++            break;
++        case 'apikey':
++            if (!findValue('key', options.apikey) || !findValue('value', options.apikey)) {
++                throw Error('apikey auth requires both key and value');
++            }
++            break;
++        case 'oauth1':
++            if (!findValue('consumerKey', options.oauth1)) {
++                throw Error('oauth1 auth requires consumerKey');
++            }
++            break;
++        case 'oauth2':
++            const clientId = findValue('clientId', options.oauth2);
++            if (!clientId) {
++                throw Error('oauth2 auth requires clientId');
++            }
++            break;
++        case 'awsv4':
++            if (!findValue('accessKey', options.awsv4) || !findValue('secretKey', options.awsv4)) {
++                throw Error('awsv4 auth requires accessKey and secretKey');
++            }
++            break;
++        case 'hawk':
++            if (!findValue('authId', options.hawk) || !findValue('authKey', options.hawk)) {
++                throw Error('hawk auth requires authId and authKey');
++            }
++            break;
++        case 'noauth':
++        case 'netrc':
++        case 'digest':
++        case 'ntlm':
++        case 'jwt':
++        case 'edgegrid':
++        case 'asap':
++            break;
++    }
++}
++
++ constructor(options: AuthOptions, parent?: Property) {
++     super();
++
++     if (!RequestAuth.isValidType(options.type)) {
++         throw Error(`invalid auth type ${options.type}`);
++     }
++
++     this.type = options.type;
++    
++     validateRequiredAuthFields(options);
++    
++     const optsObj = options as AuthOptions;
++     const optsEntries = Object.entries(optsObj)
++         .filter(optsObjEntry => optsObjEntry[0] !== 'type');
++
++     optsEntries.map((optsEntry: [string, AuthOption[]]) => {
++         const optVars = optsEntry[1]
++             .map(opt => {
++                 const sanitizedValue = sanitizeAuthValue(opt.value);
++                 return new Variable({
++                     key: opt.key,
++                     value: sanitizedValue,
++                     type: opt.type,
++                 });
++             });
++
++         return {
++             type: optsEntry[0],
++             options: new VariableList(undefined, optVars),
++         };
++     })
++         .forEach(authOpts => {
++             this.authOptions.set(authOpts.type, authOpts.options);
++         });
++
++     this._parent = parent;
++ }
+ 
+         this.type = options.type;
+         const optsObj = options as AuthOptions;

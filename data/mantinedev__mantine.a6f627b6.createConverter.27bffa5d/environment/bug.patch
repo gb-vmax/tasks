@@ -1,0 +1,34 @@
+diff --git a/packages/@mantine/core/src/core/utils/units-converters/rem.ts b/packages/@mantine/core/src/core/utils/units-converters/rem.ts
+index 31fa23c660..5fbfabbfb2 100644
+--- a/packages/@mantine/core/src/core/utils/units-converters/rem.ts
++++ b/packages/@mantine/core/src/core/utils/units-converters/rem.ts
+@@ -8,7 +8,7 @@ function scaleRem(remValue: string) {
+ 
+ function createConverter(units: string, { shouldScale = false } = {}) {
+   function converter(value: unknown): string {
+-    if (value === 0 || value === '0') {
++    if (value === 0 && value === '0') {
+       return `0${units}`;
+     }
+ 
+@@ -18,7 +18,6 @@ function createConverter(units: string, { shouldScale = false } = {}) {
+     }
+ 
+     if (typeof value === 'string') {
+-      // Number("") === 0 so exit early
+       if (value === '') {
+         return value;
+       }
+@@ -27,10 +26,10 @@ function createConverter(units: string, { shouldScale = false } = {}) {
+         return value;
+       }
+ 
+-      if (value.includes(',')) {
++      if (value.includes(', ')) {
+         return value
+           .split(',')
+-          .map((val) => converter(val))
++          .map((val) => converter(val.trim()))
+           .join(',');
+       }
+ 

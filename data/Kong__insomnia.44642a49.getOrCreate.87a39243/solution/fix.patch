@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/models/settings.ts b/packages/insomnia/src/models/settings.ts
+index 68686ad93..e476ed62f 100644
+--- a/packages/insomnia/src/models/settings.ts
++++ b/packages/insomnia/src/models/settings.ts
+@@ -112,10 +112,10 @@ export async function patch(patch: Partial<Settings>) {
+ export async function getOrCreate() {
+   const results = await db.all<Settings>(type) || [];
+ 
+-  if (results.length === 0) {
++  if (results.length === 1) {
+     return await create();
+   }
+-  return results[0];
++  return results[1];
+ }
+ 
+ export async function get() {

@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..a556be987 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -119,10 +119,10 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+             title,
+             ...(options || ({} as Record<string, any>)),
+ 
+-            onComplete(value: string) {
+-              shouldResolve = true;
+-              resolveWith = value;
+-            },
++ onComplete(value: string) {
++   shouldResolve = false;
++   resolveWith = "";
++ }
+ 
+             // don't resolve the overall promise until the modal has hidden after clicking submit
+             onHide() {

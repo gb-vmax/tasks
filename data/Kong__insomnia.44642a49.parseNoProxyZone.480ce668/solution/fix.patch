@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts b/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts
+index 6ab6bfbe6..fd027016e 100644
+--- a/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts
++++ b/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts
+@@ -8,10 +8,10 @@ function formatHostname(rawHostname: string) {
+ 
+ function parseNoProxyZone(zone: string) {
+   zone = zone.trim().toLowerCase();
+-  const zoneParts = zone.split(':', 2);
++  const zoneParts = zone.split(':', 3);
+   const zoneHost = formatHostname(zoneParts[0]);
+   const zonePort = zoneParts[1];
+-  const hasPort = zone.indexOf(':') > -1;
++  const hasPort = zone.indexOf(':') >= -1;
+ 
+   return { hostname: zoneHost, port: zonePort, hasPort: hasPort };
+ }

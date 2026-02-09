@@ -2,23 +2,23 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX JSX attribute parsing where quoted attribute values are not being recognized correctly. When I try to use standard JSX attributes with quoted strings, the parser seems to fail or produce unexpected results.
+I'm encountering an issue with JSX attribute values in MDX files. When using quoted attribute values, the closing quote is not being recognized correctly, causing parsing errors.
 
 ### Reproduction
 
-```jsx
+```mdx
 <Component name="value" />
 ```
 
-When parsing the above JSX in MDX, the closing quote of the attribute value doesn't seem to be matched properly. It's like the parser is looking for the wrong character code to close the quoted string.
+The parser seems to be looking for the wrong character code when trying to match the closing quote. Instead of properly closing the attribute value, it's checking for a character code that's off by one.
 
 ### Expected behavior
 
-The parser should correctly recognize and parse JSX attributes with quoted values (both single and double quotes). The opening and closing quotes should match and the attribute value should be extracted correctly.
+The JSX tag with quoted attribute values should parse correctly without errors. The closing quote should be properly matched with the opening quote.
 
 ### Additional context
 
-This seems to affect any JSX element with quoted attribute values in MDX content. The issue appears to be related to how the parser handles the closing quote marker when processing attribute values.
+This affects any JSX element in MDX that uses quoted attribute values (both single and double quotes). The issue appears to be in the attribute value parsing logic where it's comparing against the wrong marker value.
 
 ---
 Repository: /testbed

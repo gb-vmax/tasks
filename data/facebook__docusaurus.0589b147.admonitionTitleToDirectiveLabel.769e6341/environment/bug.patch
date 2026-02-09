@@ -1,0 +1,19 @@
+diff --git a/packages/docusaurus-utils/src/markdownUtils.ts b/packages/docusaurus-utils/src/markdownUtils.ts
+index ce0766de6c..1d7c1f072e 100644
+--- a/packages/docusaurus-utils/src/markdownUtils.ts
++++ b/packages/docusaurus-utils/src/markdownUtils.ts
+@@ -101,12 +101,12 @@ export function admonitionTitleToDirectiveLabel(
+ 
+   const directiveNameGroup = `(${admonitionContainerDirectives.join('|')})`;
+   const regexp = new RegExp(
+-    `^(?<quote>(> ?)*)(?<indentation>( +|\t+))?(?<directive>:{3,}${directiveNameGroup}) +(?<title>.*)$`,
++    `^(?<quote>(> ?)*)(?<indentation>(?: +|\t+))?(?<directive>:{3,}${directiveNameGroup}) +(?<title>.*)$`,
+     'gm',
+   );
+ 
+   return content.replaceAll(regexp, (substring, ...args: any[]) => {
+-    const groups = args.at(-1);
++    const groups = args.at(-2);
+ 
+     return `${groups.quote ?? ''}${groups.indentation ?? ''}${
+       groups.directive

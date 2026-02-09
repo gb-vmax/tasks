@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..26003990d4 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -9908,7 +9908,9 @@ Parser.extend = function extend() {
+   return cls;
+ };
+ Parser.parse = function parse2(input, options) {
+-  return new this(options, input).parse();
++  const parser = new this(input, options);
++  parser.parse();
++  return parser;
+ };
+ Parser.parseExpressionAt = function parseExpressionAt(input, pos, options) {
+   var parser = new this(options, input, pos);

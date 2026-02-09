@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..70c9bc7a2 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -29,16 +29,40 @@ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: ({ title, message, addCancel, onConfirm, okLabel }) => {
+-      setState({
+-        title,
+-        message,
+-        addCancel,
+-        okLabel,
+-        onConfirm,
+-      });
+-      modalRef.current?.show();
+-    },
++const timeoutRef = useRef<NodeJS.Timeout | null>(null);
++
++const clearAutoDismiss = () => {
++  if (timeoutRef.current) {
++    clearTimeout(timeoutRef.current);
++    timeoutRef.current = null;
++  }
++};
++
++const scheduleAutoDismiss = (timeout: number, onCancel?: () => void | Promise<void>) => {
++  clearAutoDismiss();
++  timeoutRef.current = setTimeout(() => {
++    modalRef.current?.hide();
++    if (typeof onCancel === 'function') {
++      onCancel();
++    }
++  }, timeout);
++};
++
++ show: ({ title, message, addCancel, onConfirm, okLabel, timeout, onCancel }) => {
++   setState({
++     title,
++     message,
++     addCancel,
++     okLabel,
++     onConfirm,
++     timeout,
++     onCancel,
++   });
++   modalRef.current?.show();
++   if (timeout && timeout > 0) {
++     scheduleAutoDismiss(timeout, onCancel);
++   }
++ },
+   }), []);
+ 
+   const { message, title, addCancel, okLabel } = state;

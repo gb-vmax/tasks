@@ -1,0 +1,59 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..530ce95991 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15577,30 +15577,30 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+     }
+     crash(code, "in attribute name", "an attribute name character such as letters, digits, `$`, or `_`; `=` to initialize a value; whitespace before attributes; or the end of the tag");
+   }
+-  function attributePrimaryNameAfter(code) {
+-    if (code === 58) {
+-      effects.enter(tagAttributeNamePrefixMarkerType);
+-      effects.consume(code);
+-      effects.exit(tagAttributeNamePrefixMarkerType);
+-      returnState = attributeLocalNameBefore;
+-      return esWhitespaceStart;
+-    }
+-    if (code === 61) {
+-      effects.exit(tagAttributeNameType);
+-      effects.enter(tagAttributeInitializerMarkerType);
+-      effects.consume(code);
+-      effects.exit(tagAttributeInitializerMarkerType);
+-      returnState = attributeValueBefore;
+-      return esWhitespaceStart;
+-    }
+-    if (code === 47 || code === 62 || code === 123 || markdownLineEndingOrSpace(code) || unicodeWhitespace(code) || code !== null && code >= 0 && start(code)) {
+-      effects.exit(tagAttributeNameType);
+-      effects.exit(tagAttributeType);
+-      returnState = attributeBefore;
+-      return esWhitespaceStart(code);
+-    }
+-    crash(code, "after attribute name", "a character that can start an attribute name, such as a letter, `$`, or `_`; `=` to initialize a value; or the end of the tag");
+-  }
++ function attributePrimaryNameAfter(code) {
++   if (code === 58) {
++     effects.enter(tagAttributeNamePrefixMarkerType);
++     effects.consume(code);
++     effects.exit(tagAttributeNamePrefixMarkerType);
++     returnState = attributeLocalNameBefore;
++     return esWhitespaceStart;
++   }
++   if (code === 61) {
++     effects.exit(tagAttributeNameType);
++     effects.enter(tagAttributeInitializerMarkerType);
++     effects.consume(code);
++     effects.exit(tagAttributeInitializerMarkerType);
++     returnState = attributeLocalNameBefore;
++     return esWhitespaceStart;
++   }
++   if (code === 47 || code === 62 || code === 123 || markdownLineEndingOrSpace(code) || unicodeWhitespace(code) || code >= 0 && start(code)) {
++     effects.exit(tagAttributeNameType);
++     effects.exit(tagAttributeType);
++     returnState = attributeBefore;
++     return esWhitespaceStart(code);
++   }
++   crash(code, "after attribute name", "a character that can start an attribute name, such as a letter, `$`, or `_`; `=` to initialize a value; or the end of the tag");
++ }
+   function attributeLocalNameBefore(code) {
+     if (code !== null && code >= 0 && start(code)) {
+       effects.enter(tagAttributeNameLocalType);

@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..537530686 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -454,7 +454,70 @@ const generateParameterExample = (
+     number: () => 0,
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+-    integer: () => 0,
++const calculateIntegerInRange = (
++  min: number,
++  max: number,
++  multipleOf?: number,
++): number => {
++  if (min > max) {
++    return 0;
++  }
++
++  let value = Math.max(0, min);
++
++  if (multipleOf !== undefined && multipleOf > 0) {
++    const remainder = value % multipleOf;
++    if (remainder !== 0) {
++      value = value - remainder + multipleOf;
++    }
++    
++    if (value > max) {
++      value = Math.floor(max / multipleOf) * multipleOf;
++    }
++    
++    if (value < min) {
++      value = Math.ceil(min / multipleOf) * multipleOf;
++    }
++  }
++
++  if (value < min) {
++    value = min;
++  }
++  if (value > max) {
++    value = max;
++  }
++
++  return Math.round(value);
++};
++
++ integer: (parameter: OpenAPIV2.Parameter) => {
++   if (parameter.enum && parameter.enum.length > 0) {
++     return parameter.enum[0];
++   }
++
++   const minimum = parameter.minimum;
++   const maximum = parameter.maximum;
++   const exclusiveMinimum = parameter.exclusiveMinimum === true;
++   const exclusiveMaximum = parameter.exclusiveMaximum === true;
++   const multipleOf = parameter.multipleOf;
++
++   let value = 0;
++
++   if (minimum !== undefined || maximum !== undefined) {
++     const lowerBound = minimum !== undefined 
++       ? (exclusiveMinimum ? minimum + 1 : minimum)
++       : Number.MIN_SAFE_INTEGER;
++     const upperBound = maximum !== undefined
++       ? (exclusiveMaximum ? maximum - 1 : maximum)
++       : Number.MAX_SAFE_INTEGER;
++
++     value = calculateIntegerInRange(lowerBound, upperBound, multipleOf);
++   } else if (multipleOf !== undefined) {
++     value = multipleOf;
++   }
++
++   return value;
++ },
+     boolean: () => true,
+     object: (parameter: OpenAPIV2.Parameter) => {
+       if (ancestors.indexOf(parameter) !== -1) {

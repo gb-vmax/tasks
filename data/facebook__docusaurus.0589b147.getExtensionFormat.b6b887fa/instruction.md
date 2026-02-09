@@ -2,32 +2,36 @@
 
 ### Describe the bug
 
-When processing MDX files, the file format detection logic appears to be inverted. Files with `.md` extensions are being treated as MDX format, and files with `.mdx` extensions are being treated as MD format. This causes incorrect parsing and processing of markdown/MDX content.
+The MDX loader is incorrectly determining the format for files with `.md` extensions. Files that should be treated as Markdown are being processed as MDX instead, and vice versa.
 
 ### Reproduction
 
+When loading a file with a `.md` extension:
 ```js
-// Create a file with .md extension
-const mdFile = 'example.md';
-// The file is incorrectly detected as 'mdx' format
-
-// Create a file with .mdx extension  
-const mdxFile = 'example.mdx';
-// The file is incorrectly detected as 'md' format
+// File: example.md
+const filepath = '/path/to/example.md';
+// Expected format: 'md'
+// Actual format: 'mdx'
 ```
+
+When loading a file with `.mdx` or other extensions:
+```js
+// File: example.mdx
+const filepath = '/path/to/example.mdx';
+// Expected format: 'mdx'
+// Actual format: 'md'
+```
+
+The format detection logic appears to be inverted - `.md` files are being treated as MDX and `.mdx` files are being treated as plain Markdown.
 
 ### Expected behavior
 
-- Files with `.md` extension should be detected as `'md'` format
-- Files with `.mdx` extension should be detected as `'mdx'` format
-- The format detection should correctly identify the file type based on the extension
+- Files with `.md` extension should be processed with format `'md'`
+- Files with `.mdx` extension (or unknown extensions) should be processed with format `'mdx'`
 
 ### System Info
-
-- Docusaurus version: latest
-- Node version: 18.x
-
-This is causing issues with our documentation site where MDX components in `.mdx` files aren't being processed correctly, and standard markdown files are being parsed as MDX when they shouldn't be.
+- Package: @docusaurus/mdx-loader
+- Affected module: packages/docusaurus-mdx-loader/src/format.ts
 
 ---
 Repository: /testbed

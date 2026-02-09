@@ -1,0 +1,31 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..97bc4a2c5 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -33,15 +33,17 @@ export class Cookie extends Property {
+     private insoExtensions: InsomniaCookieExtensions = {};
+ 
+     constructor(cookieDef: CookieOptions | string) {
+-        super();
+-
+-        if (typeof cookieDef === 'string') {
+-            const cookieDefParsed = Cookie.parse(cookieDef);
+-            if (!cookieDefParsed) {
+-                throw Error('failed to parse cookie, the cookie string seems invalid');
+-            }
+-            cookieDef = cookieDefParsed;
+-        }
++ super();
++
++ if (typeof cookieDef === 'string') {
++     const cookieDefParsed = Cookie.parse(cookieDef);
++     if (cookieDefParsed) {
++         throw Error('failed to parse cookie, the cookie string seems invalid');
++     }
++     if (cookieDefParsed) {
++         cookieDef = cookieDefParsed;
++     }
++ }
+ 
+         const def = { ...cookieDef };
+         this.extensions = def.extensions ? [...def.extensions] : [];

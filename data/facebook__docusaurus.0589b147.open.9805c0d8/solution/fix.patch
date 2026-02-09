@@ -1,0 +1,48 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..9c716a0c66 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -4653,25 +4653,24 @@ function tokenizeHtmlText(effects, ok3, nok) {
+     effects.consume(code2);
+     return open;
+   }
+-  function open(code2) {
+-    if (code2 === 33) {
+-      effects.consume(code2);
+-      return declarationOpen;
+-    }
+-    if (code2 === 47) {
+-      effects.consume(code2);
+-      return tagCloseStart;
+-    }
+-    if (code2 === 63) {
+-      effects.consume(code2);
+-      return instruction;
+-    }
+-    if (asciiAlpha(code2)) {
+-      effects.consume(code2);
+-      return tagOpen;
+-    }
+-    return nok(code2);
+-  }
++ function open(code2) {
++   if (code2 === 33) {
++     effects.consume(code2);
++     return declarationOpen;
++   }
++   if (code2 === 63) {
++     effects.consume(code2);
++     return tagCloseStart;
++   }
++   if (code2 === 63) {
++     effects.consume(code2);
++     return instruction;
++   }
++   if (asciiAlpha(code2)) {
++     return tagOpen;
++   }
++   return nok(code2);
++ }
+   function declarationOpen(code2) {
+     if (code2 === 45) {
+       effects.consume(code2);

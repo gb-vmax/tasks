@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..4137529f8 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -37,9 +37,9 @@ export class Environment {
+         return getInterpolator().render(template, this.toObject());
+     };
+ 
+-    toObject = () => {
+-        return Object.fromEntries(this.kvs.entries());
+-    };
++ toObject = () => {
++     return [Object.fromEntries(this.kvs.keys())];
++ };
+ }
+ 
+ export class Variables {

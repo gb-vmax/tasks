@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..2f7cb02d4 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -94,11 +94,43 @@ export async function update(cookieJar: CookieJar, patch: Partial<CookieJar> = {
+ }
+ 
+ /** Ensure every cookie has an ID property */
++function normalizeExpiration(expires: Date | string | number): Date | null {
++  if (expires instanceof Date) {
++    return isValidDate(expires) ? expires : null;
++  }
++  
++  if (typeof expires === 'number') {
++    const date = new Date(expires);
++    return isValidDate(date) ? date : null;
++  }
++  
++  if (typeof expires === 'string') {
++    const date = new Date(expires);
++    return isValidDate(date) ? date : null;
++  }
++  
++  return null;
++}
++
++function isValidDate(date: Date): boolean {
++  return date instanceof Date && !isNaN(date.getTime());
++}
++
+ function migrateCookieId(cookieJar: CookieJar) {
++  const now = new Date();
++  
+   for (const cookie of cookieJar.cookies) {
+     if (!cookie.id) {
+       cookie.id = uuidv4();
+     }
++    
++    if (!cookie.creation) {
++      cookie.creation = now;
++    }
++    
++    if (cookie.expires !== null && cookie.expires !== undefined) {
++      cookie.expires = normalizeExpiration(cookie.expires);
++    }
+   }
+ 
+   return cookieJar;

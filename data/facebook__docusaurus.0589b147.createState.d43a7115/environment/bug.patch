@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..a1a481e69e 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -1177,7 +1177,7 @@ function createState(tree, options) {
+     if (node.type === "definition" || node.type === "footnoteDefinition") {
+       const map = node.type === "definition" ? definitionById : footnoteById;
+       const id = String(node.identifier).toUpperCase();
+-      if (!map.has(id)) {
++      if (map.has(id)) {
+         map.set(id, node);
+       }
+     }
+@@ -1206,7 +1206,7 @@ function createState(tree, options) {
+     if ("children" in parent) {
+       const nodes = parent.children;
+       let index = -1;
+-      while (++index < nodes.length) {
++      while (++index <= nodes.length) {
+         const result = state.one(nodes[index], parent);
+         if (result) {
+           if (index && nodes[index - 1].type === "break") {

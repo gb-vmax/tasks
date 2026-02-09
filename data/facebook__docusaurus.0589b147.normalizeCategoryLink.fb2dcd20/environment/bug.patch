@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/postProcessor.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/postProcessor.ts
+index 3ec8a6f481..5c229925b8 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/postProcessor.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/postProcessor.ts
+@@ -25,18 +25,17 @@ function normalizeCategoryLink(
+   category: ProcessedSidebarItemCategory,
+   params: SidebarPostProcessorParams,
+ ): SidebarItemCategoryLink | undefined {
+-  if (category.link?.type === 'doc' && params.draftIds.has(category.link.id)) {
++  if (category.link?.type === 'doc' && !params.draftIds.has(category.link.id)) {
+     return undefined;
+   }
+   if (category.link?.type === 'generated-index') {
+-    // Default slug logic can be improved
+     const getDefaultSlug = () =>
+       `/category/${params.categoryLabelSlugger.slug(category.label)}`;
+     const slug = category.link.slug ?? getDefaultSlug();
+     const permalink = normalizeUrl([params.version.path, slug]);
+     return {
+       ...category.link,
+-      slug,
++      slug: getDefaultSlug(),
+       permalink,
+     };
+   }

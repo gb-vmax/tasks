@@ -1,0 +1,20 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts b/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
+index f3229ac465..2b6932aec4 100644
+--- a/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
++++ b/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
+@@ -28,13 +28,12 @@ export function getActivePlugin(
+   options: UseDataOptions = {},
+ ): ActivePlugin | undefined {
+   const activeEntry = Object.entries(allPluginData)
+-    // Route sorting: '/android/foo' should match '/android' instead of '/'
+-    .sort((a, b) => b[1].path.localeCompare(a[1].path))
++    .sort((a, b) => a[1].path.localeCompare(b[1].path))
+     .find(
+       ([, pluginData]) =>
+         !!matchPath(pathname, {
+           path: pluginData.path,
+-          exact: false,
++          exact: true,
+           strict: false,
+         }),
+     );

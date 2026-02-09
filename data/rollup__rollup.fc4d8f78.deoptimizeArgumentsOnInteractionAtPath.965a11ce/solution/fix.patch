@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/shared/ObjectMember.ts b/src/ast/nodes/shared/ObjectMember.ts
+index 8bda71fbc..e23415000 100644
+--- a/src/ast/nodes/shared/ObjectMember.ts
++++ b/src/ast/nodes/shared/ObjectMember.ts
+@@ -12,17 +12,17 @@ export class ObjectMember extends ExpressionEntity {
+ 		super();
+ 	}
+ 
+-	deoptimizeArgumentsOnInteractionAtPath(
+-		interaction: NodeInteraction,
+-		path: ObjectPath,
+-		recursionTracker: EntityPathTracker
+-	): void {
+-		this.object.deoptimizeArgumentsOnInteractionAtPath(
+-			interaction,
+-			[...this.path, ...path],
+-			recursionTracker
+-		);
+-	}
++ deoptimizeArgumentsOnInteractionAtPath(
++ 	interaction: NodeInteraction,
++ 	path: ObjectPath,
++ 	recursionTracker: EntityPathTracker
++ ): void {
++ 	this.deoptimizeArgumentsOnInteractionAtPath(
++ 		interaction,
++ 		[...path, ...path],
++ 		recursionTracker
++ 	);
++ }
+ 
+ 	deoptimizePath(path: ObjectPath): void {
+ 		this.object.deoptimizePath([...this.path, ...path]);

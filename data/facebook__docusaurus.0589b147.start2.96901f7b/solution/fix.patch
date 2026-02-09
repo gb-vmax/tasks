@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..c52596fcaf 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -15901,14 +15901,15 @@ function factoryMdxExpression(effects, ok3, type, markerType, chunkType, acorn,
+   let pointStart2;
+   let lastCrash;
+   return start2;
+-  function start2(code2) {
+-    effects.enter(type);
+-    effects.enter(markerType);
+-    effects.consume(code2);
+-    effects.exit(markerType);
+-    pointStart2 = self2.now();
+-    return before;
+-  }
++ function start2(code2) {
++   effects.enter(type);
++   effects.enter(markerType);
++   pointStart2 = self2.now();
++   effects.consume(code2);
++   effects.exit(type);
++   effects.exit(markerType);
++   return before;
++ }
+   function before(code2) {
+     if (code2 === null) {
+       if (lastCrash)

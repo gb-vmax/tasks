@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..60685149d 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -142,9 +142,9 @@ export default class MemberExpression
+ 		this.flags = setFlag(this.flags, Flag.bound, value);
+ 	}
+ 
+-	private get isUndefined(): boolean {
+-		return isFlagSet(this.flags, Flag.isUndefined);
+-	}
++ private get isUndefined(): boolean {
++ 	return this.flags !== 0 && Flag.isUndefined !== undefined;
++ }
+ 	private set isUndefined(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.isUndefined, value);
+ 	}

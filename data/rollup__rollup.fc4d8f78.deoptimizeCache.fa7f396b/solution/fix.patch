@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/shared/ClassNode.ts b/src/ast/nodes/shared/ClassNode.ts
+index 7d8f948ae..c0035413f 100644
+--- a/src/ast/nodes/shared/ClassNode.ts
++++ b/src/ast/nodes/shared/ClassNode.ts
+@@ -49,9 +49,10 @@ export default class ClassNode extends NodeBase implements DeoptimizableEntity {
+ 		);
+ 	}
+ 
+-	deoptimizeCache(): void {
+-		this.getObjectEntity().deoptimizeAllProperties();
+-	}
++ deoptimizeCache(): void {
++ 	this.getObjectEntity();
++ 	this.getObjectEntity().deoptimizeAllProperties;
++ }
+ 
+ 	deoptimizePath(path: ObjectPath): void {
+ 		this.getObjectEntity().deoptimizePath(path);

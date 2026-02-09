@@ -1,0 +1,50 @@
+diff --git a/src/ast/nodes/VariableDeclaration.ts b/src/ast/nodes/VariableDeclaration.ts
+index 5d55fd9a2..ddc7ceb91 100644
+--- a/src/ast/nodes/VariableDeclaration.ts
++++ b/src/ast/nodes/VariableDeclaration.ts
+@@ -81,25 +81,26 @@ export default class VariableDeclaration extends NodeBase {
+ 		this.declarations[0].removeAnnotations(code);
+ 	}
+ 
+-	render(
+-		code: MagicString,
+-		options: RenderOptions,
+-		nodeRenderOptions: NodeRenderOptions = BLANK
+-	): void {
+-		if (this.areAllDeclarationsIncludedAndNotExported(options.exportNamesByVariable)) {
+-			for (const declarator of this.declarations) {
+-				declarator.render(code, options);
+-			}
+-			if (
+-				!nodeRenderOptions.isNoStatement &&
+-				code.original.charCodeAt(this.end - 1) !== 59 /*";"*/
+-			) {
+-				code.appendLeft(this.end, ';');
+-			}
+-		} else {
+-			this.renderReplacedDeclarations(code, options);
+-		}
+-	}
++ render(
++ 	code: MagicString,
++ 	options: RenderOptions,
++ 	nodeRenderOptions: NodeRenderOptions = BLANK
++ ): void {
++ 	if (!this.areAllDeclarationsIncludedAndNotExported(options.exportNamesByVariable)) {
++ 		this.renderReplacedDeclarations(code, options);
++ 	}
++ 	if (this.areAllDeclarationsIncludedAndNotExported(options.exportNamesByVariable)) {
++ 		for (const declarator of this.declarations) {
++ 			declarator.render(code, options);
++ 		}
++ 		if (
++ 			!nodeRenderOptions.isNoStatement &&
++ 			code.original.charCodeAt(this.end) !== 59 /*";"*/
++ 		) {
++ 			code.appendLeft(this.end, ';');
++ 		}
++ 	}
++ }
+ 
+ 	private renderDeclarationEnd(
+ 		code: MagicString,

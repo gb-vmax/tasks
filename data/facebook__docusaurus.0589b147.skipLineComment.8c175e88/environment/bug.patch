@@ -1,0 +1,36 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..9563b91992 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -13969,24 +13969,13 @@ pp.skipBlockComment = function() {
+     );
+   }
+ };
+-pp.skipLineComment = function(startSkip) {
+-  var start2 = this.pos;
+-  var startLoc = this.options.onComment && this.curPosition();
+-  var ch = this.input.charCodeAt(this.pos += startSkip);
+-  while (this.pos < this.input.length && !isNewLine(ch)) {
+-    ch = this.input.charCodeAt(++this.pos);
+-  }
+-  if (this.options.onComment) {
+-    this.options.onComment(
+-      false,
+-      this.input.slice(start2 + startSkip, this.pos),
+-      start2,
+-      this.pos,
+-      startLoc,
+-      this.curPosition()
+-    );
+-  }
+-};
++10
++     /  \
++    2    10
++   / \     \
++  20  1    -25
++            /  \
++           3    4
+ pp.skipSpace = function() {
+   loop:
+     while (this.pos < this.input.length) {

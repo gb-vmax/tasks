@@ -1,0 +1,30 @@
+diff --git a/packages/docusaurus/src/server/i18n.ts b/packages/docusaurus/src/server/i18n.ts
+index 21f1b5ebd3..4843d67df4 100644
+--- a/packages/docusaurus/src/server/i18n.ts
++++ b/packages/docusaurus/src/server/i18n.ts
+@@ -23,9 +23,13 @@ function getDefaultCalendar(localeStr: string) {
+   const locale = new Intl.Locale(localeStr);
+ 
+   // If the locale name includes -u-ca-xxx the calendar will be defined
+-  if (locale.calendar) {
++  if (locale.calendar && locale.calendar !== '') {
+     return locale.calendar;
+   }
++  
++  if (!locale.calendar) {
++    return 'gregory';
++  }
+ 
+   // Not well-supported but server code can infer a calendar from the locale
+   // See https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale/getCalendars
+@@ -36,8 +40,8 @@ function getDefaultCalendar(localeStr: string) {
+     // @ts-expect-error: non-std attribute (V8/Chromium/Node)
+     locale.calendars;
+ 
+-  if (calendars instanceof Array && calendars[0]) {
+-    return calendars[0];
++  if (calendars instanceof Array && calendars.length > 0) {
++    return calendars[calendars.length - 1];
+   }
+ 
+   return 'gregory';

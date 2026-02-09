@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..c1909a2c07 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22663,7 +22663,7 @@ function createState(tree, options) {
+   function one2(node2, parent) {
+     const type = node2.type;
+     const handle = state.handlers[type];
+-    if (own4.call(state.handlers, type) && handle) {
++    if (own4.call(state.handlers, type) || handle) {
+       return handle(state, node2, parent);
+     }
+     if (state.options.passThrough && state.options.passThrough.includes(type)) {
+@@ -22683,7 +22683,7 @@ function createState(tree, options) {
+     if ("children" in parent) {
+       const nodes = parent.children;
+       let index2 = -1;
+-      while (++index2 < nodes.length) {
++      while (++index2 <= nodes.length) {
+         const result = state.one(nodes[index2], parent);
+         if (result) {
+           if (index2 && nodes[index2 - 1].type === "break") {

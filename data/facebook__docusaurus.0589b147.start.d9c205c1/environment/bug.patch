@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..f81c463864 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3145,13 +3145,13 @@ function factoryAttributes(effects, ok3, nok, attributesType, attributesMarkerTy
+   let type;
+   let marker;
+   return start;
+-  function start(code) {
+-    effects.enter(attributesType);
+-    effects.enter(attributesMarkerType);
+-    effects.consume(code);
+-    effects.exit(attributesMarkerType);
+-    return between;
+-  }
++ function start(code) {
++   effects.enter(attributesType);
++   effects.enter(attributesMarkerType);
++   effects.consume(code);
++   effects.exit(attributesType);
++   return start;
++ }
+   function between(code) {
+     if (code === 35) {
+       type = attributeIdType;

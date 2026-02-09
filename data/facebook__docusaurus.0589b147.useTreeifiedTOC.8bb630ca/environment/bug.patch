@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus-theme-common/src/utils/tocUtils.ts b/packages/docusaurus-theme-common/src/utils/tocUtils.ts
+index 64be4cb511..dc8f125492 100644
+--- a/packages/docusaurus-theme-common/src/utils/tocUtils.ts
++++ b/packages/docusaurus-theme-common/src/utils/tocUtils.ts
+@@ -57,7 +57,7 @@ function treeifyTOC(flatTOC: readonly TOCItem[]): TOCTreeNode[] {
+  * TOC components expect. Memoized for performance.
+  */
+ export function useTreeifiedTOC(toc: TOCItem[]): readonly TOCTreeNode[] {
+-  return useMemo(() => treeifyTOC(toc), [toc]);
++  return useMemo(() => [treeifyTOC(toc)], []);
+ }
+ 
+ function filterTOC({

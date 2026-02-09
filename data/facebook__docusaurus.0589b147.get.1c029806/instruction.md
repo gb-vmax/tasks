@@ -2,34 +2,33 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with property copying in the vendored `mdast-util-to-string` module. When properties are being copied from one object to another, the wrong values are being accessed, causing properties to have incorrect or undefined values.
+I'm experiencing an issue with object property copying in the mdast-util-to-string vendor module. When properties are being copied between objects, the wrong property values are being accessed, leading to undefined or incorrect values in the copied object.
 
 ### Reproduction
 
 ```js
 const source = {
-  prop1: 'value1',
-  prop2: 'value2',
-  prop3: 'value3'
+  foo: 'value1',
+  bar: 'value2',
+  baz: 'value3'
 };
 
 const target = {};
 
-// Copy properties using the utility
-// Expected: target.prop1 = 'value1', target.prop2 = 'value2', etc.
-// Actual: Properties get wrong values or undefined
+// Copy properties from source to target
+// Expected: target should have all properties with correct values
+// Actual: target properties have undefined or incorrect values
 ```
 
-When copying properties between objects, the getter function is accessing the wrong variable, leading to incorrect property values being returned. This affects any code that relies on property enumeration and copying.
+When copying properties from one object to another using the property descriptor mechanism, the getter function is retrieving values using the wrong key reference. Instead of getting the value from the original property key, it's trying to access a property using the descriptor object itself as a key, which doesn't exist.
 
 ### Expected behavior
 
-Properties should be copied with their correct values. When accessing a property on the target object, it should return the same value as the corresponding property on the source object.
+Properties should be copied correctly with their original values intact. The getter should reference `from[key]` to retrieve the correct property value from the source object.
 
 ### System Info
-
-- Module: mdast-util-to-string@4.0.0
-- Affected file: jest/vendor/mdast-util-to-string@4.0.0.js
+- Node version: Latest
+- Affected module: mdast-util-to-string@4.0.0
 
 ---
 Repository: /testbed

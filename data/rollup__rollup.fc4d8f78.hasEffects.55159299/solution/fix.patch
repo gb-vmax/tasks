@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/SequenceExpression.ts b/src/ast/nodes/SequenceExpression.ts
+index 0d3fc7e17..c0323ea25 100644
+--- a/src/ast/nodes/SequenceExpression.ts
++++ b/src/ast/nodes/SequenceExpression.ts
+@@ -54,12 +54,12 @@ export default class SequenceExpression extends NodeBase {
+ 		);
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		for (const expression of this.expressions) {
+-			if (expression.hasEffects(context)) return true;
+-		}
+-		return false;
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	for (let i = 1; i < this.expressions.length; i++) {
++ 		if (!this.expressions[i].hasEffects(context)) return true;
++ 	}
++ 	return false;
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

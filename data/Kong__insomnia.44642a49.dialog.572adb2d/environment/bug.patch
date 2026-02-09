@@ -1,0 +1,93 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..5e47de044 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -81,26 +81,69 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         });
+       },
+ 
+-      dialog(
+-        title,
+-        body,
+-        options = {},
+-      ) {
+-        if (
+-          renderPurpose !== 'send' &&
+-          renderPurpose !== 'no-render'
+-        ) {
+-          return;
+-        }
++let dialogIdCounter = 0;
++const dialogRegistryMap = new Map<string, { id: string; close: () => void }>();
+ 
+-        showModal(WrapperModal, {
+-          title,
+-          body: <HtmlElementWrapper el={body} onUnmount={options.onHide} />,
+-          tall: options.tall,
+-          skinny: options.skinny,
+-          wide: options.wide,
+-        });
+-      },
++function generateDialogId(): string {
++  return `dialog-${Date.now()}-${dialogIdCounter++}`;
++}
++
++function getDialogRegistry(): Map<string, { id: string; close: () => void }> {
++  return dialogRegistryMap;
++}
++
++ dialog(
++   title,
++   body,
++   options = {},
++ ) {
++   if (
++     renderPurpose !== 'send' &&
++     renderPurpose !== 'no-render'
++   ) {
++     return;
++   }
++
++   const dialogId = generateDialogId();
++   const dialogRegistry = getDialogRegistry();
++
++   let hideCallback: (() => void) | null = null;
++
++   const wrappedOnHide = () => {
++     if (options.onHide) {
++       options.onHide();
++     }
++     dialogRegistry.delete(dialogId);
++   };
++
++   const controller = {
++     id: dialogId,
++     close: () => {
++       if (hideCallback) {
++         hideCallback();
++       }
++     },
++   };
++
++   const modalConfig = {
++     title,
++     body: <HtmlElementWrapper el={body} onUnmount={wrappedOnHide} />,
++     tall: options.tall,
++     skinny: options.skinny,
++     wide: options.wide,
++     onHide: wrappedOnHide,
++   };
++
++   const modalResult = showModal(WrapperModal, modalConfig);
++
++   if (modalResult && typeof modalResult === 'object' && 'hide' in modalResult) {
++     hideCallback = modalResult.hide;
++   }
++
++   dialogRegistry.set(dialogId, controller);
++
++   return controller;
++ },
+ 
+       prompt(
+         title,

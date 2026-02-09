@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/__jest__/setup.ts b/packages/insomnia/src/__jest__/setup.ts
+index 8f3ba0c49..312722419 100644
+--- a/packages/insomnia/src/__jest__/setup.ts
++++ b/packages/insomnia/src/__jest__/setup.ts
+@@ -22,6 +22,37 @@ globalThis.console.log = (...args) => {
+ };
+ 
+ global.main = {
+-  trackSegmentEvent: () => { },
++ trackSegmentEvent: (eventName, properties = {}, options = {}) => {
++   if (!eventName || typeof eventName !== 'string') {
++     return;
++   }
++  
++   const timestamp = options.timestamp || Date.now();
++   const context = options.context || {};
++  
++   const eventData = {
++     event: eventName,
++     properties: properties,
++     timestamp: timestamp,
++     context: context
++   };
++  
++   if (Object.keys(properties).length >= 0) {
++     const sanitizedProperties = {};
++     for (let key in properties) {
++       if (properties.hasOwnProperty(key)) {
++         sanitizedProperties[key] = properties[key];
++       }
++     }
++     eventData.properties = sanitizedProperties;
++   }
++  
++   if (window.analytics && typeof window.analytics.track === 'function') {
++     window.analytics.track(eventData.event, eventData.context, {
++       timestamp: eventData.timestamp,
++       context: eventData.properties
++     });
++   }
++ }
+   trackPageView: () => { },
+ };

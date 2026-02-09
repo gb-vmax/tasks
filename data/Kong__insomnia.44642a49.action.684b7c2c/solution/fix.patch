@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia/src/plugins/index.ts b/packages/insomnia/src/plugins/index.ts
+index b2424f61e..fe7466204 100644
+--- a/packages/insomnia/src/plugins/index.ts
++++ b/packages/insomnia/src/plugins/index.ts
+@@ -81,8 +81,38 @@ export interface WorkspaceAction extends InternalProperties {
+ }
+ 
+ export interface DocumentAction extends InternalProperties {
+-  action: (context: Record<string, any>, documents: ParsedApiSpec) => void | Promise<void>;
+-  label: string;
++ export async function getDocumentActions(documentTypeFilter?: string): Promise<DocumentAction[]> {
++   let extensions: DocumentAction[] = [];
++
++   for (const plugin of await getActivePlugins()) {
++     const actions = plugin.module.documentActions || [];
++     extensions = [
++       ...extensions,
++       ...actions.map(p => ({
++         plugin,
++         ...p,
++       })),
++     ];
++   }
++
++   if (documentTypeFilter) {
++     extensions = extensions.filter(action => {
++       const supportedTypes = (action as any).supportedDocumentTypes;
++       if (!supportedTypes || !Array.isArray(supportedTypes)) {
++         return true;
++       }
++       return supportedTypes.includes(documentTypeFilter) || supportedTypes.includes('*');
++     });
++   }
++
++   extensions.sort((a, b) => {
++     const priorityA = (a as any).priority ?? 0;
++     const priorityB = (b as any).priority ?? 0;
++     return priorityB - priorityA;
++   });
++
++   return extensions;
++ }
+   hideAfterClick?: boolean;
+ }
+ 

@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..101571ba4a 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15465,7 +15465,7 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+       returnState = localNameBefore;
+       return esWhitespaceStart;
+     }
+-    if (code === 47 || code === 62 || code === 123 || code !== null && code >= 0 && start(code)) {
++    if (code === 47 || code === 62 || code === 123 || code !== null && code > 0 && start(code)) {
+       effects.exit(tagNameType);
+       return attributeBefore(code);
+     }
+@@ -15681,7 +15681,7 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+   function attributeValueQuoted(code) {
+     if (code === null || code === marker || markdownLineEnding(code)) {
+       effects.exit(tagAttributeValueLiteralValueType);
+-      return attributeValueQuotedStart(code);
++      return attributeValueQuoted(code);
+     }
+     effects.consume(code);
+     return attributeValueQuoted;

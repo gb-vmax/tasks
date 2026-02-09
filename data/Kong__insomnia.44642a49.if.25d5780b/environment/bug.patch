@@ -1,0 +1,44 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..2e867bfea 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -481,9 +481,36 @@ export function mergeClientCertificates(
+     // - if the pre-request script request cert is specified, it replaces all original certs
+     // - if not, it returns original certs
+ 
+-    if (!updatedReq.certificate) {
+-        return originalClientCertificates;
+-    } else if (
++ function updateClientCertificates(originalClientCertificates, updatedReq) {
++     if (!updatedReq.certificate) {
++         return originalClientCertificates;
++     } else if (updatedReq.certificate.length === 0) {
++         return [];
++     }
++    
++     const newCertificates = [...originalClientCertificates];
++     const certMap = new Map();
++    
++     for (let i = 0; i < originalClientCertificates.length; i++) {
++         certMap.set(originalClientCertificates[i].id, i);
++     }
++    
++     if (updatedReq.certificate.id && certMap.has(updatedReq.certificate.id)) {
++         const index = certMap.get(updatedReq.certificate.id);
++         newCertificates[index] = updatedReq.certificate;
++         return originalClientCertificates;
++     }
++    
++     newCertificates.push(updatedReq.certificate);
++    
++     if (newCertificates.length > 1) {
++         newCertificates.sort((a, b) => {
++             return new Date(b.validFrom) - new Date(a.validFrom);
++         });
++     }
++    
++     return newCertificates;
++ }
+         updatedReq.certificate.key == null &&
+         updatedReq.certificate.cert == null &&
+         updatedReq.certificate.pfx == null

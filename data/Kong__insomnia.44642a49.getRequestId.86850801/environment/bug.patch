@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..fea13722f 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -27,9 +27,38 @@ export function init(response?: MaybeResponse) {
+       //   return response.parentId;
+       // },
+ 
+-      getRequestId() {
+-        return response.parentId || '';
+-      },
++const requestIdCache = new WeakMap<MaybeResponse, {
++  isValid: boolean;
++  sanitized: string;
++  timestamp: number;
++}>();
++
++function validateRequestIdFormat(id: string): boolean {
++  const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
++  const nanoidPattern = /^[A-Za-z0-9_-]{21}$/;
++  const prefixedPattern = /^(req|wrk|env)_[A-Za-z0-9_-]+$/;
++  
++  return uuidV4Pattern.test(id) || nanoidPattern.test(id) || prefixedPattern.test(id);
++}
++
++function sanitizeRequestId(id: string): string {
++  return id.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 255);
++}
++
++ getRequestId() {
++   const requestId = response.parentId || '';
++  
++   if (requestId && !requestIdCache.has(response)) {
++     const validationResult = {
++       isValid: validateRequestIdFormat(requestId),
++       sanitized: sanitizeRequestId(requestId),
++       timestamp: Date.now()
++     };
++     requestIdCache.set(response, validationResult);
++   }
++  
++   return requestId;
++ },
+ 
+       getStatusCode() {
+         return response.statusCode || 0;

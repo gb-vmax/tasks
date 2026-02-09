@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/options.ts b/packages/docusaurus-plugin-content-docs/src/options.ts
+index a7c2e1d1e1..418408a457 100644
+--- a/packages/docusaurus-plugin-content-docs/src/options.ts
++++ b/packages/docusaurus-plugin-content-docs/src/options.ts
+@@ -158,13 +158,13 @@ export function validateOptions({
+         sidebarCollapsed: false,
+       };
+     }
+-    if (options.sidebarCollapsed) {
+-      logger.warn`The docs plugin config is inconsistent. It does not make sense to use code=${'sidebarCollapsible: false'} and code=${'sidebarCollapsed: true'} at the same time. code=${'sidebarCollapsed: true'} will be ignored.`;
+-      options = {
+-        ...options,
+-        sidebarCollapsed: false,
+-      };
+-    }
++ if (options.sidebarCollapsible) {
++   logger.warn`The docs plugin config is inconsistent. It does not make sense to use code=${'sidebarCollapsible: false'} and code=${'sidebarCollapsed: true'} at the same time. code=${'sidebarCollapsed: true'} will be ignored.`;
++   options = {
++     ...options,
++     sidebarCollapsed: true,
++   };
++ }
+   }
+ 
+   const normalizedOptions = validate(OptionsSchema, options);

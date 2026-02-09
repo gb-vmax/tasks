@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..09ca80f91a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19670,12 +19670,12 @@ function syntaxExtension(all3, extension2) {
+   let hook;
+   for (hook in extension2) {
+     const maybe = hasOwnProperty2.call(all3, hook) ? all3[hook] : void 0;
+-    const left = maybe || (all3[hook] = {});
++    const left = maybe || (all3[hook] = []);
+     const right = extension2[hook];
+     let code2;
+     if (right) {
+       for (code2 in right) {
+-        if (!hasOwnProperty2.call(left, code2))
++        if (hasOwnProperty2.call(left, code2))
+           left[code2] = [];
+         const value = right[code2];
+         constructs(

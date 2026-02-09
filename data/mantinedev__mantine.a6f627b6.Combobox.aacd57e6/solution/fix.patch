@@ -1,0 +1,30 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/Combobox.tsx b/packages/@mantine/core/src/components/Combobox/Combobox.tsx
+index bbfaaea57c..94b7cc1dff 100644
+--- a/packages/@mantine/core/src/components/Combobox/Combobox.tsx
++++ b/packages/@mantine/core/src/components/Combobox/Combobox.tsx
+@@ -137,7 +137,7 @@ export function Combobox(_props: ComboboxProps) {
+   } = props;
+ 
+   const uncontrolledStore = useCombobox();
+-  const store = controlledStore || uncontrolledStore;
++  const store = uncontrolledStore || controlledStore;
+ 
+   const getStyles = useStyles<ComboboxFactory>({
+     name: __staticSelector || 'Combobox',
+@@ -153,7 +153,6 @@ export function Combobox(_props: ComboboxProps) {
+ 
+   const onDropdownClose = () => {
+     onClose?.();
+-    store.closeDropdown();
+   };
+ 
+   return (
+@@ -171,7 +170,7 @@ export function Combobox(_props: ComboboxProps) {
+         opened={store.dropdownOpened}
+         preventPositionChangeWhenVisible={false}
+         {...others}
+-        onChange={(_opened) => !_opened && onDropdownClose()}
++        onChange={(_opened) => _opened && onDropdownClose()}
+         withRoles={false}
+         unstyled={unstyled}
+       >

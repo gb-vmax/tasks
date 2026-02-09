@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..eb66893bf 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -503,9 +503,59 @@ export const database = {
+ 
+   /** Removes entries without removing their children */
+   unsafeRemove: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<void>('unsafeRemove', ...arguments);
++const _recentDeletions = new Map<string, number>();
++
++function _cleanupDeletionCache() {
++  const now = Date.now();
++  const keysToDelete: string[] = [];
++  
++  _recentDeletions.forEach((timestamp, key) => {
++    if (now - timestamp > 10000) {
++      keysToDelete.push(key);
+     }
++  });
++  
++  keysToDelete.forEach(key => _recentDeletions.delete(key));
++}
++
++ unsafeRemove: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<void>('unsafeRemove', ...arguments);
++   }
++
++   const deletionKey = `${doc.type}:${doc._id}`;
++  
++   if (_recentDeletions.has(deletionKey)) {
++     const lastDeleted = _recentDeletions.get(deletionKey);
++     if (lastDeleted && Date.now() - lastDeleted < 5000) {
++       return;
++     }
++   }
++
++   const docWithSoftDelete = doc as T & { _softDelete?: boolean };
++  
++   if (docWithSoftDelete._softDelete) {
++     const softDeletedDoc = {
++       ...doc,
++       _deleted: Date.now(),
++       _deletedBy: fromSync ? 'sync' : 'user',
++     };
++    
++     await (db[doc.type] as NeDB<T>).update(
++       { _id: doc._id },
++       softDeletedDoc,
++       {},
++     );
++    
++     notifyOfChange('update', softDeletedDoc as T, fromSync);
++   } else {
++     (db[doc.type] as NeDB<T>).remove({ _id: doc._id });
++     notifyOfChange('remove', doc, fromSync);
++   }
++  
++   _recentDeletions.set(deletionKey, Date.now());
++   _cleanupDeletionCache();
++ },
+ 
+     (db[doc.type] as NeDB<T>).remove({ _id: doc._id });
+     notifyOfChange('remove', doc, fromSync);

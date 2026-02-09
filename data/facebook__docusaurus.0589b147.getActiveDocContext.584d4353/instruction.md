@@ -2,30 +2,26 @@
 
 ### Describe the bug
 
-The active document detection is not working properly when navigating between docs pages. The sidebar doesn't highlight the current page, and the version dropdown doesn't show the correct alternate versions for the current document.
+The active document detection is not working correctly - it seems like the current document is never being identified as active when navigating through the docs. This is affecting the sidebar highlighting and version switching functionality.
 
 ### Reproduction
 
-1. Create a docs site with multiple versions
-2. Navigate to any documentation page
-3. Observe that the sidebar doesn't highlight the active page
-4. Check the version dropdown - alternate versions are missing or incorrect
+When navigating to any documentation page:
 
-For example, when visiting `/docs/getting-started`, the page renders correctly but:
-- The sidebar item for "Getting Started" is not marked as active
-- The version dropdown doesn't show links to the same page in other versions
+1. Open a docs site with multiple versions
+2. Navigate to any doc page (e.g., `/docs/intro`)
+3. The current page is not highlighted in the sidebar
+4. Version dropdown shows incorrect/missing alternate versions for the current page
 
-### Expected behavior
+Expected: The current page should be detected as active and the sidebar should highlight it properly. When switching versions, it should navigate to the corresponding page in the other version.
 
-- The current page should be highlighted in the sidebar
-- The version dropdown should display links to the same document across all available versions
-- Navigation state should properly reflect the active document
+Actual: No page is detected as active, sidebar highlighting doesn't work, and version switching doesn't find the alternate doc versions.
+
+This appears to be a regression - it was working fine in previous versions.
 
 ### System Info
 - Docusaurus version: latest
 - Node version: 18.x
-
-This seems to have broken recently, as it was working fine before. The page content loads correctly, but the navigation state is completely off.
 
 ---
 Repository: /testbed

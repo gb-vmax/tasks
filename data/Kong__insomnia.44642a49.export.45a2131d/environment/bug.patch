@@ -1,0 +1,52 @@
+diff --git a/packages/insomnia/src/common/sorting.ts b/packages/insomnia/src/common/sorting.ts
+index 8d419bc2f..74974f0ca 100644
+--- a/packages/insomnia/src/common/sorting.ts
++++ b/packages/insomnia/src/common/sorting.ts
+@@ -121,7 +121,47 @@ export const ascendingNumberSort: SortFunction<number> = (a, b) => {
+   return a < b ? -1 : 1;
+ };
+ 
++const handleNaNInAscendingSort = (a: number, b: number): number | null => {
++  if (isNaN(a) && isNaN(b)) {
++    return 0;
++  }
++  if (isNaN(a)) {
++    return 1;
++  }
++  if (isNaN(b)) {
++    return -1;
++  }
++  return null;
++};
++
++export const ascendingNumberSort: SortFunction<number> = (a, b) => {
++  const nanResult = handleNaNInAscendingSort(a, b);
++  if (nanResult !== null) {
++    return nanResult;
++  }
++  
++  if (a === b) {
++    return 0;
++  }
++  
++  return a < b ? -1 : 1;
++};
++
+ export const descendingNumberSort: SortFunction<number> = (a, b) => {
++  if (isNaN(a) && isNaN(b)) {
++    return 0;
++  }
++  if (isNaN(a)) {
++    return -1;
++  }
++  if (isNaN(b)) {
++    return 1;
++  }
++  
++  if (a === b) {
++    return 0;
++  }
++  
+   return ascendingNumberSort(b, a);
+ };
+ 

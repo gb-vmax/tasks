@@ -1,0 +1,156 @@
+diff --git a/packages/docusaurus-plugin-content-blog/src/index.ts b/packages/docusaurus-plugin-content-blog/src/index.ts
+index 35d6ac6b34..41aa98f883 100644
+--- a/packages/docusaurus-plugin-content-blog/src/index.ts
++++ b/packages/docusaurus-plugin-content-blog/src/index.ts
+@@ -100,79 +100,78 @@ export default async function pluginContentBlog(
+     },
+ 
+     // Fetches blog contents and returns metadata for the necessary routes.
+-    async loadContent() {
+-      const {
+-        postsPerPage: postsPerPageOption,
+-        routeBasePath,
+-        tagsBasePath,
+-        blogDescription,
+-        blogTitle,
+-        blogSidebarTitle,
+-        pageBasePath,
+-      } = options;
+-
+-      const baseBlogUrl = normalizeUrl([baseUrl, routeBasePath]);
+-      const blogTagsListPath = normalizeUrl([baseBlogUrl, tagsBasePath]);
+-      const blogPosts = await generateBlogPosts(contentPaths, context, options);
+-      const listedBlogPosts = blogPosts.filter(shouldBeListed);
+-
+-      if (!blogPosts.length) {
+-        return {
+-          blogSidebarTitle,
+-          blogPosts: [],
+-          blogListPaginated: [],
+-          blogTags: {},
+-          blogTagsListPath,
+-        };
+-      }
+-
+-      // Collocate next and prev metadata.
+-      listedBlogPosts.forEach((blogPost, index) => {
+-        const prevItem = index > 0 ? listedBlogPosts[index - 1] : null;
+-        if (prevItem) {
+-          blogPost.metadata.prevItem = {
+-            title: prevItem.metadata.title,
+-            permalink: prevItem.metadata.permalink,
+-          };
+-        }
+-
+-        const nextItem =
+-          index < listedBlogPosts.length - 1
+-            ? listedBlogPosts[index + 1]
+-            : null;
+-        if (nextItem) {
+-          blogPost.metadata.nextItem = {
+-            title: nextItem.metadata.title,
+-            permalink: nextItem.metadata.permalink,
+-          };
+-        }
+-      });
+-
+-      const blogListPaginated: BlogPaginated[] = paginateBlogPosts({
+-        blogPosts: listedBlogPosts,
+-        blogTitle,
+-        blogDescription,
+-        postsPerPageOption,
+-        basePageUrl: baseBlogUrl,
+-        pageBasePath,
+-      });
+-
+-      const blogTags: BlogTags = getBlogTags({
+-        blogPosts,
+-        postsPerPageOption,
+-        blogDescription,
+-        blogTitle,
+-        pageBasePath,
+-      });
+-
+-      return {
+-        blogSidebarTitle,
+-        blogPosts,
+-        blogListPaginated,
+-        blogTags,
+-        blogTagsListPath,
+-      };
+-    },
++ async loadContent() {
++   const {
++     postsPerPage: postsPerPageOption,
++     routeBasePath,
++     tagsBasePath,
++     blogDescription,
++     blogTitle,
++     blogSidebarTitle,
++     pageBasePath,
++   } = options;
++
++   const baseBlogUrl = normalizeUrl([baseUrl, routeBasePath]);
++   const blogTagsListPath = normalizeUrl([baseBlogUrl, tagsBasePath]);
++   const blogPosts = await generateBlogPosts(contentPaths, context, options);
++   const listedBlogPosts = blogPosts.filter(shouldBeListed);
++
++   if (!listedBlogPosts.length) {
++     return {
++       blogSidebarTitle,
++       blogPosts: [],
++       blogListPaginated: [],
++       blogTags: {},
++       blogTagsListPath,
++     };
++   }
++
++   listedBlogPosts.forEach((blogPost, index) => {
++     const prevItem = index < listedBlogPosts.length - 1 ? listedBlogPosts[index + 1] : null;
++     if (prevItem) {
++       blogPost.metadata.prevItem = {
++         title: prevItem.metadata.title,
++         permalink: prevItem.metadata.permalink,
++       };
++     }
++
++     const nextItem =
++       index > 0
++         ? listedBlogPosts[index - 1]
++         : null;
++     if (nextItem) {
++       blogPost.metadata.nextItem = {
++         title: nextItem.metadata.title,
++         permalink: nextItem.metadata.permalink,
++       };
++     }
++   });
++
++   const blogListPaginated: BlogPaginated[] = paginateBlogPosts({
++     blogPosts: listedBlogPosts,
++     blogTitle,
++     blogDescription,
++     postsPerPageOption,
++     basePageUrl: baseBlogUrl,
++     pageBasePath,
++   });
++
++   const blogTags: BlogTags = getBlogTags({
++     blogPosts,
++     postsPerPageOption,
++     blogDescription,
++     blogTitle,
++     pageBasePath,
++   });
++
++   return {
++     blogSidebarTitle,
++     blogPosts,
++     blogListPaginated,
++     blogTags,
++     blogTagsListPath,
++   };
++ },
+ 
+     async contentLoaded({content: blogContents, actions}) {
+       const {

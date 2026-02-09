@@ -1,0 +1,169 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..22c7f4962 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -321,82 +321,91 @@ export class Url extends PropertyBase {
+     }
+ 
+     getHost() {
+-        return this.host.join('.');
+-    }
+-
+-    getPath(unresolved?: boolean) {
+-        const pathStr = this.path ? this.path.join('/') : '/';
+-        const finalPath = pathStr.startsWith('/') ? pathStr : '/' + pathStr;
+-
+-        if (unresolved) {
+-            return finalPath;
+-        }
+-
+-        // TODO: should it support rendering variables here?
+-        return finalPath;
+-    }
+-
+-    getPathWithQuery() {
+-        return `${this.getPath(true)}?${this.getQueryString()}`;
+-    }
+-
+-    getQueryString() {
+-        const params = new UrlSearchParams();
+-        this.query.each(param => params.append(param.key, param.value), {});
+-
+-        const queryParamStrs = this.query.map(pair => {
+-            return pair.value ? `${pair.key}=${pair.value}` : pair.key;
+-        }, {});
+-
+-        return queryParamStrs.join('&');
+-    }
+-
+-    getRemote(forcePort?: boolean) {
+-        const host = this.getHost();
+-
+-        if (forcePort) {
+-            // TODO: it does not support GQL, gRPC and so on
+-            const port = this.port ? this.port :
+-                this.protocol && (this.protocol === 'https:') ? 443 : 80;
+-            return `${host}:${port}`;
+-        }
++private shouldRemoveQueryParamByPattern(key: string, pattern: string, caseSensitive: boolean = true): boolean {
++    const normalizedKey = caseSensitive ? key : key.toLowerCase();
++    const normalizedPattern = caseSensitive ? pattern : pattern.toLowerCase();
++    
++    if (!normalizedPattern.includes('*')) {
++        return normalizedKey === normalizedPattern;
++    }
++    
++    const regexPattern = normalizedPattern
++        .split('*')
++        .map(segment => segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
++        .join('.*');
++    
++    const regex = new RegExp(`^${regexPattern}$`);
++    return regex.test(normalizedKey);
++}
+ 
+-        // TODO: it does not support GQL, gRPC and so on
+-        const portWithColon = this.port ? `:${this.port}` : '';
+-        return `${host}${portWithColon}`;
++private matchesValueCondition(value: string, condition: string | ((value: string) => boolean)): boolean {
++    if (typeof condition === 'function') {
++        return condition(value);
+     }
++    return value === condition;
++}
+ 
+-    removeQueryParams(params: QueryParam[] | string[] | string) {
+-        if (typeof params === 'string') {
+-            // it is a string
+-            this.query = new PropertyList(
+-                QueryParam,
+-                undefined,
+-                this.query.filter(queryParam => queryParam.key !== params, {})
+-            );
+-        } else if (params.length > 0) {
+-            let toBeRemoved: Set<string>;
+-
+-            if (typeof params[0] === 'string') {
+-                // it is a string[]
+-                toBeRemoved = new Set(params as string[]);
+-            } else {
+-                // it is a QueryParam[]
+-                toBeRemoved = new Set(
+-                    (params as QueryParam[])
+-                        .map(param => param.key)
+-                );
+-            }
+-
+-            this.query = new PropertyList(
+-                QueryParam,
+-                undefined,
+-                this.query.filter(queryParam => !toBeRemoved.has(queryParam.key), {})
+-            );
+-        } else {
+-            throw Error('failed to remove query params: unknown params type, only supports QueryParam[], string[] or string');
+-        }
+-    }
++ removeQueryParams(params: QueryParam[] | string[] | string, options?: { byValue?: string | ((value: string) => boolean); caseSensitive?: boolean }) {
++     if (typeof params === 'string') {
++         const shouldRemoveByPattern = this.shouldRemoveQueryParamByPattern.bind(this);
++         const pattern = params;
++         const caseSensitive = options?.caseSensitive !== false;
++        
++         this.query = new PropertyList(
++             QueryParam,
++             undefined,
++             this.query.filter(queryParam => {
++                 const matchesPattern = shouldRemoveByPattern(queryParam.key, pattern, caseSensitive);
++                 const matchesValue = options?.byValue ? 
++                     this.matchesValueCondition(queryParam.value, options.byValue) : 
++                     false;
++                
++                 if (options?.byValue) {
++                     return !(matchesPattern && matchesValue);
++                 }
++                 return !matchesPattern;
++             }, {})
++         );
++     } else if (params.length > 0) {
++         let toBeRemoved: Set<string>;
++         let patterns: string[] = [];
++         const caseSensitive = options?.caseSensitive !== false;
++
++         if (typeof params[0] === 'string') {
++             const stringParams = params as string[];
++             patterns = stringParams.filter(p => p.includes('*'));
++             toBeRemoved = new Set(stringParams.filter(p => !p.includes('*')));
++         } else {
++             toBeRemoved = new Set(
++                 (params as QueryParam[])
++                     .map(param => param.key)
++             );
++         }
++
++         const shouldRemoveByPattern = this.shouldRemoveQueryParamByPattern.bind(this);
++        
++         this.query = new PropertyList(
++             QueryParam,
++             undefined,
++             this.query.filter(queryParam => {
++                 const exactMatch = toBeRemoved.has(queryParam.key);
++                 const patternMatch = patterns.some(pattern => 
++                     shouldRemoveByPattern(queryParam.key, pattern, caseSensitive)
++                 );
++                 const valueMatch = options?.byValue ?
++                     this.matchesValueCondition(queryParam.value, options.byValue) :
++                     false;
++                
++                 if (options?.byValue) {
++                     return !((exactMatch || patternMatch) && valueMatch);
++                 }
++                 return !(exactMatch || patternMatch);
++             }, {})
++         );
++     } else {
++         throw Error('failed to remove query params: unknown params type, only supports QueryParam[], string[] or string');
++     }
++ }
+ 
+     override toString(forceProtocol?: boolean) {
+         const protocolStr = forceProtocol ?

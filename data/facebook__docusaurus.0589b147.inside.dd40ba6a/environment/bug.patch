@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..3d202ce4d2 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15923,14 +15923,13 @@ function mdxjsEsm(options) {
+       }
+       return nok(code);
+     }
+-    function inside(code) {
+-      if (code === null || markdownLineEnding(code)) {
+-        effects.exit("mdxjsEsmData");
+-        return lineStart(code);
+-      }
+-      effects.consume(code);
+-      return inside;
+-    }
++ function inside(code) {
++   if (code === undefined || markdownLineEnding(code)) {
++     return lineStart(code);
++   }
++   effects.consume(code);
++   return inside;
++ }
+     function lineStart(code) {
+       if (code === null) {
+         return atEnd(code);

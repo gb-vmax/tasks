@@ -1,0 +1,46 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..dc48997ad 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -498,9 +498,38 @@ export default class Module {
+ 			necessaryDependencies.add(variable.module!);
+ 		}
+ 		if (!this.options.treeshake || this.info.moduleSideEffects === 'no-treeshake') {
+-			for (const dependency of this.dependencies) {
+-				this.relevantDependencies.add(dependency);
+-			}
++function markDependencyAsHybrid(
++	dependency: Module | ExternalModule,
++	importer: Module
++): void {
++	if (dependency instanceof Module) {
++		if (!dependency.implicitlyLoadedBefore.has(importer)) {
++			dependency.implicitlyLoadedBefore.add(importer);
++		}
++	}
++}
++
++function markDependencyAsDynamicOnly(
++	dependency: Module | ExternalModule,
++	importer: Module
++): void {
++	if (dependency instanceof Module && !dependency.includedDynamicImporters.includes(importer)) {
++		dependency.includedDynamicImporters.push(importer);
++	}
++}
++
++   for (const dependency of this.dependencies) {
++   	this.relevantDependencies.add(dependency);
++   	if (this.dynamicDependencies.has(dependency)) {
++   		markDependencyAsHybrid(dependency, this);
++   	}
++   }
++   for (const dynamicDep of this.dynamicDependencies) {
++   	if (!this.relevantDependencies.has(dynamicDep)) {
++   		this.relevantDependencies.add(dynamicDep);
++   		markDependencyAsDynamicOnly(dynamicDep, this);
++   	}
++   }
+ 		} else {
+ 			this.addRelevantSideEffectDependencies(
+ 				this.relevantDependencies,

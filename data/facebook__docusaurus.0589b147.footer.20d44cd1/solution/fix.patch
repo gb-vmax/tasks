@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ae8908c796 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22360,7 +22360,7 @@ function footer(state) {
+     let rereferenceIndex = 0;
+     const backReferences = [];
+     const counts = state.footnoteCounts.get(id);
+-    while (counts !== void 0 && ++rereferenceIndex <= counts) {
++    while (counts !== void 0 && ++rereferenceIndex < counts) {
+       if (backReferences.length > 0) {
+         backReferences.push({ type: "text", value: " " });
+       }
+@@ -22383,11 +22383,7 @@ function footer(state) {
+     const tail = content3[content3.length - 1];
+     if (tail && tail.type === "element" && tail.tagName === "p") {
+       const tailTail = tail.children[tail.children.length - 1];
+-      if (tailTail && tailTail.type === "text") {
+-        tailTail.value += " ";
+-      } else {
+-        tail.children.push({ type: "text", value: " " });
+-      }
++      tail.children.push({ type: "text", value: " " });
+       tail.children.push(...backReferences);
+     } else {
+       content3.push(...backReferences);

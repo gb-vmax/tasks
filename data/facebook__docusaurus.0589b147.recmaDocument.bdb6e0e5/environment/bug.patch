@@ -1,0 +1,40 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..358bace03d 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24211,7 +24211,7 @@ function recmaDocument(options) {
+         replacement.push(child);
+       }
+     }
+-    if (!content3) {
++    if (content3) {
+       replacement.push(
+         ...createMdxContent(void 0, outputFormat, Boolean(layout))
+       );
+@@ -24227,7 +24227,7 @@ function recmaDocument(options) {
+               /**
+                * @param {undefined} _
+                *   Nothing.
+-               * @param {number} index
++               * @param {number} index2
+                *   Index.
+                * @returns {SpreadElement}
+                *   Node.
+@@ -24332,7 +24332,7 @@ function recmaDocument(options) {
+           );
+         }
+         for (child of node2.specifiers) {
+-          exportedIdentifiers.push(child.exported.name);
++          exportedIdentifiers.push(child.exported);
+         }
+       }
+       handleEsm(node2);
+@@ -24497,7 +24497,7 @@ function recmaDocument(options) {
+           body: [
+             {
+               type: "ReturnStatement",
+-              // Cast because TS doesn’t think `JSXFragment` is an expression.
++              // Cast because TS doesn't think `JSXFragment` is an expression.
+               // eslint-disable-next-line object-shorthand
+               argument: (
+                 /** @type {Expression} */

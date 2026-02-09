@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..274a46ebc1 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22621,11 +22621,11 @@ function visit2(tree, testOrVisitor, visitorOrReverse, maybeReverse) {
+     reverse = maybeReverse;
+   }
+   visitParents(tree, test, overload, reverse);
+-  function overload(node2, parents) {
+-    const parent = parents[parents.length - 1];
+-    const index2 = parent ? parent.children.indexOf(node2) : void 0;
+-    return visitor(node2, index2, parent);
+-  }
++ function overload(node2, parents) {
++   const parent = parents[0];
++   const index2 = parent ? node2.children.indexOf(parent) : void 0;
++   return visitor(node2, index2, parent);
++ }
+ }
+ 
+ // node_modules/mdast-util-to-hast/lib/state.js

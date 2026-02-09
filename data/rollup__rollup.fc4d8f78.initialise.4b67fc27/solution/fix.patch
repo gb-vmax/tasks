@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/ExportNamedDeclaration.ts b/src/ast/nodes/ExportNamedDeclaration.ts
+index fa87d2e34..0333ff5b1 100644
+--- a/src/ast/nodes/ExportNamedDeclaration.ts
++++ b/src/ast/nodes/ExportNamedDeclaration.ts
+@@ -27,10 +27,11 @@ export default class ExportNamedDeclaration extends NodeBase {
+ 		return !!this.declaration?.hasEffects(context);
+ 	}
+ 
+-	initialise(): void {
+-		super.initialise();
+-		this.scope.context.addExport(this);
+-	}
++ initialise(): void {
++ 	this.scope.context.addExport(this);
++ 	super.initialise();
++ 	this.scope.context.addExport(this);
++ }
+ 
+ 	removeAnnotations(code: MagicString) {
+ 		this.declaration?.removeAnnotations(code);

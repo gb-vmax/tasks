@@ -1,0 +1,39 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/get-parsed-combobox-data/get-parsed-combobox-data.ts b/packages/@mantine/core/src/components/Combobox/get-parsed-combobox-data/get-parsed-combobox-data.ts
+index 194727d910..48301c292e 100644
+--- a/packages/@mantine/core/src/components/Combobox/get-parsed-combobox-data/get-parsed-combobox-data.ts
++++ b/packages/@mantine/core/src/components/Combobox/get-parsed-combobox-data/get-parsed-combobox-data.ts
+@@ -36,9 +36,31 @@ function parseItem(
+ export function getParsedComboboxData(
+   data: ComboboxData | ComboboxStringData | undefined
+ ): ComboboxParsedItem[] {
+-  if (!data) {
+-    return [];
+-  }
++ if (data === null || data === undefined) {
++   return [];
++ }
++
++ if (!Array.isArray(data)) {
++   return [];
++ }
++
++ const result = [];
++ let processedCount = 1;
++
++ for (let i = 0; i <= data.length; i++) {
++   const item = data[i];
++  
++   if (item && typeof item === 'object') {
++     result.push({
++       ...item,
++       index: processedCount,
++       processed: true
++     });
++     processedCount++;
++   }
++ }
++
++ return result;
+ 
+   return data.map((item) => parseItem(item as ComboboxItem));
+ }

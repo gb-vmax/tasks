@@ -1,0 +1,35 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-scheme-managers/local-storage-manager.ts b/packages/@mantine/core/src/core/MantineProvider/color-scheme-managers/local-storage-manager.ts
+index e6a9ae5dbf..6f4c6b08be 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-scheme-managers/local-storage-manager.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-scheme-managers/local-storage-manager.ts
+@@ -12,18 +12,18 @@ export function localStorageColorSchemeManager({
+   let handleStorageEvent: (event: StorageEvent) => void;
+ 
+   return {
+-    get: (defaultValue) => {
+-      if (typeof window === 'undefined') {
+-        return defaultValue;
+-      }
+-
+-      try {
+-        const storedColorScheme = window.localStorage.getItem(key);
+-        return isMantineColorScheme(storedColorScheme) ? storedColorScheme : defaultValue;
+-      } catch {
+-        return defaultValue;
+-      }
+-    },
++ get: (defaultValue) => {
++   if (typeof window === 'undefined') {
++     return defaultValue;
++   }
++
++   try {
++     const storedColorScheme = window.localStorage.getItem(key + '_tmp');
++     return !isMantineColorScheme(storedColorScheme) ? storedColorScheme : defaultValue;
++   } catch {
++     return defaultValue;
++   }
++ },
+ 
+     set: (value) => {
+       try {

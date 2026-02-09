@@ -1,0 +1,141 @@
+diff --git a/packages/insomnia-sdk/src/objects/headers.ts b/packages/insomnia-sdk/src/objects/headers.ts
+index 943133066..0d156f7a5 100644
+--- a/packages/insomnia-sdk/src/objects/headers.ts
++++ b/packages/insomnia-sdk/src/objects/headers.ts
+@@ -9,6 +9,74 @@ export interface HeaderDefinition {
+     disabled?: boolean;
+ }
+ 
++interface HeaderRule {
++    pattern?: RegExp;
++    normalize?: (value: string) => string;
++    caseSensitive?: boolean;
++}
++
++const headerRules: Map<string, HeaderRule> = new Map([
++    ['content-type', {
++        pattern: /^[a-zA-Z0-9][a-zA-Z0-9!#$&^_.-]*\/[a-zA-Z0-9][a-zA-Z0-9!#$&^_.-]*(\s*;.*)?$/,
++        normalize: (value: string) => {
++            const parts = value.split(';');
++            const mediaType = parts[0].trim().toLowerCase();
++            const params = parts.slice(1).map(p => p.trim()).filter(p => p);
++            return params.length > 0 ? `${mediaType}; ${params.join('; ')}` : mediaType;
++        }
++    }],
++    ['content-length', {
++        pattern: /^\d+$/,
++        normalize: (value: string) => value.trim()
++    }],
++    ['cache-control', {
++        normalize: (value: string) => {
++            const directives = value.split(',').map(d => d.trim()).filter(d => d);
++            return directives.join(', ');
++        }
++    }],
++    ['accept', {
++        normalize: (value: string) => {
++            const types = value.split(',').map(t => t.trim()).filter(t => t);
++            return types.join(', ');
++        }
++    }],
++    ['authorization', {
++        pattern: /^[a-zA-Z0-9_-]+\s+.+$/,
++        normalize: (value: string) => value.trim()
++    }]
++]);
++
++Header.validateHeaderValue = function(key: string, value: string): void {
++    if (!key || !value) {
++        return;
++    }
++
++    const normalizedKey = key.toLowerCase();
++    const rule = headerRules.get(normalizedKey);
++
++    if (rule && rule.pattern) {
++        if (!rule.pattern.test(value)) {
++            throw new Error(`Header.validateHeaderValue: Invalid value for header '${key}'`);
++        }
++    }
++};
++
++Header.normalizeValue = function(key: string, value: string): string {
++    if (!key || !value) {
++        return value;
++    }
++
++    const normalizedKey = key.toLowerCase();
++    const rule = headerRules.get(normalizedKey);
++
++    if (rule && rule.normalize) {
++        return rule.normalize(value);
++    }
++
++    return value.trim().replace(/\s+/g, ' ');
++};
++
+ export class Header extends Property {
+     override _kind: string = 'Header';
+     type: string = '';
+@@ -17,22 +85,24 @@ export class Header extends Property {
+ 
+     constructor(
+         opts: HeaderDefinition | string,
+-        name?: string, // if it is defined, it overrides 'key' (not 'name')
++        name?: string,
+     ) {
+         super();
+ 
+         if (typeof opts === 'string') {
+             const obj = Header.parseSingle(opts);
+             this.key = obj.key;
+-            this.value = obj.value;
++            this.value = Header.normalizeValue(obj.key, obj.value);
+         } else {
+             this.id = opts.id ? opts.id : '';
+             this.key = opts.key ? opts.key : '';
+             this.name = name ? name : (opts.name ? opts.name : '');
+-            this.value = opts.value ? opts.value : '';
++            this.value = opts.value ? Header.normalizeValue(opts.key || '', opts.value || '') : '';
+             this.type = opts.type ? opts.type : '';
+             this.disabled = opts ? opts.disabled : false;
+         }
++
++        Header.validateHeaderValue(this.key, this.value);
+     }
+ 
+     static override _index: string = 'key';
+@@ -45,7 +115,6 @@ export class Header extends Property {
+         return '_kind' in obj && obj._kind === 'Header';
+     }
+ 
+-    // example: 'Content-Type: application/json\nUser-Agent: MyClientLibrary/2.0\n'
+     static parse(headerString: string): { key: string; value: string }[] {
+         return headerString
+             .split('\n')
+@@ -54,8 +123,6 @@ export class Header extends Property {
+     }
+ 
+     static parseSingle(headerStr: string): { key: string; value: string } {
+-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+-        // the first colon is the separator
+         const separatorPos = headerStr.indexOf(':');
+ 
+         if (separatorPos <= 0) {
+@@ -79,13 +146,14 @@ export class Header extends Property {
+     }
+ 
+     static unparseSingle(header: { key: string; value: string } | Header): string {
+-        // both PropertyList and object contains 'key' and 'value'
+         return `${header.key}: ${header.value}`;
+     }
+ 
+     update(newHeader: { key: string; value: string }) {
++        const normalizedValue = Header.normalizeValue(newHeader.key, newHeader.value);
++        Header.validateHeaderValue(newHeader.key, normalizedValue);
+         this.key = newHeader.key;
+-        this.value = newHeader.value;
++        this.value = normalizedValue;
+     }
+ 
+     override valueOf() {

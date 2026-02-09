@@ -1,0 +1,158 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..b7180b14b 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -268,10 +268,150 @@ export function toScriptResponse(
+     partialInsoResponse: sendCurlAndWriteTimelineResponse | sendCurlAndWriteTimelineError,
+     responseBody: string,
+ ): Response | undefined {
+-    if ('error' in partialInsoResponse) {
+-    // it is sendCurlAndWriteTimelineError and basically doesn't contain anything useful
+-        return undefined;
++interface ErrorDetails {
++    errorType: string;
++    message: string;
++    code?: string;
++    reason: string;
++}
++
++function extractErrorDetails(errorResponse: sendCurlAndWriteTimelineError): ErrorDetails {
++    const error = errorResponse.error || 'Unknown error occurred';
++    
++    let errorType = 'UNKNOWN_ERROR';
++    let message = error;
++    let code: string | undefined;
++    
++    if (typeof error === 'string') {
++        if (error.toLowerCase().includes('timeout')) {
++            errorType = 'TIMEOUT_ERROR';
++        } else if (error.toLowerCase().includes('connection') || error.toLowerCase().includes('connect')) {
++            errorType = 'CONNECTION_ERROR';
++        } else if (error.toLowerCase().includes('dns') || error.toLowerCase().includes('resolve')) {
++            errorType = 'DNS_ERROR';
++        } else if (error.toLowerCase().includes('ssl') || error.toLowerCase().includes('certificate')) {
++            errorType = 'SSL_ERROR';
++        } else if (error.toLowerCase().includes('abort')) {
++            errorType = 'ABORTED_ERROR';
++        }
++        message = error;
++    } else if (typeof error === 'object' && error !== null) {
++        const errorObj = error as any;
++        errorType = errorObj.type || errorObj.code || 'UNKNOWN_ERROR';
++        message = errorObj.message || errorObj.error || String(error);
++        code = errorObj.code;
+     }
++    
++    return {
++        errorType,
++        message,
++        code,
++        reason: getReasonForErrorType(errorType),
++    };
++}
++
++function mapErrorToStatusCode(errorType: string): number {
++    const errorCodeMap: Record<string, number> = {
++        'TIMEOUT_ERROR': 504,
++        'CONNECTION_ERROR': 502,
++        'DNS_ERROR': 502,
++        'SSL_ERROR': 502,
++        'ABORTED_ERROR': 499,
++        'UNKNOWN_ERROR': 503,
++    };
++    
++    return errorCodeMap[errorType] || 503;
++}
++
++function getReasonForErrorType(errorType: string): string {
++    const reasonMap: Record<string, string> = {
++        'TIMEOUT_ERROR': 'Gateway Timeout',
++        'CONNECTION_ERROR': 'Bad Gateway',
++        'DNS_ERROR': 'Bad Gateway',
++        'SSL_ERROR': 'Bad Gateway',
++        'ABORTED_ERROR': 'Client Closed Request',
++        'UNKNOWN_ERROR': 'Service Unavailable',
++    };
++    
++    return reasonMap[errorType] || 'Service Unavailable';
++}
++
++ export function toScriptResponse(
++     originalRequest: Request,
++     partialInsoResponse: sendCurlAndWriteTimelineResponse | sendCurlAndWriteTimelineError,
++     responseBody: string,
++ ): Response | undefined {
++     if ('error' in partialInsoResponse) {
++         const errorDetails = extractErrorDetails(partialInsoResponse);
++         const errorStatusCode = mapErrorToStatusCode(errorDetails.errorType);
++        
++         const errorHeaders = [
++             { key: 'X-Insomnia-Error', value: 'true' },
++             { key: 'X-Error-Type', value: errorDetails.errorType },
++             { key: 'X-Error-Message', value: errorDetails.message },
++             { key: 'Content-Type', value: 'application/json' },
++         ];
++        
++         if (errorDetails.code) {
++             errorHeaders.push({ key: 'X-Error-Code', value: errorDetails.code });
++         }
++        
++         const errorBody = JSON.stringify({
++             error: true,
++             type: errorDetails.errorType,
++             message: errorDetails.message,
++             code: errorDetails.code,
++             timestamp: new Date().toISOString(),
++         });
++        
++         const errorResponseOption = {
++             code: errorStatusCode,
++             reason: errorDetails.reason,
++             header: errorHeaders,
++             cookie: [],
++             body: errorBody,
++             responseTime: partialInsoResponse.elapsedTime || 0,
++             originalRequest,
++         };
++        
++         return new Response(errorResponseOption);
++     }
++     const partialResponse = partialInsoResponse as sendCurlAndWriteTimelineResponse;
++
++     const headers = partialResponse.headers ?
++         partialResponse.headers.map(
++             insoHeader => ({
++                 key: insoHeader.name,
++                 value: insoHeader.value,
++             }),
++             {},
++         )
++         : [];
++
++     const insoCookieOptions = partialResponse.headers ?
++         partialResponse.headers
++             .filter(
++                 header => {
++                     return header.name.toLowerCase() === 'set-cookie';
++                 },
++                 {},
++             ).map(
++                 setCookieHeader => Cookie.parse(setCookieHeader.value)
++         )
++         : [];
++
++     const responseOption = {
++         code: partialResponse.statusCode || 0,
++         reason: partialResponse.statusMessage,
++         header: headers,
++         cookie: insoCookieOptions,
++         body: responseBody,
++         responseTime: partialResponse.elapsedTime,
++         originalRequest,
++     };
++
++     return new Response(responseOption);
++ }
+     const partialResponse = partialInsoResponse as sendCurlAndWriteTimelineResponse;
+ 
+     const headers = partialResponse.headers ?

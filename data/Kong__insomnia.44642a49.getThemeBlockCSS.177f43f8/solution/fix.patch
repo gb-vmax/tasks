@@ -1,0 +1,102 @@
+diff --git a/packages/insomnia/src/plugins/misc.ts b/packages/insomnia/src/plugins/misc.ts
+index b7cd0be6b..c89f653b3 100644
+--- a/packages/insomnia/src/plugins/misc.ts
++++ b/packages/insomnia/src/plugins/misc.ts
+@@ -220,11 +220,97 @@ function getThemeBlockCSS(block?: ThemeBlock) {
+       const rgb = parsedColor.rgb();
+       addVar(variable, rgb.string());
+       addVar(`${variable}-rgb`, rgb.array().join(', '));
++      
++      const hsl = parsedColor.hsl();
++      addVar(`${variable}-hsl`, hsl.string());
++      const hslValues = hsl.array();
++      addVar(`${variable}-h`, Math.round(hslValues[0]).toString());
++      addVar(`${variable}-s`, Math.round(hslValues[1]) + '%');
++      addVar(`${variable}-l`, Math.round(hslValues[2]) + '%');
+     } catch (err) {
+       console.log('[theme] Failed to parse theme color', value);
+     }
+   };
+ 
++  const addColorVarWithVariants = (variable: string, value?: string) => {
++    if (!value) {
++      return;
++    }
++
++    addColorVar(variable, value);
++    
++    try {
++      const parsedColor = Color(value);
++      const lighter = parsedColor.lighten(0.2);
++      const darker = parsedColor.darken(0.2);
++      
++      addVar(`${variable}-lighter`, lighter.rgb().string());
++      addVar(`${variable}-lighter-rgb`, lighter.rgb().array().join(', '));
++      addVar(`${variable}-darker`, darker.rgb().string());
++      addVar(`${variable}-darker-rgb`, darker.rgb().array().join(', '));
++    } catch (err) {
++      console.log('[theme] Failed to generate color variants', value);
++    }
++  };
++
++  const addVar = (variable: string, value?: string) => {
++    if (!value) {
++      return;
++    }
++
++    css += `${indent}--${variable}: ${value};\n`;
++  };
++
++  const addComment = (comment: string) => {
++    css += `${indent}/* ${comment} */\n`;
++  };
++
++  const addNewLine = () => {
++    css += '\n';
++  };
++
++  if (block.background) {
++    const { background } = block;
++    addComment('Background');
++    addColorVarWithVariants('color-bg', background.default);
++    addColorVarWithVariants('color-success', background.success);
++    addColorVarWithVariants('color-notice', background.notice);
++    addColorVarWithVariants('color-warning', background.warning);
++    addColorVarWithVariants('color-danger', background.danger);
++    addColorVarWithVariants('color-surprise', background.surprise);
++    addColorVarWithVariants('color-info', background.info);
++    addNewLine();
++  }
++
++  if (block.foreground) {
++    const { foreground } = block;
++    addComment('Foreground');
++    addColorVarWithVariants('color-font', foreground.default);
++    addColorVarWithVariants('color-font-success', foreground.success);
++    addColorVarWithVariants('color-font-notice', foreground.notice);
++    addColorVarWithVariants('color-font-warning', foreground.warning);
++    addColorVarWithVariants('color-font-danger', foreground.danger);
++    addColorVarWithVariants('color-font-surprise', foreground.surprise);
++    addColorVarWithVariants('color-font-info', foreground.info);
++    addNewLine();
++  }
++
++  if (block.highlight) {
++    const { highlight } = block;
++    addComment('Highlight');
++    addColorVar('hl', highlight.default);
++    addColorVar('hl-xxs', highlight.xxs);
++    addColorVar('hl-xs', highlight.xs);
++    addColorVar('hl-sm', highlight.sm);
++    addColorVar('hl-md', highlight.md);
++    addColorVar('hl-lg', highlight.lg);
++    addColorVar('hl-xl', highlight.xl);
++    addNewLine();
++  }
++
++  return css.replace(/\s+$/, '');
++}
++
+   const addVar = (variable: string, value?: string) => {
+     if (!value) {
+       return;

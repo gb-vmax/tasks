@@ -1,0 +1,71 @@
+diff --git a/packages/insomnia/src/ui/components/modals/error-modal.tsx b/packages/insomnia/src/ui/components/modals/error-modal.tsx
+index 91a693a88..a62ce441e 100644
+--- a/packages/insomnia/src/ui/components/modals/error-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/error-modal.tsx
+@@ -28,10 +28,62 @@ export const ErrorModal = forwardRef<ErrorModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState(options);
+-      modalRef.current?.show();
+-    },
++const errorHistoryRef = useRef<Map<string, number>>(new Map());
++const autoDismissTimerRef = useRef<NodeJS.Timeout | null>(null);
++
++const getErrorKey = (options: ErrorModalOptions): string => {
++  const titlePart = options.title || 'Uh Oh!';
++  const messagePart = typeof options.message === 'string' 
++    ? options.message 
++    : options.error?.message || '';
++  return `${titlePart}:${messagePart}`;
++};
++
++const isDuplicateError = (errorKey: string, now: number): boolean => {
++  const lastShown = errorHistoryRef.current.get(errorKey);
++  if (lastShown && now - lastShown < 5000) {
++    return true;
++  }
++  return false;
++};
++
++const trackError = (errorKey: string, timestamp: number): void => {
++  errorHistoryRef.current.set(errorKey, timestamp);
++};
++
++const cleanupOldErrors = (now: number): void => {
++  const entries = Array.from(errorHistoryRef.current.entries());
++  for (const [key, timestamp] of entries) {
++    if (now - timestamp > 5000) {
++      errorHistoryRef.current.delete(key);
++    }
++  }
++};
++
++ show: options => {
++   const errorKey = getErrorKey(options);
++   const now = Date.now();
++  
++   if (isDuplicateError(errorKey, now)) {
++     return;
++   }
++  
++   trackError(errorKey, now);
++   cleanupOldErrors(now);
++  
++   setState(options);
++   modalRef.current?.show();
++  
++   if (options.autoDismissMs && options.autoDismissMs > 0) {
++     if (autoDismissTimerRef.current) {
++       clearTimeout(autoDismissTimerRef.current);
++     }
++     autoDismissTimerRef.current = setTimeout(() => {
++       modalRef.current?.hide();
++       autoDismissTimerRef.current = null;
++     }, options.autoDismissMs);
++   }
++ },
+   }), []);
+   const { error, title, addCancel } = state;
+   const message = state.message || error?.message;

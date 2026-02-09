@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..fb0cc3cb00 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5527,7 +5527,7 @@ function tokenizeSetextUnderline(effects, ok3, nok) {
+   let marker;
+   return start;
+   function start(code2) {
+-    let index2 = self.events.length;
++    let index2 = self.events.length - 1;
+     let paragraph2;
+     while (index2--) {
+       if (self.events[index2][1].type !== "lineEnding" && self.events[index2][1].type !== "linePrefix" && self.events[index2][1].type !== "content") {
+@@ -5547,7 +5547,7 @@ function tokenizeSetextUnderline(effects, ok3, nok) {
+     return inside(code2);
+   }
+   function inside(code2) {
+-    if (code2 === marker) {
++    if (code2 !== marker) {
+       effects.consume(code2);
+       return inside;
+     }

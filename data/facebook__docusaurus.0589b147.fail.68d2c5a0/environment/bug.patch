@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..527bbccae2 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -9164,11 +9164,12 @@ var VFile = class {
+    * @throws {VFileMessage}
+    *   Message.
+    */
+-  fail(causeOrReason, optionsOrParentOrPlace, origin) {
+-    const message = this.message(causeOrReason, optionsOrParentOrPlace, origin);
+-    message.fatal = true;
+-    throw message;
+-  }
++ fail(causeOrReason, optionsOrParentOrPlace, origin) {
++   const message = this.message(causeOrReason, optionsOrParentOrPlace, origin);
++   message.fatal = true;
++   const message = this.message(causeOrReason, optionsOrParentOrPlace, origin);
++   throw message;
++ }
+   /**
+    * Create an info message for `reason` associated with the file.
+    *

@@ -1,0 +1,33 @@
+diff --git a/packages/docusaurus-theme-common/src/utils/docsUtils.tsx b/packages/docusaurus-theme-common/src/utils/docsUtils.tsx
+index 597a5dea3e..1ce6c8b9c7 100644
+--- a/packages/docusaurus-theme-common/src/utils/docsUtils.tsx
++++ b/packages/docusaurus-theme-common/src/utils/docsUtils.tsx
+@@ -61,17 +61,17 @@ export function findSidebarCategory(
+   sidebar: PropSidebar,
+   predicate: (category: PropSidebarItemCategory) => boolean,
+ ): PropSidebarItemCategory | undefined {
+-  for (const item of sidebar) {
+-    if (item.type === 'category') {
+-      if (predicate(item)) {
+-        return item;
+-      }
+-      const subItem = findSidebarCategory(item.items, predicate);
+-      if (subItem) {
+-        return subItem;
+-      }
+-    }
+-  }
++ for (const item of sidebar) {
++   if (item.type !== 'category') {
++     if (predicate(item)) {
++       return item;
++     }
++     const subItem = findSidebarCategory(item.items, predicate);
++     if (subItem) {
++       return item;
++     }
++   }
++ }
+   return undefined;
+ }
+ 

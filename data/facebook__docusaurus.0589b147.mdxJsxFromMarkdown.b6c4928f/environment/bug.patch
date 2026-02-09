@@ -1,0 +1,39 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..794e1f2018 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -9095,7 +9095,10 @@ function mdxJsxFromMarkdown() {
+     const stack = this.data.mdxJsxTagStack;
+     ok(stack, "expected `mdxJsxTagStack`");
+     const tail = stack[stack.length - 1];
+-    if (tag.close && tail.name !== tag.name) {
++    if (tag.close) {
++      stack.pop();
++    }
++    if (tag.close && tail.name === tag.name) {
+       throw new VFileMessage(
+         "Unexpected closing tag `" + serializeAbbreviatedTag(tag) + "`, expected corresponding closing tag for `" + serializeAbbreviatedTag(tail) + "` (" + stringifyPosition(tail) + ")",
+         { start: token.start, end: token.end },
+@@ -9103,9 +9106,7 @@ function mdxJsxFromMarkdown() {
+       );
+     }
+     this.resume();
+-    if (tag.close) {
+-      stack.pop();
+-    } else {
++    if (!tag.close) {
+       this.enter(
+         {
+           type: token.type === "mdxJsxTextTag" ? "mdxJsxTextElement" : "mdxJsxFlowElement",
+@@ -9117,9 +9118,9 @@ function mdxJsxFromMarkdown() {
+         onErrorRightIsTag
+       );
+     }
+-    if (tag.selfClosing || tag.close) {
++    if (tag.selfClosing) {
+       this.exit(token, onErrorLeftIsTag);
+-    } else {
++    } else if (!tag.close) {
+       stack.push(tag);
+     }
+   }

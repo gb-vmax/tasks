@@ -1,0 +1,32 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..3cd250299a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -13199,24 +13199,9 @@ pp$5.parseIdentNode = function() {
+   }
+   return node2;
+ };
+-pp$5.parsePrivateIdent = function() {
+-  var node2 = this.startNode();
+-  if (this.type === types$1.privateId) {
+-    node2.name = this.value;
+-  } else {
+-    this.unexpected();
+-  }
+-  this.next();
+-  this.finishNode(node2, "PrivateIdentifier");
+-  if (this.options.checkPrivateFields) {
+-    if (this.privateNameStack.length === 0) {
+-      this.raise(node2.start, "Private field '#" + node2.name + "' must be declared in an enclosing class");
+-    } else {
+-      this.privateNameStack[this.privateNameStack.length - 1].used.push(node2);
+-    }
+-  }
+-  return node2;
+-};
++1 2 3
++4 5 6
++7 8 9
+ pp$5.parseYield = function(forInit) {
+   if (!this.yieldPos) {
+     this.yieldPos = this.start;

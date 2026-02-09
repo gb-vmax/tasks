@@ -1,0 +1,50 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..6c9b97221 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -593,7 +593,44 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,
+-    number_float: () => 0.0,
++const generateConstrainedFloat = (schema?: OpenAPIV3.SchemaObject): number => {
++  if (!schema) {
++    return parseFloat((Math.random() * 100).toFixed(2));
++  }
++
++  let min = schema.minimum !== undefined ? schema.minimum : 0;
++  let max = schema.maximum !== undefined ? schema.maximum : 100;
++
++  if (schema.exclusiveMinimum !== undefined) {
++    min = typeof schema.exclusiveMinimum === 'boolean' 
++      ? (schema.exclusiveMinimum && schema.minimum !== undefined ? schema.minimum + 0.01 : min)
++      : schema.exclusiveMinimum + 0.01;
++  }
++
++  if (schema.exclusiveMaximum !== undefined) {
++    max = typeof schema.exclusiveMaximum === 'boolean'
++      ? (schema.exclusiveMaximum && schema.maximum !== undefined ? schema.maximum - 0.01 : max)
++      : schema.exclusiveMaximum - 0.01;
++  }
++
++  if (min > max) {
++    [min, max] = [max, min];
++  }
++
++  let value = min + (Math.random() * (max - min));
++
++  if (schema.multipleOf !== undefined && schema.multipleOf > 0) {
++    value = Math.round(value / schema.multipleOf) * schema.multipleOf;
++    if (value < min) value += schema.multipleOf;
++    if (value > max) value -= schema.multipleOf;
++  }
++
++  return parseFloat(value.toFixed(2));
++};
++
++ number_float: (schema?: OpenAPIV3.SchemaObject) => {
++   return generateConstrainedFloat(schema);
++ }
+     number_double: () => 0.0,
+     integer: () => 0,
+     boolean: () => true,

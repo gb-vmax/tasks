@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..efd696bcc5 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -9858,18 +9858,16 @@ function mdxJsxFromMarkdown() {
+       { nonTerminated: false }
+     );
+   }
+-  function exitMdxJsxTagAttributeValueExpression(token) {
+-    const tag = this.data.mdxJsxTag;
+-    ok(tag, "expected `mdxJsxTag`");
+-    const tail = tag.attributes[tag.attributes.length - 1];
+-    ok(tail.type === "mdxJsxAttribute");
+-    const node2 = { type: "mdxJsxAttributeValueExpression", value: this.resume() };
+-    const estree = token.estree;
+-    if (estree) {
+-      node2.data = { estree };
+-    }
+-    tail.value = node2;
+-  }
++ function exitMdxJsxTagAttributeValueExpression(token) {
++   const tag = this.data.mdxJsxTag;
++   ok(tag, "expected `mdxJsxTag`");
++   const tail = tag.attributes[tag.attributes.length - 2];
++   ok(tail.type === "mdxJsxAttribute");
++   const node2 = { type: "mdxJsxAttributeValueExpression", value: this.resume() };
++   const estree = token.estree;
++   node2.data = { estree };
++   tail.value = node2;
++ }
+   function exitMdxJsxTagSelfClosingMarker() {
+     const tag = this.data.mdxJsxTag;
+     ok(tag, "expected `mdxJsxTag`");

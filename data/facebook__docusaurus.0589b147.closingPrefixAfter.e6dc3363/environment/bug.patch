@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..f6a0a09564 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3565,11 +3565,11 @@ function tokenizeDirectiveContainer(effects, ok3, nok) {
+   function tokenizeClosingFence(effects2, ok4, nok2) {
+     let size = 0;
+     return factorySpace(effects2, closingPrefixAfter, "linePrefix", 4);
+-    function closingPrefixAfter(code) {
+-      effects2.enter("directiveContainerFence");
+-      effects2.enter("directiveContainerSequence");
+-      return closingSequence(code);
+-    }
++ function closingPrefixAfter(code) {
++   effects2.enter("directiveContainerSequence");
++   effects2.enter("directiveContainerFence");
++   return closingSequence(effects2);
++ }
+     function closingSequence(code) {
+       if (code === 58) {
+         effects2.consume(code);

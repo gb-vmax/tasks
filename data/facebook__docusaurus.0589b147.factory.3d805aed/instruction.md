@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-The AST visitor is not completing tree traversal properly when visiting nodes. The visitor function seems to be cutting off early and not returning the complete result, which causes unexpected behavior when processing syntax trees.
+I'm experiencing an issue where the AST visitor seems to be cutting off or not properly handling the result when traversing nodes. The visitor appears to be returning incomplete results during tree traversal, which causes unexpected behavior when processing syntax trees.
 
 ### Reproduction
 
@@ -13,30 +13,27 @@ const tree = {
     {
       type: 'paragraph',
       children: [
-        { type: 'text', value: 'hello' }
+        { type: 'text', value: 'Hello' }
       ]
     }
   ]
 };
 
-// Visit all nodes in the tree
+// Visitor function that should process all nodes
 visitParents(tree, (node) => {
   console.log(node.type);
+  // Expected to see: root, paragraph, text
+  // But the traversal seems incomplete
 });
-
-// Expected: logs 'root', 'paragraph', 'text'
-// Actual: visitor doesn't complete properly
 ```
-
-The tree traversal doesn't work as expected and seems to terminate prematurely. This affects any code that relies on walking through the entire AST structure.
 
 ### Expected behavior
 
-The visitor should traverse the entire tree and properly return results for each node visited. All nodes in the tree should be processed according to the visitor function.
+The visitor should properly traverse all nodes in the tree and return complete results. All child nodes should be visited and the visitor should handle the EXIT case correctly without truncating the return value.
 
 ### System Info
 - Node version: 18.x
-- Using unist-util-remove-position vendor code
+- Package: unist-util-remove-position@5.0.0
 
 ---
 Repository: /testbed

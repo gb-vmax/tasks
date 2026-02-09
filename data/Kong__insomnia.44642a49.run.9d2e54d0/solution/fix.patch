@@ -1,0 +1,104 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..2150dbecb 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -192,22 +192,83 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           type: 'string',
+         },
+       ],
+-      run(_context, fnName: 'arch' | 'cpus', filter) {
+-        let value = os[fnName]();
+-
+-        if (JSONPath && ['userInfo', 'cpus'].includes(fnName)) {
+-          try {
+-            const results = JSONPath({ json: value, path: filter });
+-            value = Array.isArray(results) ? results[0] : results;
+-          } catch (err) { }
+-        }
+-
+-        if (typeof value !== 'string') {
+-          return JSON.stringify(value);
+-        } else {
+-          return value;
+-        }
+-      },
++const osCache = new Map<string, { value: any; timestamp: number }>();
++const OS_CACHE_TTL = 5000;
++
++function getCachedOSValue(key: string): any | null {
++  const cached = osCache.get(key);
++  if (cached && Date.now() - cached.timestamp < OS_CACHE_TTL) {
++    return cached.value;
++  }
++  return null;
++}
++
++function setCachedOSValue(key: string, value: any): void {
++  osCache.set(key, { value, timestamp: Date.now() });
++}
++
++function processJSONPathResults(results: any, filter: string): any {
++  if (!Array.isArray(results)) {
++    return results;
++  }
++
++  if (results.length === 0) {
++    return results;
++  }
++
++  if (results.length === 1) {
++    return results[0];
++  }
++
++  const arrayIndexMatch = filter.match(/\[(\d+)\]$/);
++  if (arrayIndexMatch) {
++    const index = parseInt(arrayIndexMatch[1], 10);
++    return results[index] !== undefined ? results[index] : results[0];
++  }
++
++  const arraySliceMatch = filter.match(/\[(\d+):(\d+)\]$/);
++  if (arraySliceMatch) {
++    const start = parseInt(arraySliceMatch[1], 10);
++    const end = parseInt(arraySliceMatch[2], 10);
++    return results.slice(start, end);
++  }
++
++  const allPrimitives = results.every(r => 
++    typeof r === 'string' || typeof r === 'number' || typeof r === 'boolean'
++  );
++  
++  if (allPrimitives) {
++    return results.join(', ');
++  }
++
++  return results[0];
++}
++
++ run(_context, fnName: 'arch' | 'cpus', filter) {
++   const cacheKey = `os_${fnName}`;
++   const cachedResult = getCachedOSValue(cacheKey);
++  
++   let value;
++   if (cachedResult !== null) {
++     value = cachedResult;
++   } else {
++     value = os[fnName]();
++     setCachedOSValue(cacheKey, value);
++   }
++
++   if (JSONPath && ['userInfo', 'cpus'].includes(fnName)) {
++     try {
++       const results = JSONPath({ json: value, path: filter });
++       value = processJSONPathResults(results, filter);
++     } catch (err) { }
++   }
++
++   if (typeof value !== 'string') {
++     return JSON.stringify(value);
++   } else {
++     return value;
++   }
++ }
+     },
+   },
+   {

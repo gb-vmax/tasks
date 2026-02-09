@@ -1,0 +1,69 @@
+diff --git a/packages/insomnia/src/models/git-repository.ts b/packages/insomnia/src/models/git-repository.ts
+index 5b1e72112..fda60a65d 100644
+--- a/packages/insomnia/src/models/git-repository.ts
++++ b/packages/insomnia/src/models/git-repository.ts
+@@ -48,10 +48,63 @@ export function migrate(doc: GitRepository) {
+   return doc;
+ }
+ 
++function normalizeGitUri(uri: string): string {
++  let normalized = uri.trim();
++  
++  const gitUrlPattern = /^(https?:\/\/|git@|ssh:\/\/|git:\/\/)/i;
++  if (!gitUrlPattern.test(normalized)) {
++    return normalized;
++  }
++  
++  normalized = normalized.replace(/\/+$/, '');
++  
++  if (normalized.endsWith('.git')) {
++    normalized = normalized.slice(0, -4);
++  }
++  
++  return normalized;
++}
++
++function validateAndSanitizeCredentials(credentials: GitCredentials | null): GitCredentials | null {
++  if (!credentials) {
++    return null;
++  }
++  
++  const sanitized = { ...credentials };
++  
++  if ('oauth2format' in sanitized && sanitized.oauth2format) {
++    const validProviders: OauthProviderName[] = ['gitlab', 'github', 'custom'];
++    if (!validProviders.includes(sanitized.oauth2format)) {
++      sanitized.oauth2format = 'custom';
++    }
++  }
++  
++  return sanitized;
++}
++
+ export function create(patch: Partial<GitRepository> = {}) {
++  const defaults = init();
++  
++  let processedPatch = { ...patch };
++  
++  if (processedPatch.uri !== undefined && processedPatch.uri !== '') {
++    processedPatch.uri = normalizeGitUri(processedPatch.uri);
++  }
++  
++  if (processedPatch.author) {
++    processedPatch.author = {
++      ...defaults.author,
++      ...processedPatch.author,
++    };
++  }
++  
++  if (processedPatch.credentials) {
++    processedPatch.credentials = validateAndSanitizeCredentials(processedPatch.credentials);
++  }
++  
+   return db.docCreate<GitRepository>(type, {
+     uriNeedsMigration: false,
+-    ...patch,
++    ...processedPatch,
+   });
+ }
+ 

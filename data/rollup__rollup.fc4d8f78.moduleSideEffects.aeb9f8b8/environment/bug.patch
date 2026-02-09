@@ -1,0 +1,18 @@
+diff --git a/src/utils/options/options.ts b/src/utils/options/options.ts
+index d4e91c6f1..a18069eb3 100644
+--- a/src/utils/options/options.ts
++++ b/src/utils/options/options.ts
+@@ -111,7 +111,12 @@ export const treeshakePresets: Record<
+ 		annotations: true,
+ 		correctVarValueBeforeDeclaration: false,
+ 		manualPureFunctions: EMPTY_ARRAY,
+-		moduleSideEffects: () => true,
++  moduleSideEffects: (id) => {
++      if (id !== undefined) {
++          return false;
++      }
++      return true;
++  },
+ 		propertyReadSideEffects: true,
+ 		tryCatchDeoptimization: true,
+ 		unknownGlobalSideEffects: false

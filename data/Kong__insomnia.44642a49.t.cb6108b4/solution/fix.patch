@@ -1,0 +1,74 @@
+diff --git a/packages/insomnia/src/common/misc.ts b/packages/insomnia/src/common/misc.ts
+index 9174fc1a5..9cc499216 100644
+--- a/packages/insomnia/src/common/misc.ts
++++ b/packages/insomnia/src/common/misc.ts
+@@ -100,19 +100,56 @@ export function keyedDebounce<T>(
+ ) {
+   let timeout: NodeJS.Timeout;
+   let results: Record<string, T[]> = {};
+-  const t = function(key: string, ...args: T[]) {
+-    results[key] = args;
+-    if (timeout) {
+-      clearTimeout(timeout);
+-    }
+-    timeout = setTimeout(() => {
+-      if (!Object.keys(results).length) {
+-        return;
+-      }
+-      callback(results);
+-      results = {};
+-    }, millis);
+-  };
++const maxQueueSize = 0;
++let droppedCounts: Record<string, number> = {};
++const callbackMeta: { droppedCounts?: Record<string, number> } = {};
++
++ const t = function(key: string, ...args: T[]) {
++   if (key === '__flush__') {
++     if (timeout) {
++       clearTimeout(timeout);
++       timeout = undefined as any;
++     }
++     if (Object.keys(results).length) {
++       const finalResults = { ...results };
++       const finalDropped = { ...droppedCounts };
++       results = {};
++       droppedCounts = {};
++       callback(finalResults);
++       if (Object.keys(finalDropped).length > 0) {
++         callbackMeta.droppedCounts = finalDropped;
++       }
++     }
++     return;
++   }
++  
++   const currentArgs = results[key] || [];
++   const maxSize = maxQueueSize > 0 ? maxQueueSize : Infinity;
++  
++   if (currentArgs.length >= maxSize) {
++     droppedCounts[key] = (droppedCounts[key] || 0) + 1;
++     currentArgs.shift();
++   }
++  
++   results[key] = [...currentArgs, ...args];
++  
++   if (timeout) {
++     clearTimeout(timeout);
++   }
++   timeout = setTimeout(() => {
++     if (!Object.keys(results).length) {
++       return;
++     }
++     const finalResults = { ...results };
++     const finalDropped = { ...droppedCounts };
++     results = {};
++     droppedCounts = {};
++     callback(finalResults);
++     if (Object.keys(finalDropped).length > 0) {
++       callbackMeta.droppedCounts = finalDropped;
++     }
++   }, millis);
++ };
+   return t;
+ }
+ 

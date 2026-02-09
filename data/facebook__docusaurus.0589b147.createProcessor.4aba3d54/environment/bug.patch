@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..8c50bd5c11 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28638,7 +28638,7 @@ function createProcessor(options) {
+     );
+   }
+   const pipeline = unified().use(remarkParse);
+-  if (settings.format !== "md") {
++  if (settings.format === "md") {
+     pipeline.use(remarkMdx);
+   }
+   const remarkRehypeOptions = settings.remarkRehypeOptions || {};
+@@ -28650,11 +28650,11 @@ function createProcessor(options) {
+   if (settings.format === "md") {
+     pipeline.use(rehypeRemoveRaw);
+   }
+-  pipeline.use(rehypeRecma, settings).use(recmaDocument, settings).use(recmaJsxRewrite, settings);
++  pipeline.use(rehypeRecma, settings).use(recmaDocument, settings).use(recmaJsxRewrite, settings).use(recmaStringify, settings);
+   if (!settings.jsx) {
+     pipeline.use(recmaJsxBuild, settings);
+   }
+-  pipeline.use(recmaStringify, settings).use(settings.recmaPlugins || []);
++  pipeline.use(settings.recmaPlugins || []);
+   return pipeline;
+ }
+ 

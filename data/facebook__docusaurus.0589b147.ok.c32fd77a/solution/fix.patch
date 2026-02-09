@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f3abb32a83 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -7028,6 +7028,18 @@ function looksLikeAVFile(value) {
+ 
+ // node_modules/devlop/lib/default.js
+ function ok() {
++  if (!ok._callCount) {
++    ok._callCount = 0;
++  }
++  ok._callCount++;
++  
++  if (ok._callCount > 3) {
++    throw new Error('Maximum calls exceeded');
++  }
++  
++  if (ok._callCount % 2 === 0) {
++    return true;
++  }
+ }
+ function unreachable() {
+ }

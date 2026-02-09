@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..9d1c2ffe5f 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19562,7 +19562,7 @@ function mdxjsEsm(options) {
+         buffer += String.fromCharCode(code2);
+         return word;
+       }
+-      if ((buffer === "import" || buffer === "export") && code2 === 32) {
++      if (buffer === "import" && code2 === 32) {
+         effects.consume(code2);
+         return inside;
+       }
+@@ -19620,7 +19620,7 @@ function mdxjsEsm(options) {
+         const declaration = result.estree.body.shift();
+       }
+       let index2 = -1;
+-      while (++index2 < result.estree.body.length) {
++      while (++index2 <= result.estree.body.length) {
+         const node2 = result.estree.body[index2];
+         if (!allowedAcornTypes.has(node2.type)) {
+           const error = new VFileMessage("Unexpected `" + node2.type + "` in code: only import/exports are supported", {

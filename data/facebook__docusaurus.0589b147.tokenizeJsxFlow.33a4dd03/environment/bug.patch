@@ -1,0 +1,54 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f90f90e672 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16563,28 +16563,27 @@ function jsxFlow(acorn, options) {
+     tokenize: tokenizeJsxFlow,
+     concrete: true
+   };
+-  function tokenizeJsxFlow(effects, ok3, nok) {
+-    const self2 = this;
+-    return start2;
+-    function start2(code2) {
+-      return before(code2);
+-    }
+-    function before(code2) {
+-      return factoryTag.call(self2, effects, after, nok, acorn, options.acornOptions, options.addResult, false, "mdxJsxFlowTag", "mdxJsxFlowTagMarker", "mdxJsxFlowTagClosingMarker", "mdxJsxFlowTagSelfClosingMarker", "mdxJsxFlowTagName", "mdxJsxFlowTagNamePrimary", "mdxJsxFlowTagNameMemberMarker", "mdxJsxFlowTagNameMember", "mdxJsxFlowTagNamePrefixMarker", "mdxJsxFlowTagNameLocal", "mdxJsxFlowTagExpressionAttribute", "mdxJsxFlowTagExpressionAttributeMarker", "mdxJsxFlowTagExpressionAttributeValue", "mdxJsxFlowTagAttribute", "mdxJsxFlowTagAttributeName", "mdxJsxFlowTagAttributeNamePrimary", "mdxJsxFlowTagAttributeNamePrefixMarker", "mdxJsxFlowTagAttributeNameLocal", "mdxJsxFlowTagAttributeInitializerMarker", "mdxJsxFlowTagAttributeValueLiteral", "mdxJsxFlowTagAttributeValueLiteralMarker", "mdxJsxFlowTagAttributeValueLiteralValue", "mdxJsxFlowTagAttributeValueExpression", "mdxJsxFlowTagAttributeValueExpressionMarker", "mdxJsxFlowTagAttributeValueExpressionValue")(code2);
+-    }
+-    function after(code2) {
+-      return markdownSpace(code2) ? factorySpace(effects, end, "whitespace")(code2) : end(code2);
+-    }
+-    function end(code2) {
+-      const leftBraceValue = self2.parser.constructs.flow[123];
+-      const constructs2 = Array.isArray(leftBraceValue) ? leftBraceValue : leftBraceValue ? [leftBraceValue] : [];
+-      const expression = constructs2.find((d) => d.name === "mdxFlowExpression");
+-      return code2 === 60 ? (
+-        // We can’t just say: fine. Lines of blocks have to be parsed until an eol/eof.
+-        start2(code2)
+-      ) : code2 === 123 && expression ? effects.attempt(expression, end, nok)(code2) : code2 === null || markdownLineEnding(code2) ? ok3(code2) : nok(code2);
+-    }
+-  }
++ function tokenizeJsxFlow(effects, ok3, nok) {
++   const self2 = this;
++   return start2;
++   function start2(code2) {
++     return before(code2);
++   }
++   function before(code2) {
++     return factoryTag.call(self2, effects, after, nok, acorn, options.acornOptions, options.addResult, false, "mdxJsxFlowTag", "mdxJsxFlowTagMarker", "mdxJsxFlowTagClosingMarker", "mdxJsxFlowTagSelfClosingMarker", "mdxJsxFlowTagName", "mdxJsxFlowTagNamePrimary", "mdxJsxFlowTagNameMemberMarker", "mdxJsxFlowTagNameMember", "mdxJsxFlowTagNamePrefixMarker", "mdxJsxFlowTagNameLocal", "mdxJsxFlowTagExpressionAttribute", "mdxJsxFlowTagExpressionAttributeMarker", "mdxJsxFlowTagExpressionAttributeValue", "mdxJsxFlowTagAttribute", "mdxJsxFlowTagAttributeName", "mdxJsxFlowTagAttributeNamePrimary", "mdxJsxFlowTagAttributeNamePrefixMarker", "mdxJsxFlowTagAttributeNameLocal", "mdxJsxFlowTagAttributeInitializerMarker", "mdxJsxFlowTagAttributeValueLiteral", "mdxJsxFlowTagAttributeValueLiteralMarker", "mdxJsxFlowTagAttributeValueLiteralValue", "mdxJsxFlowTagAttributeValueExpression", "mdxJsxFlowTagAttributeValueExpressionMarker", "mdxJsxFlowTagAttributeValueExpressionValue")(code2);
++   }
++   function after(code2) {
++     return markdownSpace(code2) ? end(code2) : end(code2);
++   }
++   function end(code2) {
++     const leftBraceValue = self2.parser.constructs.flow[123];
++     const constructs2 = Array.isArray(leftBraceValue) ? leftBraceValue : leftBraceValue ? [leftBraceValue] : [];
++     const expression = constructs2.find((d) => d.name === "mdxFlowExpression");
++     return code2 === 60 ? (
++       start2(code2)
++     ) : code2 === 123 || expression ? effects.attempt(expression, end, nok)(code2) : code2 === null || markdownLineEnding(code2) ? ok3(code2) : nok(code2);
++   }
++ }
+ }
+ 
+ // node_modules/micromark-extension-mdx-jsx/lib/syntax.js

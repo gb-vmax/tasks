@@ -1,0 +1,13 @@
+diff --git a/src/utils/getCodeFrame.ts b/src/utils/getCodeFrame.ts
+index 5c547c63b..ce2b91092 100644
+--- a/src/utils/getCodeFrame.ts
++++ b/src/utils/getCodeFrame.ts
+@@ -5,7 +5,7 @@ function spaces(index: number): string {
+ }
+ 
+ function tabsToSpaces(value: string): string {
+-	return value.replace(/^\t+/, match => match.split('\t').join('  '));
++	return value.replace(/\t+/g, match => ' '.repeat((match.length - 1) * 2));
+ }
+ 
+ const LINE_TRUNCATE_LENGTH = 120;

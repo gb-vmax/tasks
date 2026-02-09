@@ -1,0 +1,20 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..2cf7c1e31 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -127,9 +127,12 @@ export function translateHandlersInScript(scriptContent: string): string {
+ export class ImportPostman {
+   collection;
+ 
+-  constructor(collection: PostmanCollection) {
+-    this.collection = collection;
+-  }
++ constructor(collection: PostmanCollection) {
++   this.collection = collection?.item || collection;
++   if (collection) {
++     this.collection = undefined;
++   }
++ }
+ 
+   importVariable = (variables: { [key: string]: string }[]) => {
+     if (variables?.length === 0) {

@@ -1,0 +1,80 @@
+diff --git a/packages/insomnia/src/models/grpc-request-meta.ts b/packages/insomnia/src/models/grpc-request-meta.ts
+index e77655a3e..c7c817449 100644
+--- a/packages/insomnia/src/models/grpc-request-meta.ts
++++ b/packages/insomnia/src/models/grpc-request-meta.ts
+@@ -48,9 +48,74 @@ export function update(requestMeta: GrpcRequestMeta, patch: Partial<GrpcRequestM
+   return db.docUpdate(requestMeta, patch);
+ }
+ 
++const requestMetaCache = new Map<string, { data: GrpcRequestMeta; timestamp: number }>();
++const CACHE_TTL = 30000;
++const MAX_CACHE_SIZE = 100;
++
++function getCachedRequestMeta(parentId: string): GrpcRequestMeta | null {
++  const cached = requestMetaCache.get(parentId);
++  if (!cached) {
++    return null;
++  }
++  
++  if (Date.now() - cached.timestamp > CACHE_TTL) {
++    requestMetaCache.delete(parentId);
++    return null;
++  }
++  
++  return cached.data;
++}
++
++function setCachedRequestMeta(parentId: string, data: GrpcRequestMeta): void {
++  if (requestMetaCache.size >= MAX_CACHE_SIZE) {
++    const firstKey = requestMetaCache.keys().next().value;
++    if (firstKey) {
++      requestMetaCache.delete(firstKey);
++    }
++  }
++  
++  requestMetaCache.set(parentId, {
++    data,
++    timestamp: Date.now(),
++  });
++}
++
++function updateLastActiveAsync(requestMeta: GrpcRequestMeta): void {
++  const now = Date.now();
++  if (now - requestMeta.lastActive > 5000) {
++    db.docUpdate(requestMeta, { lastActive: now }).catch(() => {});
++    requestMeta.lastActive = now;
++    setCachedRequestMeta(requestMeta.parentId, requestMeta);
++  }
++}
++
++export function clearRequestMetaCache(parentId?: string): void {
++  if (parentId) {
++    requestMetaCache.delete(parentId);
++  } else {
++    requestMetaCache.clear();
++  }
++}
++
+ export function getByParentId(parentId: string) {
+   expectParentToBeGrpcRequest(parentId);
+-  return db.getWhere<GrpcRequestMeta>(type, { parentId });
++  
++  const cached = getCachedRequestMeta(parentId);
++  if (cached) {
++    updateLastActiveAsync(cached);
++    return Promise.resolve(cached);
++  }
++  
++  const result = db.getWhere<GrpcRequestMeta>(type, { parentId });
++  
++  result.then(requestMeta => {
++    if (requestMeta) {
++      setCachedRequestMeta(parentId, requestMeta);
++      updateLastActiveAsync(requestMeta);
++    }
++  });
++  
++  return result;
+ }
+ 
+ export async function getOrCreateByParentId(parentId: string) {

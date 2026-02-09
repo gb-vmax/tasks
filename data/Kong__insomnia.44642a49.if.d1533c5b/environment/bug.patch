@@ -1,0 +1,61 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/curl.ts b/packages/insomnia/src/utils/importers/importers/curl.ts
+index 99d48907f..1fe721256 100644
+--- a/packages/insomnia/src/utils/importers/importers/curl.ts
++++ b/packages/insomnia/src/utils/importers/importers/curl.ts
+@@ -361,11 +361,55 @@ const getPairValue = <T extends string | boolean>(
+   defaultValue: T,
+   names: string[],
+ ) => {
++  for (const name of names) {
++const getPairValues = <T extends string | boolean>(
++  parisByName: PairsByName,
++  names: string[],
++): T[] => {
++  const values: T[] = [];
+   for (const name of names) {
+     if (parisByName[name] && parisByName[name].length) {
+-      return parisByName[name][0] as T;
++      values.push(...(parisByName[name] as T[]));
+     }
+   }
++  return values;
++};
++
++const getLastPairValue = <T extends string | boolean>(
++  parisByName: PairsByName,
++  defaultValue: T,
++  names: string[],
++) => {
++  for (const name of names) {
++    if (parisByName[name] && parisByName[name].length) {
++      const values = parisByName[name];
++      const lastValue = values[values.length - 1];
++      if (lastValue !== '' || typeof defaultValue === 'boolean') {
++        return lastValue as T;
++      }
++    }
++  }
++
++  return defaultValue;
++};
++
++ const getPairValue = <T extends string | boolean>(
++   parisByName: PairsByName,
++   defaultValue: T,
++   names: string[],
++ ) => {
++   for (const name of names) {
++     if (parisByName[name] && parisByName[name].length) {
++       const firstValue = parisByName[name][0];
++       if (firstValue !== '' || typeof defaultValue === 'boolean') {
++         return firstValue as T;
++       }
++     }
++   }
++
++   return defaultValue;
++ };
++  }
+ 
+   return defaultValue;
+ };

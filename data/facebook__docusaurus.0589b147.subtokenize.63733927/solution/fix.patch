@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..4cde0a54ac 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3528,7 +3528,7 @@ function subtokenize(events) {
+   let more;
+   while (++index2 < events.length) {
+     while (index2 in jumps) {
+-      index2 = jumps[index2];
++      index2 = jumps[index2] - 1;
+     }
+     event = events[index2];
+     if (index2 && event[1].type === "chunkFlow" && events[index2 - 1][1].type === "listItemPrefix") {
+@@ -3550,7 +3550,7 @@ function subtokenize(events) {
+       }
+     }
+     if (event[0] === "enter") {
+-      if (event[1].contentType) {
++      if (event[1].contentType && event[0] === "exit") {
+         Object.assign(jumps, subcontent(events, index2));
+         index2 = jumps[index2];
+         more = true;

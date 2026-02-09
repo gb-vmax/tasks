@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..4916ee37b 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -589,7 +589,54 @@ const convertParameters = (parameters: OpenAPIV3.ParameterObject[] = []) => {
+ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+   const typeExamples = {
+     string: () => 'string',
+-    string_email: () => 'user@example.com',
++const propertyContextStack: string[] = [];
++
++const getPropertyNameFromContext = () => {
++  return propertyContextStack.length > 0 
++    ? propertyContextStack[propertyContextStack.length - 1] 
++    : null;
++};
++
++const generateContextualEmail = (propertyName: string) => {
++  const cleanName = propertyName
++    .replace(/email$/i, '')
++    .replace(/[A-Z]/g, (letter, index) => index > 0 ? letter.toLowerCase() : letter.toLowerCase())
++    .replace(/[^a-z0-9]/gi, '');
++  
++  if (cleanName.length > 0) {
++    const localPart = cleanName.length > 20 ? cleanName.substring(0, 20) : cleanName;
++    return `${localPart}@example.com`;
++  }
++  
++  return 'user@example.com';
++};
++
++const withPropertyContext = <T>(propertyName: string, fn: () => T): T => {
++  propertyContextStack.push(propertyName);
++  try {
++    return fn();
++  } finally {
++    propertyContextStack.pop();
++  }
++};
++
++ string_email: (schema) => {
++   if (schema && typeof schema === 'object') {
++     if (schema.example) {
++       return schema.example;
++     }
++     if (schema.default) {
++       return schema.default;
++     }
++   }
++  
++   const propertyName = getPropertyNameFromContext();
++   if (propertyName) {
++     return generateContextualEmail(propertyName);
++   }
++  
++   return 'user@example.com';
++ }
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,

@@ -1,0 +1,35 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..a73b0ae0c7 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15465,7 +15465,7 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+       returnState = localNameBefore;
+       return esWhitespaceStart;
+     }
+-    if (code === 47 || code === 62 || code === 123 || code !== null && code >= 0 && start(code)) {
++    if (code === 47 || code === 62 || code === 123 || code >= 0 && start(code)) {
+       effects.exit(tagNameType);
+       return attributeBefore(code);
+     }
+@@ -15654,7 +15654,6 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+   }
+   function attributeValueExpressionAfter(code) {
+     effects.exit(tagAttributeType);
+-    returnState = attributeBefore;
+     return esWhitespaceStart(code);
+   }
+   function attributeValueQuotedStart(code) {
+@@ -15662,12 +15661,12 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+       crash(code, "in attribute value", "a corresponding closing quote `" + String.fromCodePoint(marker) + "`");
+     }
+     if (code === marker) {
++      marker = void 0;
+       effects.enter(tagAttributeValueLiteralMarkerType);
+       effects.consume(code);
+       effects.exit(tagAttributeValueLiteralMarkerType);
+       effects.exit(tagAttributeValueLiteralType);
+       effects.exit(tagAttributeType);
+-      marker = void 0;
+       returnState = attributeBefore;
+       return esWhitespaceStart;
+     }

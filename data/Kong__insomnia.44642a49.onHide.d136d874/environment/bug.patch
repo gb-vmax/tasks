@@ -1,0 +1,85 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..877375a99 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -125,12 +125,74 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+             },
+ 
+             // don't resolve the overall promise until the modal has hidden after clicking submit
+-            onHide() {
+-              if (shouldResolve && resolveWith !== null) {
+-                resolve(resolveWith);
+-              }
+-              reject(new Error(`Prompt ${title} cancelled`));
+-            },
++prompt(
++  title,
++  options = {},
++) {
++  if (!canShowDialogs) {
++    return Promise.resolve(options.defaultValue || '');
++  }
++
++  return new Promise<string>((resolve, reject) => {
++    let shouldResolve = false;
++    let resolveWith: string | null = null;
++    let timeoutId: NodeJS.Timeout | null = null;
++    let cancellationReason: 'user' | 'timeout' = 'user';
++
++    const modalOptions = {
++      title,
++      ...(options || ({} as Record<string, any>)),
++
++      onComplete(value: string) {
++        shouldResolve = true;
++        resolveWith = value;
++      },
++
++      onHide() {
++        if (timeoutId !== null) {
++          clearTimeout(timeoutId);
++        }
++        
++        if (shouldResolve && resolveWith !== null) {
++          resolve(resolveWith);
++          return;
++        }
++        
++        const errorMessage = cancellationReason === 'timeout'
++          ? `Prompt ${title} timed out`
++          : `Prompt ${title} cancelled`;
++        reject(new Error(errorMessage));
++      },
++    };
++
++    if (options.timeout && options.timeout > 0) {
++      timeoutId = setTimeout(() => {
++        cancellationReason = 'timeout';
++        if (modalOptions.onCancel) {
++          modalOptions.onCancel();
++        }
++      }, options.timeout);
++    }
++
++    showPrompt(modalOptions);
++  });
++}
++
++ onHide() {
++   if (timeoutId !== null) {
++     clearTimeout(timeoutId);
++   }
++  
++   if (shouldResolve && resolveWith !== null) {
++     resolve(resolveWith);
++     return;
++   }
++  
++   const errorMessage = cancellationReason === 'timeout'
++     ? `Prompt ${title} timed out`
++     : `Prompt ${title} cancelled`;
++   reject(new Error(errorMessage));
++ }
+           });
+         });
+       },

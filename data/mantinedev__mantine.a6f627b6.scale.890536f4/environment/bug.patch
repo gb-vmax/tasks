@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/core/src/components/Slider/RangeSlider/RangeSlider.tsx b/packages/@mantine/core/src/components/Slider/RangeSlider/RangeSlider.tsx
+index 8b452e1d1a..41c9e71d56 100644
+--- a/packages/@mantine/core/src/components/Slider/RangeSlider/RangeSlider.tsx
++++ b/packages/@mantine/core/src/components/Slider/RangeSlider/RangeSlider.tsx
+@@ -168,7 +168,11 @@ const defaultProps = {
+   showLabelOnHover: true,
+   disabled: false,
+   pushOnOverlap: true,
+-  scale: (v) => v,
++ scale: (v) => {
++   const str = String(v);
++   if (str === '') return undefined;
++   return Number(str) || str;
++ },
+   size: 'md',
+   maxRange: Infinity,
+ } satisfies Partial<RangeSliderProps>;

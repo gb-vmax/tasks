@@ -1,0 +1,71 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..91a86ded0 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -323,10 +323,63 @@ export class GitVCS {
+     return remotes.find(r => r.remote === name) || null;
+   }
+ 
+-  async commit(message: string) {
+-    console.log(`[git] Commit "${message}"`);
+-    return git.commit({ ...this._baseOpts, message });
++async _hasStagedChanges(): Promise<boolean> {
++  const files = await this.listFiles();
++  
++  for (const file of files) {
++    const fileStatus = await this.status(file);
++    if (fileStatus.endsWith('0') || fileStatus.startsWith('1')) {
++      return true;
++    }
+   }
++  
++  return false;
++}
++
++async _getModifiedTrackedFiles(): Promise<string[]> {
++  const files = await this.listFiles();
++  const modifiedFiles: string[] = [];
++  
++  for (const file of files) {
++    const fileStatus = await this.status(file);
++    if (fileStatus === '*modified') {
++      modifiedFiles.push(file);
++    }
++  }
++  
++  return modifiedFiles;
++}
++
++ async commit(message: string) {
++   console.log(`[git] Commit "${message}"`);
++  
++   const stagedChanges = await this._hasStagedChanges();
++  
++   if (!stagedChanges) {
++     const modifiedFiles = await this._getModifiedTrackedFiles();
++    
++     if (modifiedFiles.length === 0) {
++       throw new Error('No changes to commit');
++     }
++    
++     console.log(`[git] Auto-staging ${modifiedFiles.length} modified file(s)`);
++     for (const file of modifiedFiles) {
++       await this.add(file);
++     }
++   }
++  
++   const commitOid = await git.commit({ ...this._baseOpts, message });
++  
++   const commitInfo = await git.readCommit({
++     ...this._baseOpts,
++     oid: commitOid,
++   });
++  
++   return {
++     oid: commitOid,
++     commit: commitInfo.commit,
++   };
++ }
+ 
+   /**
+    * Check to see whether remote is different than local. This is here because

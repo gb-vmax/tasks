@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..5c76302df 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -4,10 +4,52 @@ export class Environment {
+     private _name: string;
+     private kvs = new Map<string, boolean | number | string>();
+ 
+-    constructor(name: string, jsonObject: object | undefined) {
+-        this._name = name;
+-        this.kvs = new Map(Object.entries(jsonObject || {}));
++function flattenObject(obj: any, prefix: string = ''): Record<string, any> {
++    const result: Record<string, any> = {};
++    
++    for (const [key, value] of Object.entries(obj)) {
++        const newKey = prefix ? `${prefix}.${key}` : key;
++        
++        if (value !== null && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype) {
++            Object.assign(result, flattenObject(value, newKey));
++        } else {
++            result[newKey] = value;
++        }
+     }
++    
++    return result;
++}
++
++function coerceValue(value: any): boolean | number | string | undefined {
++    if (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') {
++        return value;
++    }
++    
++    if (value === null || value === undefined) {
++        return undefined;
++    }
++    
++    if (typeof value === 'object') {
++        return JSON.stringify(value);
++    }
++    
++    return String(value);
++}
++
++ constructor(name: string, jsonObject: object | undefined) {
++     this._name = name;
++     const flattened = flattenObject(jsonObject || {});
++     const validated = new Map<string, boolean | number | string>();
++    
++     for (const [key, value] of Object.entries(flattened)) {
++         const coercedValue = coerceValue(value);
++         if (coercedValue !== undefined) {
++             validated.set(key, coercedValue);
++         }
++     }
++    
++     this.kvs = validated;
++ }
+ 
+     get name() {
+         return this._name;

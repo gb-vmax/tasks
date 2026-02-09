@@ -1,0 +1,65 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..0c2c35594 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -119,6 +119,33 @@ export async function exportHar(exportRequests: ExportRequest[]) {
+   return har;
+ }
+ 
++function calculateResponseHeadersSize(response: Response, headers: Har.Header[]): number {
++  const statusLine = `HTTP/1.1 ${response.statusCode} ${response.statusMessage}\r\n`;
++  let headersText = statusLine;
++  
++  for (const header of headers) {
++    headersText += `${header.name}: ${header.value}\r\n`;
++  }
++  
++  headersText += '\r\n';
++  
++  return Buffer.byteLength(headersText, 'utf8');
++}
++
++function extractRedirectURL(response: Response, headers: Har.Header[]): string {
++  if (response.statusCode >= 300 && response.statusCode < 400) {
++    const locationHeader = headers.find(
++      h => h.name.toLowerCase() === 'location'
++    );
++    
++    if (locationHeader && locationHeader.value) {
++      return locationHeader.value;
++    }
++  }
++  
++  return '';
++}
++
+ export async function exportHarResponse(response: Response | null) {
+   if (!response) {
+     return {
+@@ -137,16 +164,21 @@ export async function exportHarResponse(response: Response | null) {
+     };
+   }
+ 
++  const content = getResponseContent(response);
++  const headers = getResponseHeaders(response);
++  const headersSize = calculateResponseHeadersSize(response, headers);
++  const redirectURL = extractRedirectURL(response, headers);
++
+   const harResponse: Har.Response = {
+     status: response.statusCode,
+     statusText: response.statusMessage,
+     httpVersion: 'HTTP/1.1',
+     cookies: getResponseCookies(response),
+-    headers: getResponseHeaders(response),
+-    content: getResponseContent(response),
+-    redirectURL: '',
+-    headersSize: -1,
+-    bodySize: -1,
++    headers: headers,
++    content: content,
++    redirectURL: redirectURL,
++    headersSize: headersSize,
++    bodySize: content.size,
+   };
+   return harResponse;
+ }

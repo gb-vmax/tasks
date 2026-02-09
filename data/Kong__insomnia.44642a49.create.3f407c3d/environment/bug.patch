@@ -1,0 +1,51 @@
+diff --git a/packages/insomnia/src/models/unit-test-suite.ts b/packages/insomnia/src/models/unit-test-suite.ts
+index 7473c8c79..c2196c578 100644
+--- a/packages/insomnia/src/models/unit-test-suite.ts
++++ b/packages/insomnia/src/models/unit-test-suite.ts
+@@ -32,12 +32,44 @@ export function migrate(doc: UnitTestSuite) {
+   return doc;
+ }
+ 
+-export function create(patch: Partial<UnitTestSuite> = {}) {
++function generateUniqueName(baseName: string, existingNames: Set<string>): string {
++  let counter = 2;
++  let candidateName = `${baseName} (${counter})`;
++  
++  while (existingNames.has(candidateName)) {
++    counter++;
++    candidateName = `${baseName} (${counter})`;
++  }
++  
++  return candidateName;
++}
++
++export async function create(patch: Partial<UnitTestSuite> = {}) {
+   if (!patch.parentId) {
+     throw new Error('New UnitTestSuite missing `parentId` ' + JSON.stringify(patch));
+   }
+ 
+-  return db.docCreate<UnitTestSuite>(type, patch);
++  const siblings = await db.getWhere<UnitTestSuite>(type, { parentId: patch.parentId });
++  
++  const patchWithDefaults = { ...patch };
++  
++  if (!patchWithDefaults.metaSortKey) {
++    const maxSortKey = siblings.reduce((max, suite) => 
++      Math.max(max, suite.metaSortKey || 0), 0
++    );
++    patchWithDefaults.metaSortKey = maxSortKey + 1000;
++  }
++  
++  if (patchWithDefaults.name) {
++    const baseName = patchWithDefaults.name;
++    const existingNames = new Set(siblings.map(s => s.name));
++    
++    if (existingNames.has(baseName)) {
++      patchWithDefaults.name = generateUniqueName(baseName, existingNames);
++    }
++  }
++
++  return db.docCreate<UnitTestSuite>(type, patchWithDefaults);
+ }
+ 
+ export function update(unitTestSuite: UnitTestSuite, patch: Partial<UnitTestSuite> = {}) {

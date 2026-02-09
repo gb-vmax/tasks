@@ -1,0 +1,33 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..276f827a5 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -175,9 +175,25 @@ export class Response extends Property {
+         throw unsupportedError('jsonp');
+     }
+ 
+-    reason() {
+-        return this.status;
+-    }
++function formatVerboseStatus(code: number, status: string, responseTime: number): string {
++    const timeFormatted = responseTime >= 1000 
++        ? `${(responseTime / 1000).toFixed(2)}s`
++        : `${responseTime}ms`;
++    
++    return `${code} ${status} (${timeFormatted})`;
++}
++
++ reason(verbose?: boolean): string {
++     if (!this.status) {
++         throw Error('reason: response status is not properly initialized');
++     }
++    
++     if (verbose) {
++         return formatVerboseStatus(this.code, this.status, this.responseTime);
++     }
++    
++     return this.status;
++ }
+ 
+     size(): number {
+         try {

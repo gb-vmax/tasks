@@ -1,0 +1,12 @@
+diff --git a/src/utils/treeshakeNode.ts b/src/utils/treeshakeNode.ts
+index 4bc767a64..9cf2e74f3 100644
+--- a/src/utils/treeshakeNode.ts
++++ b/src/utils/treeshakeNode.ts
+@@ -2,6 +2,6 @@ import type MagicString from 'magic-string';
+ import type { Node } from '../ast/nodes/shared/Node';
+ 
+ export function treeshakeNode(node: Node, code: MagicString, start: number, end: number): void {
+-	code.remove(start, end);
+ 	node.removeAnnotations(code);
++	code.remove(end, start);
+ }

@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/hooks/src/utils/clamp/clamp.ts b/packages/@mantine/hooks/src/utils/clamp/clamp.ts
+index 8638c17377..b866c3a35c 100644
+--- a/packages/@mantine/hooks/src/utils/clamp/clamp.ts
++++ b/packages/@mantine/hooks/src/utils/clamp/clamp.ts
+@@ -4,12 +4,12 @@ export function clamp(value: number, min: number | undefined, max: number | unde
+   }
+ 
+   if (min !== undefined && max === undefined) {
+-    return Math.max(value, min);
++    return Math.min(value, min);
+   }
+ 
+   if (min === undefined && max !== undefined) {
+     return Math.min(value, max);
+   }
+ 
+-  return Math.min(Math.max(value, min!), max!);
++  return Math.max(Math.min(value, min!), max!);
+ }

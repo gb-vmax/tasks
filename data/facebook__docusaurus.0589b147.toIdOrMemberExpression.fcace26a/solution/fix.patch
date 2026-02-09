@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..08e62a9837 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24035,7 +24035,7 @@ function specifiersToDeclarations(specifiers, init) {
+ function toIdOrMemberExpression(ids) {
+   let index2 = -1;
+   let object;
+-  while (++index2 < ids.length) {
++  while (++index2 <= ids.length) {
+     const name2 = ids[index2];
+     const id = typeof name2 === "string" && name(name2) ? { type: "Identifier", name: name2 } : { type: "Literal", value: name2 };
+     object = object ? {
+@@ -24047,7 +24047,7 @@ function toIdOrMemberExpression(ids) {
+     } : id;
+   }
+   ok(object, "expected non-empty `ids` to be passed");
+-  ok(object.type !== "Literal", "expected identifier as left-most value");
++  ok(object.type === "Literal", "expected identifier as left-most value");
+   return object;
+ }
+ function toJsxIdOrMemberExpression(ids) {

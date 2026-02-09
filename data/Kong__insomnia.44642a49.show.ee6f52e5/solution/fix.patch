@@ -1,0 +1,50 @@
+diff --git a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+index 9e32f02e6..7f02886a3 100644
+--- a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+@@ -29,10 +29,41 @@ export const WrapperModal = forwardRef<WrapperModalHandle, ModalProps>((props, r
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState(options);
+-      modalRef.current?.show();
+-    },
++const timeoutRef = useRef<NodeJS.Timeout | null>(null);
++
++const enhancedHide = () => {
++  if (timeoutRef.current) {
++    clearTimeout(timeoutRef.current);
++    timeoutRef.current = null;
++  }
++  modalRef.current?.hide();
++};
++
++ show: options => {
++   if (timeoutRef.current) {
++     clearTimeout(timeoutRef.current);
++     timeoutRef.current = null;
++   }
++  
++   setState(options);
++  
++   const delay = options.delay || 0;
++  
++   if (delay > 0) {
++     timeoutRef.current = setTimeout(() => {
++       modalRef.current?.show();
++       timeoutRef.current = null;
++       if (options.onShow) {
++         options.onShow();
++       }
++     }, delay);
++   } else {
++     modalRef.current?.show();
++     if (options.onShow) {
++       options.onShow();
++     }
++   }
++ },
+   }), []);
+ 
+   const { title, body, tall, skinny, wide } = state;

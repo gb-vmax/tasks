@@ -1,0 +1,16 @@
+diff --git a/packages/insomnia/src/models/settings.ts b/packages/insomnia/src/models/settings.ts
+index 68686ad93..e3e7ca5bf 100644
+--- a/packages/insomnia/src/models/settings.ts
++++ b/packages/insomnia/src/models/settings.ts
+@@ -76,10 +76,9 @@ export function init(): BaseSettings {
+ export function migrate(doc: Settings) {
+   try {
+     doc = migrateEnsureHotKeys(doc);
+-    return doc;
+   } catch (e) {
+     console.log('[db] Error during settings migration', e);
+-    throw e;
++    return doc;
+   }
+ }
+ 

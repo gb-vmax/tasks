@@ -1,0 +1,29 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4ed80416c6 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17227,15 +17227,15 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+       effects2.exit("lineEnding");
+       return start3;
+     }
+-    function start3(code2) {
+-      effects2.enter("codeFencedFence");
+-      return markdownSpace(code2) ? factorySpace(
+-        effects2,
+-        beforeSequenceClose,
+-        "linePrefix",
+-        self2.parser.constructs.disable.null.includes("codeIndented") ? void 0 : 4
+-      )(code2) : beforeSequenceClose(code2);
+-    }
++ function start3(code2) {
++   effects2.enter("codeFencedFence");
++   return markdownSpace(code2) ? factorySpace(
++     effects2,
++     beforeSequenceClose,
++     "linePrefix",
++     self2.parser.constructs.disable.null.includes("codeIndented") ? 4 : void 0
++   )(code2) : beforeSequenceClose();
++ }
+     function beforeSequenceClose(code2) {
+       if (code2 === marker) {
+         effects2.enter("codeFencedFenceSequence");

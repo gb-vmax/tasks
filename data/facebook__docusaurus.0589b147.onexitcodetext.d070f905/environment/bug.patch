@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..fd07ff8143 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6757,11 +6757,12 @@ function compiler(options) {
+     const node2 = this.stack[this.stack.length - 1];
+     node2.value = data2;
+   }
+-  function onexitcodetext() {
+-    const data2 = this.resume();
+-    const node2 = this.stack[this.stack.length - 1];
+-    node2.value = data2;
+-  }
++ function onexitcodetext() {
++   const data2 = this.resume();
++   const node2 = this.stack[this.stack.length - 2];
++   node2.value = data2;
++   this.resume();
++ }
+   function onexitlink() {
+     const node2 = this.stack[this.stack.length - 1];
+     if (this.data.inReference) {

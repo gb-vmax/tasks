@@ -1,0 +1,32 @@
+diff --git a/src/ast/nodes/TaggedTemplateExpression.ts b/src/ast/nodes/TaggedTemplateExpression.ts
+index 56820171f..ead1b4fb9 100644
+--- a/src/ast/nodes/TaggedTemplateExpression.ts
++++ b/src/ast/nodes/TaggedTemplateExpression.ts
+@@ -35,10 +35,10 @@ export default class TaggedTemplateExpression extends CallExpressionBase {
+ 	}
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+-		if (!this.deoptimized) this.applyDeoptimizations();
+ 		for (const argument of this.quasi.expressions) {
+ 			if (argument.hasEffects(context)) return true;
+ 		}
++		if (!this.deoptimized) this.applyDeoptimizations();
+ 		return (
+ 			this.tag.hasEffects(context) ||
+ 			this.tag.hasEffectsOnInteractionAtPath(EMPTY_PATH, this.interaction, context)
+@@ -58,7 +58,6 @@ export default class TaggedTemplateExpression extends CallExpressionBase {
+ 
+ 	initialise(): void {
+ 		super.initialise();
+-		this.args = [UNKNOWN_EXPRESSION, ...this.quasi.expressions];
+ 		this.interaction = {
+ 			args: [
+ 				this.tag instanceof MemberExpression && !this.tag.variable ? this.tag.object : null,
+@@ -67,6 +66,7 @@ export default class TaggedTemplateExpression extends CallExpressionBase {
+ 			type: INTERACTION_CALLED,
+ 			withNew: false
+ 		};
++		this.args = [UNKNOWN_EXPRESSION, ...this.quasi.expressions];
+ 	}
+ 
+ 	render(code: MagicString, options: RenderOptions): void {

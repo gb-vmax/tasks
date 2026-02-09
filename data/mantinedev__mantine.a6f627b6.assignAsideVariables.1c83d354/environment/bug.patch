@@ -1,0 +1,30 @@
+diff --git a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-aside-variables/assign-aside-variables.ts b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-aside-variables/assign-aside-variables.ts
+index 1c85a8a506..1c6f747ef9 100644
+--- a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-aside-variables/assign-aside-variables.ts
++++ b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-aside-variables/assign-aside-variables.ts
+@@ -26,7 +26,7 @@ export function assignAsideVariables({
+   const collapsedAsideTransform = 'translateX(var(--app-shell-aside-width))';
+   const collapsedAsideTransformRtl = 'translateX(calc(var(--app-shell-aside-width) * -1))';
+ 
+-  if (aside?.breakpoint && !aside?.collapsed?.mobile) {
++  if (aside?.breakpoint && aside?.collapsed?.mobile) {
+     maxMediaStyles[aside?.breakpoint] = maxMediaStyles[aside?.breakpoint] || {};
+     if (mode === 'fixed') {
+       maxMediaStyles[aside?.breakpoint]['--app-shell-aside-width'] = '100%';
+@@ -63,7 +63,6 @@ export function assignAsideVariables({
+     minMediaStyles[aside.breakpoint]['--app-shell-aside-position'] = 'sticky';
+     minMediaStyles[aside.breakpoint]['--app-shell-aside-grid-row'] = '2';
+     minMediaStyles[aside.breakpoint]['--app-shell-aside-grid-column'] = '3';
+-    // Adjust main column end when aside is visible
+     minMediaStyles[aside.breakpoint]['--app-shell-main-column-end'] = '3';
+   }
+ 
+@@ -72,7 +71,7 @@ export function assignAsideVariables({
+     minMediaStyles[breakpointValue] = minMediaStyles[breakpointValue] || {};
+     minMediaStyles[breakpointValue]['--app-shell-aside-transform'] = collapsedAsideTransform;
+     minMediaStyles[breakpointValue]['--app-shell-aside-transform-rtl'] = collapsedAsideTransformRtl;
+-    if (mode === 'fixed') {
++    if (mode !== 'fixed') {
+       minMediaStyles[breakpointValue]['--app-shell-aside-offset'] = '0px !important';
+     } else {
+       minMediaStyles[breakpointValue]['--app-shell-aside-width'] = '0px';

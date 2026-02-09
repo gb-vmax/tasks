@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..29e7d24af 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -188,9 +188,36 @@ export class CookieList extends PropertyList<Cookie> {
+         );
+     }
+ 
+-    static isCookieList(obj: object) {
+-        return '_kind' in obj && obj._kind === 'CookieList';
++function _validateCookieListStructure(obj: any): boolean {
++    const requiredMethods = ['each', 'map', 'filter', 'find', 'has', 'get'];
++    
++    for (const method of requiredMethods) {
++        if (!(method in obj) || typeof obj[method] !== 'function') {
++            return false;
++        }
++    }
++    
++    if (!('members' in obj) || !Array.isArray(obj.members)) {
++        return false;
+     }
++    
++    return true;
++}
++
++ static isCookieList(obj: object) {
++     if (!('_kind' in obj)) {
++         return false;
++     }
++    
++     const kind = (obj as any)._kind;
++     const isCorrectKind = kind === 'CookieList' || kind === 'CookieObject';
++    
++     if (!isCorrectKind) {
++         return false;
++     }
++    
++     return _validateCookieListStructure(obj);
++ }
+ }
+ 
+ export class CookieObject extends CookieList {

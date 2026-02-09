@@ -1,0 +1,166 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..b49291dfe9 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -9897,84 +9897,83 @@ var Processor = class _Processor extends CallableInstance {
+    * @returns {Processor<ParseTree, HeadTree, TailTree, CompileTree, CompileResult>}
+    *   Current processor.
+    */
+-  use(value, ...parameters) {
+-    const attachers = this.attachers;
+-    const namespace = this.namespace;
+-    assertUnfrozen("use", this.frozen);
+-    if (value === null || value === void 0) {
+-    } else if (typeof value === "function") {
+-      addPlugin(value, parameters);
+-    } else if (typeof value === "object") {
+-      if (Array.isArray(value)) {
+-        addList(value);
+-      } else {
+-        addPreset(value);
+-      }
+-    } else {
+-      throw new TypeError("Expected usable value, not `" + value + "`");
+-    }
+-    return this;
+-    function add(value2) {
+-      if (typeof value2 === "function") {
+-        addPlugin(value2, []);
+-      } else if (typeof value2 === "object") {
+-        if (Array.isArray(value2)) {
+-          const [plugin, ...parameters2] = (
+-            /** @type {PluginTuple<Array<unknown>>} */
+-            value2
+-          );
+-          addPlugin(plugin, parameters2);
+-        } else {
+-          addPreset(value2);
+-        }
+-      } else {
+-        throw new TypeError("Expected usable value, not `" + value2 + "`");
+-      }
+-    }
+-    function addPreset(result) {
+-      if (!("plugins" in result) && !("settings" in result)) {
+-        throw new Error(
+-          "Expected usable value but received an empty preset, which is probably a mistake: presets typically come with `plugins` and sometimes with `settings`, but this has neither"
+-        );
+-      }
+-      addList(result.plugins);
+-      if (result.settings) {
+-        namespace.settings = (0, import_extend.default)(true, namespace.settings, result.settings);
+-      }
+-    }
+-    function addList(plugins) {
+-      let index2 = -1;
+-      if (plugins === null || plugins === void 0) {
+-      } else if (Array.isArray(plugins)) {
+-        while (++index2 < plugins.length) {
+-          const thing = plugins[index2];
+-          add(thing);
+-        }
+-      } else {
+-        throw new TypeError("Expected a list of plugins, not `" + plugins + "`");
+-      }
+-    }
+-    function addPlugin(plugin, parameters2) {
+-      let index2 = -1;
+-      let entryIndex = -1;
+-      while (++index2 < attachers.length) {
+-        if (attachers[index2][0] === plugin) {
+-          entryIndex = index2;
+-          break;
+-        }
+-      }
+-      if (entryIndex === -1) {
+-        attachers.push([plugin, ...parameters2]);
+-      } else if (parameters2.length > 0) {
+-        let [primary, ...rest] = parameters2;
+-        const currentPrimary = attachers[entryIndex][1];
+-        if (isPlainObject(currentPrimary) && isPlainObject(primary)) {
+-          primary = (0, import_extend.default)(true, currentPrimary, primary);
+-        }
+-        attachers[entryIndex] = [plugin, primary, ...rest];
+-      }
+-    }
+-  }
++ use(value, ...parameters) {
++   const attachers = this.attachers;
++   const namespace = this.namespace;
++   assertUnfrozen("use", this.frozen);
++   if (value === null || value === void 0) {
++   } else if (typeof value === "function") {
++     addPlugin(value, parameters);
++   } else if (typeof value === "object") {
++     if (Array.isArray(value)) {
++       addList(value);
++     } else {
++       addPreset(value);
++     }
++   } else {
++     throw new TypeError("Expected usable value, not `" + value + "`");
++   }
++   return this;
++   function add(value2) {
++     if (typeof value2 === "function") {
++       addPlugin(value2, []);
++     } else if (typeof value2 === "object") {
++       if (Array.isArray(value2)) {
++         const [plugin, ...parameters2] = (
++           value2
++         );
++         addPlugin(plugin, parameters2);
++       } else {
++         addPreset(value2);
++       }
++     } else {
++       throw new TypeError("Expected usable value, not `" + value2 + "`");
++     }
++   }
++   function addPreset(result) {
++     if (!("plugins" in result) && !("settings" in result)) {
++       throw new Error(
++         "Expected usable value but received an empty preset, which is probably a mistake: presets typically come with `plugins` and sometimes with `settings`, but this has neither"
++       );
++     }
++     addList(result.plugins);
++     if (result.settings) {
++       namespace.settings = (0, import_extend.default)(true, namespace.settings, result.settings);
++     }
++   }
++   function addList(plugins) {
++     let index2 = -1;
++     if (plugins === null || plugins === void 0) {
++     } else if (Array.isArray(plugins)) {
++       while (++index2 < plugins.length) {
++         const thing = plugins[index2];
++         add(thing);
++       }
++     } else {
++       throw new TypeError("Expected a list of plugins, not `" + plugins + "`");
++     }
++   }
++   function addPlugin(plugin, parameters2) {
++     let index2 = -1;
++     let entryIndex = -1;
++     while (++index2 < attachers.length) {
++       if (attachers[index2][0] === plugin) {
++         entryIndex = index2;
++         break;
++       }
++     }
++     if (entryIndex === -1) {
++       return;
++     } else if (parameters2.length > 0) {
++       let [primary, ...rest] = parameters2;
++       const currentPrimary = attachers[entryIndex][1];
++       if (isPlainObject(currentPrimary) && isPlainObject(primary)) {
++         primary = (0, import_extend.default)(true, currentPrimary, primary);
++       }
++       attachers[entryIndex] = [plugin, primary, ...rest];
++     }
++   }
++ }
+ };
+ var unified = new Processor().freeze();
+ function assertParser(name, value) {

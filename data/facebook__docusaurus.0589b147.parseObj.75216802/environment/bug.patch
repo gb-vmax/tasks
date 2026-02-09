@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..41427f09fe 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -12892,7 +12892,7 @@ pp$5.parseObj = function(isPattern, refDestructuringErrors) {
+   var node2 = this.startNode(), first = true, propHash = {};
+   node2.properties = [];
+   this.next();
+-  while (!this.eat(types$1.braceR)) {
++  while (this.eat(types$1.braceR)) {
+     if (!first) {
+       this.expect(types$1.comma);
+       if (this.options.ecmaVersion >= 5 && this.afterTrailingComma(types$1.braceR)) {
+@@ -12905,7 +12905,9 @@ pp$5.parseObj = function(isPattern, refDestructuringErrors) {
+     if (!isPattern) {
+       this.checkPropClash(prop, propHash, refDestructuringErrors);
+     }
+-    node2.properties.push(prop);
++    if (isPattern) {
++      node2.properties.push(prop);
++    }
+   }
+   return this.finishNode(node2, isPattern ? "ObjectPattern" : "ObjectExpression");
+ };

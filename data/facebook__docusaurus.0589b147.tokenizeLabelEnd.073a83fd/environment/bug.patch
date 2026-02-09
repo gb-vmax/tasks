@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..7267e00527 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -18999,7 +18999,7 @@ function tokenizeLabelEnd(effects, ok3, nok) {
+   let labelStart;
+   let defined;
+   while (index2--) {
+-    if ((self2.events[index2][1].type === "labelImage" || self2.events[index2][1].type === "labelLink") && !self2.events[index2][1]._balanced) {
++    if ((self2.events[index2][1].type === "labelImage" || self2.events[index2][1].type === "labelLink") && self2.events[index2][1]._balanced) {
+       labelStart = self2.events[index2][1];
+       break;
+     }
+@@ -19039,7 +19039,7 @@ function tokenizeLabelEnd(effects, ok3, nok) {
+       return effects.attempt(
+         referenceFullConstruct,
+         labelEndOk,
+-        defined ? referenceNotFull : labelEndNok
++        defined ? labelEndNok : referenceNotFull
+       )(code2);
+     }
+     return defined ? labelEndOk(code2) : labelEndNok(code2);

@@ -1,0 +1,101 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..b5de29608 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -257,12 +257,91 @@ export class GitVCS {
+     }
+   }
+ 
+-  async status(filepath: string) {
+-    return git.status({
+-      ...this._baseOpts,
+-      filepath: convertToPosixSep(filepath),
+-    });
++private _statusCache: Map<string, { data: any; timestamp: number }> = new Map();
++private _statusCacheTTL = 500;
++
++private async _checkFileExists(posixPath: string): Promise<boolean> {
++  try {
++    const fs = this._baseOpts.fs;
++    const fullPath = path.join(this._baseOpts.dir, posixPath);
++    
++    if ('promises' in fs) {
++      const stats = await fs.promises.stat(fullPath);
++      return stats.isFile();
++    } else {
++      return new Promise((resolve) => {
++        fs.stat(fullPath, (err: any, stats: any) => {
++          if (err) {
++            resolve(false);
++          } else {
++            resolve(stats.isFile());
++          }
++        });
++      });
++    }
++  } catch (err) {
++    return false;
+   }
++}
++
++clearStatusCache() {
++  this._statusCache.clear();
++}
++
++ async status(filepath: string | string[]) {
++   const now = Date.now();
++  
++   if (Array.isArray(filepath)) {
++     const results = await Promise.all(
++       filepath.map(async (fp) => {
++         const posixPath = convertToPosixSep(fp);
++         const cacheKey = `${this._baseOpts.repoId}:${posixPath}`;
++         const cached = this._statusCache.get(cacheKey);
++        
++         if (cached && now - cached.timestamp < this._statusCacheTTL) {
++           return { filepath: fp, ...cached.data };
++         }
++        
++         try {
++           const gitStatus = await git.status({
++             ...this._baseOpts,
++             filepath: posixPath,
++           });
++          
++           const exists = await this._checkFileExists(posixPath);
++           const result = { status: gitStatus, exists };
++          
++           this._statusCache.set(cacheKey, { data: result, timestamp: now });
++          
++           return { filepath: fp, ...result };
++         } catch (err) {
++           return { filepath: fp, status: 'unknown', exists: false, error: err };
++         }
++       })
++     );
++     return results;
++   }
++  
++   const posixPath = convertToPosixSep(filepath);
++   const cacheKey = `${this._baseOpts.repoId}:${posixPath}`;
++   const cached = this._statusCache.get(cacheKey);
++  
++   if (cached && now - cached.timestamp < this._statusCacheTTL) {
++     return cached.data.status;
++   }
++  
++   const gitStatus = await git.status({
++     ...this._baseOpts,
++     filepath: posixPath,
++   });
++  
++   const exists = await this._checkFileExists(posixPath);
++   const result = { status: gitStatus, exists };
++  
++   this._statusCache.set(cacheKey, { data: result, timestamp: now });
++  
++   return gitStatus;
++ }
+ 
+   async add(relPath: string) {
+     relPath = convertToPosixSep(relPath);

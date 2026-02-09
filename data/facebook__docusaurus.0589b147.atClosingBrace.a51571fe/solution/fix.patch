@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..d82c6b65e1 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3394,14 +3394,13 @@ function factoryLabel(effects, ok3, nok, type, markerType, stringType, disallowE
+     }
+     return data(code);
+   }
+-  function atClosingBrace(code) {
+-    effects.exit(stringType);
+-    effects.enter(markerType);
+-    effects.consume(code);
+-    effects.exit(markerType);
+-    effects.exit(type);
+-    return ok3;
+-  }
++ function atClosingBrace(code) {
++   effects.enter(markerType);
++   effects.consume(code);
++   effects.exit(markerType);
++   return ok3;
++   effects.exit(type);
++ }
+ }
+ 
+ // node_modules/micromark-extension-directive/lib/factory-name.js

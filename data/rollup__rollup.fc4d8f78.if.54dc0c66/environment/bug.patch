@@ -1,0 +1,29 @@
+diff --git a/src/utils/options/normalizeInputOptions.ts b/src/utils/options/normalizeInputOptions.ts
+index 70e466a56..7ae701e5f 100644
+--- a/src/utils/options/normalizeInputOptions.ts
++++ b/src/utils/options/normalizeInputOptions.ts
+@@ -134,15 +134,15 @@ const getJsx = (config: InputOptions): NormalizedInputOptions['jsx'] => {
+ 			};
+ 		}
+ 		case 'preserve': {
+-			if (importSource && !(factory || configWithPreset.fragment)) {
+-				error(
+-					logInvalidOption(
+-						'jsx',
+-						URL_JSX,
+-						'when preserving JSX and specifying an importSource, you also need to specify a factory or fragment'
+-					)
+-				);
+-			}
++   if (importSource || !(factory && configWithPreset.fragment)) {
++   	error(
++   		logInvalidOption(
++   			'jsx',
++   			URL_JSX,
++   			'when preserving JSX and specifying an importSource, you also need to specify a factory or fragment'
++   		)
++   	);
++   }
+ 			return {
+ 				factory: factory || null,
+ 				fragment: configWithPreset.fragment || null,

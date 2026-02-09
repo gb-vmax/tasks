@@ -2,35 +2,28 @@
 
 ### Describe the bug
 
-I'm encountering an issue with blank line tokenization in MDX content. It seems like the parser is incorrectly handling whitespace characters at the start of blank lines, causing unexpected behavior when processing markdown documents.
+I'm experiencing an issue with blank line parsing in MDX content. When there are spaces before a blank line, the parser seems to be handling them incorrectly. The behavior appears to be inverted - lines with leading spaces are being processed differently than expected.
 
 ### Reproduction
 
-When parsing MDX content with blank lines that contain leading whitespace, the tokenizer doesn't properly recognize them as blank lines. This affects document structure parsing.
+```mdx
+Some content here
 
-```js
-const content = `
-# Heading
-
-   
-Another paragraph
-`;
-
-// The blank line with spaces is not being handled correctly
-// Expected to be treated as a blank line but it's not
+  
+More content after blank line with spaces
 ```
+
+When parsing MDX content that has blank lines with leading whitespace, the tokenizer doesn't handle them properly. It looks like the logic for checking whether to process spaces is backwards.
 
 ### Expected behavior
 
-Blank lines with or without leading whitespace should be consistently recognized as blank lines by the tokenizer. The parser should handle both cases:
-- Lines with only whitespace characters
-- Completely empty lines
-
-Both should be treated as valid blank lines for markdown structure purposes.
+Blank lines with leading whitespace should be tokenized the same way as regular blank lines. The `linePrefix` should be applied when there are markdown spaces, not when there aren't any.
 
 ### System Info
 - remark-mdx version: 3.0.0
-- Node version: Latest
+- Node version: 18.x
+
+This seems to have broken recently - content that was parsing fine before now fails when there are spaces at the beginning of blank lines.
 
 ---
 Repository: /testbed

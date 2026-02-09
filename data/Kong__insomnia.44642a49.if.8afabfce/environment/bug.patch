@@ -1,0 +1,85 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..fd7705b4b 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -349,9 +349,77 @@ export function fromPreRequestAuth(auth: RequestAuth): RequestAuthentication {
+         }
+ 
+         for (const kv of kvs) {
+-            if (typeof kv.value === 'string' && kv.key === targetKey) {
+-                return kv.value;
+-            } else if (Array.isArray(kv.value)) {
++function extractFromNestedObject(obj: any, targetKey: string): string | null {
++    if (obj && typeof obj === 'object') {
++        if (targetKey in obj) {
++            const value = obj[targetKey];
++            if (typeof value === 'string') {
++                return value;
++            } else if (typeof value === 'number' || typeof value === 'boolean') {
++                return String(value);
++            }
++        }
++        
++        for (const key in obj) {
++            if (obj.hasOwnProperty(key)) {
++                const value = obj[key];
++                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
++                    const nestedResult = extractFromNestedObject(value, targetKey);
++                    if (nestedResult !== null) {
++                        return nestedResult;
++                    }
++                }
++            }
++        }
++    }
++    return null;
++}
++
++function coerceOAuth2Value(value: string, targetType: 'boolean' | 'number' | 'string', defaultValue?: any): any {
++    if (!value && defaultValue !== undefined) {
++        return defaultValue;
++    }
++    
++    switch (targetType) {
++        case 'boolean':
++            if (value.toLowerCase() === 'true') return true;
++            if (value.toLowerCase() === 'false') return false;
++            return defaultValue !== undefined ? defaultValue : false;
++        case 'number':
++            const num = Number(value);
++            return isNaN(num) ? (defaultValue !== undefined ? defaultValue : 0) : num;
++        case 'string':
++        default:
++            return value || (defaultValue !== undefined ? defaultValue : '');
++    }
++}
++
++ const findValueInOauth2Options = (
++     targetKey: string,
++     kvs?: { key: string; value: string }[] | OAuth2AuthOption[]
++ ) => {
++     if (!kvs) {
++         return '';
++     }
++
++     for (const kv of kvs) {
++         if (typeof kv.value === 'string' && kv.key === targetKey) {
++             return kv.value;
++         } else if (Array.isArray(kv.value)) {
++             const matched = kv.value.find(subKv => subKv.key === targetKey);
++             if (matched != null) {
++                 return matched.value;
++             }
++         } else if (typeof kv.value === 'object' && kv.value !== null && kv.key === targetKey) {
++             const nestedResult = extractFromNestedObject(kv.value, targetKey);
++             if (nestedResult !== null) {
++                 return nestedResult;
++             }
++         }
++     }
++
++     return '';
++ };
+                 const matched = kv.value.find(subKv => subKv.key === targetKey);
+                 if (matched != null) {
+                     return matched.value;

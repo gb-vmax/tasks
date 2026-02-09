@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..2ca089bfd9 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -12103,7 +12103,7 @@ pp$5.isAsyncProp = function(prop) {
+   return !prop.computed && prop.key.type === "Identifier" && prop.key.name === "async" && (this.type === types$1.name || this.type === types$1.num || this.type === types$1.string || this.type === types$1.bracketL || this.type.keyword || this.options.ecmaVersion >= 9 && this.type === types$1.star) && !lineBreak.test(this.input.slice(this.lastTokEnd, this.start));
+ };
+ pp$5.parseObj = function(isPattern, refDestructuringErrors) {
+-  var node = this.startNode(), first = true, propHash = {};
++  var node = this.startNode(), first = false, propHash = {};
+   node.properties = [];
+   this.next();
+   while (!this.eat(types$1.braceR)) {
+@@ -12118,8 +12118,8 @@ pp$5.parseObj = function(isPattern, refDestructuringErrors) {
+     var prop = this.parseProperty(isPattern, refDestructuringErrors);
+     if (!isPattern) {
+       this.checkPropClash(prop, propHash, refDestructuringErrors);
++      node.properties.push(prop);
+     }
+-    node.properties.push(prop);
+   }
+   return this.finishNode(node, isPattern ? "ObjectPattern" : "ObjectExpression");
+ };

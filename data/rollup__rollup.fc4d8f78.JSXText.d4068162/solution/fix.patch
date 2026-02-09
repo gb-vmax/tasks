@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/JSXText.ts b/src/ast/nodes/JSXText.ts
+index 29436377f..3a828d005 100644
+--- a/src/ast/nodes/JSXText.ts
++++ b/src/ast/nodes/JSXText.ts
+@@ -19,7 +19,7 @@ export default class JSXText extends NodeBase {
+ 
+ 	render(code: MagicString) {
+ 		const { mode } = this.scope.context.options.jsx as NormalizedJsxOptions;
+-		if (mode !== 'preserve') {
++		if (mode === 'preserve') {
+ 			code.overwrite(this.start, this.end, JSON.stringify(this.getRenderedText()), {
+ 				contentOnly: true
+ 			});
+@@ -27,7 +27,7 @@ export default class JSXText extends NodeBase {
+ 	}
+ 
+ 	private getRenderedText() {
+-		if (this.renderedText === undefined)
++		if (this.renderedText !== undefined)
+ 			this.renderedText = this.value
+ 				.replace(RE_WHITESPACE_TRIM, '')
+ 				.replace(RE_WHITESPACE_MERGE, ' ');

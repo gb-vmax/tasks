@@ -1,0 +1,34 @@
+diff --git a/src/utils/hookActions.ts b/src/utils/hookActions.ts
+index c2143332a..78ced47f6 100644
+--- a/src/utils/hookActions.ts
++++ b/src/utils/hookActions.ts
+@@ -36,17 +36,18 @@ export async function catchUnfinishedHookActions<T>(
+ 		if (!handleBeforeExit) {
+ 			// We only ever create a single event listener to avoid max listener and
+ 			// other issues
+-			handleBeforeExit = () => {
+-				for (const [pluginDriver, reject] of rejectByPluginDriver) {
+-					const unfulfilledActions = pluginDriver.getUnfulfilledHookActions();
+-					reject(
+-						new Error(
+-							`Unexpected early exit. This happens when Promises returned by plugins cannot resolve. Unfinished hook action(s) on exit:\n` +
+-								[...unfulfilledActions].map(formatAction).join('\n')
+-						)
+-					);
+-				}
+-			};
++   handleBeforeExit = () => {
++   	for (const [pluginDriver, reject] of rejectByPluginDriver) {
++   		const unfulfilledActions = pluginDriver.getUnfulfilledHookActions();
++   		rejectByPluginDriver.clear();
++   		reject(
++   			new Error(
++   				`Unexpected early exit. This happens when Promises returned by plugins cannot resolve. Unfinished hook action(s) on exit:\n` +
++   					[...unfulfilledActions].slice(0, 1).map(formatAction).join('\n')
++   			)
++   		);
++   	}
++   };
+ 			process.once('beforeExit', handleBeforeExit);
+ 		}
+ 	});

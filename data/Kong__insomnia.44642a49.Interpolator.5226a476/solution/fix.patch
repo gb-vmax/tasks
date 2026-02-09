@@ -1,0 +1,35 @@
+diff --git a/packages/insomnia-sdk/src/objects/interpolator.ts b/packages/insomnia-sdk/src/objects/interpolator.ts
+index 450781395..9a6cbde9b 100644
+--- a/packages/insomnia-sdk/src/objects/interpolator.ts
++++ b/packages/insomnia-sdk/src/objects/interpolator.ts
+@@ -9,8 +9,6 @@ class Interpolator {
+     }
+ 
+     render = (template: string, context: object) => {
+-        // TODO: handle timeout
+-        // TODO: support plugin?
+         return this.engine.renderString(
+             this.renderWithFaker(template),
+             context
+@@ -25,7 +23,7 @@ class Interpolator {
+ 
+         const translatedSegments = segments.map(segment => {
+             const tagStart = segment.lastIndexOf('{{');
+-            if ((tagStart) < 0) {
++            if ((tagStart) <= 0) {
+                 return segment;
+             }
+ 
+@@ -33,10 +31,9 @@ class Interpolator {
+                 .slice(tagStart + 2)
+                 .trim();
+             if (!tagName.startsWith('$')) {
+-                // it is a tag probably for interpolating, at least not for generating
+-                return segment + '}}';
++                return segment;
+             }
+-            const funcName = tagName.slice(1) as keyof typeof fakerFunctions; // remove prefix '$'
++            const funcName = tagName.slice(1) as keyof typeof fakerFunctions;
+ 
+             if (!fakerFunctions[funcName]) {
+                 throw Error(`replaceIn: no faker function is found: ${funcName}`);

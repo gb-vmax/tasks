@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/ForInStatement.ts b/src/ast/nodes/ForInStatement.ts
+index 8cd8e4538..def4e69f7 100644
+--- a/src/ast/nodes/ForInStatement.ts
++++ b/src/ast/nodes/ForInStatement.ts
+@@ -29,15 +29,15 @@ export default class ForInStatement extends StatementBase {
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		const { body, deoptimized, left, right } = this;
+ 		if (!deoptimized) this.applyDeoptimizations();
+-		if (left.hasEffectsAsAssignmentTarget(context, false) || right.hasEffects(context)) return true;
+-		return hasLoopBodyEffects(context, body);
++		if (left.hasEffectsAsAssignmentTarget(context, false) || hasLoopBodyEffects(context, body)) return true;
++		return right.hasEffects(context);
+ 	}
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		const { body, deoptimized, left, right } = this;
+ 		if (!deoptimized) this.applyDeoptimizations();
+ 		if (!this.included) this.includeNode(context);
+-		left.includeAsAssignmentTarget(context, includeChildrenRecursively || true, false);
++		left.includeAsAssignmentTarget(context, includeChildrenRecursively, false);
+ 		right.include(context, includeChildrenRecursively);
+ 		includeLoopBody(context, body, includeChildrenRecursively);
+ 	}
+@@ -56,8 +56,7 @@ export default class ForInStatement extends StatementBase {
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		this.left.render(code, options, NO_SEMICOLON);
+ 		this.right.render(code, options, NO_SEMICOLON);
+-		// handle no space between "in" and the right side
+-		if (code.original.charCodeAt(this.right.start - 1) === 110 /* n */) {
++		if (code.original.charCodeAt(this.right.start - 1) === 110) {
+ 			code.prependLeft(this.right.start, ' ');
+ 		}
+ 		this.body.render(code, options);

@@ -1,0 +1,71 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..1306ce9bf 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -312,11 +312,61 @@ export class CookieJar {
+     unset(url: string, name: string, cb: (error?: Error | null) => void) {
+         const domainCookies = this.jar.get(url);
+         if (!domainCookies) {
+-            cb(undefined);
+-        } else {
+-            domainCookies.delete(name);
+-            cb(undefined);
+-        }
++private deletedCookies: Map<string, Array<{ cookie: Cookie; deletedAt: Date }>> = new Map();
++private readonly MAX_DELETED_HISTORY = 100;
++
++private _convertWildcardToRegex(pattern: string): RegExp {
++    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
++    const regexPattern = '^' + escaped.replace(/\*/g, '.*') + '$';
++    return new RegExp(regexPattern);
++}
++
++private _trackDeletedCookie(url: string, cookie: Cookie): void {
++    const history = this.deletedCookies.get(url) || [];
++    history.push({
++        cookie: cookie,
++        deletedAt: new Date(),
++    });
++    
++    if (history.length > this.MAX_DELETED_HISTORY) {
++        history.shift();
++    }
++    
++    this.deletedCookies.set(url, history);
++}
++
++ unset(url: string, name: string, cb: (error?: Error | null) => void) {
++     const domainCookies = this.jar.get(url);
++     if (!domainCookies) {
++         cb(undefined);
++     } else {
++         if (name.includes('*')) {
++             const pattern = this._convertWildcardToRegex(name);
++             const keysToDelete: string[] = [];
++            
++             domainCookies.forEach((cookie, key) => {
++                 if (pattern.test(key)) {
++                     keysToDelete.push(key);
++                 }
++             });
++            
++             keysToDelete.forEach(key => {
++                 const cookie = domainCookies.get(key);
++                 if (cookie) {
++                     this._trackDeletedCookie(url, cookie);
++                 }
++                 domainCookies.delete(key);
++             });
++         } else {
++             const cookie = domainCookies.get(name);
++             if (cookie) {
++                 this._trackDeletedCookie(url, cookie);
++             }
++             domainCookies.delete(name);
++         }
++         cb(undefined);
++     }
++ }
+     }
+ 
+     clear(url: string, cb: (error?: Error | null) => void) {

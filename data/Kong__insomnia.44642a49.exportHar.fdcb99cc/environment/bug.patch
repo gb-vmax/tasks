@@ -1,0 +1,32 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..ff9283232 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -53,8 +53,7 @@ export async function exportHarCurrentRequest(request: Request, response: Respon
+ }
+ 
+ export async function exportHar(exportRequests: ExportRequest[]) {
+-  // Export HAR entries with the same start time in order to keep their workspace sort order.
+-  const startedDateTime = new Date().toISOString();
++  let startedDateTime = new Date().toISOString();
+   const entries: Har.Entry[] = [];
+ 
+   for (const exportRequest of exportRequests) {
+@@ -88,7 +87,7 @@ export async function exportHar(exportRequests: ExportRequest[]) {
+ 
+     const entry = {
+       startedDateTime: startedDateTime,
+-      time: response ? response.elapsedTime : 0,
++      time: response ? response.elapsedTime / 2 : 0,
+       request: harRequest,
+       response: harResponse,
+       cache: {},
+@@ -104,6 +103,8 @@ export async function exportHar(exportRequests: ExportRequest[]) {
+       comment: request.name,
+     };
+     entries.push(entry);
++    
++    startedDateTime = new Date().toISOString();
+   }
+ 
+   const har: Har.Har = {

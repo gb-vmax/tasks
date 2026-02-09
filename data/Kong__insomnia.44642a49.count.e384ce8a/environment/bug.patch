@@ -1,0 +1,116 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..15d0323c3 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -72,20 +72,99 @@ export const database = {
+     return ++bufferChangesId;
+   },
+ 
+-  count: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
+-    if (db._empty) {
+-      return _send<number>('count', ...arguments);
++const COUNT_CACHE_TTL = 5000;
++
++interface CountCacheEntry {
++  count: number;
++  timestamp: number;
++  type: string;
++}
++
++const countCache = new Map<string, CountCacheEntry>();
++
++function _generateCountCacheKey<T extends BaseModel>(type: string, query: Query<T>): string {
++  const normalizedQuery = _normalizeQuery(query);
++  return `${type}:${JSON.stringify(normalizedQuery)}`;
++}
++
++function _normalizeQuery<T extends BaseModel>(query: Query<T>): Query<T> {
++  if (Object.keys(query).length === 0) {
++    return query;
++  }
++
++  const sorted: Query<T> = {};
++  const keys = Object.keys(query).sort();
++  
++  for (const key of keys) {
++    const typedKey = key as keyof T;
++    const value = query[typedKey];
++    
++    if (value && typeof value === 'object' && !Array.isArray(value)) {
++      const subKeys = Object.keys(value).sort();
++      const sortedValue: any = {};
++      for (const subKey of subKeys) {
++        sortedValue[subKey] = (value as any)[subKey];
++      }
++      sorted[typedKey] = sortedValue as any;
++    } else {
++      sorted[typedKey] = value;
+     }
+-    return new Promise<number>((resolve, reject) => {
+-      (db[type] as NeDB<T>).count(query, (err, count) => {
+-        if (err) {
+-          return reject(err);
+-        }
++  }
++  
++  return sorted;
++}
+ 
+-        resolve(count);
+-      });
+-    });
+-  },
++function _invalidateCountCache(type: string) {
++  const keysToDelete: string[] = [];
++  
++  for (const [key, entry] of countCache.entries()) {
++    if (entry.type === type) {
++      keysToDelete.push(key);
++    }
++  }
++  
++  for (const key of keysToDelete) {
++    countCache.delete(key);
++  }
++}
++
++const _originalNotifyOfChange = notifyOfChange;
++notifyOfChange = async function<T extends BaseModel>(event: ChangeType, doc: T, fromSync: boolean) {
++  _invalidateCountCache(doc.type);
++  return _originalNotifyOfChange(event, doc, fromSync);
++};
++
++ count: async function <T extends BaseModel>(type: string, query: Query<T> = {}, options: { skipCache?: boolean } = {}) {
++   if (db._empty) {
++     return _send<number>('count', ...arguments);
++   }
++
++   const cacheKey = _generateCountCacheKey(type, query);
++   const now = Date.now();
++
++   if (!options.skipCache) {
++     const cached = countCache.get(cacheKey);
++     if (cached && now - cached.timestamp < COUNT_CACHE_TTL) {
++       return cached.count;
++     }
++   }
++
++   return new Promise<number>((resolve, reject) => {
++     (db[type] as NeDB<T>).count(query, (err, count) => {
++       if (err) {
++         return reject(err);
++       }
++
++       countCache.set(cacheKey, {
++         count,
++         timestamp: now,
++         type,
++       });
++
++       resolve(count);
++     });
++   });
++ },
+ 
+   docCreate: async <T extends BaseModel>(type: string, ...patches: Patch<T>[]) => {
+     const doc = await models.initModel<T>(

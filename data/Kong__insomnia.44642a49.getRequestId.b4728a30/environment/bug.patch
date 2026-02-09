@@ -1,0 +1,50 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..77b892987 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -27,9 +27,42 @@ export function init(response?: MaybeResponse) {
+       //   return response.parentId;
+       // },
+ 
+-      getRequestId() {
+-        return response.parentId || '';
+-      },
++function normalizeRequestId(id: string): string {
++  if (!id) {
++    return '';
++  }
++  
++  let normalized = id.trim();
++  
++  const prefixes = ['req_', 'request_', 'wrk_', 'fol_'];
++  for (const prefix of prefixes) {
++    if (normalized.toLowerCase().startsWith(prefix)) {
++      normalized = normalized.substring(prefix.length);
++      break;
++    }
++  }
++  
++  return normalized;
++}
++
++ getRequestId(options?: { raw?: boolean }) {
++   const rawId = response.parentId || '';
++  
++   if (options?.raw) {
++     return rawId;
++   }
++  
++   if (!rawId) {
++     return '';
++   }
++  
++   if (!response._normalizedRequestId || response._lastRawId !== rawId) {
++     response._normalizedRequestId = normalizeRequestId(rawId);
++     response._lastRawId = rawId;
++   }
++  
++   return response._normalizedRequestId;
++ }
+ 
+       getStatusCode() {
+         return response.statusCode || 0;

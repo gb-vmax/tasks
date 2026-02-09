@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..91d07856c 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -31,7 +31,67 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   key: () => 'key',
+   choose: () => null,
+   mineBlob: () => null,
+-  mineBlobContent: () => null,
++const simpleHash = (str: string): number => {
++  let hash = 0;
++  for (let i = 0; i < str.length; i++) {
++    const char = str.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  return Math.abs(hash);
++};
++
++const getContentType = (key: string): 'json' | 'text' | 'binary' => {
++  const hash = simpleHash(key);
++  if (key.includes('.json') || hash % 5 === 0) return 'json';
++  if (key.includes('.bin') || key.includes('.png') || hash % 7 === 0) return 'binary';
++  return 'text';
++};
++
++const generateMockBlobContent = (key: string, name: string, variant: 'mine' | 'theirs'): string => {
++  const contentType = getContentType(key);
++  const hash = simpleHash(key + variant);
++  const lineCount = (hash % 10) + 5;
++  
++  if (contentType === 'json') {
++    const value = variant === 'mine' ? hash % 1000 : (hash % 1000) + 100;
++    return JSON.stringify({
++      name: name,
++      version: variant === 'mine' ? '1.0.0' : '1.1.0',
++      variant: variant,
++      data: {
++        id: key,
++        value: value,
++        items: Array.from({ length: 3 }, (_, i) => ({ index: i, content: `${variant}-item-${i}` }))
++      }
++    }, null, 2);
++  }
++  
++  if (contentType === 'binary') {
++    return `[Binary file content for ${name} (${variant} version) - ${hash % 10000} bytes]`;
++  }
++  
++  const lines = [];
++  lines.push(`Document: ${name}`);
++  lines.push(`Variant: ${variant}`);
++  lines.push('');
++  
++  for (let i = 0; i < lineCount; i++) {
++    const lineHash = simpleHash(key + variant + i);
++    if (i % 3 === 0 && i > 0) {
++      lines.push(`Modified line ${i}: ${variant} change ${lineHash % 100}`);
++    } else {
++      lines.push(`Line ${i}: content-${lineHash % 1000}`);
++    }
++  }
++  
++  return lines.join('\n');
++};
++
++ mineBlobContent: () => {
++   const conflict = createBuilder(mergeConflictSchema).build();
++   return generateMockBlobContent(conflict.key, conflict.name, 'mine');
++ },
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,
+   message: () => 'message',

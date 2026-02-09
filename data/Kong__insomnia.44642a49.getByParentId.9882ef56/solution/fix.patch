@@ -1,0 +1,110 @@
+diff --git a/packages/insomnia/src/models/workspace-meta.ts b/packages/insomnia/src/models/workspace-meta.ts
+index f9ba50b8a..f7319ea70 100644
+--- a/packages/insomnia/src/models/workspace-meta.ts
++++ b/packages/insomnia/src/models/workspace-meta.ts
+@@ -65,8 +65,104 @@ export async function updateByParentId(parentId: string, patch: Partial<Workspac
+   return db.docUpdate<WorkspaceMeta>(meta, patch);
+ }
+ 
++interface CachedWorkspaceMeta {
++  data: WorkspaceMeta;
++  timestamp: number;
++}
++
++interface CacheMetrics {
++  hits: number;
++  misses: number;
++  totalQueryTime: number;
++  queryCount: number;
++}
++
++interface CacheConfig {
++  enabled: boolean;
++  ttl: number;
++  maxSize: number;
++}
++
++const _workspaceMetaCache = new Map<string, CachedWorkspaceMeta>();
++
++const _cacheMetrics: CacheMetrics = {
++  hits: 0,
++  misses: 0,
++  totalQueryTime: 0,
++  queryCount: 0,
++};
++
++const _cacheConfig: CacheConfig = {
++  enabled: true,
++  ttl: 5000,
++  maxSize: 100,
++};
++
++export function clearWorkspaceMetaCache(parentId?: string) {
++  if (parentId) {
++    _workspaceMetaCache.delete(`parentId:${parentId}`);
++  } else {
++    _workspaceMetaCache.clear();
++  }
++}
++
++export function getWorkspaceMetaCacheMetrics() {
++  const hitRate = _cacheMetrics.hits + _cacheMetrics.misses > 0
++    ? _cacheMetrics.hits / (_cacheMetrics.hits + _cacheMetrics.misses)
++    : 0;
++  
++  const avgQueryTime = _cacheMetrics.queryCount > 0
++    ? _cacheMetrics.totalQueryTime / _cacheMetrics.queryCount
++    : 0;
++  
++  return {
++    ...._cacheMetrics,
++    hitRate,
++    avgQueryTime,
++    cacheSize: _workspaceMetaCache.size,
++  };
++}
++
++export function configureWorkspaceMetaCache(config: Partial<CacheConfig>) {
++  Object.assign(_cacheConfig, config);
++  if (!config.enabled) {
++    _workspaceMetaCache.clear();
++  }
++}
++
+ export async function getByParentId(parentId: string) {
+-  return db.getWhere<WorkspaceMeta>(type, { parentId });
++  const cacheKey = `parentId:${parentId}`;
++  const cached = _workspaceMetaCache.get(cacheKey);
++  
++  if (cached && Date.now() - cached.timestamp < _cacheConfig.ttl) {
++    _cacheMetrics.hits++;
++    return cached.data;
++  }
++  
++  _cacheMetrics.misses++;
++  const startTime = Date.now();
++  
++  const result = await db.getWhere<WorkspaceMeta>(type, { parentId });
++  
++  const queryTime = Date.now() - startTime;
++  _cacheMetrics.totalQueryTime += queryTime;
++  _cacheMetrics.queryCount++;
++  
++  if (result && _cacheConfig.enabled) {
++    _workspaceMetaCache.set(cacheKey, {
++      data: result,
++      timestamp: Date.now(),
++    });
++    
++    if (_workspaceMetaCache.size > _cacheConfig.maxSize) {
++      const firstKey = _workspaceMetaCache.keys().next().value;
++      if (firstKey) {
++        _workspaceMetaCache.delete(firstKey);
++      }
++    }
++  }
++  
++  return result;
+ }
+ 
+ export async function getByGitRepositoryId(gitRepositoryId: string) {

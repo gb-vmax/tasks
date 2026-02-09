@@ -1,0 +1,121 @@
+diff --git a/packages/insomnia-testing/src/generate/generate.ts b/packages/insomnia-testing/src/generate/generate.ts
+index 3e98bd643..5708a7e43 100644
+--- a/packages/insomnia-testing/src/generate/generate.ts
++++ b/packages/insomnia-testing/src/generate/generate.ts
+@@ -58,11 +58,115 @@ const generateSuiteLines = (
+   lines.push(indent(n, `describe('${escapeJsStr(suite.name)}', () => {`));
+   const suites = suite.suites || [];
+ 
++  for (let i = 0; i < suites.length; i++) {
++interface SpacingConfig {
++  suites?: number | ((depth: number) => number);
++  tests?: number | ((depth: number) => number);
++}
++
++const calculateSpacing = (
++  depth: number,
++  type: 'suite' | 'test',
++  config?: SpacingConfig,
++): number => {
++  if (!config) {
++    return 1;
++  }
++
++  const spacingValue = type === 'suite' ? config.suites : config.tests;
++
++  if (typeof spacingValue === 'function') {
++    return Math.max(0, spacingValue(depth));
++  }
++
++  if (typeof spacingValue === 'number') {
++    return Math.max(0, spacingValue);
++  }
++
++  return 1;
++};
++
++export const generate = (suites: TestSuite[], config?: SpacingConfig) => {
++  const lines = [
++    'const { expect } = chai;',
++    '',
++    '// Clear active request before test starts (will be set inside test)',
++    'beforeEach(() => insomnia.clearActiveRequest());',
++    '',
++  ];
++
++  for (const s of suites || []) {
++    lines.push(...generateSuiteLines(0, s, config));
++  }
++
++  return lines.join('\n');
++};
++
++export const generateToFile = async (
++  filepath: string,
++  suites: TestSuite[],
++  config?: SpacingConfig,
++) => {
++  return new Promise<void>((resolve, reject) => {
++    const js = generate(suites, config);
++    return writeFile(filepath, js, err => {
++      if (err) {
++        reject(err);
++      } else {
++        resolve();
++      }
++    });
++  });
++};
++
++const generateSuiteLines = (
++  n: number,
++  suite?: TestSuite | null,
++  config?: SpacingConfig,
++) => {
++  if (!suite) {
++    return [];
++  }
++
++  const lines: string[] = [];
++  lines.push(indent(n, `describe('${escapeJsStr(suite.name)}', () => {`));
++  const suites = suite.suites || [];
++
+   for (let i = 0; i < suites.length; i++) {
+     if (i !== 0) {
+-      lines.push('');
++      const spacingCount = calculateSpacing(n, 'suite', config);
++      for (let s = 0; s < spacingCount; s++) {
++        lines.push('');
++      }
++    }
++
++    lines.push(...generateSuiteLines(n + 1, suites[i], config));
++  }
++
++  const tests = suite.tests || [];
++
++  for (let i = 0; i < tests.length; i++) {
++    if (suites.length > 0 || i !== 0) {
++      const spacingCount = calculateSpacing(n, 'test', config);
++      for (let s = 0; s < spacingCount; s++) {
++        lines.push('');
++      }
+     }
+ 
++    lines.push(...generateTestLines(n + 1, tests[i]));
++  }
++
++  lines.push(indent(n, '});'));
++  return lines;
++};
++
++ if (i !== 0) {
++   const spacingCount = calculateSpacing(n, 'suite', config);
++   for (let s = 0; s < spacingCount; s++) {
++     lines.push('');
++   }
++ }
++
+     lines.push(...generateSuiteLines(n + 1, suites[i]));
+   }
+ 

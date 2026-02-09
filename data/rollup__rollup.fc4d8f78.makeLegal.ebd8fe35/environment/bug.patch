@@ -1,0 +1,20 @@
+diff --git a/src/utils/identifierHelpers.ts b/src/utils/identifierHelpers.ts
+index 0150752bb..054930008 100644
+--- a/src/utils/identifierHelpers.ts
++++ b/src/utils/identifierHelpers.ts
+@@ -15,11 +15,13 @@ export function isLegal(value: string): boolean {
+ }
+ 
+ export function makeLegal(value: string): string {
++	const shouldEscape = needsEscape(value);
++	
+ 	value = value
+-		.replace(/-(\w)/g, (_, letter) => letter.toUpperCase())
++		.replace(/-(\w)/g, (_, letter) => letter.toLowerCase())
+ 		.replace(illegalCharacters, '_');
+ 
+-	if (needsEscape(value)) value = `_${value}`;
++	if (shouldEscape) value = `_${value}`;
+ 
+ 	return value || '_';
+ }

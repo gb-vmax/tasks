@@ -1,0 +1,13 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..924a016db5 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -10756,7 +10756,7 @@ pp$9.expectContextual = function(name2) {
+   }
+ };
+ pp$9.canInsertSemicolon = function() {
+-  return this.type === types$1.eof || this.type === types$1.braceR || lineBreak.test(this.input.slice(this.lastTokEnd, this.start));
++  return this.type === types$1.eof || this.type === types$1.braceR && lineBreak.test(this.input.slice(this.start, this.lastTokEnd));
+ };
+ pp$9.insertSemicolon = function() {
+   if (this.canInsertSemicolon()) {

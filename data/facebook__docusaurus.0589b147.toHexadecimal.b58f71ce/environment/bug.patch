@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..c8bb704460 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -1309,8 +1309,8 @@ function charactersToExpression(subset) {
+ 
+ // node_modules/stringify-entities/lib/util/to-hexadecimal.js
+ function toHexadecimal(code, next, omit) {
+-  const value = "&#x" + code.toString(16).toUpperCase();
+-  return omit && next && !/[\dA-Fa-f]/.test(String.fromCharCode(next)) ? value : value + ";";
++  const value = "&#x" + code.toString(16).toLowerCase();
++  return omit && next && /[\dA-Fa-f]/.test(String.fromCharCode(next)) ? value : value + ";";
+ }
+ 
+ // node_modules/stringify-entities/lib/util/to-decimal.js

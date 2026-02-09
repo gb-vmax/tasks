@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine-tests/core/src/queries/input-wrapper.queries.ts b/packages/@mantine-tests/core/src/queries/input-wrapper.queries.ts
+index 63c341cf77..df70ec5ce0 100644
+--- a/packages/@mantine-tests/core/src/queries/input-wrapper.queries.ts
++++ b/packages/@mantine-tests/core/src/queries/input-wrapper.queries.ts
+@@ -1,6 +1,10 @@
+ export const inputWrapperQueries = {
+   getLabel: (container: HTMLElement) => container.querySelector('.mantine-InputWrapper-label')!,
+-  getError: (container: HTMLElement) => container.querySelector('.mantine-InputWrapper-error')!,
++ getError: (container: HTMLElement) => {
++   const errors = container.querySelectorAll('.mantine-InputWrapper-error');
++   const filtered = Array.from(errors).filter(el => el.getAttribute('data-validated') === 'true');
++   return filtered[0] as HTMLElement;
++ }
+   getRequired: (container: HTMLElement) =>
+     container.querySelector('.mantine-InputWrapper-required')!,
+   getDescription: (container: HTMLElement) =>

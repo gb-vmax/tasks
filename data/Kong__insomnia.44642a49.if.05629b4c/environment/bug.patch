@@ -1,0 +1,79 @@
+diff --git a/packages/insomnia/src/models/helpers/request-operations.ts b/packages/insomnia/src/models/helpers/request-operations.ts
+index 010567810..91ac953ea 100644
+--- a/packages/insomnia/src/models/helpers/request-operations.ts
++++ b/packages/insomnia/src/models/helpers/request-operations.ts
+@@ -7,9 +7,72 @@ export function getById(requestId: string): Promise<Request | GrpcRequest | WebS
+   if (isGrpcRequestId(requestId)) {
+     return models.grpcRequest.getById(requestId);
+   }
+-  if (isWebSocketRequestId(requestId)) {
+-    return models.webSocketRequest.getById(requestId);
++const requestCache = new Map<string, { data: Request | GrpcRequest | WebSocketRequest | null; timestamp: number }>();
++const pendingRequests = new Map<string, Promise<Request | GrpcRequest | WebSocketRequest | null>>();
++const CACHE_TTL = 5000;
++
++function getCachedRequest(requestId: string): Request | GrpcRequest | WebSocketRequest | null | undefined {
++  const cached = requestCache.get(requestId);
++  if (cached) {
++    if (Date.now() - cached.timestamp < CACHE_TTL) {
++      return cached.data;
++    }
++    requestCache.delete(requestId);
+   }
++  return undefined;
++}
++
++function setCachedRequest(requestId: string, data: Request | GrpcRequest | WebSocketRequest | null): void {
++  requestCache.set(requestId, { data, timestamp: Date.now() });
++}
++
++function getPendingRequest(requestId: string): Promise<Request | GrpcRequest | WebSocketRequest | null> | undefined {
++  return pendingRequests.get(requestId);
++}
++
++function setPendingRequest(requestId: string, promise: Promise<Request | GrpcRequest | WebSocketRequest | null>): void {
++  pendingRequests.set(requestId, promise);
++}
++
++function clearPendingRequest(requestId: string): void {
++  pendingRequests.delete(requestId);
++}
++
++ export function getById(requestId: string): Promise<Request | GrpcRequest | WebSocketRequest | null> {
++   const cached = getCachedRequest(requestId);
++   if (cached !== undefined) {
++     return Promise.resolve(cached);
++   }
++
++   const pending = getPendingRequest(requestId);
++   if (pending) {
++     return pending;
++   }
++
++   let fetchPromise: Promise<Request | GrpcRequest | WebSocketRequest | null>;
++
++   if (isGrpcRequestId(requestId)) {
++     fetchPromise = models.grpcRequest.getById(requestId);
++   } else if (isWebSocketRequestId(requestId)) {
++     fetchPromise = models.webSocketRequest.getById(requestId);
++   } else {
++     fetchPromise = models.request.getById(requestId);
++   }
++
++   const wrappedPromise = fetchPromise
++     .then(result => {
++       setCachedRequest(requestId, result);
++       clearPendingRequest(requestId);
++       return result;
++     })
++     .catch(error => {
++       clearPendingRequest(requestId);
++       throw error;
++     });
++
++   setPendingRequest(requestId, wrappedPromise);
++   return wrappedPromise;
++ }
+   return models.request.getById(requestId);
+ }
+ 

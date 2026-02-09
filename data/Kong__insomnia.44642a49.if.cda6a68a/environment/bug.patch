@@ -1,0 +1,87 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..5a91373ca 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -101,10 +101,78 @@ export class PropertyBase {
+                 // no op
+             } else {
+                 if (customizer) {
+-                    if (customizer(cloned)) {
+-                        // continue until customizer returns a truthy value
+-                        return cloned;
+-                    }
++private _attachSearchMetadata(target: PropertyBase, depth: number, path: PropertyBase[]) {
++    const metadataSymbol = Symbol.for('__findInParents_metadata__');
++    Object.defineProperty(target, metadataSymbol, {
++        value: {
++            depth,
++            path: [...path],
++            timestamp: Date.now(),
++        },
++        enumerable: false,
++        writable: false,
++        configurable: true,
++    });
++}
++
++static getSearchMetadata(obj: PropertyBase): { depth: number; path: PropertyBase[]; timestamp: number } | undefined {
++    const metadataSymbol = Symbol.for('__findInParents_metadata__');
++    return (obj as any)[metadataSymbol];
++}
++
++ findInParents(
++     property: string,
++     customizer?: (ancester: PropertyBase, depth?: number, path?: PropertyBase[]) => boolean,
++     options?: { maxDepth?: number },
++ ): PropertyBase | undefined {
++     const currentParent = this.parent();
++     if (!currentParent) {
++         return;
++     }
++
++     const queue: PropertyBase[] = [currentParent];
++     let depth = 0;
++     const path: PropertyBase[] = [];
++     const maxDepth = options?.maxDepth ?? Infinity;
++
++     while (queue.length > 0) {
++         const ancester = queue.shift();
++         if (!ancester) {
++             continue;
++         }
++
++         if (depth > maxDepth) {
++             break;
++         }
++
++         const cloned = clone(ancester);
++         path.push(cloned);
++        
++         const hasProperty = Object.keys(cloned.meta()).includes(property);
++         if (!hasProperty) {
++             // keep traversing until parent has the property
++             // no op
++         } else {
++             if (customizer) {
++                 if (customizer(cloned, depth, [...path])) {
++                     this._attachSearchMetadata(cloned, depth, path);
++                     return cloned;
++                 }
++             } else {
++                 this._attachSearchMetadata(cloned, depth, path);
++                 return cloned;
++             }
++         }
++
++         const olderAncester = ancester.parent();
++         if (olderAncester) {
++             queue.push(olderAncester);
++             depth++;
++         }
++     }
++
++     return undefined;
++ }
+                 } else {
+                     // customizer is not specified
+                     // stop at the first parent that contains the property

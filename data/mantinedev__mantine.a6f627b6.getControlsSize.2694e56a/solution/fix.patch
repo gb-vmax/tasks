@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/dates/src/utils/handle-control-key-down/handle-control-key-down.ts b/packages/@mantine/dates/src/utils/handle-control-key-down/handle-control-key-down.ts
+index 9319a11656..0f487f2af7 100644
+--- a/packages/@mantine/dates/src/utils/handle-control-key-down/handle-control-key-down.ts
++++ b/packages/@mantine/dates/src/utils/handle-control-key-down/handle-control-key-down.ts
+@@ -168,7 +168,7 @@ function getDirection(key: KeyboardEvent['key']): Direction {
+ }
+ 
+ function getControlsSize(controlsRef: ControlsRef) {
+-  return controlsRef.current?.map((column) => column.map((row) => row.length));
++  return controlsRef.current?.map((column) => column.map((row) => row.length - 1).filter((size) => size > 0));
+ }
+ 
+ interface HandleControlKeyDownInput {

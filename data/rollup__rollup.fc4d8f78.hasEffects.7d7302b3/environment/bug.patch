@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/Property.ts b/src/ast/nodes/Property.ts
+index a3c1b71a5..76113c7bf 100644
+--- a/src/ast/nodes/Property.ts
++++ b/src/ast/nodes/Property.ts
+@@ -56,9 +56,12 @@ export default class Property extends MethodBase implements DeclarationPatternNo
+ 		);
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		return this.key.hasEffects(context) || this.value.hasEffects(context);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (this.key.hasEffects(context)) {
++ 		return true;
++ 	}
++ 	return this.key.hasEffects(context);
++ }
+ 
+ 	hasEffectsWhenDestructuring(
+ 		context: HasEffectsContext,

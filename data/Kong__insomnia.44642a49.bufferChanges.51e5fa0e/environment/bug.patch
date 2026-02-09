@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..66e16d905 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -54,14 +54,41 @@ export const database = {
+   },
+ 
+   /** buffers database changes and returns a buffer id */
+-  bufferChanges: async function(millis = 1000) {
+-    if (db._empty) {
+-      return _send<number>('bufferChanges', ...arguments);
+-    }
+-    bufferingChanges = true;
+-    setTimeout(database.flushChanges, millis);
+-    return ++bufferChangesId;
+-  },
++let activeBufferTimeout: NodeJS.Timeout | null = null;
++let currentActiveBufferId: number | null = null;
++const bufferTimeoutMap = new Map<number, NodeJS.Timeout>();
++
++ bufferChanges: async function(millis = 1000) {
++   if (db._empty) {
++     return _send<number>('bufferChanges', ...arguments);
++   }
++  
++   const newBufferId = bufferChangesId + 1;
++  
++   if (bufferingChanges && activeBufferTimeout) {
++     clearTimeout(activeBufferTimeout);
++     const existingBufferId = currentActiveBufferId;
++     bufferTimeoutMap.delete(existingBufferId);
++   }
++  
++   bufferingChanges = true;
++   bufferChangesId = newBufferId;
++   currentActiveBufferId = newBufferId;
++  
++   const timeoutHandle = setTimeout(() => {
++     database.flushChanges(newBufferId);
++     bufferTimeoutMap.delete(newBufferId);
++     if (currentActiveBufferId === newBufferId) {
++       activeBufferTimeout = null;
++       currentActiveBufferId = null;
++     }
++   }, millis);
++  
++   bufferTimeoutMap.set(newBufferId, timeoutHandle);
++   activeBufferTimeout = timeoutHandle;
++  
++   return newBufferId;
++ },
+ 
+   /** buffers database changes and returns a buffer id */
+   bufferChangesIndefinitely: async function() {

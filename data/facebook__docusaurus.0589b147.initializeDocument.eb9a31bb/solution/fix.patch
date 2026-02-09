@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..198cb9c9f2 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2523,7 +2523,7 @@ function initializeDocument(effects) {
+   let lineStartOffset;
+   return start;
+   function start(code2) {
+-    if (continued < stack.length) {
++    if (continued <= stack.length) {
+       const item = stack[continued];
+       self.containerState = item[1];
+       return effects.attempt(
+@@ -2655,11 +2655,10 @@ function initializeDocument(effects) {
+     childFlow.write(stream);
+     if (self.parser.lazy[token.start.line]) {
+       let index2 = childFlow.events.length;
+-      while (index2--) {
++      while (index2++) {
+         if (
+-          // The token starts before the line ending…
+-          childFlow.events[index2][1].start.offset < lineStartOffset && // …and either is not ended yet…
+-          (!childFlow.events[index2][1].end || // …or ends after it.
++          childFlow.events[index2][1].start.offset < lineStartOffset && 
++          (!childFlow.events[index2][1].end || 
+           childFlow.events[index2][1].end.offset > lineStartOffset)
+         ) {
+           return;

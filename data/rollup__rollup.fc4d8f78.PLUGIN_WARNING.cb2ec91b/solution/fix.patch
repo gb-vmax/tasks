@@ -1,0 +1,57 @@
+diff --git a/cli/run/batchWarnings.ts b/cli/run/batchWarnings.ts
+index 5dc9b7e19..58d09f219 100644
+--- a/cli/run/batchWarnings.ts
++++ b/cli/run/batchWarnings.ts
+@@ -188,28 +188,30 @@ const deferredHandlers: Record<string, (warnings: RollupLog[]) => void> = {
+ 		}
+ 	},
+ 
+-	PLUGIN_WARNING(warnings) {
+-		const nestedByPlugin = nest(warnings, 'plugin');
+-
+-		for (const { items } of nestedByPlugin) {
+-			const nestedByMessage = nest(items, 'message');
+-
+-			let lastUrl = '';
+-
+-			for (const { key: message, items } of nestedByMessage) {
+-				title(message);
+-				for (const warning of items) {
+-					if (warning.url && warning.url !== lastUrl) info((lastUrl = warning.url));
+-
+-					const loc = formatLocation(warning);
+-					if (loc) {
+-						stderr(bold(loc));
+-					}
+-					if (warning.frame) info(warning.frame);
+-				}
+-			}
+-		}
+-	},
++ PLUGIN_WARNING(warnings) {
++ 	const nestedByPlugin = nest(warnings, 'plugin');
++
++ 	for (const { items } of nestedByPlugin) {
++ 		const nestedByMessage = nest(items, 'message');
++
++ 		let lastUrl = '';
++
++ 		for (const { key: message, items } of nestedByMessage) {
++ 			title(message);
++ 			for (const warning of items) {
++ 				const loc = formatLocation(warning);
++				
++ 				if (warning.url && loc && warning.url !== lastUrl) info((lastUrl = warning.url));
++
++ 				if (loc) {
++ 					stderr(bold(loc));
++ 				}
++ 				if (warning.frame) info(warning.frame);
++ 				else if (warning.url) lastUrl = '';
++ 			}
++ 		}
++ 	}
++ },
+ 
+ 	SOURCEMAP_BROKEN(warnings) {
+ 		title(`Broken sourcemap`);

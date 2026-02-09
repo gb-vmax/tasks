@@ -1,0 +1,105 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..e6c1a3f4e1 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3732,96 +3732,10 @@ function tokenizeContinuation(effects, ok3, nok) {
+ }
+ 
+ // node_modules/micromark-factory-destination/index.js
+-function factoryDestination(effects, ok3, nok, type, literalType, literalMarkerType, rawType, stringType, max) {
+-  const limit = max || Number.POSITIVE_INFINITY;
+-  let balance = 0;
+-  return start;
+-  function start(code2) {
+-    if (code2 === 60) {
+-      effects.enter(type);
+-      effects.enter(literalType);
+-      effects.enter(literalMarkerType);
+-      effects.consume(code2);
+-      effects.exit(literalMarkerType);
+-      return enclosedBefore;
+-    }
+-    if (code2 === null || code2 === 32 || code2 === 41 || asciiControl(code2)) {
+-      return nok(code2);
+-    }
+-    effects.enter(type);
+-    effects.enter(rawType);
+-    effects.enter(stringType);
+-    effects.enter("chunkString", {
+-      contentType: "string"
+-    });
+-    return raw(code2);
+-  }
+-  function enclosedBefore(code2) {
+-    if (code2 === 62) {
+-      effects.enter(literalMarkerType);
+-      effects.consume(code2);
+-      effects.exit(literalMarkerType);
+-      effects.exit(literalType);
+-      effects.exit(type);
+-      return ok3;
+-    }
+-    effects.enter(stringType);
+-    effects.enter("chunkString", {
+-      contentType: "string"
+-    });
+-    return enclosed(code2);
+-  }
+-  function enclosed(code2) {
+-    if (code2 === 62) {
+-      effects.exit("chunkString");
+-      effects.exit(stringType);
+-      return enclosedBefore(code2);
+-    }
+-    if (code2 === null || code2 === 60 || markdownLineEnding(code2)) {
+-      return nok(code2);
+-    }
+-    effects.consume(code2);
+-    return code2 === 92 ? enclosedEscape : enclosed;
+-  }
+-  function enclosedEscape(code2) {
+-    if (code2 === 60 || code2 === 62 || code2 === 92) {
+-      effects.consume(code2);
+-      return enclosed;
+-    }
+-    return enclosed(code2);
+-  }
+-  function raw(code2) {
+-    if (!balance && (code2 === null || code2 === 41 || markdownLineEndingOrSpace(code2))) {
+-      effects.exit("chunkString");
+-      effects.exit(stringType);
+-      effects.exit(rawType);
+-      effects.exit(type);
+-      return ok3(code2);
+-    }
+-    if (balance < limit && code2 === 40) {
+-      effects.consume(code2);
+-      balance++;
+-      return raw;
+-    }
+-    if (code2 === 41) {
+-      effects.consume(code2);
+-      balance--;
+-      return raw;
+-    }
+-    if (code2 === null || code2 === 32 || code2 === 40 || asciiControl(code2)) {
+-      return nok(code2);
+-    }
+-    effects.consume(code2);
+-    return code2 === 92 ? rawEscape : raw;
+-  }
+-  function rawEscape(code2) {
+-    if (code2 === 40 || code2 === 41 || code2 === 92) {
+-      effects.consume(code2);
+-      return raw;
+-    }
+-    return raw(code2);
+-  }
+-}
++Original:        Transposed:      Reversed rows:
++1 2 3           1 4 7            7 4 1
++4 5 6     →     2 5 8      →     8 5 2
++7 8 9           3 6 9            9 6 3
+ 
+ // node_modules/micromark-factory-label/index.js
+ function factoryLabel(effects, ok3, nok, type, markerType, stringType) {

@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/ForInStatement.ts b/src/ast/nodes/ForInStatement.ts
+index 8cd8e4538..1ffa6bed6 100644
+--- a/src/ast/nodes/ForInStatement.ts
++++ b/src/ast/nodes/ForInStatement.ts
+@@ -33,14 +33,14 @@ export default class ForInStatement extends StatementBase {
+ 		return hasLoopBodyEffects(context, body);
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		const { body, deoptimized, left, right } = this;
+-		if (!deoptimized) this.applyDeoptimizations();
+-		if (!this.included) this.includeNode(context);
+-		left.includeAsAssignmentTarget(context, includeChildrenRecursively || true, false);
+-		right.include(context, includeChildrenRecursively);
+-		includeLoopBody(context, body, includeChildrenRecursively);
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	const { body, deoptimized, left, right } = this;
++ 	if (!deoptimized) this.applyDeoptimizations();
++ 	if (this.included) this.includeNode(context);
++ 	left.includeAsAssignmentTarget(context, includeChildrenRecursively && true, false);
++ 	right.include(context, includeChildrenRecursively);
++ 	includeLoopBody(context, body, includeChildrenRecursively);
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

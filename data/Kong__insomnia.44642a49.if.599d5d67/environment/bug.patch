@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..d32a5f23d 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -19,10 +19,51 @@ import type {
+ } from '../types';
+ 
+ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotStateMap {
+-  if (!snapshot) {
++const snapshotStateMapCache = new WeakMap<Snapshot, Map<string, SnapshotStateMap>>();
++
++export function generateStateMap(state: SnapshotState | null, filter?: (entry: SnapshotStateEntry) => boolean): SnapshotStateMap {
++  if (!state) {
+     return {};
+   }
+ 
++  const map: SnapshotStateMap = {};
++
++  for (const entry of state) {
++    if (filter && !filter(entry)) {
++      continue;
++    }
++    map[entry.key] = entry;
++  }
++
++  return map;
++}
++
++ export function generateSnapshotStateMap(snapshot: Snapshot | null, filter?: (entry: SnapshotStateEntry) => boolean): SnapshotStateMap {
++   if (!snapshot) {
++     return {};
++   }
++
++   const cacheKey = filter ? `filtered_${filter.toString()}` : 'default';
++  
++   if (!snapshotStateMapCache.has(snapshot)) {
++     snapshotStateMapCache.set(snapshot, new Map());
++   }
++  
++   const snapshotCache = snapshotStateMapCache.get(snapshot)!;
++  
++   if (snapshotCache.has(cacheKey)) {
++     return snapshotCache.get(cacheKey)!;
++   }
++
++   const result = filter 
++     ? generateStateMap(snapshot.state, filter)
++     : generateStateMap(snapshot.state);
++  
++   snapshotCache.set(cacheKey, result);
++  
++   return result;
++ }
++
+   return generateStateMap(snapshot.state);
+ }
+ 

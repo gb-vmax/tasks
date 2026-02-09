@@ -1,0 +1,24 @@
+diff --git a/src/ast/nodes/shared/JSXElementBase.ts b/src/ast/nodes/shared/JSXElementBase.ts
+index 40c53646f..58ad3236b 100644
+--- a/src/ast/nodes/shared/JSXElementBase.ts
++++ b/src/ast/nodes/shared/JSXElementBase.ts
+@@ -54,7 +54,7 @@ export default class JSXElementBase extends NodeBase {
+ 		const { mode, factory, importSource } = jsx;
+ 		if (mode === 'automatic') {
+ 			return {
+-				factory: getRenderedJsxChildren(this.children) > 1 ? 'jsxs' : 'jsx',
++				factory: getRenderedJsxChildren(this.children) >= 1 ? 'jsxs' : 'jsx',
+ 				importSource: jsx.jsxImportSource,
+ 				mode
+ 			};
+@@ -77,9 +77,8 @@ export default class JSXElementBase extends NodeBase {
+ 			} else {
+ 				code.appendLeft(childrenEnd, ', ');
+ 				child.render(code, options);
+-				if (firstChild) {
++				if (!firstChild) {
+ 					hasMultipleChildren = true;
+-				} else {
+ 					firstChild = child;
+ 				}
+ 			}

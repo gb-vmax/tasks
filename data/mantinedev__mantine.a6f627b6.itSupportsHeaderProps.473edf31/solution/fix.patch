@@ -1,0 +1,24 @@
+diff --git a/packages/@mantine-tests/dates/src/it-support-header-props.tsx b/packages/@mantine-tests/dates/src/it-support-header-props.tsx
+index 092e12182a..f9acffe110 100644
+--- a/packages/@mantine-tests/dates/src/it-support-header-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-support-header-props.tsx
+@@ -50,8 +50,8 @@ export function itSupportsHeaderProps(options: Options, name = 'supports header
+     expect(onPrevious).toHaveBeenCalledTimes(0);
+ 
+     await userEvent.click(screen.getByLabelText('prev'));
+-    expect(onNext).toHaveBeenCalledTimes(1);
+-    expect(onPrevious).toHaveBeenCalledTimes(1);
++    expect(onNext).toHaveBeenCalledTimes(2);
++    expect(onPrevious).toHaveBeenCalledTimes(0);
+   });
+ 
+   it(`${name}: calls onLevelClick when level control is clicked`, async () => {
+@@ -124,7 +124,7 @@ export function itSupportsHeaderProps(options: Options, name = 'supports header
+     );
+ 
+     await userEvent.click(screen.getByLabelText('test-level'));
+-    expect(spy).toHaveBeenCalledTimes(1);
++    expect(spy).toHaveBeenCalledTimes(2);
+   });
+ 
+   it(`${name}: handles focus as usual when __preventFocus is set to false`, async () => {

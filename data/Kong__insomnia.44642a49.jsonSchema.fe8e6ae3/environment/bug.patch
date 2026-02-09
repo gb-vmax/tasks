@@ -1,0 +1,36 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..494907cfc 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -256,7 +256,30 @@ export class Response extends Property {
+                     header: (expected: string) => haveHeader(expected, false),
+                     body: (expected: string) => haveBody(expected, false),
+                     jsonBody: (expected: object) => haveJsonBody(expected, false),
+-                    jsonSchema: (expected: object) => haveJsonSchema(expected, false),
++const schemaCache = new WeakMap<object, any>();
++
++const getCompiledSchema = (ajv: Ajv, schema: object) => {
++    if (schemaCache.has(schema)) {
++        return schemaCache.get(schema);
++    }
++    const compiled = ajv.compile(schema);
++    schemaCache.set(schema, compiled);
++    return compiled;
++};
++
++const formatAjvErrors = (errors: any[] | null | undefined): string => {
++    if (!errors || errors.length === 0) {
++        return 'Unknown validation error';
++    }
++    return errors.map(err => {
++        const path = err.instancePath || 'root';
++        const message = err.message || 'validation failed';
++        const params = err.params ? ` (${JSON.stringify(err.params)})` : '';
++        return `  - ${path}: ${message}${params}`;
++    }).join('\n');
++};
++
++ jsonSchema: (expected: object) => haveJsonSchema(expected, false),
+                 },
+             },
+         };

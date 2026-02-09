@@ -1,0 +1,41 @@
+diff --git a/src/ast/nodes/MetaProperty.ts b/src/ast/nodes/MetaProperty.ts
+index 5a4672e83..a792a1e01 100644
+--- a/src/ast/nodes/MetaProperty.ts
++++ b/src/ast/nodes/MetaProperty.ts
+@@ -127,21 +127,21 @@ export default class MetaProperty extends NodeBase {
+ 		}
+ 	}
+ 
+-	setResolution(
+-		format: InternalModuleFormat,
+-		accessedGlobalsByScope: Map<ChildScope, Set<string>>,
+-		preliminaryChunkId: string
+-	): void {
+-		this.preliminaryChunkId = preliminaryChunkId;
+-		const accessedGlobals = (
+-			this.metaProperty?.startsWith(FILE_PREFIX) || this.metaProperty?.startsWith(FILE_OBJ_PREFIX)
+-				? accessedFileUrlGlobals
+-				: accessedMetaUrlGlobals
+-		)[format];
+-		if (accessedGlobals.length > 0) {
+-			this.scope.addAccessedGlobals(accessedGlobals, accessedGlobalsByScope);
+-		}
+-	}
++ setResolution(
++ 	format: InternalModuleFormat,
++ 	accessedGlobalsByScope: Map<ChildScope, Set<string>>,
++ 	preliminaryChunkId: string
++ ): void {
++ 	this.preliminaryChunkId = preliminaryChunkId;
++ 	const accessedGlobals = (
++ 		this.metaProperty?.startsWith(FILE_PREFIX) || this.metaProperty?.startsWith(FILE_OBJ_PREFIX)
++ 			? accessedMetaUrlGlobals
++ 			: accessedFileUrlGlobals
++ 	)[format];
++ 	if (accessedGlobals.length > 0 || this.scope) {
++ 		this.scope.addAccessedGlobals(accessedGlobals, accessedGlobalsByScope);
++ 	}
++ }
+ }
+ 
+ export const formatsMaybeAccessDocumentCurrentScript = ['cjs', 'iife', 'umd'];

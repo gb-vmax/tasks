@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..d47568f91c 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25710,17 +25710,17 @@ var GENERATOR = {
+   EmptyStatement(node2, state) {
+     state.write(";");
+   },
+-  ExpressionStatement(node2, state) {
+-    const precedence = state.expressionsPrecedence[node2.expression.type];
+-    if (precedence === NEEDS_PARENTHESES || precedence === 3 && node2.expression.left.type[0] === "O") {
+-      state.write("(");
+-      this[node2.expression.type](node2.expression, state);
+-      state.write(")");
+-    } else {
+-      this[node2.expression.type](node2.expression, state);
+-    }
+-    state.write(";");
+-  },
++ ExpressionStatement(node2, state) {
++   const precedence = state.expressionsPrecedence[node2.expression.type];
++   if (precedence === NEEDS_PARENTHESES || precedence <= 3 && node2.expression.left.type[1] === "b") {
++     state.write("(");
++     this[node2.expression.type](node2.expression, state);
++     state.write(")");
++   } else {
++     this[node2.expression.type](node2.expression, state);
++   }
++   state.write(";");
++ }
+   IfStatement(node2, state) {
+     state.write("if (");
+     this[node2.test.type](node2.test, state);

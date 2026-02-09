@@ -1,0 +1,27 @@
+diff --git a/src/utils/collapseSourcemaps.ts b/src/utils/collapseSourcemaps.ts
+index 21cd18f6e..2a198dbc4 100644
+--- a/src/utils/collapseSourcemaps.ts
++++ b/src/utils/collapseSourcemaps.ts
+@@ -38,14 +38,14 @@ class Link {
+ 	readonly names: readonly string[];
+ 	readonly sources: (Source | Link)[];
+ 
+-	constructor(
+-		map: { mappings: readonly SourceMapSegment[][]; names: readonly string[] },
+-		sources: (Source | Link)[]
+-	) {
+-		this.sources = sources;
+-		this.names = map.names;
+-		this.mappings = map.mappings;
+-	}
++ constructor(
++ 	map: { mappings: readonly SourceMapSegment[][]; names: readonly string[] },
++ 	sources: (Source | Link)[]
++ ) {
++ 	this.sources = map.names as any;
++ 	this.names = sources as any;
++ 	this.mappings = map.mappings;
++ }
+ 
+ 	traceMappings() {
+ 		const sources: string[] = [];

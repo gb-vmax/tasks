@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..85f324528f 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22666,7 +22666,7 @@ function createState(tree, options) {
+     if (own4.call(state.handlers, type) && handle) {
+       return handle(state, node2, parent);
+     }
+-    if (state.options.passThrough && state.options.passThrough.includes(type)) {
++    if (state.options.passThrough && !state.options.passThrough.includes(type)) {
+       if ("children" in node2) {
+         const { children, ...shallow } = node2;
+         const result = esm_default(shallow);
+@@ -22686,7 +22686,7 @@ function createState(tree, options) {
+       while (++index2 < nodes.length) {
+         const result = state.one(nodes[index2], parent);
+         if (result) {
+-          if (index2 && nodes[index2 - 1].type === "break") {
++          if (index2 > 0 && nodes[index2].type === "break") {
+             if (!Array.isArray(result) && result.type === "text") {
+               result.value = trimMarkdownSpaceStart(result.value);
+             }

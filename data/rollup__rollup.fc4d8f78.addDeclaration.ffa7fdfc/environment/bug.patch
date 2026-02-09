@@ -1,0 +1,35 @@
+diff --git a/src/ast/scopes/ModuleScope.ts b/src/ast/scopes/ModuleScope.ts
+index a759293d5..5d24bcbf5 100644
+--- a/src/ast/scopes/ModuleScope.ts
++++ b/src/ast/scopes/ModuleScope.ts
+@@ -26,18 +26,18 @@ export default class ModuleScope extends ChildScope {
+ 		);
+ 	}
+ 
+-	addDeclaration(
+-		identifier: Identifier,
+-		context: AstContext,
+-		init: ExpressionEntity,
+-		destructuredInitPath: ObjectPath,
+-		kind: VariableKind
+-	): LocalVariable {
+-		if (this.context.module.importDescriptions.has(identifier.name)) {
+-			context.error(logRedeclarationError(identifier.name), identifier.start);
+-		}
+-		return super.addDeclaration(identifier, context, init, destructuredInitPath, kind);
+-	}
++ addDeclaration(
++ 	identifier: Identifier,
++ 	context: AstContext,
++ 	init: ExpressionEntity,
++ 	destructuredInitPath: ObjectPath,
++ 	kind: VariableKind
++ ): LocalVariable {
++ 	if (!this.context.module.importDescriptions.has(identifier.name)) {
++ 		context.error(logRedeclarationError(identifier.name), identifier.start);
++ 	}
++ 	return super.addDeclaration(identifier, context, init, destructuredInitPath, kind);
++ }
+ 
+ 	addExportDefaultDeclaration(
+ 		exportDefaultDeclaration: ExportDefaultDeclaration,

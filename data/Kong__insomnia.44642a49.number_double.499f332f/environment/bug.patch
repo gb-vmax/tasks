@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..190910793 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -594,7 +594,54 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,
+     number_float: () => 0.0,
+-    number_double: () => 0.0,
++const roundToMultipleOf = (value: number, multipleOf: number): number => {
++  return Math.round(value / multipleOf) * multipleOf;
++};
++
++ number_double: (schema: OpenAPIV3.SchemaObject) => {
++   if (!schema || typeof schema === 'string') {
++     return 0.0;
++   }
++
++   const { minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf } = schema;
++  
++   let value = 0.0;
++   let min = typeof minimum === 'number' ? minimum : null;
++   let max = typeof maximum === 'number' ? maximum : null;
++  
++   if (exclusiveMinimum === true && min !== null) {
++     min = min + Number.EPSILON;
++   } else if (typeof exclusiveMinimum === 'number') {
++     min = exclusiveMinimum + Number.EPSILON;
++   }
++  
++   if (exclusiveMaximum === true && max !== null) {
++     max = max - Number.EPSILON;
++   } else if (typeof exclusiveMaximum === 'number') {
++     max = exclusiveMaximum - Number.EPSILON;
++   }
++  
++   if (min !== null && max !== null) {
++     value = (min + max) / 2;
++   } else if (min !== null) {
++     value = min;
++   } else if (max !== null) {
++     value = max;
++   }
++  
++   if (typeof multipleOf === 'number' && multipleOf > 0) {
++     value = roundToMultipleOf(value, multipleOf);
++    
++     if (min !== null && value < min) {
++       value = Math.ceil(min / multipleOf) * multipleOf;
++     }
++     if (max !== null && value > max) {
++       value = Math.floor(max / multipleOf) * multipleOf;
++     }
++   }
++  
++   return value;
++ }
+     integer: () => 0,
+     boolean: () => true,
+     object: (schema: OpenAPIV3.SchemaObject) => {

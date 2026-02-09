@@ -1,0 +1,47 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..c183aaca4 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -253,7 +253,41 @@ export class Response extends Property {
+             not: {
+                 have: {
+                     status: (expected: number | string) => haveStatus(expected, false),
+-                    header: (expected: string) => haveHeader(expected, false),
++const haveHeader = (expected: string, checkEquality: boolean, expectedValue?: string) => {
++    const foundHeader = this.headers.toObject().find(header => header.key === expected);
++    const headerExists = foundHeader !== undefined;
++    
++    if (expectedValue !== undefined) {
++        if (!headerExists) {
++            if (checkEquality) {
++                throw Error(`Header "${expected}" not found`);
++            }
++            return;
++        }
++        
++        const actualValue = foundHeader.value;
++        const normalizedExpected = expected.toLowerCase();
++        const isCommonHeader = ['content-type', 'content-encoding', 'cache-control', 'authorization'].includes(normalizedExpected);
++        
++        const valuesMatch = isCommonHeader 
++            ? actualValue.toLowerCase() === expectedValue.toLowerCase()
++            : actualValue === expectedValue;
++        
++        if (checkEquality) {
++            if (!valuesMatch) {
++                throw Error(`Header "${expected}" has value "${actualValue}" but expected "${expectedValue}"`);
++            }
++        } else {
++            if (valuesMatch) {
++                throw Error(`Header "${expected}" should not have value "${expectedValue}" but it does`);
++            }
++        }
++    } else {
++        verify(headerExists, checkEquality);
++    }
++};
++
++ header: (expected: string, expectedValue?: string) => haveHeader(expected, false, expectedValue),
+                     body: (expected: string) => haveBody(expected, false),
+                     jsonBody: (expected: object) => haveJsonBody(expected, false),
+                     jsonSchema: (expected: object) => haveJsonSchema(expected, false),

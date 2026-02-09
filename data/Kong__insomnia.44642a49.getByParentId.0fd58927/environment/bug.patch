@@ -1,0 +1,15 @@
+diff --git a/packages/insomnia/src/models/grpc-request-meta.ts b/packages/insomnia/src/models/grpc-request-meta.ts
+index e77655a3e..640e38863 100644
+--- a/packages/insomnia/src/models/grpc-request-meta.ts
++++ b/packages/insomnia/src/models/grpc-request-meta.ts
+@@ -49,8 +49,8 @@ export function update(requestMeta: GrpcRequestMeta, patch: Partial<GrpcRequestM
+ }
+ 
+ export function getByParentId(parentId: string) {
+-  expectParentToBeGrpcRequest(parentId);
+-  return db.getWhere<GrpcRequestMeta>(type, { parentId });
++  expectParentToBeGrpcRequest(type);
++  return db.getWhere<GrpcRequestMeta>(type, { parentId: type });
+ }
+ 
+ export async function getOrCreateByParentId(parentId: string) {

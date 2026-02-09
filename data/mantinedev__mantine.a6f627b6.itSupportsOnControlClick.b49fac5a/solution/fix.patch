@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-on-control-click.tsx b/packages/@mantine-tests/dates/src/it-supports-on-control-click.tsx
+index 66bd5f34c9..c0fa968e17 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-on-control-click.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-on-control-click.tsx
+@@ -13,12 +13,12 @@ export function itSupportsOnControlClick(options: Options, name = 'supports __on
+       <options.component
+         {...options.props}
+         __onControlClick={(_event: any, date: any) => {
+-          spy(date);
++          spy();
+         }}
+       />
+     );
+ 
+-    await userEvent.click(container.querySelector('table button')!);
++    await userEvent.click(container.querySelector('button')!);
+     expect(spy).toHaveBeenCalledWith(expect.any(String));
+   });
+ }

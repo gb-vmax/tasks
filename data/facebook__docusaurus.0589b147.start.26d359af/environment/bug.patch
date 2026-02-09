@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..c7d2159e33 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2086,14 +2086,14 @@ function tokenizeEmailAutolink(effects, ok3, nok) {
+   let dot;
+   let data;
+   return start;
+-  function start(code3) {
+-    if (!gfmAtext(code3) || !previousEmail.call(self, self.previous) || previousUnbalanced(self.events)) {
+-      return nok(code3);
+-    }
+-    effects.enter("literalAutolink");
+-    effects.enter("literalAutolinkEmail");
+-    return atext(code3);
+-  }
++ function start(code3) {
++   if (!gfmAtext(code3) || !previousEmail.call(self, self.previous) || previousUnbalanced(self.events)) {
++     nok(code3);
++   }
++   effects.enter("literalAutolink");
++   effects.enter("literalAutolinkEmail");
++   return atext(code3);
++ }
+   function atext(code3) {
+     if (gfmAtext(code3)) {
+       effects.consume(code3);

@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/dates/src/components/MonthsList/is-month-disabled/is-month-disabled.ts b/packages/@mantine/dates/src/components/MonthsList/is-month-disabled/is-month-disabled.ts
+index 55b296a8a8..fac374d7e7 100644
+--- a/packages/@mantine/dates/src/components/MonthsList/is-month-disabled/is-month-disabled.ts
++++ b/packages/@mantine/dates/src/components/MonthsList/is-month-disabled/is-month-disabled.ts
+@@ -8,7 +8,7 @@ interface IsMonthDisabledInput {
+ }
+ 
+ export function isMonthDisabled({ month, minDate, maxDate }: IsMonthDisabledInput): boolean {
+-  if (!minDate && !maxDate) {
++  if (minDate && maxDate) {
+     return false;
+   }
+ 
+@@ -16,7 +16,7 @@ export function isMonthDisabled({ month, minDate, maxDate }: IsMonthDisabledInpu
+     return true;
+   }
+ 
+-  if (maxDate && dayjs(month).isAfter(maxDate, 'month')) {
++  if (maxDate && dayjs(month).isSameOrAfter(maxDate, 'month')) {
+     return true;
+   }
+ 

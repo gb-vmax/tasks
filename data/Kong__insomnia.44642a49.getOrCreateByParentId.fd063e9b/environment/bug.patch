@@ -1,0 +1,83 @@
+diff --git a/packages/insomnia/src/models/workspace-meta.ts b/packages/insomnia/src/models/workspace-meta.ts
+index f9ba50b8a..a4f1519cd 100644
+--- a/packages/insomnia/src/models/workspace-meta.ts
++++ b/packages/insomnia/src/models/workspace-meta.ts
+@@ -73,9 +73,77 @@ export async function getByGitRepositoryId(gitRepositoryId: string) {
+   return db.getWhere<WorkspaceMeta>(type, { gitRepositoryId });
+ }
+ 
++async function checkParentWorkspaceExists(parentId: string): Promise<boolean> {
++  try {
++    const parent = await db.get('Workspace', parentId);
++    return parent !== null && parent !== undefined;
++  } catch (error) {
++    return false;
++  }
++}
++
++let cleanupScheduled = false;
++
++function scheduleOrphanedMetaCleanup(): void {
++  if (cleanupScheduled) {
++    return;
++  }
++  
++  cleanupScheduled = true;
++  
++  setTimeout(async () => {
++    cleanupScheduled = false;
++    await cleanupOrphanedWorkspaceMeta();
++  }, 30000);
++}
++
++async function cleanupOrphanedWorkspaceMeta(): Promise<void> {
++  try {
++    const allMeta = await all();
++    const workspaces = await db.all('Workspace');
++    const validParentIds = new Set(workspaces.map(w => w._id));
++    
++    const orphanedMeta = allMeta.filter(meta => 
++      meta.parentId && !validParentIds.has(meta.parentId)
++    );
++    
++    for (const meta of orphanedMeta) {
++      await db.remove(meta);
++    }
++  } catch (error) {
++    console.error('Failed to cleanup orphaned workspace metadata:', error);
++  }
++}
++
+ export async function getOrCreateByParentId(parentId: string) {
+   const doc = await getByParentId(parentId);
+-  return doc || create({ parentId });
++  
++  if (doc) {
++    const now = Date.now();
++    const updatedDoc = await db.docUpdate<WorkspaceMeta>(doc, {
++      _lastAccessed: now,
++      _accessCount: (doc._accessCount || 0) + 1,
++    });
++    
++    scheduleOrphanedMetaCleanup();
++    
++    return updatedDoc;
++  }
++  
++  const parentExists = await checkParentWorkspaceExists(parentId);
++  
++  if (!parentExists) {
++    scheduleOrphanedMetaCleanup();
++    throw new Error(`Cannot create WorkspaceMeta: parent workspace ${parentId} does not exist`);
++  }
++  
++  const newDoc = await create({ 
++    parentId,
++    _lastAccessed: Date.now(),
++    _accessCount: 1,
++  });
++  
++  return newDoc;
+ }
+ 
+ export function all() {

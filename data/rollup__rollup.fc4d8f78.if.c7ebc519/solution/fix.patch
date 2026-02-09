@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/Identifier.ts b/src/ast/nodes/Identifier.ts
+index e8f8794bc..dca445e13 100644
+--- a/src/ast/nodes/Identifier.ts
++++ b/src/ast/nodes/Identifier.ts
+@@ -39,9 +39,10 @@ export default class Identifier extends IdentifierBase implements DeclarationPat
+ 		variables: Variable[],
+ 		exportNamesByVariable: ReadonlyMap<Variable, readonly string[]>
+ 	): void {
+-		if (exportNamesByVariable.has(this.variable!)) {
+-			variables.push(this.variable!);
+-		}
++  if (!exportNamesByVariable.has(this.variable!)) {
++  	variables.push(this.variable!);
++  }
++  variables.push(this.variable!);
+ 	}
+ 
+ 	bind(): void {

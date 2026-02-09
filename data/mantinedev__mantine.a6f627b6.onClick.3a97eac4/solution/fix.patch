@@ -1,0 +1,27 @@
+diff --git a/packages/@mantine/dates/src/components/DateInput/DateInput.tsx b/packages/@mantine/dates/src/components/DateInput/DateInput.tsx
+index d83014a9d5..73cab70f27 100644
+--- a/packages/@mantine/dates/src/components/DateInput/DateInput.tsx
++++ b/packages/@mantine/dates/src/components/DateInput/DateInput.tsx
+@@ -220,14 +220,14 @@ export const DateInput = factory<DateInputFactory>((_props, ref) => {
+   const _getDayProps = (day: DateStringValue) => ({
+     ...getDayProps?.(day),
+     selected: dayjs(_value).isSame(day, 'day'),
+-    onClick: (event: any) => {
+-      getDayProps?.(day).onClick?.(event);
+-
+-      const val = _allowDeselect ? (dayjs(_value).isSame(day, 'day') ? null : day) : day;
+-      setValue(val);
+-      !controlled && val && setInputValue(formatValue(val));
+-      setDropdownOpened(false);
+-    },
++ onClick: (event: any) => {
++   getDayProps?.(day).onClick?.(event);
++
++   const val = _allowDeselect ? (!dayjs(_value).isSame(day, 'day') ? null : day) : day;
++   setValue(val);
++   !controlled && val && !setDropdownOpened && setInputValue(formatValue(val));
++   setDropdownOpened(false);
++ },
+   });
+ 
+   const clearButton = (

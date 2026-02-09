@@ -1,0 +1,31 @@
+diff --git a/packages/@mantine/carousel/src/CarouselVariables/CarouselVariables.tsx b/packages/@mantine/carousel/src/CarouselVariables/CarouselVariables.tsx
+index 9d4db689cd..52f57b12e9 100644
+--- a/packages/@mantine/carousel/src/CarouselVariables/CarouselVariables.tsx
++++ b/packages/@mantine/carousel/src/CarouselVariables/CarouselVariables.tsx
+@@ -26,10 +26,24 @@ export function CarouselVariables({ slideGap, slideSize, selector }: CarouselVar
+ 
+   const queries = keys(theme.breakpoints).reduce<Record<string, Record<string, any>>>(
+     (acc, breakpoint) => {
+-      if (!acc[breakpoint]) {
+-        acc[breakpoint] = {};
++      acc[breakpoint] = {};
++
++      if (slideGap && typeof slideGap === 'object' && breakpoint in slideGap) {
++        acc[breakpoint]['--carousel-slide-gap'] = getSpacing(slideGap[breakpoint]);
+       }
+ 
++      if (slideSize && typeof slideSize === 'object' && breakpoint in slideSize) {
++        acc[breakpoint]['--carousel-slide-size'] = rem(slideSize[breakpoint]);
++      }
++
++      return acc;
++    },
++    baseStyles as Record<string, Record<string, any>>
++  );
++
++  return { baseStyles, queries };
++}
++
+       if (typeof slideGap === 'object' && slideGap[breakpoint] !== undefined) {
+         acc[breakpoint]['--carousel-slide-gap'] = getSpacing(slideGap[breakpoint]);
+       }

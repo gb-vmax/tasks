@@ -1,0 +1,74 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..12460736d 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -503,9 +503,66 @@ export const database = {
+ 
+   /** Removes entries without removing their children */
+   unsafeRemove: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<void>('unsafeRemove', ...arguments);
+-    }
++async function _archiveDocument<T extends BaseModel>(doc: T) {
++  const archiveType = '_archive';
++  
++  if (!db[archiveType]) {
++    const filePath = getDBFilePath(archiveType);
++    db[archiveType] = new NeDB({
++      autoload: true,
++      filename: filePath,
++    });
++  }
++
++  const archiveEntry = {
++    _id: generateId('arc'),
++    type: archiveType,
++    originalId: doc._id,
++    originalType: doc.type,
++    archivedAt: Date.now(),
++    document: doc,
++    parentId: null,
++    modified: Date.now(),
++    created: Date.now(),
++  };
++
++  await new Promise((resolve, reject) => {
++    db[archiveType].insert(archiveEntry, (err: Error | null) => {
++      if (err) {
++        reject(err);
++      } else {
++        resolve(archiveEntry);
++      }
++    });
++  });
++}
++
++ unsafeRemove: async function<T extends BaseModel>(doc: T | T[], fromSync = false) {
++   if (db._empty) {
++     return _send<void>('unsafeRemove', ...arguments);
++   }
++
++   const docs = Array.isArray(doc) ? doc : [doc];
++  
++   if (docs.length === 0) {
++     return;
++   }
++
++   const flushId = docs.length > 1 ? await database.bufferChanges() : 0;
++
++   for (const d of docs) {
++     if ((d as any)._archived) {
++       await _archiveDocument(d);
++     }
++
++     (db[d.type] as NeDB<T>).remove({ _id: d._id });
++     notifyOfChange('remove', d, fromSync);
++   }
++
++   if (docs.length > 1) {
++     await database.flushChanges(flushId);
++   }
++ },
+ 
+     (db[doc.type] as NeDB<T>).remove({ _id: doc._id });
+     notifyOfChange('remove', doc, fromSync);

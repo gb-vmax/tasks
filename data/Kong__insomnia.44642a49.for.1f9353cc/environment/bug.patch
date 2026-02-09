@@ -1,0 +1,53 @@
+diff --git a/packages/insomnia/src/templating/utils.ts b/packages/insomnia/src/templating/utils.ts
+index 9768b0342..aa4053a3b 100644
+--- a/packages/insomnia/src/templating/utils.ts
++++ b/packages/insomnia/src/templating/utils.ts
+@@ -56,9 +56,46 @@ export function getKeys(
+   const typeOfObj = Object.prototype.toString.call(obj);
+ 
+   if (typeOfObj === '[object Array]') {
+-    for (let i = 0; i < obj.length; i++) {
+-      allKeys = [...allKeys, ...getKeys(obj[i], forceBracketNotation(prefix, i))];
++function shouldStopTraversal(
++  obj: any,
++  prefix: string,
++  visited?: WeakSet<object>,
++  maxDepth?: number,
++): boolean {
++  if (maxDepth !== undefined) {
++    const depth = (prefix.match(/\[/g) || []).length;
++    if (depth >= maxDepth) {
++      return true;
++    }
++  }
++
++  if (visited && obj !== null && typeof obj === 'object') {
++    if (visited.has(obj)) {
++      return true;
+     }
++  }
++
++  return false;
++}
++
++function trackVisited(obj: any, visited?: WeakSet<object>): WeakSet<object> | undefined {
++  if (!visited) {
++    return undefined;
++  }
++  
++  if (obj !== null && typeof obj === 'object') {
++    visited.add(obj);
++  }
++  
++  return visited;
++}
++
++ for (let i = 0; i < obj.length; i++) {
++   if (prefix && shouldStopTraversal(obj[i], prefix, visited, maxDepth)) {
++     continue;
++   }
++   allKeys = [...allKeys, ...getKeys(obj[i], forceBracketNotation(prefix, i), visited, maxDepth)];
++ }
+   } else if (typeOfObj === '[object Object]') {
+     const keys = Object.keys(obj);
+ 

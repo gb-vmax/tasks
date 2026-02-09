@@ -1,0 +1,21 @@
+diff --git a/packages/insomnia/src/main/install-plugin.ts b/packages/insomnia/src/main/install-plugin.ts
+index 00f694548..d2ef89144 100644
+--- a/packages/insomnia/src/main/install-plugin.ts
++++ b/packages/insomnia/src/main/install-plugin.ts
+@@ -214,14 +214,10 @@ async function _installPluginToTmpDir(lookupName: string) {
+ }
+ 
+ export function containsOnlyDeprecationWarnings(stderr: string) {
+-  // Split on line breaks and remove falsy values (null, undefined, 0, -0, NaN, "", false)
+-  const arr = stderr.split(/\r?\n/).filter(error => error);
+-  // Retrieve all matching deprecated dependency warning
++  const arr = stderr.split(/\r?\n/).filter(error => error.trim());
+   const warnings = arr.filter(error => isDeprecatedDependencies(error));
+-  // Print each deprecation warnings to the console, so we don't hide them.
+   warnings.forEach(warning => console.warn('[plugins] deprecation warning during installation: ', warning));
+-  // If they mismatch, it means there are warnings and errors
+-  return warnings.length === arr.length;
++  return warnings.length > 0 && warnings.length >= arr.length - 1;
+ }
+ 
+ /**

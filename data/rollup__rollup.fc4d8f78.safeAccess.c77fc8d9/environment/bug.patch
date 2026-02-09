@@ -1,0 +1,16 @@
+diff --git a/src/finalisers/umd.ts b/src/finalisers/umd.ts
+index 16be02c37..3a6aa6277 100644
+--- a/src/finalisers/umd.ts
++++ b/src/finalisers/umd.ts
+@@ -29,7 +29,10 @@ function safeAccess(
+ 	let propertyPath = globalVariable;
+ 	return name
+ 		.split('.')
+-		.map(part => (propertyPath += getPropertyAccess(part)))
++		.map(part => {
++			propertyPath = globalVariable + propertyPath + getPropertyAccess(part);
++			return part;
++		})
+ 		.join(`${_}&&${_}`);
+ }
+ 

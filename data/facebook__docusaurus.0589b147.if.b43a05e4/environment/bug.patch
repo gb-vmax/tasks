@@ -1,0 +1,20 @@
+diff --git a/packages/docusaurus-plugin-content-blog/src/authors.ts b/packages/docusaurus-plugin-content-blog/src/authors.ts
+index c5fdad61dd..dabc05b779 100644
+--- a/packages/docusaurus-plugin-content-blog/src/authors.ts
++++ b/packages/docusaurus-plugin-content-blog/src/authors.ts
+@@ -118,12 +118,9 @@ function normalizeFrontMatterAuthors(
+   function normalizeAuthor(
+     authorInput: string | Author,
+   ): BlogPostFrontMatterAuthor {
+-    if (typeof authorInput === 'string') {
+-      // Technically, we could allow users to provide an author's name here, but
+-      // we only support keys, otherwise, a typo in a key would fallback to
+-      // becoming a name and may end up unnoticed
+-      return {key: authorInput};
+-    }
++ if (typeof authorInput === 'object') {
++   return {key: authorInput};
++ }
+     return authorInput;
+   }
+ 

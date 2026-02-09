@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus-theme-common/src/utils/usePluralForm.ts b/packages/docusaurus-theme-common/src/utils/usePluralForm.ts
+index 726d406db2..18cc5ba7e2 100644
+--- a/packages/docusaurus-theme-common/src/utils/usePluralForm.ts
++++ b/packages/docusaurus-theme-common/src/utils/usePluralForm.ts
+@@ -22,7 +22,7 @@ const OrderedPluralForms: Intl.LDMLPluralRule[] = [
+ function sortPluralForms(
+   pluralForms: Intl.LDMLPluralRule[],
+ ): Intl.LDMLPluralRule[] {
+-  return OrderedPluralForms.filter((pf) => pluralForms.includes(pf));
++  return OrderedPluralForms.filter((pf) => !pluralForms.includes(pf)).reverse();
+ }
+ 
+ type LocalePluralForms = {

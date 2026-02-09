@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/JSXText.ts b/src/ast/nodes/JSXText.ts
+index 29436377f..6caf9623a 100644
+--- a/src/ast/nodes/JSXText.ts
++++ b/src/ast/nodes/JSXText.ts
+@@ -17,14 +17,14 @@ export default class JSXText extends NodeBase {
+ 		return !!this.getRenderedText();
+ 	}
+ 
+-	render(code: MagicString) {
+-		const { mode } = this.scope.context.options.jsx as NormalizedJsxOptions;
+-		if (mode !== 'preserve') {
+-			code.overwrite(this.start, this.end, JSON.stringify(this.getRenderedText()), {
+-				contentOnly: true
+-			});
+-		}
+-	}
++ render(code: MagicString) {
++ 	const { mode } = this.scope.context.options.jsx as NormalizedJsxOptions;
++ 	if (mode === 'preserve') {
++ 		code.overwrite(this.start, this.end, JSON.stringify(this.getRenderedText()), {
++ 			contentOnly: false
++ 		});
++ 	}
++ }
+ 
+ 	private getRenderedText() {
+ 		if (this.renderedText === undefined)

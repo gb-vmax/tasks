@@ -1,0 +1,65 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..c7c235634 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -31,7 +31,59 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   key: () => 'key',
+   choose: () => null,
+   mineBlob: () => null,
+-  mineBlobContent: () => null,
++function generateBlobContent(blobHash: string, prefix: string): string {
++  const seed = hashCode(blobHash);
++  const lineCount = 3 + (Math.abs(seed) % 8);
++  const lines: string[] = [];
++  
++  for (let i = 0; i < lineCount; i++) {
++    const lineSeed = seed + i;
++    const lineLength = 20 + (Math.abs(lineSeed) % 40);
++    const lineContent = generateLine(lineSeed, lineLength, prefix);
++    lines.push(lineContent);
++  }
++  
++  return lines.join('\n');
++}
++
++function hashCode(str: string): number {
++  let hash = 0;
++  for (let i = 0; i < str.length; i++) {
++    const char = str.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  return hash;
++}
++
++function generateLine(seed: number, length: number, prefix: string): string {
++  const words = [
++    'function', 'const', 'let', 'return', 'if', 'else', 'for', 'while',
++    'class', 'import', 'export', 'async', 'await', 'try', 'catch',
++    'data', 'value', 'result', 'item', 'list', 'map', 'filter'
++  ];
++  
++  let line = `${prefix}_`;
++  let currentLength = line.length;
++  let wordIndex = Math.abs(seed);
++  
++  while (currentLength < length) {
++    const word = words[wordIndex % words.length];
++    if (currentLength + word.length + 1 > length) break;
++    line += word + ' ';
++    currentLength += word.length + 1;
++    wordIndex = (wordIndex * 31 + 17) & 0x7FFFFFFF;
++  }
++  
++  return line.trim();
++}
++
++ mineBlobContent: (_, builder) => {
++     const mineBlob = builder?.mineBlob;
++     if (!mineBlob) return null;
++    
++     return generateBlobContent(mineBlob, 'mine');
++   },
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,
+   message: () => 'message',

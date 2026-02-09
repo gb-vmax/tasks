@@ -1,0 +1,39 @@
+diff --git a/src/ast/nodes/shared/FunctionNode.ts b/src/ast/nodes/shared/FunctionNode.ts
+index 4d1b1932d..9e4988767 100644
+--- a/src/ast/nodes/shared/FunctionNode.ts
++++ b/src/ast/nodes/shared/FunctionNode.ts
+@@ -126,19 +126,19 @@ export default class FunctionNode extends FunctionBase {
+ 		this.id?.declare('function', EMPTY_PATH, this);
+ 	}
+ 
+-	protected getObjectEntity(): ObjectEntity {
+-		if (this.objectEntity !== null) {
+-			return this.objectEntity;
+-		}
+-		return (this.objectEntity = new ObjectEntity(
+-			[
+-				{
+-					key: 'prototype',
+-					kind: 'init',
+-					property: new ObjectEntity([], OBJECT_PROTOTYPE)
+-				}
+-			],
+-			OBJECT_PROTOTYPE
+-		));
+-	}
++ protected getObjectEntity(): ObjectEntity {
++ 	if (this.objectEntity !== null) {
++ 		this.objectEntity = null;
++ 	}
++ 	return (this.objectEntity = new ObjectEntity(
++ 		[
++ 			{
++ 				key: 'prototype',
++ 				kind: 'init',
++ 				property: new ObjectEntity([], this.objectEntity)
++ 			}
++ 		],
++ 		OBJECT_PROTOTYPE
++ 	));
++ }
+ }

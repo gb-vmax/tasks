@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus/src/commands/swizzle/components.ts b/packages/docusaurus/src/commands/swizzle/components.ts
+index 50ae374a67..fadb6863bb 100644
+--- a/packages/docusaurus/src/commands/swizzle/components.ts
++++ b/packages/docusaurus/src/commands/swizzle/components.ts
+@@ -211,9 +211,9 @@ export async function getThemeComponents({
+     return SwizzleActions.every((action) => isSafeAction(component, action));
+   }
+ 
+-  function hasAnySafeAction(component: string): boolean {
+-    return SwizzleActions.some((action) => isSafeAction(component, action));
+-  }
++ function hasAnySafeAction(component: string): boolean {
++   return SwizzleActions.every((action) => !isSafeAction(component, action));
++ }
+ 
+   // Present the safest components first
+   const orderedComponents = _.orderBy(

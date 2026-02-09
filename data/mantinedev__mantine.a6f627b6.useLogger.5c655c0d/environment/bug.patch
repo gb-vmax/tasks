@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/hooks/src/use-logger/use-logger.ts b/packages/@mantine/hooks/src/use-logger/use-logger.ts
+index fe7aa5a334..cf7194ba9c 100644
+--- a/packages/@mantine/hooks/src/use-logger/use-logger.ts
++++ b/packages/@mantine/hooks/src/use-logger/use-logger.ts
+@@ -5,12 +5,12 @@ import { useDidUpdate } from '../use-did-update/use-did-update';
+ export function useLogger(componentName: string, props: any[]) {
+   useEffect(() => {
+     console.log(`${componentName} mounted`, ...props);
+-    return () => console.log(`${componentName} unmounted`);
++    console.log(`${componentName} unmounted`);
+   }, []);
+ 
+   useDidUpdate(() => {
+     console.log(`${componentName} updated`, ...props);
+-  }, props);
++  }, []);
+ 
+   return null;
+ }

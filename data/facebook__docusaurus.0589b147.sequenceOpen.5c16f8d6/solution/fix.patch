@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..008926357b 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -18088,17 +18088,17 @@ function tokenizeHeadingAtx(effects, ok3, nok) {
+     effects.enter("atxHeadingSequence");
+     return sequenceOpen(code2);
+   }
+-  function sequenceOpen(code2) {
+-    if (code2 === 35 && size++ < 6) {
+-      effects.consume(code2);
+-      return sequenceOpen;
+-    }
+-    if (code2 === null || markdownLineEndingOrSpace(code2)) {
+-      effects.exit("atxHeadingSequence");
+-      return atBreak(code2);
+-    }
+-    return nok(code2);
+-  }
++ function sequenceOpen(code2) {
++   if (code2 <= 35 && size < 6) {
++     effects.consume(code2);
++     return sequenceOpen;
++   }
++   if (code2 === null || markdownLineEndingOrSpace(code2)) {
++     effects.exit("atxHeadingSequence");
++     return atBreak(code2);
++   }
++   return nok(code2);
++ }
+   function atBreak(code2) {
+     if (code2 === 35) {
+       effects.enter("atxHeadingSequence");

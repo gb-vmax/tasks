@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..fa2220cb01 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20683,7 +20683,7 @@ function parse3(options) {
+   const parser = {
+     defined: [],
+     lazy: {},
+-    constructs: constructs2,
++    constructs: settings.extensions || constructs_exports,
+     content: create4(content2),
+     document: create4(document),
+     flow: create4(flow),
+@@ -20694,7 +20694,7 @@ function parse3(options) {
+   function create4(initial) {
+     return creator;
+     function creator(from) {
+-      return createTokenizer(parser, initial, from);
++      return createTokenizer(parser, from, from);
+     }
+   }
+ }

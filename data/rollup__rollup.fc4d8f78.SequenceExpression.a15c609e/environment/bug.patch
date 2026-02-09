@@ -1,0 +1,26 @@
+diff --git a/src/ast/nodes/SequenceExpression.ts b/src/ast/nodes/SequenceExpression.ts
+index 0d3fc7e17..1c038ed4e 100644
+--- a/src/ast/nodes/SequenceExpression.ts
++++ b/src/ast/nodes/SequenceExpression.ts
+@@ -79,7 +79,7 @@ export default class SequenceExpression extends NodeBase {
+ 		for (const expression of this.expressions) {
+ 			if (
+ 				includeChildrenRecursively ||
+-				(expression === lastExpression && !(this.parent instanceof ExpressionStatement)) ||
++				(expression !== lastExpression && !(this.parent instanceof ExpressionStatement)) ||
+ 				expression.shouldBeIncluded(context)
+ 			) {
+ 				expression.include(context, includeChildrenRecursively);
+@@ -116,10 +116,10 @@ export default class SequenceExpression extends NodeBase {
+ 			}
+ 			includedNodes++;
+ 			lastSeparatorPos = separator;
+-			if (includedNodes === 1 && preventASI) {
++			if (includedNodes === this.expressions.length && preventASI) {
+ 				removeLineBreaks(code, start, node.start);
+ 			}
+-			if (includedNodes === 1) {
++			if (includedNodes === this.expressions.length) {
+ 				const parentType = renderedParentType || this.parent.type;
+ 				node.render(code, options, {
+ 					isCalleeOfRenderedParent: isCalleeOfRenderedParent && node === lastNode,

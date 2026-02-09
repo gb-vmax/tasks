@@ -1,28 +1,26 @@
 # Bug Report
 
 ### Describe the bug
-When parsing fenced code blocks in markdown, the language identifier (lang) is not being set correctly. It appears that the parser is looking at the wrong stack position when trying to assign the language to the code block node.
+
+I'm experiencing an issue with code fence parsing in markdown where the language identifier is not being correctly assigned to fenced code blocks. The `lang` property appears to be set incorrectly or contains unexpected data.
 
 ### Reproduction
-```js
-const markdown = `
-\`\`\`javascript
+
+```markdown
+```javascript
 console.log('hello');
-\`\`\`
-`;
-
-// Parse the markdown
-const result = remark.parse(markdown);
-
-// Expected: result should contain a code block with lang: 'javascript'
-// Actual: lang property is undefined or incorrect
+```
 ```
 
-### Expected behavior
-The code block node should have its `lang` property correctly set to the language identifier specified after the opening fence (e.g., 'javascript', 'python', etc.).
+When parsing this markdown, the code block's language information is not properly captured. The `lang` property on the resulting AST node doesn't match what was specified in the fence info string.
 
-### System Info
-- remark version: 15.0.1
+### Expected behavior
+
+The parser should correctly extract and assign the language identifier (e.g., "javascript") to the code block's `lang` property. The AST node for the fenced code block should have `lang: 'javascript'`.
+
+### Additional context
+
+This seems to affect all fenced code blocks with language identifiers. The issue appears to be related to how the fence info string is being processed during parsing.
 
 ---
 Repository: /testbed

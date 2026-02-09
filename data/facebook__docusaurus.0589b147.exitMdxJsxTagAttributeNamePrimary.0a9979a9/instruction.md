@@ -2,26 +2,31 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX JSX attribute parsing where attribute names are being assigned to the wrong attribute node. When parsing JSX tags with multiple attributes, the attribute name gets applied to an incorrect element in the attributes array.
+I'm experiencing an issue with MDX JSX attribute parsing where attribute names are being assigned to the wrong attribute nodes. When processing JSX attributes with namespaced names (like `xml:lang` or `xlink:href`), the primary name part seems to be getting attached to an incorrect attribute object in the AST.
 
 ### Reproduction
 
-```jsx
-<Component 
-  firstAttr="value1"
-  secondAttr="value2"
-/>
+```mdx
+<Component xml:lang="en" />
 ```
 
-When parsing the above JSX, the attribute names don't get assigned to the correct attribute objects. It seems like the parser is looking at the wrong index in the attributes array.
+or
+
+```mdx
+<svg>
+  <use xlink:href="#icon" />
+</svg>
+```
+
+When parsing MDX content with namespaced JSX attributes, the attribute name doesn't end up on the correct attribute node. It appears the code is looking at the wrong position in the attributes array when trying to set the name property.
 
 ### Expected behavior
 
-Each attribute name should be correctly assigned to its corresponding attribute node in the order they appear. The `firstAttr` name should be assigned to the first attribute, `secondAttr` to the second, and so on.
+The attribute name should be correctly assigned to the most recently added attribute node in the AST. For example, when parsing `xml:lang="en"`, the `xml` part should be attached to the current attribute being processed, not a different one.
 
-### System Info
-- @mdx-js/mdx version: 3.0.0
-- Node version: 18.x
+### Additional context
+
+This seems to affect any JSX tags that use namespaced attributes. The parsing logic appears to be off by one when accessing the attributes array, which causes the name to be set on the wrong attribute object.
 
 ---
 Repository: /testbed

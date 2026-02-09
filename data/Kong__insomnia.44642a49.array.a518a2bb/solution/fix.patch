@@ -1,0 +1,72 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..4bb4161f7 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -478,15 +478,59 @@ const generateParameterExample = (
+ 
+       return example;
+     },
+-    array: ({ items, collectionFormat }: OpenAPIV2.Parameter) => {
+-      const value = generateParameterExample(items, ancestors);
++const makeUniqueValue = (value: any, index: number): any => {
++  if (typeof value === 'string') {
++    return `${value}${index}`;
++  } else if (typeof value === 'number') {
++    return value + index;
++  } else if (typeof value === 'boolean') {
++    return index % 2 === 0;
++  } else if (Array.isArray(value)) {
++    return [...value, index];
++  } else if (typeof value === 'object' && value !== null) {
++    return { ...value, _index: index };
++  }
++  return value;
++};
+ 
+-      if (collectionFormat === 'csv') {
+-        return value;
+-      } else {
+-        return [value];
+-      }
+-    },
++ array: ({ items, collectionFormat, minItems, maxItems, uniqueItems }: OpenAPIV2.Parameter) => {
++   const determineItemCount = () => {
++     if (minItems !== undefined && minItems > 0) {
++       return Math.min(minItems, maxItems !== undefined ? maxItems : minItems);
++     }
++     if (maxItems !== undefined && maxItems > 0) {
++       return Math.min(2, maxItems);
++     }
++     return 1;
++   };
++
++   const itemCount = determineItemCount();
++   const values: any[] = [];
++  
++   for (let i = 0; i < itemCount; i++) {
++     let value = generateParameterExample(items, ancestors);
++    
++     if (uniqueItems && i > 0) {
++       value = makeUniqueValue(value, i);
++     }
++    
++     values.push(value);
++   }
++
++   const format = collectionFormat || 'csv';
++  
++   if (format === 'csv') {
++     return values.join(',');
++   } else if (format === 'ssv') {
++     return values.join(' ');
++   } else if (format === 'tsv') {
++     return values.join('\t');
++   } else if (format === 'pipes') {
++     return values.join('|');
++   } else {
++     return values;
++   }
++ },
+   };
+ 
+   if (typeof parameter === 'string') {

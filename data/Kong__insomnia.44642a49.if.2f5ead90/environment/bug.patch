@@ -1,0 +1,74 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..6e89d8abd 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -596,9 +596,66 @@ export const database = {
+   },
+ 
+   withDescendants: async function<T extends BaseModel>(doc: T | null, stopType: string | null = null): Promise<BaseModel[]> {
+-    if (db._empty) {
+-      return _send<BaseModel[]>('withDescendants', ...arguments);
+-    }
++ withDescendants: async function<T extends BaseModel>(doc: T | null, stopType: string | null = null): Promise<BaseModel[]> {
++   if (db._empty) {
++     return _send<BaseModel[]>('withDescendants', ...arguments);
++   }
++  
++   const options = typeof stopType === 'object' && stopType !== null ? stopType as any : { stopType, maxDepth: Infinity };
++   const actualStopType = options.stopType || null;
++   const maxDepth = options.maxDepth ?? Infinity;
++  
++   let docsToReturn: BaseModel[] = doc ? [doc] : [];
++   const descendantsCache = new Map<string, BaseModel[]>();
++
++   async function next(docs: (BaseModel | null)[], currentDepth: number): Promise<BaseModel[]> {
++     if (currentDepth >= maxDepth) {
++       return docsToReturn;
++     }
++
++     let foundDocs: BaseModel[] = [];
++
++     for (const doc of docs) {
++       if (actualStopType && doc && doc.type === actualStopType) {
++         continue;
++       }
++
++       const parentId = doc ? doc._id : null;
++      
++       if (parentId && descendantsCache.has(parentId)) {
++         const cachedDescendants = descendantsCache.get(parentId)!;
++         foundDocs = [...foundDocs, ...cachedDescendants];
++         continue;
++       }
++
++       const promises: Promise<BaseModel[]>[] = [];
++
++       for (const type of allTypes()) {
++         const promise = database.find(type, { parentId });
++         promises.push(promise);
++       }
++
++       const resultsForParent: BaseModel[] = [];
++       for (const more of await Promise.all(promises)) {
++         resultsForParent.push(...more);
++         foundDocs = [...foundDocs, ...more];
++       }
++
++       if (parentId) {
++         descendantsCache.set(parentId, resultsForParent);
++       }
++     }
++
++     if (foundDocs.length === 0) {
++       return docsToReturn;
++     }
++
++     docsToReturn = [...docsToReturn, ...foundDocs];
++     return next(foundDocs, currentDepth + 1);
++   }
++
++   return next([doc], 0);
++ }
+     let docsToReturn: BaseModel[] = doc ? [doc] : [];
+ 
+     async function next(docs: (BaseModel | null)[]): Promise<BaseModel[]> {

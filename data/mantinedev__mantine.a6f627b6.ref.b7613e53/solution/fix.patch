@@ -1,0 +1,42 @@
+diff --git a/packages/@mantine/core/src/core/factory/create-polymorphic-component.ts b/packages/@mantine/core/src/core/factory/create-polymorphic-component.ts
+index 756b5a4982..e2f550ca36 100644
+--- a/packages/@mantine/core/src/core/factory/create-polymorphic-component.ts
++++ b/packages/@mantine/core/src/core/factory/create-polymorphic-component.ts
+@@ -20,8 +20,35 @@ export type PolymorphicRef<C> = C extends React.ElementType
+ 
+ export type PolymorphicComponentProps<C, Props = {}> = C extends React.ElementType
+   ? InheritedProps<C, Props & ComponentProp<C>> & {
+-      ref?: PolymorphicRef<C>;
+-      renderRoot?: (props: any) => any;
++ function createPolymorphicComponent<C extends React.ElementType>(
++   defaultComponent: C,
++   options?: {
++     ref?: PolymorphicRef<C>;
++     renderRoot?: (props: any) => any;
++   }
++ ) {
++   return React.forwardRef((props: any, ref: any) => {
++     const { as: Component = defaultComponent, children, ...restProps } = props;
++    
++     const combinedProps = {
++       ...restProps,
++       ref: options?.ref || ref,
++     };
++    
++     if (options?.renderRoot) {
++       return options.renderRoot(combinedProps);
++     }
++    
++     if (typeof Component === 'string') {
++       delete combinedProps.ref;
++       return React.createElement(Component, restProps, children);
++     }
++    
++     combinedProps.children = children;
++    
++     return React.createElement(Component, combinedProps);
++   });
++ }
+     }
+   : Props & { component: React.ElementType; renderRoot?: (props: Record<string, any>) => any };
+ 

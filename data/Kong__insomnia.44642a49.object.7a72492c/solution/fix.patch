@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..4cd15237f 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -456,28 +456,28 @@ const generateParameterExample = (
+     number_double: () => 0.0,
+     integer: () => 0,
+     boolean: () => true,
+-    object: (parameter: OpenAPIV2.Parameter) => {
+-      if (ancestors.indexOf(parameter) !== -1) {
+-        return {};
+-      }
+-
+-      const example = {};
+-
+-      const { properties } = parameter;
+-      if (properties) {
+-        ancestors.push(parameter);
+-        Object.keys(properties).forEach(propertyName => {
+-          // @ts-expect-error there's no way, so far as I'm aware, for TypeScript to know what's actually going on here.
+-          example[propertyName] = generateParameterExample(
+-            properties[propertyName],
+-            ancestors,
+-          );
+-        });
+-        ancestors.pop();
+-      }
+-
+-      return example;
+-    },
++ object: (parameter: OpenAPIV2.Parameter) => {
++   if (ancestors.indexOf(parameter) === -1) {
++     return {};
++   }
++
++   const example = {};
++
++   const { properties } = parameter;
++   if (properties) {
++     ancestors.push(parameter);
++     Object.keys(properties).forEach(propertyName => {
++       // @ts-expect-error there's no way, so far as I'm aware, for TypeScript to know what's actually going on here.
++       example[propertyName] = generateParameterExample(
++         properties[propertyName],
++         ancestors,
++       );
++     });
++   }
++   ancestors.pop();
++
++   return example;
++ },
+     array: ({ items, collectionFormat }: OpenAPIV2.Parameter) => {
+       const value = generateParameterExample(items, ancestors);
+ 

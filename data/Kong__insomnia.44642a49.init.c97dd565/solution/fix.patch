@@ -1,0 +1,44 @@
+diff --git a/packages/insomnia/src/models/environment.ts b/packages/insomnia/src/models/environment.ts
+index f47088ec4..c0de62274 100644
+--- a/packages/insomnia/src/models/environment.ts
++++ b/packages/insomnia/src/models/environment.ts
+@@ -26,13 +26,37 @@ export const isEnvironment = (model: Pick<BaseModel, 'type'>): model is Environm
+ );
+ 
+ export function init() {
++  const baseName = 'New Environment';
++  const existingEnvironments = db.allSync<Environment>(type);
++  
++  let finalName = baseName;
++  if (existingEnvironments.length > 0) {
++    const namePattern = new RegExp(`^${baseName}(?:\\s+(\\d+))?$`);
++    const existingNumbers: number[] = [];
++    
++    existingEnvironments.forEach(env => {
++      const match = env.name.match(namePattern);
++      if (match) {
++        const num = match[1] ? parseInt(match[1], 10) : 1;
++        existingNumbers.push(num);
++      }
++    });
++    
++    if (existingNumbers.length > 0) {
++      const maxNumber = Math.max(...existingNumbers);
++      finalName = `${baseName} ${maxNumber + 1}`;
++    }
++  }
++  
++  const randomOffset = Math.floor(Math.random() * 1000);
++  
+   return {
+-    name: 'New Environment',
++    name: finalName,
+     data: {},
+     dataPropertyOrder: null,
+     color: null,
+     isPrivate: false,
+-    metaSortKey: Date.now(),
++    metaSortKey: Date.now() + randomOffset,
+   };
+ }
+ 

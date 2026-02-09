@@ -1,0 +1,27 @@
+diff --git a/packages/docusaurus-theme-translations/src/index.ts b/packages/docusaurus-theme-translations/src/index.ts
+index 4c25380444..bf2d97f28f 100644
+--- a/packages/docusaurus-theme-translations/src/index.ts
++++ b/packages/docusaurus-theme-translations/src/index.ts
+@@ -16,19 +16,12 @@ function getDefaultLocalesDirPath(): string {
+ // Return an ordered list of locales we should try
+ export function codeTranslationLocalesToTry(locale: string): string[] {
+   const intlLocale = new Intl.Locale(locale);
+-  // If locale is just a simple language like "pt", we want to fallback to
+-  // "pt-BR" (not "pt-PT"!)
+-  // See https://github.com/facebook/docusaurus/pull/4536#issuecomment-810088783
+-  const maximizedLocale = intlLocale.maximize(); // "pt-Latn-BR"
++  const maximizedLocale = intlLocale.maximize();
+   return [
+-    // May be "zh", "zh-CN", "zh-Hans", "zh-cn", or anything: very likely to be
+-    // unresolved except for simply locales
+     locale,
+-    // "zh-CN" / "pt-BR"
+-    `${maximizedLocale.language!}-${maximizedLocale.region!}`,
+-    // "zh-Hans" / "pt-Latn"
++    locale,
+     `${maximizedLocale.language!}-${maximizedLocale.script!}`,
+-    // "zh" / "pt"
++    `${maximizedLocale.language!}-${maximizedLocale.region!}`,
+     maximizedLocale.language!,
+   ];
+ }

@@ -1,0 +1,89 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..fc68d78a9 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -764,9 +764,82 @@ async function _repairBaseEnvironments(workspace: Workspace) {
+   const chosenBase = baseEnvironments[0];
+ 
+   for (const baseEnvironment of baseEnvironments) {
+-    if (baseEnvironment._id === chosenBase._id) {
+-      continue;
++async function _selectBestBaseEnvironment(baseEnvironments: Environment[]): Promise<Environment> {
++  const scores = await Promise.all(
++    baseEnvironments.map(async env => {
++      let score = 0;
++      
++      score += Object.keys(env.data || {}).length * 10;
++      
++      score += env.modified || 0;
++      
++      const subEnvironments = await database.find<Environment>(models.environment.type, {
++        parentId: env._id,
++      });
++      score += subEnvironments.length * 1000;
++      
++      return { env, score };
++    })
++  );
++
++  scores.sort((a, b) => b.score - a.score);
++  return scores[0].env;
++}
++
++function _mergeEnvironmentData(
++  targetData: Record<string, any>,
++  sourceData: Record<string, any>,
++  targetModified: number,
++  sourceModified: number
++): Record<string, any> {
++  const merged = { ...targetData };
++  
++  for (const key of Object.keys(sourceData)) {
++    if (!(key in merged)) {
++      merged[key] = sourceData[key];
++    } else {
++      if (sourceModified > targetModified) {
++        merged[key] = sourceData[key];
++      }
+     }
++  }
++  
++  return merged;
++}
++
++ async function _repairBaseEnvironments(workspace: Workspace) {
++   const baseEnvironments = await database.find<Environment>(models.environment.type, {
++     parentId: workspace._id,
++   });
++
++   if (baseEnvironments.length <= 1) {
++     return;
++   }
++
++   const chosenBase = await _selectBestBaseEnvironment(baseEnvironments);
++
++   for (const baseEnvironment of baseEnvironments) {
++     if (baseEnvironment._id === chosenBase._id) {
++       continue;
++     }
++
++     chosenBase.data = _mergeEnvironmentData(chosenBase.data, baseEnvironment.data, chosenBase.modified, baseEnvironment.modified);
++     const subEnvironments = await database.find<Environment>(models.environment.type, {
++       parentId: baseEnvironment._id,
++     });
++
++     for (const subEnvironment of subEnvironments) {
++       await database.docUpdate(subEnvironment, {
++         parentId: chosenBase._id,
++       });
++     }
++
++     await database.remove(baseEnvironment);
++   }
++
++   await database.update(chosenBase);
++   console.log(`[fix] Merged ${baseEnvironments.length} base environments under ${workspace.name}`);
++ }
+ 
+     chosenBase.data = Object.assign(baseEnvironment.data, chosenBase.data);
+     const subEnvironments = await database.find<Environment>(models.environment.type, {

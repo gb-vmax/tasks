@@ -2,33 +2,26 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with markdown parsing where text content is not being processed correctly. It seems like the parser is getting stuck in an infinite loop or not properly recognizing data boundaries when processing text nodes.
+I'm experiencing an issue with markdown parsing where text content is not being processed correctly. The parser seems to be getting stuck or not properly handling data tokens when encountering certain character sequences.
 
 ### Reproduction
 
-When trying to parse markdown content with regular text, the parser doesn't seem to exit the data state properly. Here's what I'm seeing:
+When trying to parse markdown content with specific character patterns, the parser either hangs indefinitely or produces incorrect output. This appears to affect basic text parsing functionality.
 
-```js
-// Simple markdown text
-const markdown = `
-Hello world
-
-This is a paragraph
-`;
-
-// Parser gets stuck or produces incorrect output
-const result = remark.parse(markdown);
+Example markdown that triggers the issue:
+```markdown
+This is a simple text with some characters that should be parsed normally.
 ```
 
-The text content either doesn't get parsed at all or the parser hangs indefinitely.
+The parser should handle this without any issues, but instead it seems to get into an infinite loop or skip over content that should be captured.
 
 ### Expected behavior
 
-The parser should correctly identify and process text data, properly entering and exiting the "data" state as it encounters text characters and break points. Regular markdown text should be parsed without issues.
+The markdown parser should correctly tokenize and process text data, properly entering and exiting data states as it encounters break points in the content. All text should be consumed and processed without getting stuck.
 
-### System Info
-- remark version: 15.0.1
-- Node version: 18.x
+### Additional context
+
+This seems to affect the core text initialization logic. The issue manifests when the parser tries to determine break points in the text stream and decide whether to continue in data mode or exit to handle other constructs.
 
 ---
 Repository: /testbed

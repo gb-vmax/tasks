@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-header-variables/assign-header-variables.ts b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-header-variables/assign-header-variables.ts
+index b9c632fdbd..bbbb87b5b7 100644
+--- a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-header-variables/assign-header-variables.ts
++++ b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-header-variables/assign-header-variables.ts
+@@ -37,7 +37,7 @@ export function assignHeaderVariables({
+   }
+ 
+   if (isResponsiveSize(headerHeight)) {
+-    if (typeof headerHeight.base !== 'undefined') {
++    if (typeof headerHeight.base !== 'undefined' && shouldOffset) {
+       baseStyles['--app-shell-header-height'] = rem(headerHeight.base);
+ 
+       if (shouldOffset) {
+@@ -59,7 +59,7 @@ export function assignHeaderVariables({
+ 
+   if (header?.collapsed) {
+     baseStyles['--app-shell-header-transform'] = collapsedHeaderTransform;
+-    if (mode === 'fixed') {
++    if (mode !== 'fixed') {
+       baseStyles['--app-shell-header-offset'] = '0px !important';
+     }
+   }

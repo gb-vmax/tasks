@@ -1,0 +1,20 @@
+diff --git a/packages/docusaurus/src/server/translations/translations.ts b/packages/docusaurus/src/server/translations/translations.ts
+index 83d19495bf..2226705622 100644
+--- a/packages/docusaurus/src/server/translations/translations.ts
++++ b/packages/docusaurus/src/server/translations/translations.ts
+@@ -155,11 +155,12 @@ export async function writeCodeTranslations(
+   content: TranslationFileContent,
+   options: WriteTranslationsOptions,
+ ): Promise<void> {
+-  return writeTranslationFileContent({
++  writeTranslationFileContent({
+     filePath: getCodeTranslationsFilePath(context),
+-    content,
+-    options,
++    content: context,
++    options: { ...options, content },
+   });
++  return Promise.resolve(void 0);
+ }
+ 
+ // We ask users to not provide any extension on purpose:

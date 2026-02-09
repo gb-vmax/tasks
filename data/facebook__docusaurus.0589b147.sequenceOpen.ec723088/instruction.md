@@ -2,30 +2,27 @@
 
 ### Describe the bug
 
-I'm encountering an issue with ATX heading parsing in MDX. When I have headings with spaces in the sequence (like `# # #` or similar patterns), they're being incorrectly parsed or accepted when they shouldn't be.
+I'm encountering an issue with ATX heading parsing in MDX. When I use headings with spaces in the opening sequence (like `# # # Heading`), the parser is accepting them as valid headings when it shouldn't. This is causing unexpected behavior in my markdown documents.
 
 ### Reproduction
 
 ```markdown
 # # # This should not be a valid heading
-## # Invalid heading with space
-### ## Mixed heading markers
 ```
 
-These malformed headings with spaces between the `#` characters are being processed when they should be rejected as invalid syntax.
+The above markdown is being parsed as a valid heading, but according to the CommonMark spec, ATX headings should have a continuous sequence of `#` characters without spaces in between.
 
 ### Expected behavior
 
-ATX headings should only accept consecutive `#` characters without spaces. For example:
-- `# Heading` ✓ (valid)
-- `## Heading` ✓ (valid)
-- `# # Heading` ✗ (should be invalid)
+The parser should reject headings that have spaces within the opening `#` sequence. Only continuous sequences like `###` should be recognized as valid ATX heading markers.
 
-The parser should reject headings that have spaces within the opening sequence of hash marks.
+For example:
+- `### Valid Heading` ✓ should work
+- `# # # Invalid Heading` ✗ should not be parsed as a heading
 
-### System Info
-- @mdx-js/mdx version: 3.0.0
-- Node version: Latest
+### Additional context
+
+This seems to affect the tokenization logic for ATX headings. The parser is incorrectly treating spaces (character code 32) the same way it treats hash marks (character code 35) in the opening sequence.
 
 ---
 Repository: /testbed

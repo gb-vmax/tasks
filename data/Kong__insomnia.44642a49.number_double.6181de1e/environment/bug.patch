@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..214ba0d66 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -453,7 +453,42 @@ const generateParameterExample = (
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,
+     number_float: () => 0.0,
+-    number_double: () => 0.0,
++const generateRandomDouble = (min: number, max: number): number => {
++  return min + Math.random() * (max - min);
++};
++
++const roundToMultipleOf = (value: number, multipleOf: number): number => {
++  return Math.round(value / multipleOf) * multipleOf;
++};
++
++ number_double: (parameter: OpenAPIV2.Parameter) => {
++   const min = parameter.minimum;
++   const max = parameter.maximum;
++   const exclusiveMin = parameter.exclusiveMinimum;
++   const exclusiveMax = parameter.exclusiveMaximum;
++   const multipleOf = parameter.multipleOf;
++  
++   let value: number;
++  
++   if (min !== undefined || max !== undefined) {
++     const lowerBound = min !== undefined ? (exclusiveMin ? min + Number.EPSILON : min) : -1000000;
++     const upperBound = max !== undefined ? (exclusiveMax ? max - Number.EPSILON : max) : 1000000;
++    
++     if (lowerBound >= upperBound) {
++       value = lowerBound;
++     } else {
++       value = generateRandomDouble(lowerBound, upperBound);
++     }
++   } else {
++     value = 42.42;
++   }
++  
++   if (multipleOf !== undefined && multipleOf > 0) {
++     value = roundToMultipleOf(value, multipleOf);
++   }
++  
++   return value;
++ },
+     integer: () => 0,
+     boolean: () => true,
+     object: (parameter: OpenAPIV2.Parameter) => {

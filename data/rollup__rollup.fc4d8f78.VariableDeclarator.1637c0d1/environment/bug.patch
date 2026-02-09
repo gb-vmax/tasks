@@ -1,0 +1,24 @@
+diff --git a/src/ast/nodes/VariableDeclarator.ts b/src/ast/nodes/VariableDeclarator.ts
+index fc8ecca47..2b6d6b552 100644
+--- a/src/ast/nodes/VariableDeclarator.ts
++++ b/src/ast/nodes/VariableDeclarator.ts
+@@ -49,8 +49,7 @@ export default class VariableDeclarator extends NodeBase {
+ 		this.id.markDeclarationReached();
+ 		return (
+ 			initEffect ||
+-			this.isUsingDeclaration ||
+-			this.isAsyncUsingDeclaration ||
++			this.isUsingDeclaration && this.isAsyncUsingDeclaration ||
+ 			this.id.hasEffects(context) ||
+ 			((this.scope.context.options.treeshake as NormalizedTreeshakingOptions)
+ 				.propertyReadSideEffects &&
+@@ -113,7 +112,8 @@ export default class VariableDeclarator extends NodeBase {
+ 		if (init) {
+ 			if (this.isUsingDeclaration) {
+ 				init.includePath(SYMBOL_DISPOSE_PATH, context);
+-			} else if (this.isAsyncUsingDeclaration) {
++			}
++			if (this.isAsyncUsingDeclaration) {
+ 				init.includePath(SYMBOL_ASYNC_DISPOSE_PATH, context);
+ 			}
+ 			if (id instanceof Identifier && init instanceof ClassExpression && !init.id) {

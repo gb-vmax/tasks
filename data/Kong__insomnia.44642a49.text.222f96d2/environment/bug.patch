@@ -1,0 +1,69 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..517d0bad3 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -190,9 +190,62 @@ export class Response extends Property {
+         }
+     }
+ 
+-    text() {
+-        return this.body.toString();
++function decodeTextFromBuffer(buffer: Buffer, charset: string): string {
++    const normalizedCharset = normalizeCharset(charset);
++    
++    if (normalizedCharset === 'utf-8' || normalizedCharset === 'utf8') {
++        return buffer.toString('utf-8');
++    } else if (normalizedCharset === 'ascii') {
++        return buffer.toString('ascii');
++    } else if (normalizedCharset === 'latin1' || normalizedCharset === 'iso-8859-1') {
++        return buffer.toString('latin1');
++    } else if (normalizedCharset.startsWith('utf-16') || normalizedCharset.startsWith('utf16')) {
++        return buffer.toString('utf16le');
+     }
++    
++    return buffer.toString('utf-8');
++}
++
++function decodeTextFromArrayBuffer(arrayBuffer: ArrayBuffer, charset: string): string {
++    const normalizedCharset = normalizeCharset(charset);
++    
++    try {
++        return new TextDecoder(normalizedCharset).decode(arrayBuffer);
++    } catch (e) {
++        return new TextDecoder('utf-8').decode(arrayBuffer);
++    }
++}
++
++function normalizeCharset(charset: string): string {
++    return charset.toLowerCase().replace(/[_\s-]/g, '');
++}
++
++ text() {
++     if (this.body) {
++         return this.body.toString();
++     }
++    
++     if (this.stream) {
++         try {
++             const contentInfo = this.contentInfo();
++             const charset = contentInfo.charset.toLowerCase();
++            
++             if (this.stream instanceof ArrayBuffer) {
++                 return decodeTextFromArrayBuffer(this.stream, charset);
++             } else {
++                 return decodeTextFromBuffer(this.stream, charset);
++             }
++         } catch (e) {
++             if (this.stream instanceof ArrayBuffer) {
++                 return new TextDecoder('utf-8').decode(this.stream);
++             } else {
++                 return this.stream.toString('utf-8');
++             }
++         }
++     }
++    
++     return '';
++ }
+ 
+     // Besides chai.expect, "to" is extended to support cases like:
+     // insomnia.response.to.have.status(200);

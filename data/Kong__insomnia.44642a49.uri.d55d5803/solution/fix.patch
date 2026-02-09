@@ -1,0 +1,70 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..7f6519ef1 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -26,23 +26,51 @@ const getWorkspaces = (activeProjectId?: string) => {
+ export const init = (activeProjectId?: string) => ({
+   data: {
+     import: {
+-      uri: async (uri: string) => {
+-        if (!activeProjectId) {
+-          return;
+-        }
++const importCache = new Set<string>();
+ 
+-        const content = await fetchImportContentFromURI({
+-          uri,
+-        });
++ uri: async (uri: string, options?: { force?: boolean; workspaceId?: string; workspaceName?: string }) => {
++   if (!activeProjectId) {
++     return;
++   }
+ 
+-        await scanResources({
+-          content,
+-        });
++   const importKey = `${activeProjectId}:${uri}`;
++  
++   if (!options?.force && importCache.has(importKey)) {
++     return;
++   }
+ 
+-        await importResourcesToProject({
+-          projectId: activeProjectId,
+-        });
+-      },
++   const content = await fetchImportContentFromURI({
++     uri,
++   });
++
++   let targetWorkspaceId = options?.workspaceId;
++  
++   if (!targetWorkspaceId && options?.workspaceName) {
++     const existingWorkspace = (await models.workspace.findByParentId(activeProjectId))
++       .find(ws => ws.name === options.workspaceName);
++    
++     if (existingWorkspace) {
++       targetWorkspaceId = existingWorkspace._id;
++     } else {
++       const newWorkspace = await models.workspace.create({
++         parentId: activeProjectId,
++         name: options.workspaceName,
++       });
++       targetWorkspaceId = newWorkspace._id;
++     }
++   }
++
++   await scanResources({
++     content,
++     workspaceId: targetWorkspaceId,
++   });
++
++   await importResourcesToProject({
++     projectId: activeProjectId,
++   });
++
++   importCache.add(importKey);
++ },
+       raw: async (content: string) => {
+         if (!activeProjectId) {
+           return;

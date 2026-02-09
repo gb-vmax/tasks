@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..32fa775383 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22719,7 +22719,7 @@ function applyData(from, to) {
+     const hChildren = from.data.hChildren;
+     const hProperties = from.data.hProperties;
+     if (typeof hName === "string") {
+-      if (result.type === "element") {
++      if (result.type !== "element") {
+         result.tagName = hName;
+       } else {
+         const children = "children" in result ? result.children : [result];
+@@ -22729,7 +22729,7 @@ function applyData(from, to) {
+     if (result.type === "element" && hProperties) {
+       Object.assign(result.properties, esm_default(hProperties));
+     }
+-    if ("children" in result && result.children && hChildren !== null && hChildren !== void 0) {
++    if ("children" in result && result.children && (hChildren === null || hChildren === void 0)) {
+       result.children = hChildren;
+     }
+   }

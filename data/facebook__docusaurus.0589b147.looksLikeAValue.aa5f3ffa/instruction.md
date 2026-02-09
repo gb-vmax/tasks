@@ -2,28 +2,29 @@
 
 ### Describe the bug
 
-I'm encountering an issue with file validation in the remark processor. When passing string values to the processor, they're not being recognized as valid input anymore. The processor seems to be rejecting valid string content.
+I'm encountering an issue with file processing where valid string content is being rejected. After a recent update, the system seems to be incorrectly validating input values, causing legitimate string data to fail validation checks.
 
 ### Reproduction
 
 ```js
-const remark = require('remark');
-
 // This should work but doesn't
-const processor = remark();
-const result = processor.processSync('# Hello World');
+const content = "# Hello World\n\nThis is markdown content";
+// Processing fails even though content is a valid string
 
-// String input is not being validated correctly
-// Expected to process markdown string successfully
+// Also affects Uint8Array inputs
+const buffer = new Uint8Array([72, 101, 108, 108, 111]);
+// This also gets rejected incorrectly
 ```
 
 ### Expected behavior
 
-String values should be recognized as valid input for the markdown processor. The `looksLikeAValue` function should return `true` for string inputs.
+Both string content and Uint8Array buffers should be accepted as valid input values. The validation logic should treat these as separate valid types (string OR Uint8Array), not require both conditions simultaneously.
 
-### Additional context
+Currently getting unexpected validation failures when trying to process markdown files with string content.
 
-This seems to have broken after a recent change. Previously, passing markdown as a string worked fine, but now it's failing validation. Uint8Array inputs might also be affected.
+### System Info
+- remark version: 15.0.1
+- Node version: Latest
 
 ---
 Repository: /testbed

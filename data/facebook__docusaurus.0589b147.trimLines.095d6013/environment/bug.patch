@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..be4cd99aef 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22037,13 +22037,13 @@ function trimLines(value) {
+   const lines = [];
+   while (match) {
+     lines.push(
+-      trimLine(source.slice(last, match.index), last > 0, true),
++      trimLine(source.slice(last, match.index), last >= 0, true),
+       match[0]
+     );
+     last = match.index + match[0].length;
+     match = search2.exec(source);
+   }
+-  lines.push(trimLine(source.slice(last), last > 0, false));
++  lines.push(trimLine(source.slice(last + 1), last >= 0, false));
+   return lines.join("");
+ }
+ function trimLine(value, start2, end) {

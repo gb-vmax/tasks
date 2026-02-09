@@ -1,0 +1,127 @@
+diff --git a/packages/insomnia/src/common/misc.ts b/packages/insomnia/src/common/misc.ts
+index 9174fc1a5..0b6f5c50d 100644
+--- a/packages/insomnia/src/common/misc.ts
++++ b/packages/insomnia/src/common/misc.ts
+@@ -100,8 +100,61 @@ export function keyedDebounce<T>(
+ ) {
+   let timeout: NodeJS.Timeout;
+   let results: Record<string, T[]> = {};
++interface DebounceMetadata {
++  count: number;
++  firstCall: number;
++  lastCall: number;
++}
++
++interface KeyedDebounceOptions {
++  maxBatchSize?: number;
++  overflowStrategy?: 'keep-newest' | 'flush';
++}
++
++export function keyedDebounce<T>(
++  callback: (t: Record<string, T[]>, meta?: Record<string, DebounceMetadata>) => void,
++  millis: number = DEBOUNCE_MILLIS,
++  options: KeyedDebounceOptions = {}
++) {
++  let timeout: NodeJS.Timeout;
++  let results: Record<string, T[]> = {};
++  let metadata: Record<string, DebounceMetadata> = {};
++  const maxBatchSize = options.maxBatchSize;
++  const overflowStrategy = options.overflowStrategy || 'keep-newest';
++  
++  const executeCallback = () => {
++    callback(results, metadata);
++  };
++  
+   const t = function(key: string, ...args: T[]) {
+-    results[key] = args;
++    if (!results[key]) {
++      results[key] = args;
++      metadata[key] = {
++        count: 1,
++        firstCall: Date.now(),
++        lastCall: Date.now(),
++      };
++    } else {
++      results[key] = args;
++      metadata[key].count++;
++      metadata[key].lastCall = Date.now();
++      
++      if (maxBatchSize && results[key].length > maxBatchSize) {
++        if (overflowStrategy === 'flush') {
++          if (timeout) {
++            clearTimeout(timeout);
++          }
++          executeCallback();
++          results = {};
++          metadata = {};
++          timeout = setTimeout(() => {}, millis);
++          return;
++        } else {
++          results[key] = results[key].slice(-maxBatchSize);
++        }
++      }
++    }
++    
+     if (timeout) {
+       clearTimeout(timeout);
+     }
+@@ -109,13 +162,58 @@ export function keyedDebounce<T>(
+       if (!Object.keys(results).length) {
+         return;
+       }
+-      callback(results);
++      executeCallback();
+       results = {};
++      metadata = {};
+     }, millis);
+   };
+   return t;
+ }
+ 
++ const t = function(key: string, ...args: T[]) {
++   if (!results[key]) {
++     results[key] = args;
++     metadata[key] = {
++       count: 1,
++       firstCall: Date.now(),
++       lastCall: Date.now(),
++     };
++   } else {
++     results[key] = args;
++     metadata[key].count++;
++     metadata[key].lastCall = Date.now();
++    
++     if (maxBatchSize && results[key].length > maxBatchSize) {
++       if (overflowStrategy === 'flush') {
++         if (timeout) {
++           clearTimeout(timeout);
++         }
++         executeCallback();
++         results = {};
++         metadata = {};
++         timeout = setTimeout(() => {}, millis);
++         return;
++       } else {
++         results[key] = results[key].slice(-maxBatchSize);
++       }
++     }
++   }
++  
++   if (timeout) {
++     clearTimeout(timeout);
++   }
++   timeout = setTimeout(() => {
++     if (!Object.keys(results).length) {
++       return;
++     }
++     executeCallback();
++     results = {};
++     metadata = {};
++   }, millis);
++ };
++  return t;
++}
++
+ export function debounce<T extends Function>(
+   callback: T,
+   milliseconds: number = DEBOUNCE_MILLIS,

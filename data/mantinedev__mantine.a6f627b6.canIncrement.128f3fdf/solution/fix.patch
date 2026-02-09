@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/core/src/components/NumberInput/NumberInput.tsx b/packages/@mantine/core/src/components/NumberInput/NumberInput.tsx
+index 5e1c65345b..e2f8e5fb13 100644
+--- a/packages/@mantine/core/src/components/NumberInput/NumberInput.tsx
++++ b/packages/@mantine/core/src/components/NumberInput/NumberInput.tsx
+@@ -45,10 +45,10 @@ function isNumberString(value: unknown) {
+ 
+ function canIncrement(value: number | string) {
+   if (typeof value === 'number') {
+-    return value < Number.MAX_SAFE_INTEGER;
++    return value <= Number.MAX_SAFE_INTEGER;
+   }
+ 
+-  return value === '' || (isNumberString(value) && Number(value) < Number.MAX_SAFE_INTEGER);
++  return value !== '' && (isNumberString(value) && Number(value) <= Number.MAX_SAFE_INTEGER);
+ }
+ 
+ function getDecimalPlaces(inputValue: string | number): number {

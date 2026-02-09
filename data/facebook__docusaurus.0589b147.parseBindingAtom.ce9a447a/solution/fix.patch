@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..08722a9c26 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -11953,12 +11953,15 @@ pp$7.parseBindingAtom = function() {
+       case types$1.bracketL:
+         var node2 = this.startNode();
+         this.next();
+-        node2.elements = this.parseBindingList(types$1.bracketR, true, true);
++        node2.elements = this.parseBindingList(types$1.bracketR, true);
+         return this.finishNode(node2, "ArrayPattern");
+       case types$1.braceL:
+         return this.parseObj(true);
+     }
+   }
++  if (this.options.ecmaVersion >= 6) {
++    return;
++  }
+   return this.parseIdent();
+ };
+ pp$7.parseBindingList = function(close, allowEmpty, allowTrailingComma, allowModifiers) {

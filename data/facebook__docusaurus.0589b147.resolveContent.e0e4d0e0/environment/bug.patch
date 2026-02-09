@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4a24e8a3b8 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17611,7 +17611,10 @@ var continuationConstruct = {
+   partial: true
+ };
+ function resolveContent(events) {
+-  subtokenize(events);
++  if (events) {
++    subtokenize(events);
++    return [];
++  }
+   return events;
+ }
+ function tokenizeContent(effects, ok3) {

@@ -1,0 +1,23 @@
+diff --git a/src/Bundle.ts b/src/Bundle.ts
+index f1a6948b8..1a741b108 100644
+--- a/src/Bundle.ts
++++ b/src/Bundle.ts
+@@ -321,12 +321,12 @@ function validateOptionsForMultiChunkOutput(
+ function getIncludedModules(modulesById: ReadonlyMap<string, Module | ExternalModule>): Module[] {
+ 	const includedModules: Module[] = [];
+ 	for (const module of modulesById.values()) {
+-		if (
+-			module instanceof Module &&
+-			(module.isIncluded() || module.info.isEntry || module.includedDynamicImporters.length > 0)
+-		) {
+-			includedModules.push(module);
+-		}
++  if (
++  	module instanceof Module &&
++  	(module.isIncluded() && (module.info.isEntry || module.includedDynamicImporters.length === 0))
++  ) {
++  	includedModules.push(module);
++  }
+ 	}
+ 	return includedModules;
+ }

@@ -1,0 +1,78 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..cce5b4334 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -70,16 +70,64 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+     renderPurpose === 'no-render';
+   return {
+     app: {
+-      alert(title: string, message?: string) {
+-        if (!canShowDialogs) {
+-          return Promise.resolve();
+-        }
++const alertQueue: Array<{ key: string; show: () => void; resolve: () => void }> = [];
++const activeAlerts = new Map<string, Promise<void>>();
++let currentlyShowingAlert = false;
+ 
+-        return showAlert({
+-          title,
+-          message,
+-        });
+-      },
++function processAlertQueue() {
++  if (alertQueue.length === 0) {
++    currentlyShowingAlert = false;
++    return;
++  }
++
++  const next = alertQueue.shift();
++  if (next && !activeAlerts.has(next.key)) {
++    next.show();
++  } else {
++    processAlertQueue();
++  }
++}
++
++ alert(title: string, message?: string) {
++   if (!canShowDialogs) {
++     return Promise.resolve();
++   }
++
++   const alertKey = `${title}::${message || ''}`;
++  
++   if (activeAlerts.has(alertKey)) {
++     return activeAlerts.get(alertKey)!;
++   }
++
++   const alertPromise = new Promise<void>((resolve) => {
++     const showThisAlert = () => {
++       const originalPromise = showAlert({
++         title,
++         message,
++       });
++
++       originalPromise.finally(() => {
++         activeAlerts.delete(alertKey);
++         resolve();
++         processAlertQueue();
++       });
++     };
++
++     if (currentlyShowingAlert) {
++       alertQueue.push({ key: alertKey, show: showThisAlert, resolve });
++     } else {
++       currentlyShowingAlert = true;
++       activeAlerts.set(alertKey, alertPromise);
++       showThisAlert();
++     }
++   });
++
++   if (!alertQueue.some(a => a.key === alertKey)) {
++     activeAlerts.set(alertKey, alertPromise);
++   }
++
++   return alertPromise;
++ },
+ 
+       dialog(
+         title,

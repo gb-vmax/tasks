@@ -1,0 +1,99 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..eef750b30 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -165,18 +165,92 @@ export async function exportHarRequest(
+   return exportHarWithRequest(request, environmentId, addContentLength);
+ }
+ 
++interface ExportCacheEntry {
++  harRequest: Har.Request;
++  timestamp: number;
++}
++
++const _exportCache = new Map<string, ExportCacheEntry>();
++const _pluginTrackingMap = new WeakMap<Har.Request, string[]>();
++
++function _generateExportCacheKey(
++  request: Request,
++  environmentId?: string,
++  addContentLength?: boolean,
++): string {
++  return `${request._id}:${environmentId || 'none'}:${addContentLength ? '1' : '0'}`;
++}
++
++async function _applyRequestPluginHooksWithTracking(
++  renderedRequest: RenderedRequest,
++  renderedContext: Record<string, any>,
++  pluginModifications: string[],
++): Promise<RenderedRequest> {
++  let newRenderedRequest = renderedRequest;
++
++  for (const { plugin, hook } of await plugins.getRequestHooks()) {
++    const previousRequest = clone(newRenderedRequest);
++    newRenderedRequest = clone(newRenderedRequest);
++    const context = {
++      ...(pluginContexts.app.init() as Record<string, any>),
++      ...(pluginContexts.request.init(newRenderedRequest, renderedContext) as Record<string, any>),
++      ...(pluginContexts.store.init(plugin) as Record<string, any>),
++    };
++
++    try {
++      await hook(context);
++      
++      if (JSON.stringify(previousRequest) !== JSON.stringify(newRenderedRequest)) {
++        pluginModifications.push(plugin.name);
++      }
++    } catch (err) {
++      err.plugin = plugin;
++      throw err;
++    }
++  }
++
++  return newRenderedRequest;
++}
++
++export function getPluginModifications(harRequest: Har.Request): string[] {
++  return _pluginTrackingMap.get(harRequest) || [];
++}
++
++export function clearExportCache(): void {
++  _exportCache.clear();
++}
++
+ export async function exportHarWithRequest(
+   request: Request,
+   environmentId?: string,
+   addContentLength = false,
+ ) {
++  const cacheKey = _generateExportCacheKey(request, environmentId, addContentLength);
++  const cached = _exportCache.get(cacheKey);
++  
++  if (cached && cached.timestamp === request.modified) {
++    return cached.harRequest;
++  }
++
+   try {
+     const renderResult = await getRenderedRequestAndContext({ request, environment: environmentId });
+-    const renderedRequest = await _applyRequestPluginHooks(
++    const pluginModifications: string[] = [];
++    const renderedRequest = await _applyRequestPluginHooksWithTracking(
+       renderResult.request,
+       renderResult.context,
++      pluginModifications,
+     );
+-    return exportHarWithRenderedRequest(renderedRequest, addContentLength);
++    const harRequest = await exportHarWithRenderedRequest(renderedRequest, addContentLength);
++    
++    if (harRequest) {
++      _pluginTrackingMap.set(harRequest, pluginModifications);
++      _exportCache.set(cacheKey, {
++        harRequest,
++        timestamp: request.modified,
++      });
++    }
++    
++    return harRequest;
+   } catch (err) {
+     if (err instanceof RenderError) {
+       throw new Error(`Failed to render "${request.name}:${err.path}"\n ${err.message}`);

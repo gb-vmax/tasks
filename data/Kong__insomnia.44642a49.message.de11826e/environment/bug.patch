@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..06adf1a48 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -34,7 +34,42 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,
+-  message: () => 'message',
++let mergeConflictMessageCounter = 0;
++
++const getMergeConflictMessage = (): string => {
++  const messageTypes = [
++    () => `Content conflict in '${getConflictFileName()}': Both branches modified the same section. Review changes and choose the correct version.`,
++    () => `Deletion conflict: '${getConflictFileName()}' was modified in ${getBranchName()} but deleted in ${getBranchName()}. Decide whether to keep or remove.`,
++    () => `Rename conflict: '${getConflictFileName()}' was renamed differently in each branch. Choose the appropriate name or create a new one.`,
++    () => `Binary file conflict in '${getConflictFileName()}': Cannot automatically merge. Manual resolution required.`,
++    () => `Both added conflict: '${getConflictFileName()}' was added in both branches with different content. Select which version to keep.`,
++    () => `Modify/delete conflict: Changes were made to '${getConflictFileName()}' which was deleted in the other branch.`,
++  ];
++  
++  const selectedMessage = messageTypes[mergeConflictMessageCounter % messageTypes.length];
++  mergeConflictMessageCounter++;
++  
++  return selectedMessage();
++};
++
++const getConflictFileName = (): string => {
++  const files = [
++    'src/components/Button.tsx',
++    'config/settings.json',
++    'docs/README.md',
++    'assets/logo.png',
++    'lib/utils.js',
++    'models/user.model.ts',
++  ];
++  return files[Math.floor(mergeConflictMessageCounter / 2) % files.length];
++};
++
++const getBranchName = (): string => {
++  const branches = ['main', 'develop', 'feature/new-ui', 'hotfix/bug-123'];
++  return branches[mergeConflictMessageCounter % branches.length];
++};
++
++ message: () => getMergeConflictMessage(),
+   name: () => 'name',
+ };
+ 

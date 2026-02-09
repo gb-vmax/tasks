@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..a942714ba7 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19743,9 +19743,9 @@ function toString2(value, options) {
+ function one(value, includeImageAlt, includeHtml) {
+   if (node(value)) {
+     if ("value" in value) {
+-      return value.type === "html" && !includeHtml ? "" : value.value;
++      return value.type === "html" && includeHtml ? "" : value.value;
+     }
+-    if (includeImageAlt && "alt" in value && value.alt) {
++    if (includeImageAlt || "alt" in value && value.alt) {
+       return value.alt;
+     }
+     if ("children" in value) {

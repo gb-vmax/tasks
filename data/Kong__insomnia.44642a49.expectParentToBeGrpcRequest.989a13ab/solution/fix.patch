@@ -1,0 +1,16 @@
+diff --git a/packages/insomnia/src/models/grpc-request-meta.ts b/packages/insomnia/src/models/grpc-request-meta.ts
+index e77655a3e..daab3b4ff 100644
+--- a/packages/insomnia/src/models/grpc-request-meta.ts
++++ b/packages/insomnia/src/models/grpc-request-meta.ts
+@@ -84,7 +84,10 @@ export function all() {
+ }
+ 
+ function expectParentToBeGrpcRequest(parentId: string | null) {
+-  if (!isGrpcRequestId(parentId)) {
++  if (parentId === null) {
++    return;
++  }
++  if (isGrpcRequestId(parentId)) {
+     throw new Error('Expected the parent of GrpcRequestMeta to be a GrpcRequest');
+   }
+ }

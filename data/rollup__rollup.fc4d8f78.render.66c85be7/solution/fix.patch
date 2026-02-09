@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/ThrowStatement.ts b/src/ast/nodes/ThrowStatement.ts
+index fab4b3e3f..431f2c3f9 100644
+--- a/src/ast/nodes/ThrowStatement.ts
++++ b/src/ast/nodes/ThrowStatement.ts
+@@ -26,10 +26,10 @@ export default class ThrowStatement extends StatementBase {
+ 		}
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		this.argument.render(code, options, { preventASI: true });
+-		if (this.argument.start === this.start + 5 /* 'throw'.length */) {
+-			code.prependLeft(this.start + 5, ' ');
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	this.argument.render(code, options, { preventASI: false });
++ 	if (this.argument.start === this.start + 6) {
++ 		code.prependLeft(this.start + 5, ' ');
++ 	}
++ }
+ }

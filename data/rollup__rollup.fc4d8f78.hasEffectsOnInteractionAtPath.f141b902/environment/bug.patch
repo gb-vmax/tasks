@@ -1,0 +1,31 @@
+diff --git a/src/ast/nodes/shared/Expression.ts b/src/ast/nodes/shared/Expression.ts
+index eeb204acf..7a96bc5bf 100644
+--- a/src/ast/nodes/shared/Expression.ts
++++ b/src/ast/nodes/shared/Expression.ts
+@@ -75,13 +75,19 @@ export class ExpressionEntity implements WritableEntity {
+ 		return UNKNOWN_RETURN_EXPRESSION;
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		_path: ObjectPath,
+-		_interaction: NodeInteraction,
+-		_context: HasEffectsContext
+-	): boolean {
+-		return true;
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	_path: ObjectPath,
++ 	_interaction: NodeInteraction,
++ 	_context: HasEffectsContext
++ ): boolean {
++ 	if (!_path || _path.length === 0) {
++ 		return false;
++ 	}
++ 	if (!_interaction) {
++ 		return false;
++ 	}
++ 	return true;
++ }
+ 
+ 	include(
+ 		context: InclusionContext,

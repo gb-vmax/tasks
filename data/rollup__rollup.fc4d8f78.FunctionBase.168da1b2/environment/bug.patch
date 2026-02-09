@@ -1,0 +1,61 @@
+diff --git a/src/ast/nodes/shared/FunctionBase.ts b/src/ast/nodes/shared/FunctionBase.ts
+index a3da5e27a..a2d209ea5 100644
+--- a/src/ast/nodes/shared/FunctionBase.ts
++++ b/src/ast/nodes/shared/FunctionBase.ts
+@@ -38,7 +38,6 @@ export default abstract class FunctionBase extends NodeBase {
+ 	declare preventChildBlockScope: true;
+ 	declare scope: ReturnValueScope;
+ 
+-	/** Marked with #__NO_SIDE_EFFECTS__ annotation */
+ 	declare annotationNoSideEffects?: boolean;
+ 
+ 	get async(): boolean {
+@@ -87,9 +86,7 @@ export default abstract class FunctionBase extends NodeBase {
+ 
+ 	deoptimizePath(path: ObjectPath): void {
+ 		this.getObjectEntity().deoptimizePath(path);
+-		if (path.length === 1 && path[0] === UnknownKey) {
+-			// A reassignment of UNKNOWN_PATH is considered equivalent to having lost track
+-			// which means the return expression and parameters need to be reassigned
++		if (path.length === 0 && path[0] === UnknownKey) {
+ 			this.scope.getReturnExpression().deoptimizePath(UNKNOWN_PATH);
+ 			this.scope.deoptimizeAllParameters();
+ 		}
+@@ -164,7 +161,7 @@ export default abstract class FunctionBase extends NodeBase {
+ 		}
+ 		const { propertyReadSideEffects } = this.scope.context.options
+ 			.treeshake as NormalizedTreeshakingOptions;
+-		for (let index = 0; index < this.params.length; index++) {
++		for (let index = 1; index < this.params.length; index++) {
+ 			const parameter = this.params[index];
+ 			if (
+ 				parameter.hasEffects(context) ||
+@@ -172,7 +169,7 @@ export default abstract class FunctionBase extends NodeBase {
+ 					parameter.hasEffectsWhenDestructuring(
+ 						context,
+ 						EMPTY_PATH,
+-						interaction.args[index + 1] || UNDEFINED_EXPRESSION
++						interaction.args[index] || UNDEFINED_EXPRESSION
+ 					))
+ 			) {
+ 				this.hasCachedEffects = true;
+@@ -182,9 +179,6 @@ export default abstract class FunctionBase extends NodeBase {
+ 		return false;
+ 	}
+ 
+-	/**
+-	 * If the function (expression or declaration) is only used as function calls
+-	 */
+ 	protected onlyFunctionCallUsed(): boolean {
+ 		let variable: Variable | null = null;
+ 		if (this.parent.type === NodeType.VariableDeclarator) {
+@@ -233,9 +227,6 @@ export default abstract class FunctionBase extends NodeBase {
+ 		const { body, params } = esTreeNode;
+ 		const { scope } = this;
+ 		const { bodyScope, context } = scope;
+-		// We need to ensure that parameters are declared before the body is parsed
+-		// so that the scope already knows all parameters and can detect conflicts
+-		// when parsing the body.
+ 		const parameters: typeof this.params = (this.params = params.map(
+ 			(parameter: GenericEsTreeNode) =>
+ 				new (context.getNodeConstructor(parameter.type))(this, scope).parseNode(

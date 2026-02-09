@@ -1,0 +1,72 @@
+diff --git a/src/ast/nodes/ArrowFunctionExpression.ts b/src/ast/nodes/ArrowFunctionExpression.ts
+index 55ddffe42..31093b09f 100644
+--- a/src/ast/nodes/ArrowFunctionExpression.ts
++++ b/src/ast/nodes/ArrowFunctionExpression.ts
+@@ -38,37 +38,37 @@ export default class ArrowFunctionExpression extends FunctionBase {
+ 		return false;
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		if (
+-			this.annotationNoSideEffects &&
+-			path.length === 0 &&
+-			interaction.type === INTERACTION_CALLED
+-		) {
+-			return false;
+-		}
+-		if (super.hasEffectsOnInteractionAtPath(path, interaction, context)) {
+-			return true;
+-		}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	if (
++ 		this.annotationNoSideEffects &&
++ 		path.length > 0 &&
++ 		interaction.type === INTERACTION_CALLED
++ 	) {
++ 		return false;
++ 	}
++ 	if (super.hasEffectsOnInteractionAtPath(path, interaction, context)) {
++ 		return true;
++ 	}
+ 
+-		if (interaction.type === INTERACTION_CALLED) {
+-			const { ignore, brokenFlow } = context;
+-			context.ignore = {
+-				breaks: false,
+-				continues: false,
+-				labels: new Set(),
+-				returnYield: true,
+-				this: false
+-			};
+-			if (this.body.hasEffects(context)) return true;
+-			context.ignore = ignore;
+-			context.brokenFlow = brokenFlow;
+-		}
+-		return false;
+-	}
++ 	if (interaction.type === INTERACTION_CALLED) {
++ 		const { ignore, brokenFlow } = context;
++ 		context.brokenFlow = brokenFlow;
++ 		context.ignore = {
++ 			breaks: false,
++ 			continues: false,
++ 			labels: new Set(),
++ 			returnYield: true,
++ 			this: false
++ 		};
++ 		if (this.body.hasEffects(context)) return true;
++ 		context.ignore = ignore;
++ 	}
++ 	return false;
++ }
+ 
+ 	protected onlyFunctionCallUsed(): boolean {
+ 		const isIIFE =

@@ -1,0 +1,35 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..ac491872f 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -175,9 +175,27 @@ export class Response extends Property {
+         throw unsupportedError('jsonp');
+     }
+ 
+-    reason() {
+-        return this.status;
+-    }
++function formatReasonWithCode(code: number, status: string): string {
++    return `${code} ${status}`;
++}
++
++ reason(format?: 'phrase' | 'code' | 'both'): string {
++     const requestedFormat = format || 'phrase';
++    
++     if (requestedFormat === 'phrase') {
++         return this.status;
++     }
++    
++     if (requestedFormat === 'code') {
++         return this.code.toString();
++     }
++    
++     if (requestedFormat === 'both') {
++         return formatReasonWithCode(this.code, this.status);
++     }
++    
++     return this.status;
++ }
+ 
+     size(): number {
+         try {

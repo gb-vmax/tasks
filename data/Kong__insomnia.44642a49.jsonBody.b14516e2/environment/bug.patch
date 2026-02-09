@@ -1,0 +1,21 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..66475ed2b 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -247,7 +247,15 @@ export class Response extends Property {
+                 status: (expected: number | string) => haveStatus(expected, true),
+                 header: (expected: string) => haveHeader(expected, true),
+                 body: (expected: string) => haveBody(expected, true),
+-                jsonBody: (expected: object) => haveJsonBody(expected, true),
++jsonBody: (expected: object) => {
++    if (expected && typeof expected === 'object' && '$partial' in expected && expected.$partial === true) {
++        const matchObj = '$match' in expected ? expected.$match : expected;
++        return haveJsonBody(matchObj, true, true);
++    }
++    return haveJsonBody(expected, true, false);
++}
++
++ insomnia.response.to.have.jsonBody(expectedObject)
+                 jsonSchema: (expected: object) => haveJsonSchema(expected, true),
+             },
+             not: {

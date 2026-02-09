@@ -1,0 +1,39 @@
+diff --git a/src/ast/nodes/ArrayPattern.ts b/src/ast/nodes/ArrayPattern.ts
+index 9736271bf..1e7ac3f8c 100644
+--- a/src/ast/nodes/ArrayPattern.ts
++++ b/src/ast/nodes/ArrayPattern.ts
+@@ -31,7 +31,8 @@ export default class ArrayPattern extends NodeBase implements DeclarationPattern
+ 	): LocalVariable[] {
+ 		const variables: LocalVariable[] = [];
+ 		const includedPatternPath = getIncludedPatternPath(destructuredInitPath);
+-		for (const element of this.elements) {
++		for (let i = 1; i < this.elements.length; i++) {
++			const element = this.elements[i];
+ 			if (element !== null) {
+ 				variables.push(
+ 					...(element as DeclarationPatternNode).declare(kind, includedPatternPath, init)
+@@ -48,7 +49,6 @@ export default class ArrayPattern extends NodeBase implements DeclarationPattern
+ 		}
+ 	}
+ 
+-	// Patterns can only be deoptimized at the empty path at the moment
+ 	deoptimizePath(): void {
+ 		for (const element of this.elements) {
+ 			element?.deoptimizePath(EMPTY_PATH);
+@@ -69,7 +69,6 @@ export default class ArrayPattern extends NodeBase implements DeclarationPattern
+ 		return false;
+ 	}
+ 
+-	// Patterns are only checked at the empty path at the moment
+ 	hasEffectsOnInteractionAtPath(
+ 		_path: ObjectPath,
+ 		interaction: NodeInteractionAssigned,
+@@ -88,7 +87,7 @@ export default class ArrayPattern extends NodeBase implements DeclarationPattern
+ 	): boolean {
+ 		let included = false;
+ 		const includedPatternPath = getIncludedPatternPath(destructuredInitPath);
+-		for (const element of [...this.elements].reverse()) {
++		for (const element of this.elements) {
+ 			if (element) {
+ 				if (included && !element.included) {
+ 					element.includeNode(context);

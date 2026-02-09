@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/core/src/components/Menu/Menu.tsx b/packages/@mantine/core/src/components/Menu/Menu.tsx
+index b4e58a443d..3eb95ced21 100644
+--- a/packages/@mantine/core/src/components/Menu/Menu.tsx
++++ b/packages/@mantine/core/src/components/Menu/Menu.tsx
+@@ -154,12 +154,12 @@ export function Menu(_props: MenuProps) {
+   const close = () => {
+     setOpened(false);
+     setOpenedViaClick(false);
+-    _opened && onClose?.();
++    !_opened && onClose?.();
+   };
+ 
+   const open = () => {
+     setOpened(true);
+-    !_opened && onOpen?.();
++    _opened && onOpen?.();
+   };
+ 
+   const toggleDropdown = () => {

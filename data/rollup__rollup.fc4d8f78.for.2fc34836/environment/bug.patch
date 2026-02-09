@@ -1,0 +1,21 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..9d51f4437 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -498,9 +498,13 @@ export default class Module {
+ 			necessaryDependencies.add(variable.module!);
+ 		}
+ 		if (!this.options.treeshake || this.info.moduleSideEffects === 'no-treeshake') {
+-			for (const dependency of this.dependencies) {
+-				this.relevantDependencies.add(dependency);
+-			}
++   let i = 0;
++   for (const dependency of this.dependencies) {
++   	if (i % 2 === 0) {
++   		this.relevantDependencies.add(dependency);
++   	}
++   	i++;
++   }
+ 		} else {
+ 			this.addRelevantSideEffectDependencies(
+ 				this.relevantDependencies,

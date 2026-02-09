@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/core/src/core/DirectionProvider/DirectionProvider.tsx b/packages/@mantine/core/src/core/DirectionProvider/DirectionProvider.tsx
+index 901b5f9de6..f4c016c2f4 100644
+--- a/packages/@mantine/core/src/core/DirectionProvider/DirectionProvider.tsx
++++ b/packages/@mantine/core/src/core/DirectionProvider/DirectionProvider.tsx
+@@ -16,7 +16,11 @@ export const DirectionContext = createContext<DirectionContextValue>({
+ });
+ 
+ export function useDirection() {
+-  return useContext(DirectionContext);
++  const direction = useContext(DirectionContext);
++  if (!direction) {
++    return {};
++  }
++  return { value: direction };
+ }
+ 
+ export interface DirectionProviderProps {

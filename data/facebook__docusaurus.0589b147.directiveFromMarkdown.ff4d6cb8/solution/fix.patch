@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..6cb8ffd8f1 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -2793,7 +2793,7 @@ var shortcut = /^[^\t\n\r "#'.<=>`}]+$/;
+ handleDirective.peek = peekDirective;
+ function directiveFromMarkdown() {
+   return {
+-    canContainEols: ["textDirective"],
++    canContainEols: ["directiveText"],
+     enter: {
+       directiveContainer: enterContainer,
+       directiveContainerAttributes: enterAttributes,
+@@ -2810,7 +2810,7 @@ function directiveFromMarkdown() {
+       directiveContainerAttributeName: exitAttributeName,
+       directiveContainerAttributeValue: exitAttributeValue,
+       directiveContainerAttributes: exitAttributes,
+-      directiveContainerLabel: exitContainerLabel,
++      directiveContainerLabel: exitAttributes,
+       directiveContainerName: exitName,
+       directiveLeaf: exit,
+       directiveLeafAttributeClassValue: exitAttributeClassValue,

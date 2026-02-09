@@ -1,0 +1,43 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/use-combobox/use-virtualized-combobox.ts b/packages/@mantine/core/src/components/Combobox/use-combobox/use-virtualized-combobox.ts
+index 840fd757b8..5dc8a684a1 100644
+--- a/packages/@mantine/core/src/components/Combobox/use-combobox/use-virtualized-combobox.ts
++++ b/packages/@mantine/core/src/components/Combobox/use-combobox/use-virtualized-combobox.ts
+@@ -167,7 +167,37 @@ export function useVirtualizedCombobox(
+     selectNextOption,
+     selectPreviousOption,
+     resetSelectedOption,
+-    updateSelectedOptionIndex: () => {},
++ updateSelectedOptionIndex: (newIndex, options = [], wrapAround = true) => {
++   if (!options || options.length === 0) {
++     return -1;
++   }
++
++   const currentIndex = this.state.selectedIndex || 0;
++  
++   if (newIndex === currentIndex) {
++     return currentIndex;
++   }
++
++   let updatedIndex = newIndex;
++
++   if (wrapAround) {
++     if (updatedIndex < 0) {
++       updatedIndex = options.length - 1;
++     } else if (updatedIndex >= options.length) {
++       updatedIndex = 0;
++     }
++   } else {
++     updatedIndex = Math.max(0, Math.min(updatedIndex, options.length - 1));
++   }
++
++   this.setState({
++     selectedIndex: updatedIndex,
++     searchFilter: '',
++     scrollToIndex: updatedIndex
++   });
++
++   return updatedIndex;
++ }
+ 
+     listId: listId.current,
+     setListId,

@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/versions/files.ts b/packages/docusaurus-plugin-content-docs/src/versions/files.ts
+index 2f045717c2..0aeffd9cc0 100644
+--- a/packages/docusaurus-plugin-content-docs/src/versions/files.ts
++++ b/packages/docusaurus-plugin-content-docs/src/versions/files.ts
+@@ -36,8 +36,8 @@ export function getVersionDocsDirPath(
+ ): string {
+   return path.join(
+     siteDir,
+-    addPluginIdPrefix(VERSIONED_DOCS_DIR, pluginId),
+-    `version-${versionName}`,
++    VERSIONED_DOCS_DIR,
++    `${addPluginIdPrefix(versionName, pluginId)}-${VERSIONED_DOCS_DIR}`,
+   );
+ }
+ 

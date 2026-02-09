@@ -2,33 +2,30 @@
 
 ### Describe the bug
 
-I'm encountering an issue with the markdown parser where it appears to be breaking on certain inputs. The parser seems to stop processing mid-function and doesn't complete the tokenization process correctly.
+The markdown parser appears to be broken after a recent change. When trying to parse markdown content, the parser fails to process the input correctly and doesn't return any output or throws an error.
 
 ### Reproduction
 
-When trying to parse markdown content with specific construct patterns, the parser fails to handle the constructs properly. This appears to be related to how the tokenizer factory processes different construct types (arrays, single constructs, or maps of constructs).
-
 ```js
-// Example that triggers the issue
-const parser = remark();
-const result = parser.parse('some markdown content');
-// Parser fails to complete processing
-```
+import {remark} from 'remark';
 
-The issue seems to occur when the parser tries to:
-1. Handle a map of constructs based on character codes
-2. Process a list of constructs with proper fallback behavior
-3. Execute construct tokenization with the correct context
+const markdown = `
+# Hello World
+
+This is a test document with **bold** text.
+`;
+
+const result = remark().processSync(markdown);
+console.log(result); // Expected: parsed markdown tree, Actual: error or incomplete output
+```
 
 ### Expected behavior
 
-The parser should properly handle all construct types and complete the tokenization process, returning fully parsed markdown AST. The construct factory hook should handle arrays of constructs, single construct objects with tokenize methods, and maps of constructs keyed by character codes.
+The parser should successfully tokenize and parse markdown content, returning a properly structured syntax tree. The tokenizer should be able to handle constructs and return states correctly.
 
-### System Info
-- remark version: 15.0.1
-- Node version: Latest
+### Additional context
 
-This is blocking our markdown processing pipeline. Any help would be appreciated!
+This seems to affect the core tokenization logic. The parser is unable to complete processing even simple markdown documents. It looks like something in the construct factory handling might be incomplete or malformed.
 
 ---
 Repository: /testbed

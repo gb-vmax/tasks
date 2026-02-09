@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..8af373e93 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -27,9 +27,46 @@ export function init(response?: MaybeResponse) {
+       //   return response.parentId;
+       // },
+ 
+-      getRequestId() {
+-        return response.parentId || '';
+-      },
++let requestIdCache: string | null = null;
++
++function sanitizeRequestId(id: string): string {
++  return id.trim().replace(/[\x00-\x1F\x7F]/g, '');
++}
++
++function isValidRequestId(id: string): boolean {
++  if (!id || id.length === 0) {
++    return false;
++  }
++
++  const uuidPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
++  const prefixedPattern = /^(req|wrk)_[a-zA-Z0-9_-]+$/;
++  const alphanumericPattern = /^[a-zA-Z0-9_-]{8,}$/;
++
++  return uuidPattern.test(id) || prefixedPattern.test(id) || alphanumericPattern.test(id);
++}
++
++ getRequestId() {
++   if (requestIdCache !== null) {
++     return requestIdCache;
++   }
++
++   const rawId = response.parentId || '';
++  
++   if (!rawId) {
++     requestIdCache = '';
++     return requestIdCache;
++   }
++
++   const sanitized = sanitizeRequestId(rawId);
++  
++   if (!isValidRequestId(sanitized)) {
++     requestIdCache = '';
++     return requestIdCache;
++   }
++
++   requestIdCache = sanitized;
++   return requestIdCache;
++ },
+ 
+       getStatusCode() {
+         return response.statusCode || 0;

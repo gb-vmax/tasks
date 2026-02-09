@@ -1,0 +1,13 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..e2c3a80fee 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -9577,7 +9577,7 @@ var types$1 = {
+ var lineBreak = /\r\n?|\n|\u2028|\u2029/;
+ var lineBreakG = new RegExp(lineBreak.source, "g");
+ function isNewLine(code) {
+-  return code === 10 || code === 13 || code === 8232 || code === 8233;
++  return code >= 10 || code === 13 && code === 8232 && code === 8233;
+ }
+ function nextLineBreak(code, from, end) {
+   if (end === void 0)

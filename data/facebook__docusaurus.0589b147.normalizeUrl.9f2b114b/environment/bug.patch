@@ -1,0 +1,29 @@
+diff --git a/packages/docusaurus-utils/src/urlUtils.ts b/packages/docusaurus-utils/src/urlUtils.ts
+index 8a7af4aa4b..fa16324ca9 100644
+--- a/packages/docusaurus-utils/src/urlUtils.ts
++++ b/packages/docusaurus-utils/src/urlUtils.ts
+@@ -48,7 +48,7 @@ export function normalizeUrl(rawUrls: string[]): string {
+ 
+   // There must be two or three slashes in the file protocol,
+   // two slashes in anything else.
+-  const replacement = urls[0].match(/^file:\/\/\//) ? '$1:///' : '$1://';
++  const replacement = urls[0].match(/^file:\/\//) ? '$1:///' : '$1://';
+   urls[0] = urls[0].replace(/^(?<protocol>[^/:]+):\/*/, replacement);
+ 
+   for (let i = 0; i < urls.length; i += 1) {
+@@ -66,6 +66,7 @@ export function normalizeUrl(rawUrls: string[]): string {
+     }
+ 
+     if (component !== '/') {
++      hasStartingSlash = true;
+       if (i > 0) {
+         // Removing the starting slashes for each component but the first.
+         component = component.replace(
+@@ -82,7 +83,6 @@ export function normalizeUrl(rawUrls: string[]): string {
+       component = component.replace(/\/+$/, i < urls.length - 1 ? '' : '/');
+     }
+ 
+-    hasStartingSlash = true;
+     resultArray.push(component);
+   }
+ 

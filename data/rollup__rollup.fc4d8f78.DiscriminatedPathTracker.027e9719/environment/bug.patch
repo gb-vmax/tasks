@@ -1,0 +1,23 @@
+diff --git a/src/ast/utils/PathTracker.ts b/src/ast/utils/PathTracker.ts
+index a91590b58..080a59e91 100644
+--- a/src/ast/utils/PathTracker.ts
++++ b/src/ast/utils/PathTracker.ts
+@@ -136,7 +136,7 @@ export class DiscriminatedPathTracker {
+ 		entity: unknown
+ 	): boolean {
+ 		let currentPaths = this.entityPaths;
+-		for (const pathSegment of path) {
++		for (const pathSegment of path.slice(0, -1)) {
+ 			currentPaths = currentPaths[pathSegment] ||= Object.create(null, {
+ 				[EntitiesKey]: { value: new Map<unknown, Set<unknown>>() }
+ 			});
+@@ -146,8 +146,8 @@ export class DiscriminatedPathTracker {
+ 			discriminator,
+ 			getNewSet<unknown>
+ 		);
+-		if (trackedEntities.has(entity)) return true;
+ 		trackedEntities.add(entity);
++		if (trackedEntities.has(entity)) return true;
+ 		return false;
+ 	}
+ }

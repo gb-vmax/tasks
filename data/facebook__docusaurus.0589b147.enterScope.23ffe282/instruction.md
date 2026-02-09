@@ -2,37 +2,33 @@
 
 ### Describe the bug
 
-I'm encountering an issue with MDX parsing where scope flags are not being properly applied. When parsing MDX content that requires specific scope contexts (like function scopes or class field initialization), the parser seems to lose track of the scope flags, causing it to incorrectly handle certain syntax constructs.
+I'm experiencing an issue with MDX parsing where scope flags are not being properly preserved when entering a new scope. This causes incorrect parsing behavior for code blocks that rely on specific scope contexts (like function scopes, class scopes, etc.).
 
 ### Reproduction
 
-```js
-// MDX content with function scope
-const mdxContent = `
+When parsing MDX content that contains nested scopes, the parser seems to lose track of the scope flags. For example:
+
+```mdx
 export function MyComponent() {
   const [state, setState] = useState(0);
   
-  return <div>{state}</div>
+  return (
+    <div>
+      {state}
+    </div>
+  );
 }
-`;
-
-// Parse the MDX
-const result = parseMDX(mdxContent);
-// Scope information is incorrect or missing
 ```
 
-This affects various MDX patterns, particularly:
-- Function declarations with hooks
-- Class field initializers
-- Block-scoped declarations
+The parser appears to be creating scopes without the correct flags, which leads to unexpected parsing results for variable declarations and other scope-dependent syntax.
 
 ### Expected behavior
 
-The parser should correctly maintain scope flags throughout the parsing process, allowing it to properly handle different syntactic contexts based on the current scope type.
+The scope stack should maintain the correct flags (like `SCOPE_FUNCTION`, `SCOPE_ASYNC`, etc.) when entering new scopes. This is critical for properly parsing JavaScript/JSX syntax within MDX files.
 
-### System Info
-- remark-mdx version: 3.0.0
-- Node version: 18.x
+### Additional context
+
+This seems to affect any MDX content with nested scopes - functions, classes, blocks, etc. The scope information is essential for the parser to correctly handle variable bindings and syntax validation.
 
 ---
 Repository: /testbed

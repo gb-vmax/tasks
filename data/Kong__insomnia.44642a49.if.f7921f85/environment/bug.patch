@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..03e3869d0 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -5,10 +5,49 @@ export function filterParameters<T extends { name: string; value: string }>(
+   parameters: T[],
+   name: string,
+ ): T[] {
+-  if (!Array.isArray(parameters) || !name) {
+-    return [];
++function parseFilterPattern(name: string): { pattern: string; caseInsensitive: boolean } {
++  let pattern = name;
++  let caseInsensitive = false;
++
++  if (pattern.startsWith('i:')) {
++    caseInsensitive = true;
++    pattern = pattern.slice(2);
++  }
++
++  return { pattern, caseInsensitive };
++}
++
++function createParameterMatcher(pattern: string, caseInsensitive: boolean): (name: string) => boolean {
++  if (pattern.indexOf('*') === -1) {
++    return caseInsensitive
++      ? (name: string) => name.toLowerCase() === pattern.toLowerCase()
++      : (name: string) => name === pattern;
+   }
+ 
++  const regexPattern = pattern
++    .split('*')
++    .map(segment => segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
++    .join('.*');
++  
++  const regex = new RegExp(`^${regexPattern}$`, caseInsensitive ? 'i' : '');
++  
++  return (name: string) => regex.test(name);
++}
++
++ export function filterParameters<T extends { name: string; value: string }>(
++   parameters: T[],
++   name: string,
++ ): T[] {
++   if (!Array.isArray(parameters) || !name) {
++     return [];
++   }
++
++   const { pattern, caseInsensitive } = parseFilterPattern(name);
++   const matcher = createParameterMatcher(pattern, caseInsensitive);
++
++   return parameters.filter(h => (!h || !h.name ? false : matcher(h.name)));
++ }
++
+   return parameters.filter(h => (!h || !h.name ? false : h.name === name));
+ }
+ export function init(

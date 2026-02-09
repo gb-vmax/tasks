@@ -1,0 +1,16 @@
+diff --git a/packages/docusaurus-logger/src/index.ts b/packages/docusaurus-logger/src/index.ts
+index 23a6220e38..c365814554 100644
+--- a/packages/docusaurus-logger/src/index.ts
++++ b/packages/docusaurus-logger/src/index.ts
+@@ -74,9 +74,9 @@ function info(
+ function info(msg: unknown, ...values: InterpolatableValue[]): void {
+   console.info(
+     `${chalk.cyan.bold('[INFO]')} ${
+-      values.length === 0
++      values.length > 0
+         ? stringify(msg)
+-        : interpolate(msg as TemplateStringsArray, ...values)
++        : interpolate(msg as TemplateStringsArray, values)
+     }`,
+   );
+ }

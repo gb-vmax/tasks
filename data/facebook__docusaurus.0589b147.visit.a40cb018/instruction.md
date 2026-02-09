@@ -2,34 +2,25 @@
 
 ### Describe the bug
 
-After a recent update, I'm getting a syntax error when trying to import or use the `unist-util-visit` module. The application fails to start and throws an error about unexpected token in the vendor file.
+I'm encountering a syntax error when trying to use the `unist-util-visit` module. The module fails to load with a parsing error, making it completely unusable.
 
 ### Reproduction
 
 ```js
-import { visit } from 'unist-util-visit';
+const { visit } = require('./jest/vendor/unist-util-visit@5.0.0.js');
 
-const tree = {
-  type: 'root',
-  children: [
-    { type: 'paragraph', children: [{ type: 'text', value: 'hello' }] }
-  ]
-};
-
-visit(tree, 'text', (node) => {
-  console.log(node.value);
-});
+// Attempting to use visit causes the module to fail loading
 ```
 
-When running this code, the module fails to load with a parsing error.
+When trying to import or require the module, I get a syntax error during parsing. The module doesn't even load properly, so I can't use any of the exported functions.
 
 ### Expected behavior
 
-The `visit` function should be imported and callable without any syntax errors. The tree traversal should work as documented.
+The module should load without errors and the `visit` function should be available for use. The exports should be properly defined and accessible.
 
-### System Info
-- Node version: 18.x
-- Package version: latest
+### Additional context
+
+This appears to be affecting the vendored version of unist-util-visit in the jest directory. The issue prevents any code that depends on this module from running.
 
 ---
 Repository: /testbed

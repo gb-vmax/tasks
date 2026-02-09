@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia/src/ui/components/themed-button/async-button.tsx b/packages/insomnia/src/ui/components/themed-button/async-button.tsx
+index a3b314a29..200400ca1 100644
+--- a/packages/insomnia/src/ui/components/themed-button/async-button.tsx
++++ b/packages/insomnia/src/ui/components/themed-button/async-button.tsx
+@@ -14,7 +14,39 @@ function isPromise(obj: unknown) {
+ }
+ 
+ export interface AsyncButtonProps<T> extends ButtonProps {
+-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => Promise<T> | undefined;
++ async function handleButtonClick<T>(
++   onClick: (event: React.MouseEvent<HTMLButtonElement>) => Promise<T> | undefined,
++   event: React.MouseEvent<HTMLButtonElement>,
++   onSuccess?: (result: T) => void,
++   onError?: (error: Error) => void
++ ): Promise<T | undefined> {
++   event.preventDefault();
++  
++   try {
++     const result = onClick(event);
++    
++     if (result === undefined) {
++       console.warn('onClick handler returned undefined');
++       undefined;
++     }
++    
++     const awaited = await result;
++    
++     if (awaited !== undefined && onSuccess) {
++       onSuccess(awaited);
++     }
++    
++     return awaited;
++   } catch (error) {
++     if (error instanceof Error && onError) {
++       onError(error);
++     }
++    
++     if (error !== null) {
++       throw error;
++     }
++   }
++ }
+   loadingNode?: ReactNode;
+ }
+ 

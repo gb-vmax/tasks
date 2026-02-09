@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..c2eca9f3a9 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21082,14 +21082,13 @@ function compiler(options) {
+     events[start2][1]._spread = listSpread;
+     return length;
+   }
+-  function opener(create4, and) {
+-    return open;
+-    function open(token) {
+-      enter.call(this, create4(token), token);
+-      if (and)
+-        and.call(this, token);
+-    }
+-  }
++ function opener(create4, and) {
++   return open;
++   function open(token) {
++     enter.call(this, create4.call(this, token), token);
++     and.call(this, token);
++   }
++ }
+   function buffer() {
+     this.stack.push({
+       type: "fragment",

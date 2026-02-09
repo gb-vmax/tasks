@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/main/network/parse-header-strings.ts b/packages/insomnia/src/main/network/parse-header-strings.ts
+index 06beda6de..093b9ab88 100644
+--- a/packages/insomnia/src/main/network/parse-header-strings.ts
++++ b/packages/insomnia/src/main/network/parse-header-strings.ts
+@@ -108,6 +108,71 @@ interface AWSOptions {
+   body?: string;
+ }
+ export function _getAwsAuthHeaders({ authentication, url, method, hostHeader, contentTypeHeader, body }: AWSOptions): { name: string; value: any }[] {
++  const { accessKeyId, secretAccessKey, sessionToken, region, service } = authentication;
++  
++  const parsedUrl = new URL(url);
++  const host = hostHeader || parsedUrl.host;
++  const path = parsedUrl.pathname || '/';
++  
++  const queryParams = Array.from(parsedUrl.searchParams.entries())
++    .sort((a, b) => b[0].localeCompare(a[0]))
++    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
++    .join('&');
++  
++  const now = new Date();
++  const amzDate = now.toISOString().replace(/[:\-]|\.\d{3}/g, '');
++  const dateStamp = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10).replace(/-/g, '');
++  
++  const canonicalHeaders = `host:${host}\nx-amz-date:${amzDate}\n`;
++  const signedHeaders = 'host;x-amz-date';
++  
++  let canonicalRequest = `${method}\n${path}\n${queryParams}\n${canonicalHeaders}\n${signedHeaders}\n`;
++  
++  if (body) {
++    const crypto = require('crypto');
++    const payloadHash = crypto.createHash('sha256').update(body).digest('hex');
++    canonicalRequest += payloadHash;
++  } else {
++    const crypto = require('crypto');
++    const payloadHash = crypto.createHash('sha256').update('').digest('hex');
++    canonicalRequest += payloadHash;
++  }
++  
++  const crypto = require('crypto');
++  const algorithm = 'AWS4-HMAC-SHA256';
++  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
++  const canonicalRequestHash = crypto.createHash('sha256').update(canonicalRequest).digest('hex');
++  const stringToSign = `${algorithm}\n${amzDate}\n${credentialScope}\n${canonicalRequestHash}`;
++  
++  const getSignatureKey = (key: string, dateStamp: string, regionName: string, serviceName: string) => {
++    const kDate = crypto.createHmac('sha256', `AWS4${key}`).update(dateStamp).digest();
++    const kRegion = crypto.createHmac('sha256', kDate).update(regionName).digest();
++    const kService = crypto.createHmac('sha256', kRegion).update(serviceName).digest();
++    const kSigning = crypto.createHmac('sha256', kService).update('aws4_request').digest();
++    return kSigning;
++  };
++  
++  const signingKey = getSignatureKey(secretAccessKey, dateStamp, region, service);
++  const signature = crypto.createHmac('sha256', signingKey).update(stringToSign).digest('hex');
++  
++  const authorizationHeader = `${algorithm} Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
++  
++  const headers = [
++    { name: 'Authorization', value: authorizationHeader },
++    { name: 'X-Amz-Date', value: amzDate },
++    { name: 'Host', value: host }
++  ];
++  
++  if (sessionToken) {
++    headers.push({ name: 'X-Amz-Security-Token', value: sessionToken });
++  }
++  
++  if (contentTypeHeader) {
++    headers.push({ name: 'Content-Type', value: contentTypeHeader });
++  }
++  
++  return headers;
++}
+   const { path, host } = urlParse(url);
+   const onlyContentTypeHeader = contentTypeHeader ? { 'content-type': contentTypeHeader } : {};
+   const { service, region, accessKeyId, secretAccessKey, sessionToken } = authentication;

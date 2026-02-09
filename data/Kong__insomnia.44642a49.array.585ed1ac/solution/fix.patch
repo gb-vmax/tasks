@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..6c9653ef6 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -478,15 +478,29 @@ const generateParameterExample = (
+ 
+       return example;
+     },
+-    array: ({ items, collectionFormat }: OpenAPIV2.Parameter) => {
+-      const value = generateParameterExample(items, ancestors);
+-
+-      if (collectionFormat === 'csv') {
+-        return value;
+-      } else {
+-        return [value];
+-      }
+-    },
++ array: ({ items, collectionFormat }: OpenAPIV2.Parameter) => {
++   const exampleCount = 3;
++   const values = [];
++  
++   for (let i = 0; i < exampleCount; i++) {
++     values.push(generateParameterExample(items, ancestors));
++   }
++  
++   const formatDelimiters: { [key: string]: string } = {
++     csv: ',',
++     ssv: ' ',
++     tsv: '\t',
++     pipes: '|',
++   };
++  
++   const delimiter = formatDelimiters[collectionFormat || 'csv'];
++  
++   if (delimiter) {
++     return values.map(v => typeof v === 'object' ? JSON.stringify(v) : String(v)).join(delimiter);
++   } else {
++     return values;
++   }
++ },
+   };
+ 
+   if (typeof parameter === 'string') {

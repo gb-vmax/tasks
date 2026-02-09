@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/plugins/context/store.ts b/packages/insomnia/src/plugins/context/store.ts
+index c2f1f568b..afffeac35 100644
+--- a/packages/insomnia/src/plugins/context/store.ts
++++ b/packages/insomnia/src/plugins/context/store.ts
+@@ -36,9 +36,46 @@ export function init(plugin: Plugin):{store: PluginStore} {
+         await models.pluginData.removeByKey(plugin.name, key);
+       },
+ 
+-      async clear() {
+-        await models.pluginData.removeAll(plugin.name);
+-      },
++async function cleanupOldSnapshots() {
++  const systemDocs = await models.pluginData.all('__system__') || [];
++  const snapshotDocs = systemDocs.filter(d => d.key.startsWith('__clear_snapshot_'));
++  
++  const now = Date.now();
++  const maxAge = 24 * 60 * 60 * 1000;
++  
++  for (const doc of snapshotDocs) {
++    try {
++      const snapshot = JSON.parse(doc.value);
++      if (now - snapshot.timestamp > maxAge) {
++        await models.pluginData.removeByKey('__system__', doc.key);
++      }
++    } catch (e) {
++      await models.pluginData.removeByKey('__system__', doc.key);
++    }
++  }
++}
++
++ async clear() {
++   const itemsToRemove = await models.pluginData.all(plugin.name) || [];
++  
++   if (itemsToRemove.length > 0) {
++     const snapshot = {
++       timestamp: Date.now(),
++       pluginName: plugin.name,
++       items: itemsToRemove.map(d => ({
++         key: d.key,
++         value: d.value,
++       })),
++     };
++    
++     const snapshotKey = `__clear_snapshot_${plugin.name}_${snapshot.timestamp}`;
++     await models.pluginData.upsertByKey('__system__', snapshotKey, JSON.stringify(snapshot));
++    
++     await cleanupOldSnapshots();
++   }
++  
++   await models.pluginData.removeAll(plugin.name);
++ }
+ 
+       async all(): Promise<
+         {

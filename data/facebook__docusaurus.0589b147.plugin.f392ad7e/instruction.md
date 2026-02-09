@@ -2,25 +2,29 @@
 
 ### Describe the bug
 
-Links in markdown files are not being transformed/processed anymore. The plugin seems to only handle images now, but regular markdown links are being ignored completely.
+Links in MDX files are not being transformed/processed correctly. The plugin seems to be ignoring regular markdown links and only processing images instead.
 
 ### Reproduction
 
-Create a markdown file with a regular link:
+Create an MDX file with regular markdown links:
 
 ```md
-[Click here](./some-page.md)
+# My Document
+
+Check out [this link](./other-page.md) for more info.
+
+Also see [external link](https://example.com).
 ```
 
-The link doesn't get processed/transformed as expected. It seems like the transformer is skipping over link nodes entirely.
+The links are not being transformed as expected. They should be processed by the link transformer but appear to be skipped entirely.
 
 ### Expected behavior
 
-Both links and images should be processed by the transformer. Regular markdown links should be transformed according to the plugin's configuration (e.g., resolving relative paths, adding base URLs, etc.).
+All markdown links should be processed and transformed by the remark plugin. For example, relative links like `./other-page.md` should be resolved to the correct paths.
 
-### Additional context
-
-This appears to have started recently. Images might still work, but standard markdown links are definitely not being handled. Not sure if this was an intentional change or a regression.
+### System Info
+- Docusaurus version: latest
+- MDX loader: @docusaurus/mdx-loader
 
 ---
 Repository: /testbed

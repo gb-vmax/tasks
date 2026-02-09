@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..2bf277bb5 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -165,17 +165,69 @@ export async function exportHarRequest(
+   return exportHarWithRequest(request, environmentId, addContentLength);
+ }
+ 
++function _isValidRequestForExport(request: Request): boolean {
++  if (!request || !request._id || !request.name) {
++    return false;
++  }
++  
++  if (!request.url || typeof request.url !== 'string') {
++    return false;
++  }
++  
++  return true;
++}
++
++async function _applyRequestPluginHooksWithRetry(
++  renderedRequest: RenderedRequest,
++  renderedContext: Record<string, any>,
++  requestName: string,
++  maxRetries: number = 3,
++  initialDelayMs: number = 100,
++): Promise<RenderedRequest> {
++  let lastError: any = null;
++  let attempt = 0;
++  
++  while (attempt <= maxRetries) {
++    try {
++      return await _applyRequestPluginHooks(renderedRequest, renderedContext);
++    } catch (err) {
++      lastError = err;
++      attempt++;
++      
++      if (attempt <= maxRetries) {
++        const delayMs = initialDelayMs * Math.pow(2, attempt - 1);
++        await new Promise(resolve => setTimeout(resolve, delayMs));
++      }
++    }
++  }
++  
++  if (lastError && lastError.plugin) {
++    throw new Error(
++      `Plugin "${lastError.plugin.name}" failed after ${maxRetries} retries: ${lastError.message}`
++    );
++  }
++  
++  throw lastError;
++}
++
+ export async function exportHarWithRequest(
+   request: Request,
+   environmentId?: string,
+   addContentLength = false,
+ ) {
+   try {
++    if (!_isValidRequestForExport(request)) {
++      throw new Error(`Invalid request "${request.name}": missing required fields`);
++    }
++
+     const renderResult = await getRenderedRequestAndContext({ request, environment: environmentId });
+-    const renderedRequest = await _applyRequestPluginHooks(
++    
++    const renderedRequest = await _applyRequestPluginHooksWithRetry(
+       renderResult.request,
+       renderResult.context,
++      request.name,
+     );
++    
+     return exportHarWithRenderedRequest(renderedRequest, addContentLength);
+   } catch (err) {
+     if (err instanceof RenderError) {

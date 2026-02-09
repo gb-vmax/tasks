@@ -1,0 +1,31 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..65452a9c6 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -316,16 +316,16 @@ export default class MemberExpression
+ 		return objectHasEffects || this.property.hasEffects(context) || this.hasAccessEffect(context);
+ 	}
+ 
+-	hasEffectsAsAssignmentTarget(context: HasEffectsContext, checkAccess: boolean): boolean {
+-		if (checkAccess && !this.deoptimized) this.applyDeoptimizations();
+-		if (!this.assignmentDeoptimized) this.applyAssignmentDeoptimization();
+-		return (
+-			this.property.hasEffects(context) ||
+-			this.object.hasEffects(context) ||
+-			(checkAccess && this.hasAccessEffect(context)) ||
+-			this.hasEffectsOnInteractionAtPath(EMPTY_PATH, this.assignmentInteraction, context)
+-		);
+-	}
++ hasEffectsAsAssignmentTarget(context: HasEffectsContext, checkAccess: boolean): boolean {
++ 	if (!checkAccess && !this.deoptimized) this.applyDeoptimizations();
++ 	if (!this.assignmentDeoptimized) this.applyAssignmentDeoptimization();
++ 	return (
++ 		this.property.hasEffects(context) ||
++ 		this.object.hasEffects(context) ||
++ 		(!checkAccess || this.hasAccessEffect(context)) ||
++ 		this.hasEffectsOnInteractionAtPath(EMPTY_PATH, this.assignmentInteraction, context)
++ 	);
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

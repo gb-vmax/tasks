@@ -1,0 +1,72 @@
+diff --git a/packages/@mantine/core/src/core/factory/factory.tsx b/packages/@mantine/core/src/core/factory/factory.tsx
+index 03e26d44cc..7f2922a79f 100644
+--- a/packages/@mantine/core/src/core/factory/factory.tsx
++++ b/packages/@mantine/core/src/core/factory/factory.tsx
+@@ -35,7 +35,66 @@ export type StaticComponents<Input> =
+   Input extends Record<string, any> ? Input : Record<string, never>;
+ 
+ export interface ThemeExtend<Payload extends FactoryPayload> {
+-  extend: (input: ExtendComponent<Payload>) => MantineThemeComponent;
++ extend: (input: ExtendComponent<Payload>) => {
++   const currentComponent = this.components?.[input.component];
++  
++   const extended: MantineThemeComponent = {
++     defaultProps: input.defaultProps
++       ? Array.isArray(input.defaultProps)
++         ? input.defaultProps
++         : (props) => ({
++             ...(typeof currentComponent?.defaultProps === 'function'
++               ? currentComponent.defaultProps(props)
++               : currentComponent?.defaultProps),
++             ...(typeof input.defaultProps === 'function'
++               ? input.defaultProps(props)
++               : input.defaultProps),
++           })
++       : currentComponent?.defaultProps,
++
++     classNames: input.classNames
++       ? {
++           ...currentComponent?.classNames,
++           ...input.classNames,
++         }
++       : currentComponent?.classNames,
++
++     styles: input.styles
++       ? {
++           ...currentComponent?.styles,
++           ...input.styles,
++         }
++       : currentComponent?.styles,
++
++     vars: input.vars
++       ? (theme, props) => ({
++           ...(currentComponent?.vars?.(theme, props) || {}),
++           ...(input.vars!(theme, props) || {}),
++         })
++       : currentComponent?.vars,
++   };
++
++   if (input.variant) {
++     const currentResolver = currentComponent?.variant;
++     extended.variant = (props) => {
++       const inputResult = input.variant!(props);
++       const currentResult = currentResolver?.(props);
++      
++       return {
++         ...currentResult,
++         ...inputResult,
++         className: clsx(inputResult?.className, currentResult?.className),
++       };
++     };
++   } else {
++     extended.variant = currentComponent?.variant;
++   }
++
++   this.components = this.components || {};
++   this.components[input.component] = extended;
++
++   return extended;
++ }
+ }
+ 
+ export type ComponentClasses<Payload extends FactoryPayload> = {

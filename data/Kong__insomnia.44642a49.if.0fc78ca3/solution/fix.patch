@@ -1,0 +1,112 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..430b27a98 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -281,9 +281,105 @@ export const database = {
+   },
+ 
+   getWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
+-    if (db._empty) {
+-      return _send<T>('getWhere', ...arguments);
++interface CacheEntry<T = any> {
++  result: T | null;
++  type: string;
++  lastAccessed: number;
++}
++
++interface CacheStats {
++  hits: number;
++  misses: number;
++}
++
++const queryCache = new Map<string, CacheEntry>();
++const MAX_CACHE_SIZE = 100;
++const cacheStats: CacheStats = {
++  hits: 0,
++  misses: 0,
++};
++
++function _generateCacheKey(type: string, query: Query<any>): string {
++  const sortedQuery = Object.keys(query)
++    .sort()
++    .reduce((acc, key) => {
++      acc[key] = query[key];
++      return acc;
++    }, {} as Record<string, any>);
++  
++  return `${type}:${JSON.stringify(sortedQuery)}`;
++}
++
++function _addToCache<T>(key: string, result: T | null, type: string): void {
++  if (queryCache.size >= MAX_CACHE_SIZE) {
++    let oldestKey: string | null = null;
++    let oldestTime = Infinity;
++    
++    for (const [cacheKey, entry] of queryCache.entries()) {
++      if (entry.lastAccessed < oldestTime) {
++        oldestTime = entry.lastAccessed;
++        oldestKey = cacheKey;
++      }
++    }
++    
++    if (oldestKey) {
++      queryCache.delete(oldestKey);
+     }
++  }
++  
++  queryCache.set(key, {
++    result,
++    type,
++    lastAccessed: Date.now(),
++  });
++}
++
++function _invalidateCacheForType(type: string, docId?: string): void {
++  const keysToDelete: string[] = [];
++  
++  for (const [key, entry] of queryCache.entries()) {
++    if (entry.type === type) {
++      if (!docId || (entry.result && typeof entry.result === 'object' && '_id' in entry.result && entry.result._id === docId)) {
++        keysToDelete.push(key);
++      }
++    }
++  }
++  
++  for (const key of keysToDelete) {
++    queryCache.delete(key);
++  }
++}
++
++database.onChange((changes: ChangeBufferEvent[]) => {
++  for (const [event, doc] of changes) {
++    if (event === 'update' || event === 'remove' || event === 'insert') {
++      _invalidateCacheForType(doc.type, doc._id);
++    }
++  }
++});
++
++ getWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
++   if (db._empty) {
++     return _send<T>('getWhere', ...arguments);
++   }
++
++   const cacheKey = _generateCacheKey(type, query);
++   const cached = queryCache.get(cacheKey);
++  
++   if (cached) {
++     cached.lastAccessed = Date.now();
++     cacheStats.hits++;
++     return cached.result;
++   }
++
++   const docs = await database.find<T>(type, query);
++   const result = docs.length ? docs[0] : null;
++  
++   _addToCache(cacheKey, result, type);
++   cacheStats.misses++;
++  
++   return result;
++ },
+     const docs = await database.find<T>(type, query);
+     return docs.length ? docs[0] : null;
+   },

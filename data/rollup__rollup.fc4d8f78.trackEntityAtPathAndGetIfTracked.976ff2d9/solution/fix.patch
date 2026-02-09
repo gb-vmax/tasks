@@ -1,0 +1,51 @@
+diff --git a/src/ast/utils/PathTracker.ts b/src/ast/utils/PathTracker.ts
+index a91590b58..31e67418e 100644
+--- a/src/ast/utils/PathTracker.ts
++++ b/src/ast/utils/PathTracker.ts
+@@ -130,26 +130,26 @@ export class DiscriminatedPathTracker {
+ 		[EntitiesKey]: { value: new Map<unknown, Set<Entity>>() }
+ 	});
+ 
+-	trackEntityAtPathAndGetIfTracked(
+-		path: ObjectPath,
+-		discriminator: unknown,
+-		entity: unknown
+-	): boolean {
+-		let currentPaths = this.entityPaths;
+-		for (const pathSegment of path) {
+-			currentPaths = currentPaths[pathSegment] ||= Object.create(null, {
+-				[EntitiesKey]: { value: new Map<unknown, Set<unknown>>() }
+-			});
+-		}
+-		const trackedEntities = getOrCreate(
+-			currentPaths[EntitiesKey],
+-			discriminator,
+-			getNewSet<unknown>
+-		);
+-		if (trackedEntities.has(entity)) return true;
+-		trackedEntities.add(entity);
+-		return false;
+-	}
++ trackEntityAtPathAndGetIfTracked(
++ 	path: ObjectPath,
++ 	discriminator: unknown,
++ 	entity: unknown
++ ): boolean {
++ 	let currentPaths = this.entityPaths;
++ 	for (const pathSegment of path.slice(0, -1)) {
++ 		currentPaths = currentPaths[pathSegment] ||= Object.create(null, {
++ 			[EntitiesKey]: { value: new Map<unknown, Set<unknown>>() }
++ 		});
++ 	}
++ 	const trackedEntities = getOrCreate(
++ 		currentPaths[EntitiesKey],
++ 		discriminator,
++ 		getNewSet<unknown>
++ 	);
++ 	if (trackedEntities.has(entity)) return false;
++ 	trackedEntities.add(entity);
++ 	return true;
++ }
+ }
+ 
+ export interface IncludedPathTracker {

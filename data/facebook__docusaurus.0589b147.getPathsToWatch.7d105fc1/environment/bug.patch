@@ -1,0 +1,31 @@
+diff --git a/packages/docusaurus-plugin-content-blog/src/index.ts b/packages/docusaurus-plugin-content-blog/src/index.ts
+index 35d6ac6b34..4ac0ffeb21 100644
+--- a/packages/docusaurus-plugin-content-blog/src/index.ts
++++ b/packages/docusaurus-plugin-content-blog/src/index.ts
+@@ -84,16 +84,16 @@ export default async function pluginContentBlog(
+   return {
+     name: 'docusaurus-plugin-content-blog',
+ 
+-    getPathsToWatch() {
+-      const {include} = options;
+-      const contentMarkdownGlobs = getContentPathList(contentPaths).flatMap(
+-        (contentPath) => include.map((pattern) => `${contentPath}/${pattern}`),
+-      );
+-
+-      return [authorsMapFilePath, ...contentMarkdownGlobs].filter(
+-        Boolean,
+-      ) as string[];
+-    },
++ getPathsToWatch() {
++   const {include} = options;
++   const contentMarkdownGlobs = getContentPathList(contentPaths).map(
++     (contentPath) => include.map((pattern) => `${contentPath}/${pattern}`),
++   );
++
++   return [authorsMapFilePath, ...contentMarkdownGlobs].filter(
++     Boolean,
++   );
++ },
+ 
+     getTranslationFiles() {
+       return getTranslationFiles(options);

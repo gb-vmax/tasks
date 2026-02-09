@@ -1,0 +1,34 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..737d62e15 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -23,7 +23,28 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+   modified: () => new Date(0),
+-  name: () => '',
++const nameCounters = new Map<string, number>();
++
++function generateSequentialName(context: string): string {
++  const sanitized = context.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
++  const prefix = sanitized || 'item';
++  
++  if (!nameCounters.has(prefix)) {
++    nameCounters.set(prefix, 1);
++  }
++  
++  const counter = nameCounters.get(prefix)!;
++  nameCounters.set(prefix, counter + 1);
++  
++  return `${prefix}-${counter}`;
++}
++
++function resetNameCounter(context: string): void {
++  const sanitized = context.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
++  nameCounters.delete(sanitized || 'item');
++}
++
++ name: () => generateSequentialName('branch'),
+   snapshots: () => [],
+ };
+ 

@@ -2,29 +2,29 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX parsing where text content is being incorrectly handled. It seems like the parser is now treating regular text as non-text and vice versa, causing content to not render properly or appear in unexpected places.
+I'm encountering an issue with MDX parsing where text content is not being processed correctly. It seems like the parser is incorrectly handling the decision between text and non-text content, causing content to be skipped or processed in the wrong order.
 
 ### Reproduction
 
 ```mdx
 # Hello World
 
-This is some regular text content.
+This is some text content that should be parsed normally.
 
 More text here.
 ```
 
-When parsing the above MDX content, the text portions are not being processed correctly. The behavior seems inverted - what should be recognized as text is being treated as something else, and what shouldn't be text is being processed as text.
+When parsing this MDX content, the text sections are not being handled as expected. The parser appears to be making incorrect decisions about whether content should be treated as text or non-text constructs.
 
 ### Expected behavior
 
-Regular text content in MDX files should be parsed and rendered normally. The parser should correctly identify text segments and handle them appropriately.
+The parser should correctly identify and process text content, calling the appropriate handlers based on whether the code point is at a break or not. Text content should flow normally and be rendered properly.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0
-- Node version: 18.x
+- Node version: Latest
 
-This appears to have started recently, as the same MDX files were working fine before. The logic for determining what constitutes text vs non-text seems to have been inverted somehow.
+This seems to have started happening recently. The text parsing logic might have been inadvertently changed.
 
 ---
 Repository: /testbed

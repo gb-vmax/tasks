@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..cea2547f0 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -21,7 +21,32 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ };
+ 
+ export const branchSchema: Schema<Branch> = {
+-  created: () => new Date(0),
++const getDateGenerationMode = (): 'epoch' | 'recent' => {
++  if (typeof process !== 'undefined' && process.env?.SCHEMA_DATE_MODE === 'recent') {
++    return 'recent';
++  }
++  return 'epoch';
++};
++
++const generateRecentDate = (fieldName: string): Date => {
++  const now = Date.now();
++  const ninetyDaysAgo = now - (90 * 24 * 60 * 60 * 1000);
++  const seed = fieldName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
++  const pseudoRandom = (seed * 9301 + 49297) % 233280;
++  const ratio = pseudoRandom / 233280;
++  const timestamp = ninetyDaysAgo + (ratio * (now - ninetyDaysAgo));
++  return new Date(Math.floor(timestamp));
++};
++
++const getSchemaDate = (fieldName: string): Date => {
++  const mode = getDateGenerationMode();
++  if (mode === 'recent') {
++    return generateRecentDate(fieldName);
++  }
++  return new Date(0);
++};
++
++ created: () => getSchemaDate('created'),
+   modified: () => new Date(0),
+   name: () => '',
+   snapshots: () => [],

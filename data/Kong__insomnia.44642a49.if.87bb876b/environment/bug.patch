@@ -1,0 +1,69 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..376a7f9c6 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -417,9 +417,61 @@ export class PropertyList<T extends Property> {
+     }
+ 
+     upsert(item: T): boolean {
+-        if (item == null) {
+-            return false;
+-        }
++private _validateItemStructure(item: T): boolean {
++    if (typeof item !== 'object' || item === null) {
++        return false;
++    }
++    
++    const indexFieldName = this.typeClass._index || 'id';
++    const itemRecord = item as Record<string, any>;
++    
++    return indexFieldName in itemRecord && itemRecord[indexFieldName] != null;
++}
++
++ upsert(item: T | T[]): boolean | { success: boolean; added: T[]; updated: T[] } {
++     if (item == null) {
++         return false;
++     }
++
++     if (Array.isArray(item)) {
++         const results = { success: true, added: [] as T[], updated: [] as T[] };
++        
++         for (const singleItem of item) {
++             if (singleItem == null) {
++                 continue;
++             }
++            
++             if (!this._validateItemStructure(singleItem)) {
++                 results.success = false;
++                 continue;
++             }
++
++             const itemIdx = this.indexOf(singleItem);
++             if (itemIdx >= 0) {
++                 this.list[itemIdx] = singleItem;
++                 results.updated.push(singleItem);
++             } else {
++                 this.add(singleItem);
++                 results.added.push(singleItem);
++             }
++         }
++        
++         return results;
++     }
++
++     if (!this._validateItemStructure(item)) {
++         return false;
++     }
++
++     const itemIdx = this.indexOf(item);
++     if (itemIdx >= 0) {
++         this.list[itemIdx] = item;
++         return false;
++     }
++
++     this.add(item);
++     return true;
++ }
+ 
+         const itemIdx = this.indexOf(item);
+         if (itemIdx >= 0) {

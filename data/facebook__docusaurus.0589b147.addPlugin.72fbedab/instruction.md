@@ -2,27 +2,24 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with plugin registration in the unified processor. When attempting to use the `.use()` method with plugins, it seems like the plugin lookup is failing and plugins aren't being found correctly when they should already be registered.
+I'm experiencing an issue with plugin registration when using the unified/MDX processor. When I try to register the same plugin multiple times with different configurations, the plugin settings aren't being merged correctly. It seems like the first plugin in the attachers array is being skipped during the lookup process.
 
 ### Reproduction
 
 ```js
 const processor = unified()
   .use(somePlugin, { option1: 'value1' })
-  .use(somePlugin, { option2: 'value2' }) // Should merge options with existing plugin
+  .use(somePlugin, { option2: 'value2' });
 
-// The second .use() call doesn't seem to find the existing plugin entry
-// and creates a duplicate instead of merging the options
+// Expected: plugin should have both option1 and option2 merged
+// Actual: The plugin configuration is not updated correctly
 ```
+
+When trying to add a plugin that's already registered at index 0, it doesn't get found and ends up being added as a duplicate instead of merging the options.
 
 ### Expected behavior
 
-When calling `.use()` with the same plugin multiple times, the processor should:
-1. Detect that the plugin is already registered
-2. Merge the new options with the existing ones (for plain objects)
-3. Not create duplicate plugin entries
-
-Instead, it appears the plugin lookup is broken and always treats plugins as new entries.
+When the same plugin is registered multiple times, the options should be properly merged. The processor should correctly identify existing plugins regardless of their position in the attachers array and update their configuration accordingly.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0

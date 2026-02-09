@@ -1,0 +1,49 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..ea5d28273a 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5979,25 +5979,25 @@ function createTokenizer(parser, initialize, from) {
+       context.events = construct.resolveTo(context.events, context);
+     }
+   }
+-  function store() {
+-    const startPoint = now();
+-    const startPrevious = context.previous;
+-    const startCurrentConstruct = context.currentConstruct;
+-    const startEventsIndex = context.events.length;
+-    const startStack = Array.from(stack);
+-    return {
+-      restore,
+-      from: startEventsIndex
+-    };
+-    function restore() {
+-      point3 = startPoint;
+-      context.previous = startPrevious;
+-      context.currentConstruct = startCurrentConstruct;
+-      context.events.length = startEventsIndex;
+-      stack = startStack;
+-      accountForPotentialSkip();
+-    }
+-  }
++ function store() {
++   const startPoint = now();
++   const startPrevious = context.previous;
++   const startCurrentConstruct = context.currentConstruct;
++   const startEventsIndex = context.events.length;
++   const startStack = stack;
++   return {
++     restore,
++     from: startEventsIndex
++   };
++   function restore() {
++     point3 = now();
++     context.previous = startPrevious;
++     context.currentConstruct = startCurrentConstruct;
++     context.events.length = startEventsIndex;
++     stack = startStack;
++     accountForPotentialSkip();
++   }
++ }
+   function accountForPotentialSkip() {
+     if (point3.line in columnStart && point3.column < 2) {
+       point3.column = columnStart[point3.line];

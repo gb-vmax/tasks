@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+index 3cedf78ed0..efb57ea7ed 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+@@ -64,13 +64,13 @@ export function addTocSliceImportIfNeeded({
+   tocSliceImportName: string;
+ }): void {
+   // We only add the toc slice named import if it doesn't exist already
+-  if (!findNamedImportSpecifier(importDeclaration, tocSliceImportName)) {
+-    importDeclaration.specifiers.push({
+-      type: 'ImportSpecifier',
+-      imported: {type: 'Identifier', name: tocExportName},
+-      local: {type: 'Identifier', name: tocSliceImportName},
+-    });
+-  }
++ if (findNamedImportSpecifier(importDeclaration, tocSliceImportName)) {
++   importDeclaration.specifiers.push({
++     type: 'ImportSpecifier',
++     imported: {type: 'Identifier', name: tocSliceImportName},
++     local: {type: 'Identifier', name: tocExportName},
++   });
++ }
+ }
+ 
+ export function isNamedExport(

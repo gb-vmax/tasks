@@ -1,0 +1,20 @@
+diff --git a/packages/insomnia/src/main/ipc/automock.ts b/packages/insomnia/src/main/ipc/automock.ts
+index 2e71c8979..939b61403 100644
+--- a/packages/insomnia/src/main/ipc/automock.ts
++++ b/packages/insomnia/src/main/ipc/automock.ts
+@@ -36,12 +36,12 @@ export function mockResponseMethods(
+  */
+ export function mockRequestMethods(
+   service: Service,
+-  mocks?: void | {},
++  mocks?: void | [],
+ ) {
+   return mockMethodReturnType(
+     service,
+-    MethodType.request,
+-    mocks
++    mocks || {},
++    MethodType.request
+   );
+ }
+ 

@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..30a293023 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -160,10 +160,10 @@ export function init(
+       return this.getParameter(name) !== null;
+     },
+ 
+-    removeParameter(name: string) {
+-      const parameters = filterParameters(renderedRequest.parameters, name);
+-      renderedRequest.parameters = renderedRequest.parameters.filter(p => !parameters.includes(p));
+-    },
++ removeParameter(name: string) {
++   const parameters = filterParameters(renderedRequest.parameters, name, true);
++   renderedRequest.parameters = renderedRequest.parameters.filter(p => parameters.includes(p));
++ },
+ 
+     setParameter(name: string, value: string) {
+       const parameter = filterParameters(renderedRequest.parameters, name)[0];

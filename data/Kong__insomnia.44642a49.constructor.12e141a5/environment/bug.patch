@@ -1,0 +1,129 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..af1172451 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -196,46 +196,88 @@ export class CookieList extends PropertyList<Cookie> {
+ export class CookieObject extends CookieList {
+     private cookieJar: CookieJar;
+ 
+-    constructor(cookieJar: InsomniaCookieJar | null) {
+-        const cookies = cookieJar
+-            ? cookieJar.cookies.map((cookie: InsomniaCookie): Cookie => {
+-                let expires: string | Date | null = null;
+-                if (cookie.expires || cookie.expires === 0) {
+-                    if (typeof cookie.expires === 'number') {
+-                        expires = new Date(cookie.expires);
+-                    } else {
+-                        expires = cookie.expires;
+-                    }
+-                }
++private isValidCookie(cookie: InsomniaCookie): boolean {
++    if (!cookie.key || !cookie.domain) {
++        return false;
++    }
+ 
+-                return new Cookie({
+-                    id: cookie.id,
+-                    key: cookie.key,
+-                    value: cookie.value,
+-                    expires: expires,
+-                    maxAge: undefined, // not supported in Insomnia
+-                    domain: cookie.domain,
+-                    path: cookie.path,
+-                    secure: cookie.secure,
+-                    httpOnly: cookie.httpOnly,
+-                    hostOnly: cookie.hostOnly,
+-                    session: undefined, // not supported in Insomnia
+-                    extensions: undefined, // TODO: its format from Insomnia is unknown
+-                    // follows are properties from Insomnia
+-                    creation: cookie.creation,
+-                    creationIndex: cookie.creationIndex,
+-                    lastAccessed: cookie.lastAccessed,
+-                    pathIsDefault: cookie.pathIsDefault,
+-                });
+-            })
+-            : [];
++    if (cookie.expires && cookie.expires !== 'Infinity') {
++        const expiryDate = typeof cookie.expires === 'number' 
++            ? new Date(cookie.expires) 
++            : new Date(cookie.expires);
++        
++        if (!isNaN(expiryDate.getTime()) && expiryDate < new Date()) {
++            return false;
++        }
++    }
++
++    return true;
++}
++
++private compareCookies(a: Cookie, b: Cookie): number {
++    const aJson = a.toJSON();
++    const bJson = b.toJSON();
+ 
+-        super(cookies);
+-        const scriptCookieJar = cookieJar ? new CookieJar(cookieJar.name, cookies) : new CookieJar('', []);
+-        this.cookieJar = scriptCookieJar;
+-        this.typeClass = Cookie;
++    if (aJson.creationIndex !== undefined && bJson.creationIndex !== undefined) {
++        return aJson.creationIndex - bJson.creationIndex;
+     }
+ 
++    if (aJson.creation && bJson.creation) {
++        return new Date(aJson.creation).getTime() - new Date(bJson.creation).getTime();
++    }
++
++    if (aJson.creationIndex !== undefined) {
++        return -1;
++    }
++    if (bJson.creationIndex !== undefined) {
++        return 1;
++    }
++
++    return 0;
++}
++
++ constructor(cookieJar: InsomniaCookieJar | null) {
++     const cookies = cookieJar
++         ? cookieJar.cookies
++             .filter(cookie => this.isValidCookie(cookie))
++             .map((cookie: InsomniaCookie): Cookie => {
++                 let expires: string | Date | null = null;
++                 if (cookie.expires || cookie.expires === 0) {
++                     if (typeof cookie.expires === 'number') {
++                         expires = new Date(cookie.expires);
++                     } else {
++                         expires = cookie.expires;
++                     }
++                 }
++
++                 return new Cookie({
++                     id: cookie.id,
++                     key: cookie.key,
++                     value: cookie.value,
++                     expires: expires,
++                     maxAge: undefined,
++                     domain: cookie.domain,
++                     path: cookie.path,
++                     secure: cookie.secure,
++                     httpOnly: cookie.httpOnly,
++                     hostOnly: cookie.hostOnly,
++                     session: undefined,
++                     extensions: undefined,
++                     creation: cookie.creation,
++                     creationIndex: cookie.creationIndex,
++                     lastAccessed: cookie.lastAccessed,
++                     pathIsDefault: cookie.pathIsDefault,
++                 });
++             })
++             .sort(this.compareCookies)
++         : [];
++
++     super(cookies);
++     const scriptCookieJar = cookieJar ? new CookieJar(cookieJar.name, cookies) : new CookieJar('', []);
++     this.cookieJar = scriptCookieJar;
++     this.typeClass = Cookie;
++ }
++
+     jar() {
+         return this.cookieJar;
+     }

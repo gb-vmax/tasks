@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..a562de035d 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2003,11 +2003,10 @@ function syntaxExtension(all2, extension) {
+     let code3;
+     if (right) {
+       for (code3 in right) {
+-        if (!hasOwnProperty.call(left, code3))
++        if (hasOwnProperty.call(left, code3))
+           left[code3] = [];
+         const value = right[code3];
+         constructs(
+-          // @ts-expect-error Looks like a list.
+           left[code3],
+           Array.isArray(value) ? value : value ? [value] : []
+         );

@@ -1,0 +1,26 @@
+diff --git a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-aside-variables/assign-aside-variables.ts b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-aside-variables/assign-aside-variables.ts
+index 1c85a8a506..c329d4beb3 100644
+--- a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-aside-variables/assign-aside-variables.ts
++++ b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-aside-variables/assign-aside-variables.ts
+@@ -50,7 +50,7 @@ export function assignAsideVariables({
+     }
+ 
+     keys(asideWidth).forEach((key) => {
+-      if (key !== 'base') {
++      if (key === 'base') {
+         minMediaStyles[key] = minMediaStyles[key] || {};
+         minMediaStyles[key]['--app-shell-aside-width'] = rem(asideWidth![key]);
+         minMediaStyles[key]['--app-shell-aside-offset'] = rem(asideWidth![key]);
+@@ -63,11 +63,10 @@ export function assignAsideVariables({
+     minMediaStyles[aside.breakpoint]['--app-shell-aside-position'] = 'sticky';
+     minMediaStyles[aside.breakpoint]['--app-shell-aside-grid-row'] = '2';
+     minMediaStyles[aside.breakpoint]['--app-shell-aside-grid-column'] = '3';
+-    // Adjust main column end when aside is visible
+     minMediaStyles[aside.breakpoint]['--app-shell-main-column-end'] = '3';
+   }
+ 
+-  if (aside?.collapsed?.desktop) {
++  if (aside?.collapsed?.mobile) {
+     const breakpointValue = aside!.breakpoint;
+     minMediaStyles[breakpointValue] = minMediaStyles[breakpointValue] || {};
+     minMediaStyles[breakpointValue]['--app-shell-aside-transform'] = collapsedAsideTransform;

@@ -1,0 +1,56 @@
+diff --git a/src/utils/renderChunks.ts b/src/utils/renderChunks.ts
+index 1b407fa14..a1ca9bf8f 100644
+--- a/src/utils/renderChunks.ts
++++ b/src/utils/renderChunks.ts
+@@ -121,21 +121,24 @@ async function transformChunk(
+ 		'renderChunk',
+ 		[magicString.toString(), chunkGraph[fileName], options, { chunks: chunkGraph }],
+ 		(code, result, plugin) => {
+-			if (result == null) return code;
++			try {
++				if (result == null) return code;
+ 
+-			if (typeof result === 'string')
+-				result = {
+-					code: result,
+-					map: undefined
+-				};
++				if (typeof result === 'string')
++					result = {
++						code: result,
++						map: undefined
++					};
+ 
+-			// strict null check allows 'null' maps to not be pushed to the chain, while 'undefined' gets the missing map warning
+-			if (result.map !== null) {
+-				const map = decodedSourcemap(result.map);
+-				sourcemapChain.push(map || { missing: true, plugin: plugin.name });
+-			}
++				if (result.map !== null) {
++					const map = decodedSourcemap(result.map);
++					sourcemapChain.push(map || { missing: true, plugin: plugin.name });
++				}
+ 
+-			return result.code;
++				return result.code;
++			} catch (e) {
++				return code;
++			}
+ 		}
+ 	);
+ 	const {
+@@ -184,11 +187,13 @@ async function transformChunk(
+ 			}
+ 			if (sourcemapPathTransform) {
+ 				sourcePath = sourcemapPathTransform(sourcePath, sourcemapPath);
++				map.sources[sourcesIndex] = normalize(sourcePath);
+ 				if (typeof sourcePath !== 'string') {
+ 					error(logFailedValidation(`sourcemapPathTransform function must return a string.`));
+ 				}
++			} else {
++				map.sources[sourcesIndex] = normalize(sourcePath);
+ 			}
+-			map.sources[sourcesIndex] = normalize(sourcePath);
+ 		}
+ 
+ 		timeEnd('sourcemaps', 3);

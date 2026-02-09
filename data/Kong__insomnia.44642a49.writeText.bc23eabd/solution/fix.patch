@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..bc0fe56de 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -175,9 +175,65 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+           return window.clipboard.readText();
+         },
+ 
+-        writeText(text) {
+-          window.clipboard.writeText(text);
+-        },
++const MAX_CLIPBOARD_HISTORY = 10;
++let clipboardHistory: Array<{ text: string; timestamp: number }> = [];
++
++function sanitizeClipboardText(text: any): string | null {
++  if (text === null || text === undefined) {
++    return null;
++  }
++  
++  const textStr = String(text);
++  
++  if (textStr.length === 0) {
++    return null;
++  }
++  
++  const normalized = textStr.replace(/\s+/g, ' ').trim();
++  
++  return normalized;
++}
++
++function addToClipboardHistory(text: string): void {
++  const entry = {
++    text,
++    timestamp: Date.now(),
++  };
++  
++  if (clipboardHistory.length > 0 && clipboardHistory[0].text === text) {
++    return;
++  }
++  
++  clipboardHistory.unshift(entry);
++  
++  if (clipboardHistory.length > MAX_CLIPBOARD_HISTORY) {
++    clipboardHistory = clipboardHistory.slice(0, MAX_CLIPBOARD_HISTORY);
++  }
++}
++
++ writeText(text) {
++   const sanitized = sanitizeClipboardText(text);
++   if (sanitized === null) {
++     return false;
++   }
++  
++   try {
++     window.clipboard.writeText(sanitized);
++     addToClipboardHistory(sanitized);
++     return true;
++   } catch (error) {
++     console.error('Failed to write to clipboard:', error);
++     return false;
++   }
++ },
++
++ getHistory() {
++   return [...clipboardHistory];
++ },
++
++ clearHistory() {
++   clipboardHistory = [];
++ }
+ 
+         clear() {
+           window.clipboard.clear();

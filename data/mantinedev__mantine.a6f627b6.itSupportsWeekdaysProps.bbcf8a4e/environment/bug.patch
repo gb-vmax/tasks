@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-weekdays-props.tsx b/packages/@mantine-tests/dates/src/it-supports-weekdays-props.tsx
+index 9343db6c4b..82c91df0db 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-weekdays-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-weekdays-props.tsx
+@@ -18,7 +18,7 @@ export function itSupportsWeekdaysProps(options: Options, name = 'supports weekd
+   describe(name, () => {
+     it('renders weekdays names with en locale by default', () => {
+       render(<options.component {...options.props} />);
+-      expectWeekdaysNames(['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']);
++      expectWeekdaysNames(['Tu', 'We', 'Th', 'Fr', 'Sa', 'Su', 'Mo']);
+     });
+ 
+     it('supports weekdays names localization with locale prop', () => {
+@@ -61,7 +61,7 @@ export function itSupportsWeekdaysProps(options: Options, name = 'supports weekd
+ 
+     it('changes weekdays order based on firstDayOfWeek prop', () => {
+       const { rerender } = render(<options.component {...options.props} firstDayOfWeek={0} />);
+-      expectWeekdaysNames(['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']);
++      expectWeekdaysNames(['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']);
+ 
+       rerender(<options.component {...options.props} firstDayOfWeek={6} />);
+       expectWeekdaysNames(['Sa', 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr']);

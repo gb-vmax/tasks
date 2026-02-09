@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4603ced824 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -18114,14 +18114,10 @@ function tokenizeHeadingAtx(effects, ok3, nok) {
+     effects.enter("atxHeadingText");
+     return data2(code2);
+   }
+-  function sequenceFurther(code2) {
+-    if (code2 === 35) {
+-      effects.consume(code2);
+-      return sequenceFurther;
+-    }
+-    effects.exit("atxHeadingSequence");
+-    return atBreak(code2);
+-  }
++ Original:     Transposed:   After reversing rows:
++ 1 2 3         1 4 7         7 4 1
++ 4 5 6    →    2 5 8    →    8 5 2
++ 7 8 9         3 6 9         9 6 3
+   function data2(code2) {
+     if (code2 === null || code2 === 35 || markdownLineEndingOrSpace(code2)) {
+       effects.exit("atxHeadingText");

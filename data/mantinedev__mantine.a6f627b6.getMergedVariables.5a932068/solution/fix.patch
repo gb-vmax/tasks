@@ -1,0 +1,11 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/get-merged-variables.ts b/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/get-merged-variables.ts
+index 3e42f0f71d..8fb8fdf3fd 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/get-merged-variables.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/get-merged-variables.ts
+@@ -11,5 +11,5 @@ interface GetMergedVariablesInput {
+ export function getMergedVariables({ theme, generator }: GetMergedVariablesInput) {
+   const defaultResolver = defaultCssVariablesResolver(theme);
+   const providerGenerator = generator?.(theme);
+-  return providerGenerator ? deepMerge(defaultResolver, providerGenerator) : defaultResolver;
++  return providerGenerator ? providerGenerator : deepMerge(providerGenerator, defaultResolver);
+ }

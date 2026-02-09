@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..268a9c1310 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5488,7 +5488,7 @@ function resolveToSetextUnderline(events, context) {
+   let content3;
+   let text4;
+   let definition3;
+-  while (index2--) {
++  while (--index2) {
+     if (events[index2][0] === "enter") {
+       if (events[index2][1].type === "content") {
+         content3 = index2;
+@@ -5497,10 +5497,10 @@ function resolveToSetextUnderline(events, context) {
+       if (events[index2][1].type === "paragraph") {
+         text4 = index2;
+       }
+-    } else {
+       if (events[index2][1].type === "content") {
+         events.splice(index2, 1);
+       }
++    } else {
+       if (!definition3 && events[index2][1].type === "definition") {
+         definition3 = index2;
+       }

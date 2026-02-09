@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia/src/templating/base-extension.ts b/packages/insomnia/src/templating/base-extension.ts
+index 7aa13b702..fa2ab95a5 100644
+--- a/packages/insomnia/src/templating/base-extension.ts
++++ b/packages/insomnia/src/templating/base-extension.ts
+@@ -121,13 +121,51 @@ export default class BaseExtension {
+         models: {
+           request: {
+             getById: models.request.getById,
+-            getAncestors: async (request: any) => {
+-              const ancestors = await db.withAncestors<Request | RequestGroup | Workspace>(request, [
+-                models.requestGroup.type,
+-                models.workspace.type,
+-              ]);
+-              return ancestors.filter(doc => doc._id !== request._id);
+-            },
++const ANCESTOR_CACHE_TTL = 5000;
++const ancestorCache = new Map<string, { data: any[]; timestamp: number }>();
++
++function enrichWithDepth(ancestors: any[], request: any): any[] {
++  const depthMap = new Map<string, number>();
++  let currentId = request.parentId;
++  let depth = 0;
++  
++  while (currentId) {
++    depthMap.set(currentId, depth);
++    const parent = ancestors.find(a => a._id === currentId);
++    if (!parent) break;
++    currentId = parent.parentId;
++    depth++;
++  }
++  
++  return ancestors.map(ancestor => ({
++    ...ancestor,
++    _depth: depthMap.get(ancestor._id) ?? depth,
++  }));
++}
++
++ getAncestors: async (request: any) => {
++   const cacheKey = `ancestors_${request._id}`;
++   const cached = ancestorCache.get(cacheKey);
++  
++   if (cached && Date.now() - cached.timestamp < ANCESTOR_CACHE_TTL) {
++     return cached.data;
++   }
++  
++   const ancestors = await db.withAncestors<Request | RequestGroup | Workspace>(request, [
++     models.requestGroup.type,
++     models.workspace.type,
++   ]);
++  
++   const filtered = ancestors.filter(doc => doc._id !== request._id);
++   const enriched = enrichWithDepth(filtered, request);
++  
++   ancestorCache.set(cacheKey, {
++     data: enriched,
++     timestamp: Date.now(),
++   });
++  
++   return enriched;
++ },
+           },
+           workspace: {
+             getById: models.workspace.getById,

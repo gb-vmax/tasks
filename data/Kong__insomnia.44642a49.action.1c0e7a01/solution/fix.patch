@@ -1,0 +1,21 @@
+diff --git a/packages/insomnia/src/plugins/index.ts b/packages/insomnia/src/plugins/index.ts
+index b2424f61e..78d91c081 100644
+--- a/packages/insomnia/src/plugins/index.ts
++++ b/packages/insomnia/src/plugins/index.ts
+@@ -81,8 +81,14 @@ export interface WorkspaceAction extends InternalProperties {
+ }
+ 
+ export interface DocumentAction extends InternalProperties {
+-  action: (context: Record<string, any>, documents: ParsedApiSpec) => void | Promise<void>;
+-  label: string;
++ export interface DocumentAction extends InternalProperties {
++   action: (context: Record<string, any>, documents: ParsedApiSpec) => void | Promise<void>;
++   label: string;
++   icon?: string;
++   hideAfterClick?: boolean;
++   when?: (documents: ParsedApiSpec) => boolean;
++   group?: string;
++ }
+   hideAfterClick?: boolean;
+ }
+ 

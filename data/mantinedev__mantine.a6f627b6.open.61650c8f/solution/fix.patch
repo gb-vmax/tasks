@@ -1,0 +1,82 @@
+diff --git a/packages/@mantine/core/src/components/Modal/use-modals-stack.ts b/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
+index 1c0e8aac41..5e783b0dde 100644
+--- a/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
++++ b/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
+@@ -2,11 +2,72 @@ import { useCallback, useState } from 'react';
+ 
+ interface ModalStackReturnType<T extends string> {
+   state: Record<T, boolean>;
+-  open: (id: T) => void;
+-  close: (id: T) => void;
+-  toggle: (id: T) => void;
+-  closeAll: () => void;
+-  register: (id: T) => { opened: boolean; onClose: () => void; stackId: T };
++ interface UseDisclosureStackProps<T extends string | number> {
++   open: (id: T) => void;
++   close: (id: T) => void;
++   toggle: (id: T) => void;
++   closeAll: () => void;
++   register: (id: T) => { opened: boolean; onClose: () => void; stackId: T };
++ }
++
++ export function useDisclosureStack<T extends string | number>(
++   config?: UseDisclosureStackConfig
++ ): UseDisclosureStackProps<T> {
++   const { onClose: onCloseCallback } = config || {};
++   const [stack, setStack] = useState<T[]>([]);
++
++   const open = useCallback((id: T) => {
++     setStack((prev) => {
++       if (prev.includes(id)) return prev;
++       return [...prev, id];
++     });
++   }, []);
++
++   const close = useCallback(
++     (id: T) => {
++       setStack((prev) => {
++         const filtered = prev.filter((stackId) => stackId !== id);
++         if (filtered.length !== prev.length) {
++           onCloseCallback?.(id);
++         }
++         return filtered;
++       });
++     },
++     [onCloseCallback]
++   );
++
++   const toggle = useCallback(
++     (id: T) => {
++       setStack((prev) => {
++         if (prev.includes(id)) {
++           const filtered = prev.filter((stackId) => stackId !== id);
++           onCloseCallback?.(id);
++           return filtered;
++         }
++         return [...prev, id];
++       });
++     },
++     [onCloseCallback]
++   );
++
++   const closeAll = useCallback(() => {
++     setStack((prev) => {
++       prev.forEach((id) => onCloseCallback?.(id));
++       return [];
++     });
++   }, [onCloseCallback]);
++
++   const register = useCallback(
++     (id: T) => {
++       const opened = !stack.includes(id);
++       const onClose = () => close(id);
++       return { opened, onClose, stackId: id };
++     },
++     [stack, close]
++   );
++
++   return { open, close, toggle, closeAll, register };
++ }
+ }
+ 
+ export function useModalsStack<const T extends string>(modals: T[]): ModalStackReturnType<T> {

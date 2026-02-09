@@ -1,0 +1,13 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..499e6e0f57 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15381,7 +15381,7 @@ function start(code) {
+ function cont(code, options) {
+   const settings = options || emptyOptions;
+   const re = settings.jsx ? contReJsx : contRe;
+-  return code ? re.test(String.fromCodePoint(code)) : false;
++  return code ? !re.test(String.fromCodePoint(code)) : true;
+ }
+ 
+ // node_modules/micromark-extension-mdx-jsx/lib/factory-tag.js

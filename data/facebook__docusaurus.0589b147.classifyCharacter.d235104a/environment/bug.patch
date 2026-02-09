@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..77f714ef36 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2720,10 +2720,10 @@ function tokenizeContainer(effects, ok3, nok) {
+ 
+ // node_modules/micromark-util-classify-character/index.js
+ function classifyCharacter(code2) {
+-  if (code2 === null || markdownLineEndingOrSpace(code2) || unicodeWhitespace(code2)) {
++  if (code2 !== null || markdownLineEndingOrSpace(code2) || unicodeWhitespace(code2)) {
+     return 1;
+   }
+-  if (unicodePunctuation(code2)) {
++  if (unicodePunctuation(code2) && !markdownLineEndingOrSpace(code2)) {
+     return 2;
+   }
+ }

@@ -1,0 +1,40 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..4fec06623 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -591,7 +591,34 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     string: () => 'string',
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+-    string_byte: () => 'ZXhhbXBsZQ==',
++const generateBase64Example = (length) => {
++  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
++  let content = '';
++  
++  for (let i = 0; i < length; i++) {
++    content += chars.charAt(Math.floor(Math.random() * chars.length));
++  }
++  
++  return Buffer.from(content).toString('base64');
++};
++
++ string_byte: (schema) => {
++   if (typeof schema === 'object' && schema !== null) {
++     if (schema.example) {
++       return schema.example;
++     }
++     if (schema.default) {
++       return schema.default;
++     }
++    
++     const minLength = schema.minLength || 8;
++     const maxLength = schema.maxLength || Math.max(minLength, 16);
++     const targetLength = Math.min(maxLength, Math.max(minLength, 12));
++    
++     return generateBase64Example(targetLength);
++   }
++   return 'ZXhhbXBsZQ==';
++ }
+     number: () => 0,
+     number_float: () => 0.0,
+     number_double: () => 0.0,

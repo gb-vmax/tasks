@@ -1,0 +1,50 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..74858edcd 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -539,16 +539,35 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           type: 'string',
+           encoding: 'base64',
+           hide: args => !(args[0].value !== 'raw' && args[0].value !== 'url'),
+-          displayName: args => {
+-            switch (args[0].value) {
+-              case 'body':
+-                return 'Filter (JSONPath or XPath)';
+-              case 'header':
+-                return 'Header Name';
+-              default:
+-                return 'Filter';
+-            }
+-          },
++const getResponseFieldHelp = (fieldType: string): string => {
++  switch (fieldType) {
++    case 'body':
++      return 'Use JSONPath (starting with $) for JSON or XPath for XML responses';
++    case 'header':
++      return 'Case-insensitive header name to extract from the response';
++    case 'raw':
++      return 'Returns the complete unprocessed response body';
++    case 'url':
++      return 'Returns the final URL of the request after redirects';
++    default:
++      return 'Specify how to extract data from the response';
++  }
++};
++
++ displayName: args => {
++   switch (args[0].value) {
++     case 'body':
++       return 'Filter (JSONPath or XPath)';
++     case 'header':
++       return 'Header Name';
++     case 'raw':
++       return 'Processing Options';
++     case 'url':
++       return 'URL Options';
++     default:
++       return 'Filter';
++   }
++ }
+         },
+         {
+           displayName: 'Trigger Behavior',

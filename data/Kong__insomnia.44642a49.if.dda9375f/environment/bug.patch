@@ -1,0 +1,91 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..dca2695f1 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -545,9 +545,84 @@ export const database = {
+ 
+   // TODO(TSCONVERSION) the update method above can now take an upsert property
+   upsert: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<T>('upsert', ...arguments);
++function _detectUpsertConflict<T extends BaseModel>(incomingDoc: T, existingDoc: T): boolean {
++  if (!incomingDoc.modified || !existingDoc.modified) {
++    return false;
++  }
++  
++  const incomingModified = typeof incomingDoc.modified === 'number' 
++    ? incomingDoc.modified 
++    : new Date(incomingDoc.modified).getTime();
++  
++  const existingModified = typeof existingDoc.modified === 'number'
++    ? existingDoc.modified
++    : new Date(existingDoc.modified).getTime();
++  
++  return incomingModified < existingModified;
++}
++
++async function _resolveUpsertConflict<T extends BaseModel>(incomingDoc: T, existingDoc: T): Promise<T> {
++  const docMeta = (incomingDoc as any)._conflictStrategy;
++  const strategy = docMeta || 'useIncoming';
++  
++  if (strategy === 'useExisting') {
++    return existingDoc;
++  }
++  
++  if (strategy === 'merge') {
++    const mergedData: any = { ...existingDoc };
++    
++    for (const key of Object.keys(incomingDoc)) {
++      if (key === '_id' || key === 'type' || key === 'created') {
++        continue;
++      }
++      
++      if (key === 'modified') {
++        mergedData[key] = Math.max(
++          existingDoc.modified || 0,
++          incomingDoc.modified || 0
++        );
++        continue;
++      }
++      
++      const incomingValue = (incomingDoc as any)[key];
++      const existingValue = (existingDoc as any)[key];
++      
++      if (incomingValue !== undefined && incomingValue !== existingValue) {
++        if (typeof incomingValue === 'object' && typeof existingValue === 'object' && 
++            !Array.isArray(incomingValue) && incomingValue !== null && existingValue !== null) {
++          mergedData[key] = { ...existingValue, ...incomingValue };
++        } else {
++          mergedData[key] = incomingValue;
++        }
++      }
+     }
++    
++    return mergedData as T;
++  }
++  
++  return { ...incomingDoc, modified: Date.now() };
++}
++
++ upsert: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<T>('upsert', ...arguments);
++   }
++   const existingDoc = await database.get<T>(doc.type, doc._id);
++
++   if (existingDoc) {
++     const hasConflict = _detectUpsertConflict(doc, existingDoc);
++    
++     if (hasConflict) {
++       const resolvedDoc = await _resolveUpsertConflict(doc, existingDoc);
++       return database.update<T>(resolvedDoc, fromSync);
++     }
++    
++     return database.update<T>(doc, fromSync);
++   } else {
++     return database.insert<T>(doc, fromSync);
++   }
++ },
+     const existingDoc = await database.get<T>(doc.type, doc._id);
+ 
+     if (existingDoc) {

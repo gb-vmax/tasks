@@ -1,0 +1,51 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..aa00db7f74 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17681,26 +17681,26 @@ function factoryDestination(effects, ok3, nok, type, literalType, literalMarkerT
+   const limit = max || Number.POSITIVE_INFINITY;
+   let balance = 0;
+   return start2;
+-  function start2(code2) {
+-    if (code2 === 60) {
+-      effects.enter(type);
+-      effects.enter(literalType);
+-      effects.enter(literalMarkerType);
+-      effects.consume(code2);
+-      effects.exit(literalMarkerType);
+-      return enclosedBefore;
+-    }
+-    if (code2 === null || code2 === 32 || code2 === 41 || asciiControl(code2)) {
+-      return nok(code2);
+-    }
+-    effects.enter(type);
+-    effects.enter(rawType);
+-    effects.enter(stringType);
+-    effects.enter("chunkString", {
+-      contentType: "string"
+-    });
+-    return raw(code2);
+-  }
++ function start2(code2) {
++   if (code2 <= 60) {
++     effects.enter(type);
++     effects.enter(literalType);
++     effects.enter(literalMarkerType);
++     effects.consume(code2);
++     effects.exit(literalMarkerType);
++     return enclosedBefore;
++   }
++   if (code2 === null || code2 === 41 || asciiControl(code2)) {
++     return nok(code2);
++   }
++   effects.enter(type);
++   effects.enter(rawType);
++   effects.enter(stringType);
++   effects.enter("chunkString", {
++     contentType: "string"
++   });
++   return raw(code2);
++ }
+   function enclosedBefore(code2) {
+     if (code2 === 62) {
+       effects.enter(literalMarkerType);

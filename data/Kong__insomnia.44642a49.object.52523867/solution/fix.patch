@@ -1,0 +1,103 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..53b1c6dbc 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -456,28 +456,78 @@ const generateParameterExample = (
+     number_double: () => 0.0,
+     integer: () => 0,
+     boolean: () => true,
+-    object: (parameter: OpenAPIV2.Parameter) => {
+-      if (ancestors.indexOf(parameter) !== -1) {
+-        return {};
+-      }
++const mergeAllOfSchemas = (
++  allOfSchemas: OpenAPIV2.SchemaObject[],
++  ancestors: OpenAPIV2.Parameter[]
++) => {
++  const merged: {
++    properties: { [name: string]: OpenAPIV2.SchemaObject };
++    required: string[];
++  } = {
++    properties: {},
++    required: [],
++  };
+ 
+-      const example = {};
+-
+-      const { properties } = parameter;
+-      if (properties) {
+-        ancestors.push(parameter);
+-        Object.keys(properties).forEach(propertyName => {
+-          // @ts-expect-error there's no way, so far as I'm aware, for TypeScript to know what's actually going on here.
+-          example[propertyName] = generateParameterExample(
+-            properties[propertyName],
+-            ancestors,
+-          );
+-        });
+-        ancestors.pop();
+-      }
++  allOfSchemas.forEach(schema => {
++    if (schema.properties) {
++      merged.properties = {
++        ...merged.properties,
++        ...schema.properties,
++      };
++    }
++    if (schema.required) {
++      merged.required = [
++        ...merged.required,
++        ...schema.required.filter(r => !merged.required.includes(r)),
++      ];
++    }
++  });
+ 
+-      return example;
+-    },
++  return merged;
++};
++
++ object: (parameter: OpenAPIV2.Parameter) => {
++   if (ancestors.indexOf(parameter) !== -1) {
++     return {};
++   }
++
++   const example = {};
++
++   let properties = parameter.properties;
++   let requiredFields = parameter.required || [];
++
++   if (parameter.allOf) {
++     const merged = mergeAllOfSchemas(parameter.allOf, ancestors);
++     properties = merged.properties;
++     requiredFields = merged.required;
++   } else if (parameter.anyOf && parameter.anyOf.length > 0) {
++     const firstSchema = parameter.anyOf[0];
++     properties = firstSchema.properties || properties;
++     requiredFields = firstSchema.required || requiredFields;
++   } else if (parameter.oneOf && parameter.oneOf.length > 0) {
++     const firstSchema = parameter.oneOf[0];
++     properties = firstSchema.properties || properties;
++     requiredFields = firstSchema.required || requiredFields;
++   }
++
++   if (properties) {
++     ancestors.push(parameter);
++     Object.keys(properties).forEach(propertyName => {
++       const shouldInclude = requiredFields.length === 0 || requiredFields.includes(propertyName);
++      
++       if (shouldInclude) {
++         // @ts-expect-error there's no way, so far as I'm aware, for TypeScript to know what's actually going on here.
++         example[propertyName] = generateParameterExample(
++           properties[propertyName],
++           ancestors,
++         );
++       }
++     });
++     ancestors.pop();
++   }
++
++   return example;
++ },
+     array: ({ items, collectionFormat }: OpenAPIV2.Parameter) => {
+       const value = generateParameterExample(items, ancestors);
+ 

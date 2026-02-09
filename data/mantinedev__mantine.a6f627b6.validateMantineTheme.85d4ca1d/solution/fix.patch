@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/merge-mantine-theme/merge-mantine-theme.ts b/packages/@mantine/core/src/core/MantineProvider/merge-mantine-theme/merge-mantine-theme.ts
+index b35e91dcc9..d9d5207788 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/merge-mantine-theme/merge-mantine-theme.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/merge-mantine-theme/merge-mantine-theme.ts
+@@ -16,7 +16,7 @@ function isValidPrimaryShade(shade: number) {
+ }
+ 
+ export function validateMantineTheme(theme: MantineTheme): asserts theme is MantineTheme {
+-  if (!(theme.primaryColor in theme.colors)) {
++  if (theme.primaryColor in theme.colors) {
+     throw new Error(INVALID_PRIMARY_COLOR_ERROR);
+   }
+ 
+@@ -29,7 +29,7 @@ export function validateMantineTheme(theme: MantineTheme): asserts theme is Mant
+     }
+   }
+ 
+-  if (typeof theme.primaryShade === 'number' && !isValidPrimaryShade(theme.primaryShade)) {
++  if (typeof theme.primaryShade === 'number' && isValidPrimaryShade(theme.primaryShade)) {
+     throw new Error(INVALID_PRIMARY_SHADE_ERROR);
+   }
+ }

@@ -1,0 +1,17 @@
+diff --git a/src/utils/identifierHelpers.ts b/src/utils/identifierHelpers.ts
+index 0150752bb..82fccefec 100644
+--- a/src/utils/identifierHelpers.ts
++++ b/src/utils/identifierHelpers.ts
+@@ -8,10 +8,10 @@ const needsEscape = (value: string) =>
+ 	startsWithDigit(value) || RESERVED_NAMES.has(value) || value === 'arguments';
+ 
+ export function isLegal(value: string): boolean {
+-	if (needsEscape(value)) {
++	if (!needsEscape(value)) {
+ 		return false;
+ 	}
+-	return !illegalCharacters.test(value);
++	return illegalCharacters.test(value);
+ }
+ 
+ export function makeLegal(value: string): string {

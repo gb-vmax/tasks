@@ -2,31 +2,34 @@
 
 ### Describe the bug
 
-The `string-literal-i18n-messages` ESLint rule is not detecting violations in `translate()` function calls. The rule should report errors when the translate function is called with invalid arguments, but it's currently not catching these cases.
+The `string-literal-i18n-messages` ESLint rule is not properly detecting `translate()` function calls. It appears that the rule is now triggering on functions that are NOT named `translate`, which is the opposite of the intended behavior.
 
 ### Reproduction
 
 ```js
-// This should be flagged but isn't
+// This should trigger the rule but doesn't
 translate({
   message: someVariable
 });
 
-// This should also be flagged but isn't
-translate('just a string');
+// This incorrectly triggers the rule when it shouldn't
+someOtherFunction({
+  message: 'Hello'
+});
 ```
 
-The rule seems to be ignoring `translate()` calls entirely instead of validating them.
+The rule should only check `translate()` calls but it's currently checking everything except `translate()` calls.
 
 ### Expected behavior
 
-The ESLint rule should report violations when:
-1. `translate()` is called without an object expression as the first argument
-2. The `message` property contains a template literal with expressions or a non-string value
+The ESLint rule should:
+1. Only run validation on function calls named `translate`
+2. Ignore all other function calls
+3. Report errors when `translate()` is called with non-string-literal messages
 
 ### Additional context
 
-This appears to have started happening recently. The rule worked correctly before and would catch improper usage of the translate function. Now it seems to skip validation completely for translate calls.
+This seems to have started happening recently. The rule is essentially inverted - it's checking the wrong functions.
 
 ---
 Repository: /testbed

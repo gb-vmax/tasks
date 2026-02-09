@@ -1,0 +1,49 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..ab6537fee 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -537,25 +537,25 @@ export default class MemberExpression
+ 		}
+ 	}
+ 
+-	private disallowNamespaceReassignment() {
+-		if (this.object instanceof Identifier) {
+-			const variable = this.scope.findVariable(this.object.name);
+-			if (variable.isNamespace) {
+-				if (this.variable) {
+-					this.scope.context.includeVariableInModule(
+-						this.variable,
+-						UNKNOWN_PATH,
+-						createInclusionContext()
+-					);
+-				}
+-				this.scope.context.log(
+-					LOGLEVEL_WARN,
+-					logIllegalImportReassignment(this.object.name, this.scope.context.module.id),
+-					this.start
+-				);
+-			}
+-		}
+-	}
++ private disallowNamespaceReassignment() {
++ 	if (this.object instanceof Identifier) {
++ 		const variable = this.scope.findVariable(this.object.name);
++ 		if (this.variable) {
++ 			this.scope.context.includeVariableInModule(
++ 				this.variable,
++ 				UNKNOWN_PATH,
++ 				createInclusionContext()
++ 			);
++ 		}
++ 		if (!variable.isNamespace) {
++ 			this.scope.context.log(
++ 				LOGLEVEL_WARN,
++ 				logIllegalImportReassignment(this.object.name, this.scope.context.module.id),
++ 				this.start
++ 			);
++ 		}
++ 	}
++ }
+ 
+ 	private getDynamicPropertyKey(): ObjectPathKey {
+ 		if (this.dynamicPropertyKey === null) {

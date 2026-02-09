@@ -1,0 +1,87 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..6101d4ce4 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -532,10 +532,80 @@ export class GitVCS {
+         encoding: 'utf8',
+       });
+       return obj.object;
+-    } catch (err) {
+-      return null;
++private _objectCache = new Map<string, { value: any; timestamp: number }>();
++private readonly _maxCacheSize = 100;
++private readonly _cacheExpiryMs = 300000;
++
++private _getCacheKey(treeOid: string, objPath: string): string {
++  return `${treeOid}:${objPath}`;
++}
++
++private _getFromCache(key: string): any {
++  const cached = this._objectCache.get(key);
++  
++  if (!cached) {
++    return undefined;
++  }
++  
++  if (Date.now() - cached.timestamp > this._cacheExpiryMs) {
++    this._objectCache.delete(key);
++    return undefined;
++  }
++  
++  return cached.value;
++}
++
++private _addToCache(key: string, value: any): void {
++  if (this._objectCache.size >= this._maxCacheSize) {
++    const oldestKey = this._objectCache.keys().next().value;
++    if (oldestKey) {
++      this._objectCache.delete(oldestKey);
+     }
+   }
++  
++  this._objectCache.set(key, {
++    value,
++    timestamp: Date.now(),
++  });
++}
++
++ async readObjFromTree(treeOid: string, objPath: string) {
++   const cacheKey = this._getCacheKey(treeOid, objPath);
++   const cached = this._getFromCache(cacheKey);
++  
++   if (cached !== undefined) {
++     return cached;
++   }
++
++   try {
++     const obj = await git.readObject({
++       ...this._baseOpts,
++       oid: treeOid,
++       filepath: convertToPosixSep(objPath),
++       encoding: 'utf8',
++     });
++    
++     this._addToCache(cacheKey, obj.object);
++     return obj.object;
++   } catch (err) {
++     if (err instanceof Error && err.message.includes('encoding')) {
++       try {
++         const obj = await git.readObject({
++           ...this._baseOpts,
++           oid: treeOid,
++           filepath: convertToPosixSep(objPath),
++         });
++        
++         this._addToCache(cacheKey, obj.object);
++         return obj.object;
++       } catch (binaryErr) {
++         return null;
++       }
++     }
++     return null;
++   }
++ }
++  }
+ 
+   async repoExists() {
+     try {

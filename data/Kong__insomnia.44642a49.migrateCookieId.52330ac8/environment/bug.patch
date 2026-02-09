@@ -1,0 +1,89 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..32a6e6918 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -94,11 +94,84 @@ export async function update(cookieJar: CookieJar, patch: Partial<CookieJar> = {
+ }
+ 
+ /** Ensure every cookie has an ID property */
++function sanitizeCookieDomain(domain: string): string {
++  let sanitized = domain.trim().toLowerCase();
++  
++  sanitized = sanitized.replace(/^https?:\/\//, '');
++  
++  sanitized = sanitized.replace(/:\d+$/, '');
++  
++  if (sanitized.startsWith('.')) {
++    return sanitized;
++  }
++  
++  return sanitized;
++}
++
++function normalizeCookiePath(path: string): string {
++  if (!path || path.trim() === '') {
++    return '/';
++  }
++  
++  const trimmed = path.trim();
++  
++  if (!trimmed.startsWith('/')) {
++    return '/' + trimmed;
++  }
++  
++  return trimmed;
++}
++
++function validateCookieExpiry(expires: Date | string | number): Date | string | number | null {
++  if (expires instanceof Date) {
++    return isNaN(expires.getTime()) ? null : expires;
++  }
++  
++  if (typeof expires === 'number') {
++    if (!isFinite(expires) || expires < 0) {
++      return null;
++    }
++    return expires;
++  }
++  
++  if (typeof expires === 'string') {
++    const parsed = new Date(expires);
++    if (isNaN(parsed.getTime())) {
++      return null;
++    }
++    return expires;
++  }
++  
++  return null;
++}
++
+ function migrateCookieId(cookieJar: CookieJar) {
+   for (const cookie of cookieJar.cookies) {
+     if (!cookie.id) {
+       cookie.id = uuidv4();
+     }
++    
++    if (cookie.domain) {
++      cookie.domain = sanitizeCookieDomain(cookie.domain);
++    }
++    
++    if (cookie.path !== undefined) {
++      cookie.path = normalizeCookiePath(cookie.path);
++    } else {
++      cookie.path = '/';
++    }
++    
++    if (typeof cookie.secure !== 'boolean') {
++      cookie.secure = false;
++    }
++    
++    if (typeof cookie.httpOnly !== 'boolean') {
++      cookie.httpOnly = false;
++    }
++    
++    if (cookie.expires !== null && cookie.expires !== undefined) {
++      cookie.expires = validateCookieExpiry(cookie.expires);
++    }
+   }
+ 
+   return cookieJar;

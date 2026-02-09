@@ -2,26 +2,28 @@
 
 ### Describe the bug
 
-I'm experiencing an issue where Docusaurus is unable to find my configuration file even though it exists in the site directory. The error message says "No config file found" but my `docusaurus.config.js` is definitely present.
+When running Docusaurus, the config file detection logic appears to be inverted. The application throws a "No config file found" error even when a valid config file exists in the site directory.
 
 ### Reproduction
 
-1. Create a new Docusaurus project with a valid config file (e.g., `docusaurus.config.js`)
-2. Try to run any Docusaurus command (build, start, etc.)
-3. The command fails with "No config file found" error
+1. Create a new Docusaurus site with a standard `docusaurus.config.js` file
+2. Try to start the development server or build the site
+3. The application fails with "No config file found" error despite the config file being present
 
-The config file is in the root of my site directory and has worked fine in previous versions.
+```
+Error: No config file found.
+Expected one of: docusaurus.config.ts, docusaurus.config.mts, ...
+```
+
+This happens even though the config file clearly exists in the project root.
 
 ### Expected behavior
 
-Docusaurus should detect and load the configuration file when it exists in the site directory. The build/start commands should proceed normally instead of throwing an error about missing config.
+The application should detect and load the config file normally when it exists in the site directory. The error message should only appear when no config file is actually present.
 
 ### System Info
 - Docusaurus version: latest
 - Node version: 18.x
-- OS: macOS
-
-Has anyone else run into this? It seems like the config file detection logic might have changed recently.
 
 ---
 Repository: /testbed

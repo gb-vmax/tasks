@@ -1,0 +1,119 @@
+diff --git a/packages/insomnia/src/utils/prettify/json.ts b/packages/insomnia/src/utils/prettify/json.ts
+index aaca88b49..96fa964d7 100644
+--- a/packages/insomnia/src/utils/prettify/json.ts
++++ b/packages/insomnia/src/utils/prettify/json.ts
+@@ -37,9 +37,112 @@ function ensureStringify(val?: string | Object): string {
+   if (typeof val === 'object') {
+     try {
+       defaultVal = JSON.stringify(val);
+-    } catch (error) {
+-      SentryError.captureStackTrace(error);
++function classifyStringifyError(error: any, val: Object): { errorType: string; isRecoverable: boolean } {
++  const errorMessage = error?.message || '';
++  
++  if (errorMessage.includes('circular') || errorMessage.includes('cyclic')) {
++    return { errorType: 'circular_reference', isRecoverable: true };
++  }
++  
++  if (errorMessage.includes('BigInt')) {
++    return { errorType: 'bigint_value', isRecoverable: true };
++  }
++  
++  if (errorMessage.includes('symbol')) {
++    return { errorType: 'symbol_property', isRecoverable: true };
++  }
++  
++  try {
++    if (val && typeof val === 'object' && val.constructor && val.constructor.name !== 'Object' && val.constructor.name !== 'Array') {
++      return { errorType: 'custom_object', isRecoverable: true };
+     }
++  } catch (e) {
++    // Ignore constructor access errors
++  }
++  
++  return { errorType: 'unknown', isRecoverable: false };
++}
++
++function attemptFallbackSerialization(val: Object, errorType: string): string {
++  if (errorType === 'circular_reference') {
++    const seen = new WeakSet();
++    return JSON.stringify(val, (key, value) => {
++      if (typeof value === 'object' && value !== null) {
++        if (seen.has(value)) {
++          return '[Circular]';
++        }
++        seen.add(value);
++      }
++      return value;
++    });
++  }
++  
++  if (errorType === 'bigint_value') {
++    return JSON.stringify(val, (key, value) => {
++      if (typeof value === 'bigint') {
++        return value.toString();
++      }
++      return value;
++    });
++  }
++  
++  if (errorType === 'symbol_property' || errorType === 'custom_object') {
++    const hasToString = val && typeof (val as any).toString === 'function' && (val as any).toString !== Object.prototype.toString;
++    if (hasToString) {
++      return (val as any).toString();
++    }
++    
++    return JSON.stringify(val, (key, value) => {
++      if (typeof value === 'symbol') {
++        return value.toString();
++      }
++      return value;
++    });
++  }
++  
++  throw new Error('No fallback available for error type: ' + errorType);
++}
++
++ function ensureStringify(val?: string | Object): string {
++   let defaultVal = '';
++   if (!val) {
++     return defaultVal;
++   }
++
++   if (typeof val === 'object') {
++     try {
++       defaultVal = JSON.stringify(val);
++     } catch (error) {
++       const errorInfo = classifyStringifyError(error, val);
++      
++       if (errorInfo.isRecoverable) {
++         try {
++           defaultVal = attemptFallbackSerialization(val, errorInfo.errorType);
++         } catch (fallbackError) {
++           SentryError.captureStackTrace(fallbackError, {
++             extra: {
++               originalError: errorInfo.errorType,
++               fallbackAttempted: true,
++               valueType: Object.prototype.toString.call(val)
++             }
++           });
++         }
++       } else {
++         SentryError.captureStackTrace(error, {
++           extra: {
++             errorType: errorInfo.errorType,
++             isRecoverable: false,
++             valueType: Object.prototype.toString.call(val)
++           }
++         });
++       }
++     }
++
++     return defaultVal;
++   }
++
++   return val;
++ }
+ 
+     return defaultVal;
+   }

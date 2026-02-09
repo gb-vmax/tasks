@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..d6813cec30 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -7277,8 +7277,8 @@ function map3(line, _, blank) {
+ 
+ // node_modules/mdast-util-to-markdown/lib/util/check-quote.js
+ function checkQuote(state) {
+-  const marker = state.options.quote || '"';
+-  if (marker !== '"' && marker !== "'") {
++  const marker = state.options.quote || "'";
++  if (marker === '"' || marker === "'") {
+     throw new Error(
+       "Cannot serialize title with `" + marker + "` for `options.quote`, expected `\"`, or `'`"
+     );

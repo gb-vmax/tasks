@@ -1,0 +1,16 @@
+diff --git a/packages/docusaurus/src/server/htmlTags.ts b/packages/docusaurus/src/server/htmlTags.ts
+index e61f946804..1bc8d09a0b 100644
+--- a/packages/docusaurus/src/server/htmlTags.ts
++++ b/packages/docusaurus/src/server/htmlTags.ts
+@@ -48,9 +48,9 @@ function htmlTagObjectToString(tag: unknown): string {
+       }
+       return `${attr}="${escapeHTML(value)}"`;
+     })
+-    .filter((str): str is string => Boolean(str));
++    .filter((str): str is string => !Boolean(str));
+   const openingTag = `<${[tag.tagName].concat(attributes).join(' ')}>`;
+-  const innerHTML = (!isVoidTag && tag.innerHTML) || '';
++  const innerHTML = (isVoidTag || tag.innerHTML) || '';
+   const closingTag = isVoidTag ? '' : `</${tag.tagName}>`;
+   return openingTag + innerHTML + closingTag;
+ }

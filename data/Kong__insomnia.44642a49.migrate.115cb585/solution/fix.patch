@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..d80ecfd33 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -32,8 +32,75 @@ export function init(): BaseApiSpec {
+   };
+ }
+ 
++function applyMigrationV1(doc: ApiSpec): ApiSpec {
++  const migrated = { ...doc };
++  
++  if (!migrated.fileName || migrated.fileName.trim() === '') {
++    migrated.fileName = `New ${strings.document.singular}`;
++  }
++  
++  if (!migrated.contentType) {
++    migrated.contentType = inferContentType(migrated.contents);
++  }
++  
++  if (migrated.contents === null || migrated.contents === undefined) {
++    migrated.contents = '';
++  }
++  
++  return migrated;
++}
++
++function applyMigrationV2(doc: ApiSpec): ApiSpec {
++  const migrated = { ...doc };
++  
++  const inferredType = inferContentType(migrated.contents);
++  if (migrated.contentType !== inferredType && migrated.contents.trim() !== '') {
++    migrated.contentType = inferredType;
++  }
++  
++  if (migrated.fileName && typeof migrated.fileName === 'string') {
++    migrated.fileName = migrated.fileName.trim();
++  }
++  
++  return migrated;
++}
++
++function inferContentType(contents: string): 'json' | 'yaml' {
++  if (!contents || contents.trim() === '') {
++    return 'yaml';
++  }
++  
++  const trimmed = contents.trim();
++  
++  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
++    try {
++      JSON.parse(trimmed);
++      return 'json';
++    } catch {
++      return 'yaml';
++    }
++  }
++  
++  return 'yaml';
++}
++
+ export function migrate(doc: ApiSpec) {
+-  return doc;
++  const CURRENT_SCHEMA_VERSION = 2;
++  
++  let migrated = { ...doc };
++  const currentVersion = (migrated as any).schemaVersion || 0;
++  
++  if (currentVersion < 1) {
++    migrated = applyMigrationV1(migrated);
++  }
++  
++  if (currentVersion < 2) {
++    migrated = applyMigrationV2(migrated);
++  }
++  
++  (migrated as any).schemaVersion = CURRENT_SCHEMA_VERSION;
++  
++  return migrated;
+ }
+ 
+ export function getByParentId(workspaceId: string) {

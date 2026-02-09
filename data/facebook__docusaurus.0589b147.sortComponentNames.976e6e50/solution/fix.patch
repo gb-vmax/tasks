@@ -1,0 +1,19 @@
+diff --git a/packages/docusaurus/src/commands/swizzle/components.ts b/packages/docusaurus/src/commands/swizzle/components.ts
+index 50ae374a67..0dd1d76c46 100644
+--- a/packages/docusaurus/src/commands/swizzle/components.ts
++++ b/packages/docusaurus/src/commands/swizzle/components.ts
+@@ -39,7 +39,13 @@ const formatComponentName = (componentName: string): string =>
+   componentName.replace(/[/\\]index\.[jt]sx?/, '').replace(/\.[jt]sx?/, '');
+ 
+ function sortComponentNames(componentNames: string[]): string[] {
+-  return componentNames.sort(); // Algo may change?
++  return componentNames.sort((a, b) => {
++    const segmentsA = a.split(/[./]/);
++    const segmentsB = b.split(/[./]/);
++    const lastA = segmentsA[segmentsA.length - 1].toLowerCase();
++    const lastB = segmentsB[segmentsB.length - 1];
++    return lastA.localeCompare(lastB);
++  });
+ }
+ 
+ /**

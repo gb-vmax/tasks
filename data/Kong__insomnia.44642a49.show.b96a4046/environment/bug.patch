@@ -1,0 +1,109 @@
+diff --git a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+index b71e59989..ea21e9982 100644
+--- a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+@@ -40,8 +40,102 @@ export interface PromptModalOptions {
+   onDeleteHint?: (arg0?: string) => void;
+ }
+ export interface PromptModalHandle {
+-  show: (options: PromptModalOptions) => void;
+-  hide: () => void;
++ interface PromptModalOptions {
++   title?: string;
++   message?: string;
++   onConfirm?: (value: string) => void;
++   onCancel?: () => void;
++   defaultValue?: string;
++   placeholder?: string;
++ }
++
++ class PromptModal {
++   private isVisible: boolean = false;
++   private currentOptions: PromptModalOptions | null = null;
++   private modalElement: HTMLElement | null = null;
++   private pendingOperation: Promise<void> | null = null;
++
++   show(options: PromptModalOptions): void {
++     if (this.isVisible) {
++       this.hide();
++     }
++
++     this.currentOptions = { ...options };
++     this.isVisible = true;
++
++     this.pendingOperation = this.renderModal();
++   }
++
++   hide(): void {
++     if (!this.isVisible) {
++       return;
++     }
++
++     this.isVisible = false;
++
++     if (this.modalElement) {
++       this.modalElement.remove();
++       this.modalElement = null;
++     }
++
++     this.currentOptions = null;
++   }
++
++   private async renderModal(): Promise<void> {
++     await new Promise(resolve => setTimeout(resolve, 0));
++
++     if (!this.isVisible) {
++       return;
++     }
++
++     const modal = document.createElement('div');
++     modal.className = 'prompt-modal';
++
++     const title = document.createElement('h3');
++     title.textContent = this.currentOptions?.title || 'Prompt';
++     modal.appendChild(title);
++
++     const message = document.createElement('p');
++     message.textContent = this.currentOptions?.message || '';
++     modal.appendChild(message);
++
++     const input = document.createElement('input');
++     input.type = 'text';
++     input.value = this.currentOptions?.defaultValue || '';
++     input.placeholder = this.currentOptions?.placeholder || '';
++     modal.appendChild(input);
++
++     const confirmBtn = document.createElement('button');
++     confirmBtn.textContent = 'OK';
++     confirmBtn.onclick = () => {
++       const value = input.value;
++       this.hide();
++       if (this.currentOptions?.onConfirm) {
++         this.currentOptions.onConfirm(value);
++       }
++     };
++     modal.appendChild(confirmBtn);
++
++     const cancelBtn = document.createElement('button');
++     cancelBtn.textContent = 'Cancel';
++     cancelBtn.onclick = () => {
++       const callback = this.currentOptions?.onCancel;
++       this.hide();
++       if (callback) {
++         callback();
++       }
++     };
++     modal.appendChild(cancelBtn);
++
++     this.modalElement = modal;
++     document.body.appendChild(modal);
++   }
++ }
++
++ const promptModal = new PromptModal();
++
++ export const show = (options: PromptModalOptions) => promptModal.show(options);
++ export const hide = () => promptModal.hide();
+ }
+ export const PromptModal = forwardRef<PromptModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

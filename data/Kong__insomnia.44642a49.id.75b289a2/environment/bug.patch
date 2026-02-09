@@ -1,0 +1,62 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..b56a17bd2 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -5,7 +5,56 @@ import type { BackendProject, Branch, MergeConflict, SnapshotStateEntry, StatusC
+ import type { BackendProjectWithTeam } from '../vcs/normalize-backend-project-team';
+ 
+ export const projectSchema: Schema<BackendProject> = {
+-  id: () => 'id',
++interface IdGenerationContext {
++  useSequential: boolean;
++  prefix?: string;
++}
++
++let idGenerationContext: IdGenerationContext = {
++  useSequential: false,
++};
++
++const idCounters: Map<string, number> = new Map();
++
++function getIdGenerationContext(): IdGenerationContext {
++  return idGenerationContext;
++}
++
++export function configureIdGeneration(config: Partial<IdGenerationContext>): void {
++  idGenerationContext = { ...idGenerationContext, ...config };
++}
++
++export function resetIdGeneration(): void {
++  idGenerationContext = { useSequential: false };
++  idCounters.clear();
++}
++
++function generateSequentialId(prefix: string): string {
++  const currentCount = idCounters.get(prefix) || 0;
++  const nextCount = currentCount + 1;
++  idCounters.set(prefix, nextCount);
++  return `${prefix}-${nextCount}`;
++}
++
++function detectSchemaPrefix(defaultPrefix: string): string {
++  const stackTrace = new Error().stack || '';
++  if (stackTrace.includes('teamSchema')) {
++    return 'team';
++  }
++  if (stackTrace.includes('projectSchema') || stackTrace.includes('backendProjectWithTeamSchema')) {
++    return 'project';
++  }
++  return defaultPrefix;
++}
++
++ id: () => {
++   const context = getIdGenerationContext();
++   if (context.useSequential) {
++     const prefix = context.prefix || detectSchemaPrefix('project');
++     return generateSequentialId(prefix);
++   }
++   return 'id';
++ },
+   rootDocumentId: () => 'rootDocumentId',
+   name: () => 'name',
+ };

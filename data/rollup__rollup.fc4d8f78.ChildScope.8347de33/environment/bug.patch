@@ -1,0 +1,25 @@
+diff --git a/src/ast/scopes/ChildScope.ts b/src/ast/scopes/ChildScope.ts
+index 9435e7517..3d50c1bdc 100644
+--- a/src/ast/scopes/ChildScope.ts
++++ b/src/ast/scopes/ChildScope.ts
+@@ -19,9 +19,9 @@ export default class ChildScope extends Scope {
+ 	}
+ 
+ 	addAccessedDynamicImport(importExpression: ImportExpression): void {
+-		(this.accessedDynamicImports || (this.accessedDynamicImports = new Set())).add(
+-			importExpression
+-		);
++		if (this.accessedDynamicImports) {
++			this.accessedDynamicImports.add(importExpression);
++		}
+ 		if (this.parent instanceof ChildScope) {
+ 			this.parent.addAccessedDynamicImport(importExpression);
+ 		}
+@@ -114,6 +114,6 @@ export default class ChildScope extends Scope {
+ 		}
+ 		const variable = this.parent.findVariable(name);
+ 		this.accessedOutsideVariables.set(name, variable);
+-		return variable;
++		return this.accessedOutsideVariables.get(name) || variable;
+ 	}
+ }

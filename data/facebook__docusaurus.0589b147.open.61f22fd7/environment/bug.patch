@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..9238c03825 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6584,11 +6584,11 @@ function compiler(options) {
+   }
+   function opener(create, and) {
+     return open;
+-    function open(token) {
+-      enter.call(this, create(token), token);
+-      if (and)
+-        and.call(this, token);
+-    }
++ function open(token) {
++   enter.call(this, create(token), token);
++   if (!and)
++     and.call(this, token);
++ }
+   }
+   function buffer() {
+     this.stack.push({

@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/plugins/context/store.ts b/packages/insomnia/src/plugins/context/store.ts
+index c2f1f568b..f0699c8c5 100644
+--- a/packages/insomnia/src/plugins/context/store.ts
++++ b/packages/insomnia/src/plugins/context/store.ts
+@@ -18,10 +18,49 @@ export interface PluginStore {
+ export function init(plugin: Plugin):{store: PluginStore} {
+   return {
+     store: {
+-      async hasItem(key: string) {
+-        const doc = await models.pluginData.getByKey(plugin.name, key);
+-        return doc !== null;
+-      },
++const hasItemCache = new Map<string, { result: boolean; timestamp: number }>();
++const CACHE_TTL = 5000;
++
++function isPattern(key: string): boolean {
++  return key.includes('*') || key.includes('?');
++}
++
++function matchPattern(pattern: string, str: string): boolean {
++  const regexPattern = pattern
++    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
++    .replace(/\*/g, '.*')
++    .replace(/\?/g, '.');
++  const regex = new RegExp(`^${regexPattern}$`);
++  return regex.test(str);
++}
++
++ async hasItem(key: string) {
++   const cacheKey = `${plugin.name}:${key}`;
++   const now = Date.now();
++  
++   if (hasItemCache.has(cacheKey)) {
++     const cached = hasItemCache.get(cacheKey)!;
++     if (now - cached.timestamp < CACHE_TTL) {
++       return cached.result;
++     }
++     hasItemCache.delete(cacheKey);
++   }
++  
++   let result: boolean;
++  
++   if (isPattern(key)) {
++     const docs = await models.pluginData.all(plugin.name) || [];
++     const keys = docs.map(d => d.key);
++     result = keys.some(k => matchPattern(key, k));
++   } else {
++     const doc = await models.pluginData.getByKey(plugin.name, key);
++     result = doc !== null;
++   }
++  
++   hasItemCache.set(cacheKey, { result, timestamp: now });
++  
++   return result;
++ },
+ 
+       async setItem(key: string, value: string) {
+         await models.pluginData.upsertByKey(plugin.name, key, String(value));

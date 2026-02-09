@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..969ebc6a4 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -454,7 +454,49 @@ const generateParameterExample = (
+     number: () => 0,
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+-    integer: () => 0,
++const generateConstrainedInteger = (
++  minimum: number | undefined,
++  maximum: number | undefined,
++  multipleOf: number | undefined,
++): number => {
++  let min = minimum !== undefined ? minimum : 0;
++  let max = maximum !== undefined ? maximum : 100;
++  
++  if (min > max) {
++    [min, max] = [max, min];
++  }
++  
++  if (multipleOf !== undefined && multipleOf > 0) {
++    min = Math.ceil(min / multipleOf) * multipleOf;
++    max = Math.floor(max / multipleOf) * multipleOf;
++    
++    if (min > max) {
++      return min;
++    }
++    
++    const multiplesCount = Math.floor((max - min) / multipleOf) + 1;
++    const randomIndex = Math.floor(Math.random() * multiplesCount);
++    return min + randomIndex * multipleOf;
++  }
++  
++  return Math.floor(Math.random() * (max - min + 1)) + min;
++};
++
++ integer: (parameter: OpenAPIV2.Parameter) => {
++   if (parameter.enum && parameter.enum.length > 0) {
++     return parameter.enum[0];
++   }
++  
++   const min = parameter.minimum !== undefined ? parameter.minimum : undefined;
++   const max = parameter.maximum !== undefined ? parameter.maximum : undefined;
++   const multipleOf = parameter.multipleOf;
++  
++   if (min !== undefined || max !== undefined || multipleOf !== undefined) {
++     return generateConstrainedInteger(min, max, multipleOf);
++   }
++  
++   return 0;
++ },
+     boolean: () => true,
+     object: (parameter: OpenAPIV2.Parameter) => {
+       if (ancestors.indexOf(parameter) !== -1) {

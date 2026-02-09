@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..b655957d1 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -399,7 +399,32 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           displayName: 'Title',
+           type: 'string',
+           help: 'Title is a unique string used to identify the prompt value',
+-          validate: v => (v ? '' : 'Required'),
++function hasInvalidControlCharacters(str: string): boolean {
++  return /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(str);
++}
++
++ validate: v => {
++   if (!v) {
++     return 'Required';
++   }
++   const trimmed = v.trim();
++   if (trimmed.length === 0) {
++     return 'Title cannot be only whitespace';
++   }
++   if (trimmed.length < 2) {
++     return 'Title must be at least 2 characters';
++   }
++   if (trimmed.length > 100) {
++     return 'Title must be less than 100 characters';
++   }
++   if (hasInvalidControlCharacters(trimmed)) {
++     return 'Title contains invalid control characters';
++   }
++   if (v !== trimmed) {
++     return 'Title cannot have leading or trailing whitespace';
++   }
++   return '';
++ }
+         },
+         {
+           displayName: 'Label',

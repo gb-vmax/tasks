@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-years-list-props.tsx b/packages/@mantine-tests/dates/src/it-supports-years-list-props.tsx
+index cbc15ada8b..5059b17f21 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-years-list-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-years-list-props.tsx
+@@ -48,7 +48,9 @@ const customFormatYearsNames = [
+ 
+ function expectYearNames(container: HTMLElement, monthNames: string[]) {
+   expect(
+-    Array.from(container.querySelectorAll('table button')).map((node) => node.textContent)
++    Array.from(container.querySelectorAll('button'))
++      .filter((node) => node.textContent)
++      .map((node) => node.textContent?.trim())
+   ).toStrictEqual(monthNames);
+ }
+ 

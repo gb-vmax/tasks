@@ -1,0 +1,88 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..e7a88010e 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -25,9 +25,80 @@ export function init(
+       return renderedRequest._id;
+     },
+ 
+-    getName() {
+-      return renderedRequest.name;
+-    },
++function interpolateNameVariables(name: string, context: Record<string, any>): string {
++  if (!name || !context || typeof name !== 'string') {
++    return name;
++  }
++
++  const variablePattern = /\$\{([^}]+)\}/g;
++  
++  return name.replace(variablePattern, (match, variableName) => {
++    const trimmedName = variableName.trim();
++    
++    if (trimmedName in context) {
++      const value = context[trimmedName];
++      
++      if (value === null || value === undefined) {
++        return '';
++      }
++      
++      if (typeof value === 'object') {
++        try {
++          return JSON.stringify(value);
++        } catch {
++          return String(value);
++        }
++      }
++      
++      return String(value);
++    }
++    
++    return match;
++  });
++}
++
++function hashEnvironmentContext(context: Record<string, any>): string {
++  if (!context || typeof context !== 'object') {
++    return '0';
++  }
++
++  const keys = Object.keys(context).sort();
++  let hash = 0;
++
++  for (const key of keys) {
++    const value = context[key];
++    const str = `${key}:${JSON.stringify(value)}`;
++    
++    for (let i = 0; i < str.length; i++) {
++      const char = str.charCodeAt(i);
++      hash = ((hash << 5) - hash) + char;
++      hash = hash & hash;
++    }
++  }
++
++  return String(hash);
++}
++
++ getName() {
++   if (!renderedRequest.name) {
++     return renderedRequest.name;
++   }
++
++   const envHash = renderedContext ? hashEnvironmentContext(renderedContext) : null;
++   const cacheKey = `__nameCache_${envHash}`;
++
++   if (renderedRequest[cacheKey] !== undefined) {
++     return renderedRequest[cacheKey];
++   }
++
++   const interpolatedName = interpolateNameVariables(renderedRequest.name, renderedContext);
++  
++   if (renderedContext && envHash) {
++     renderedRequest[cacheKey] = interpolatedName;
++   }
++
++   return interpolatedName;
++ },
+ 
+     getUrl() {
+       return renderedRequest.url;

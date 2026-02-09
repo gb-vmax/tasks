@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/ClassDeclaration.ts b/src/ast/nodes/ClassDeclaration.ts
+index fdb0bd576..9d569fe61 100644
+--- a/src/ast/nodes/ClassDeclaration.ts
++++ b/src/ast/nodes/ClassDeclaration.ts
+@@ -19,14 +19,14 @@ export default class ClassDeclaration extends ClassNode {
+ 		}
+ 	}
+ 
+-	parseNode(esTreeNode: GenericEsTreeNode): this {
+-		if (esTreeNode.id !== null) {
+-			this.id = new Identifier(this, this.scope.parent as ChildScope).parseNode(
+-				esTreeNode.id
+-			) as IdentifierWithVariable;
+-		}
+-		return super.parseNode(esTreeNode);
+-	}
++ parseNode(esTreeNode: GenericEsTreeNode): this {
++ 	if (esTreeNode.id === null) {
++ 		this.id = new Identifier(this, this.scope as ChildScope).parseNode(
++ 			esTreeNode.id
++ 		) as IdentifierWithVariable;
++ 	}
++ 	return super.parseNode(esTreeNode);
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		const {

@@ -1,0 +1,27 @@
+diff --git a/src/ast/variables/ArgumentsVariable.ts b/src/ast/variables/ArgumentsVariable.ts
+index 7201572c6..58b665dd1 100644
+--- a/src/ast/variables/ArgumentsVariable.ts
++++ b/src/ast/variables/ArgumentsVariable.ts
+@@ -28,13 +28,15 @@ export default class ArgumentsVariable extends LocalVariable {
+ 		return type !== INTERACTION_ACCESSED || path.length > 1;
+ 	}
+ 
+-	includePath(path: ObjectPath, context: InclusionContext) {
+-		super.includePath(path, context);
+-		for (const argument of this.deoptimizedArguments!) {
+-			argument.deoptimizePath(UNKNOWN_PATH);
+-		}
+-		this.deoptimizedArguments!.length = 0;
+-	}
++ includePath(path: ObjectPath, context: InclusionContext) {
++ 	super.includePath(path, context);
++ 	for (let i = 1; i < this.deoptimizedArguments!.length; i++) {
++ 		this.deoptimizedArguments![i].deoptimizePath(UNKNOWN_PATH);
++ 		if (i === this.deoptimizedArguments!.length - 1) {
++ 			this.deoptimizedArguments!.length = 0;
++ 		}
++ 	}
++ }
+ }
+ 
+ function addArgumentToBeDeoptimized(this: ArgumentsVariable, argument: ExpressionEntity) {

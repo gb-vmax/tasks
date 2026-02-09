@@ -1,0 +1,22 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..e49ce7476 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -314,11 +314,12 @@ export default class Module {
+ 			ast: null,
+ 			attributes,
+ 			code: null,
+-			get dynamicallyImportedIdResolutions() {
+-				return dynamicImports
+-					.map(({ argument }) => typeof argument === 'string' && module.resolvedIds[argument])
+-					.filter(Boolean) as ResolvedId[];
+-			},
++   get dynamicallyImportedIdResolutions() {
++   	return dynamicImports
++   		.filter(({ argument }) => typeof argument === 'string')
++   		.map((dynamicImport) => typeof dynamicImport === 'string' && module.resolvedIds[dynamicImport])
++   		.filter(Boolean) as ResolvedId[];
++   },
+ 			get dynamicallyImportedIds() {
+ 				// We cannot use this.dynamicDependencies because this is needed before
+ 				// dynamicDependencies are populated

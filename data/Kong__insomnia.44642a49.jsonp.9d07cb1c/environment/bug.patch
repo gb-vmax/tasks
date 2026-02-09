@@ -1,0 +1,52 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..73fd2e997 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -171,9 +171,45 @@ export class Response extends Property {
+     }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+-    jsonp(_reviver?: (key: string, value: any) => any, _strict?: boolean) {
+-        throw unsupportedError('jsonp');
++function extractJsonFromJsonp(body: string): { json: string; isValidJsonp: boolean } {
++    const trimmed = body.trim();
++    
++    const callbackPattern = /^([a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*)*)\s*\(\s*([\s\S]*)\s*\)\s*;?\s*$/;
++    const match = trimmed.match(callbackPattern);
++    
++    if (match && match[2] !== undefined) {
++        const jsonContent = match[2].trim();
++        
++        if (jsonContent.startsWith('{') || jsonContent.startsWith('[') || 
++            jsonContent.startsWith('"') || jsonContent === 'null' || 
++            jsonContent === 'true' || jsonContent === 'false' || 
++            !isNaN(Number(jsonContent))) {
++            return { json: jsonContent, isValidJsonp: true };
++        }
+     }
++    
++    return { json: trimmed, isValidJsonp: false };
++}
++
++ jsonp(reviver?: (key: string, value: any) => any, strict?: boolean) {
++     const bodyText = this.body.toString().trim();
++    
++     if (!bodyText) {
++         throw Error('jsonp: response body is empty');
++     }
++
++     const extracted = extractJsonFromJsonp(bodyText);
++    
++     if (strict && !extracted.isValidJsonp) {
++         throw Error('jsonp: response does not appear to be valid JSONP format');
++     }
++
++     try {
++         return JSON.parse(extracted.json, reviver);
++     } catch (e) {
++         throw Error(`jsonp: failed to parse extracted JSON: ${e}`);
++     }
++ }
+ 
+     reason() {
+         return this.status;

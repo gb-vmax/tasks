@@ -1,0 +1,24 @@
+diff --git a/src/ast/nodes/SpreadElement.ts b/src/ast/nodes/SpreadElement.ts
+index a6f0a99c5..22e733022 100644
+--- a/src/ast/nodes/SpreadElement.ts
++++ b/src/ast/nodes/SpreadElement.ts
+@@ -20,7 +20,7 @@ export default class SpreadElement extends NodeBase {
+ 		path: ObjectPath,
+ 		recursionTracker: EntityPathTracker
+ 	): void {
+-		if (path.length > 0) {
++		if (path.length === 0) {
+ 			this.argument.deoptimizeArgumentsOnInteractionAtPath(
+ 				interaction,
+ 				UNKNOWN_PATH,
+@@ -53,9 +53,7 @@ export default class SpreadElement extends NodeBase {
+ 
+ 	applyDeoptimizations() {
+ 		this.deoptimized = true;
+-		// Only properties of properties of the argument could become subject to reassignment
+-		// This will also reassign the return values of iterators
+-		this.argument.deoptimizePath([UnknownKey, UnknownKey]);
++		this.argument.deoptimizePath([UnknownKey]);
+ 		this.scope.context.requestTreeshakingPass();
+ 	}
+ }

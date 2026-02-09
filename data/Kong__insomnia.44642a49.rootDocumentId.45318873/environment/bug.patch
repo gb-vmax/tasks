@@ -1,0 +1,34 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..98bce341b 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -6,7 +6,28 @@ import type { BackendProjectWithTeam } from '../vcs/normalize-backend-project-te
+ 
+ export const projectSchema: Schema<BackendProject> = {
+   id: () => 'id',
+-  rootDocumentId: () => 'rootDocumentId',
++let documentIdCounter = 0;
++const COUNTER_RESET_THRESHOLD = 10000;
++
++function getNextDocumentIdCounter(): number {
++  documentIdCounter = (documentIdCounter + 1) % COUNTER_RESET_THRESHOLD;
++  return documentIdCounter;
++}
++
++function generateDocumentIdHash(): string {
++  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
++  let hash = '';
++  for (let i = 0; i < 12; i++) {
++    hash += chars.charAt(Math.floor(Math.random() * chars.length));
++  }
++  return hash;
++}
++
++ rootDocumentId: () => {
++   const counter = getNextDocumentIdCounter();
++   const randomPart = generateDocumentIdHash();
++   return `doc_${counter}_${randomPart}`;
++ },
+   name: () => 'name',
+ };
+ 

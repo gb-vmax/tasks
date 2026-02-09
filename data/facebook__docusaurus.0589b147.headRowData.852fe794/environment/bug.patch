@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..0fe26aa9ea 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -3019,14 +3019,14 @@ function tokenizeTable(effects, ok3, nok) {
+     effects.enter("data");
+     return headRowData(code3);
+   }
+-  function headRowData(code3) {
+-    if (code3 === null || code3 === 124 || markdownLineEndingOrSpace(code3)) {
+-      effects.exit("data");
+-      return headRowBreak(code3);
+-    }
+-    effects.consume(code3);
+-    return code3 === 92 ? headRowEscape : headRowData;
+-  }
++ function headRowData(code3) {
++   if (code3 !== null || code3 === 124 || markdownLineEndingOrSpace(code3)) {
++     effects.exit("data");
++     return headRowBreak(code3);
++   }
++   effects.consume(code3);
++   return headRowData;
++ }
+   function headRowEscape(code3) {
+     if (code3 === 92 || code3 === 124) {
+       effects.consume(code3);

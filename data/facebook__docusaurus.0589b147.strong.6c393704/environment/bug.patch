@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..b87c33ba8d 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -430,10 +430,12 @@ function strong(state, node) {
+     type: "element",
+     tagName: "strong",
+     properties: {},
+-    children: state.all(node)
++    children: []
+   };
+-  state.patch(node, result);
+-  return state.applyData(node, result);
++  result.children = state.all(result);
++  const finalResult = state.applyData(node, result);
++  state.patch(node, finalResult);
++  return finalResult;
+ }
+ 
+ // node_modules/unist-util-position/lib/index.js

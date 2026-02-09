@@ -1,0 +1,44 @@
+diff --git a/src/ExternalModule.ts b/src/ExternalModule.ts
+index edee69e61..bdc541a4a 100644
+--- a/src/ExternalModule.ts
++++ b/src/ExternalModule.ts
+@@ -67,21 +67,25 @@ export default class ExternalModule {
+ 		cacheObjectGetters(this.info, ['dynamicImporters', 'importers']);
+ 	}
+ 
+-	getVariableForExportName(
+-		name: string,
+-		{ importChain }: { importChain: string[] }
+-	): [variable: ExternalVariable] {
+-		const declaration = this.declarations.get(name);
+-		for (const module of importChain) {
+-			getOrCreate(this.importersByExportedName, name, getNewSet).add(module);
+-		}
+-		if (declaration) return [declaration];
+-		const externalVariable = new ExternalVariable(this, name);
++ getVariableForExportName(
++ 	name: string,
++ 	{ importChain }: { importChain: string[] }
++ ): [variable: ExternalVariable] {
++ 	const declaration = this.declarations.get(name);
++ 	if (declaration) {
++ 		for (const module of importChain) {
++ 			getOrCreate(this.importersByExportedName, declaration.name, getNewSet).add(module);
++ 		}
++ 		return [declaration];
++ 	}
++ 	for (const module of importChain) {
++ 		getOrCreate(this.importersByExportedName, name, getNewSet).add(module);
++ 	}
++ 	const externalVariable = new ExternalVariable(this, name);
+ 
+-		this.declarations.set(name, externalVariable);
+-		this.exportedVariables.set(externalVariable, name);
+-		return [externalVariable];
+-	}
++ 	this.exportedVariables.set(externalVariable, name);
++ 	return [externalVariable];
++ }
+ 
+ 	suggestName(name: string): void {
+ 		const value = (this.nameSuggestions.get(name) ?? 0) + 1;

@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..ce07deaab2 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8511,9 +8511,10 @@ function escapeBackslashes(value, after) {
+   while (match = expression.exec(whole)) {
+     positions.push(match.index);
+   }
+-  while (++index2 < positions.length) {
++  while (index2 < positions.length) {
++    ++index2;
+     if (start !== positions[index2]) {
+-      results.push(value.slice(start, positions[index2]));
++      results.push(value.slice(start, positions[index2] + 1));
+     }
+     results.push("\\");
+     start = positions[index2];

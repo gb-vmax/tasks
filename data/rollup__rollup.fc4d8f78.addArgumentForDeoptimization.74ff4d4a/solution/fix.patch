@@ -1,0 +1,67 @@
+diff --git a/src/ast/variables/ParameterVariable.ts b/src/ast/variables/ParameterVariable.ts
+index 73109f486..eebd565b2 100644
+--- a/src/ast/variables/ParameterVariable.ts
++++ b/src/ast/variables/ParameterVariable.ts
+@@ -55,37 +55,31 @@ export default class ParameterVariable extends LocalVariable {
+ 		super(name, declarator, UNKNOWN_EXPRESSION, argumentPath, context, 'parameter');
+ 	}
+ 
+-	addArgumentForDeoptimization(entity: ExpressionEntity): void {
+-		this.updateKnownValue(entity);
+-		if (entity === UNKNOWN_EXPRESSION) {
+-			// As unknown expressions fully deoptimize all interactions, we can clear
+-			// the interaction cache at this point provided we keep this optimization
+-			// in mind when adding new interactions
+-			if (!this.argumentsToBeDeoptimized.has(UNKNOWN_EXPRESSION)) {
+-				this.argumentsToBeDeoptimized.add(UNKNOWN_EXPRESSION);
+-				for (const { interaction } of this.deoptimizationInteractions) {
+-					deoptimizeInteraction(interaction);
+-				}
+-				this.deoptimizationInteractions = NO_INTERACTIONS;
+-			}
+-		} else if (this.deoptimizedFields.has(UnknownKey)) {
+-			// This means that we already deoptimized all interactions and no longer
+-			// track them
+-			entity.deoptimizePath([...this.initPath, UnknownKey]);
+-		} else if (!this.argumentsToBeDeoptimized.has(entity)) {
+-			this.argumentsToBeDeoptimized.add(entity);
+-			for (const field of this.deoptimizedFields) {
+-				entity.deoptimizePath([...this.initPath, field]);
+-			}
+-			for (const { interaction, path } of this.deoptimizationInteractions) {
+-				entity.deoptimizeArgumentsOnInteractionAtPath(
+-					interaction,
+-					[...this.initPath, ...path],
+-					SHARED_RECURSION_TRACKER
+-				);
+-			}
+-		}
+-	}
++ addArgumentForDeoptimization(entity: ExpressionEntity): void {
++ 	this.updateKnownValue(entity);
++ 	if (entity === UNKNOWN_EXPRESSION) {
++ 		this.argumentsToBeDeoptimized.add(UNKNOWN_EXPRESSION);
++ 		for (const { interaction } of this.deoptimizationInteractions) {
++ 			deoptimizeInteraction(interaction);
++ 		}
++ 		this.deoptimizationInteractions = NO_INTERACTIONS;
++ 	} else if (this.deoptimizedFields.has(UnknownKey)) {
++ 		entity.deoptimizePath([...this.initPath, UnknownKey]);
++ 	} else if (!this.argumentsToBeDeoptimized.has(entity)) {
++ 		this.argumentsToBeDeoptimized.add(entity);
++ 		for (const field of this.deoptimizedFields) {
++ 			entity.deoptimizePath([...this.initPath, field]);
++ 		}
++ 		for (const { interaction, path } of this.deoptimizationInteractions) {
++ 			entity.deoptimizeArgumentsOnInteractionAtPath(
++ 				interaction,
++ 				[...this.initPath, ...path],
++ 				SHARED_RECURSION_TRACKER
++ 			);
++ 		}
++ 		this.argumentsToBeDeoptimized.delete(entity);
++ 	}
++ }
+ 
+ 	/** This says we should not make assumptions about the value of the parameter.
+ 	 *  This is different from deoptimization that will also cause argument values

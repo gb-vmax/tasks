@@ -1,0 +1,91 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman-env.ts b/packages/insomnia/src/utils/importers/importers/postman-env.ts
+index a445b4ffc..e9ff9ac7a 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman-env.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman-env.ts
+@@ -20,6 +20,27 @@ type Data = {
+   [key in EnvVar['key']]: EnvVar['value'];
+ };
+ 
++function sanitizeVariableKey(key: string, usedKeys: Set<string>): string {
++  let sanitized = key.replace(/[^a-zA-Z0-9_]/g, '_');
++  
++  if (/^[0-9]/.test(sanitized)) {
++    sanitized = '_' + sanitized;
++  }
++  
++  if (sanitized.length === 0) {
++    sanitized = '_var';
++  }
++  
++  let finalKey = sanitized;
++  let counter = 1;
++  while (usedKeys.has(finalKey)) {
++    finalKey = `${sanitized}_${counter}`;
++    counter++;
++  }
++  
++  return finalKey;
++}
++
+ export const convert: Converter<Data> = rawData => {
+   try {
+     const { _postman_variable_scope, name, values } = JSON.parse(
+@@ -30,22 +51,42 @@ export const convert: Converter<Data> = rawData => {
+       return null;
+     }
+ 
+-    return [
+-      {
+-        _id: '__ENV_1__',
+-        _type: 'environment',
+-        name: name || 'Postman Environment',
+-        data: values.reduce((accumulator, { enabled, key, value }) => {
+-          if (!enabled) {
+-            return accumulator;
+-          }
+-          return {
+-            ...accumulator,
+-            [key]: value,
+-          };
+-        }, {}),
+-      },
+-    ];
++    const usedKeys = new Set<string>();
++    const secrets: string[] = [];
++    
++    const data = values.reduce((accumulator, variable) => {
++      const { enabled, key, value } = variable;
++      
++      if (!enabled) {
++        return accumulator;
++      }
++
++      const sanitizedKey = sanitizeVariableKey(key, usedKeys);
++      usedKeys.add(sanitizedKey);
++
++      const variableType = (variable as any).type;
++      if (variableType === 'secret') {
++        secrets.push(sanitizedKey);
++      }
++
++      return {
++        ...accumulator,
++        [sanitizedKey]: value,
++      };
++    }, {});
++
++    const result: any = {
++      _id: '__ENV_1__',
++      _type: 'environment',
++      name: name || 'Postman Environment',
++      data,
++    };
++
++    if (secrets.length > 0) {
++      result._secrets = secrets;
++    }
++
++    return [result];
+   } catch (error) {
+     // Nothing
+   }

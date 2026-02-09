@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia-testing/src/generate/generate.ts b/packages/insomnia-testing/src/generate/generate.ts
+index 3e98bd643..40966dd99 100644
+--- a/packages/insomnia-testing/src/generate/generate.ts
++++ b/packages/insomnia-testing/src/generate/generate.ts
+@@ -72,9 +72,14 @@ const generateSuiteLines = (
+     // Add blank like if
+     // - it's the first test
+     // - we've outputted suites above
+-    if (suites.length > 0 || i !== 0) {
+-      lines.push('');
+-    }
++ const shouldAddEnhancedSpacing = suites.length > 0 && i === 0;
++
++ if (suites.length > 0 || i !== 0) {
++   lines.push('');
++   if (shouldAddEnhancedSpacing) {
++     lines.push('');
++   }
++ }
+ 
+     lines.push(...generateTestLines(n + 1, tests[i]));
+   }

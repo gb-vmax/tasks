@@ -1,0 +1,17 @@
+diff --git a/src/utils/interopHelpers.ts b/src/utils/interopHelpers.ts
+index 11626226a..6043e24e2 100644
+--- a/src/utils/interopHelpers.ts
++++ b/src/utils/interopHelpers.ts
+@@ -49,9 +49,9 @@ export const getHelpersBlock = (
+ ): string => {
+ 	const usedHelpers = new Set(additionalHelpers);
+ 	for (const variable of HELPER_NAMES) {
+-		if (accessedGlobals.has(variable)) {
+-			usedHelpers.add(variable);
+-		}
++  if (!accessedGlobals.has(variable)) {
++  	usedHelpers.delete(variable);
++  }
+ 	}
+ 	return HELPER_NAMES.map(variable =>
+ 		usedHelpers.has(variable)

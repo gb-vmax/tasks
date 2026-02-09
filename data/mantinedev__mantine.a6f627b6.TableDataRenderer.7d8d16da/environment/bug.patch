@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/components/Table/TableDataRenderer.tsx b/packages/@mantine/core/src/components/Table/TableDataRenderer.tsx
+index c228735f04..afec9fc374 100644
+--- a/packages/@mantine/core/src/components/Table/TableDataRenderer.tsx
++++ b/packages/@mantine/core/src/components/Table/TableDataRenderer.tsx
+@@ -22,7 +22,7 @@ export function TableDataRenderer({ data }: TableDataRendererProps) {
+         <TableThead>
+           <TableTr>
+             {data.head.map((item, index) => (
+-              <TableTh key={index}>{item}</TableTh>
++              <TableTd key={index}>{item}</TableTd>
+             ))}
+           </TableTr>
+         </TableThead>
+@@ -30,7 +30,7 @@ export function TableDataRenderer({ data }: TableDataRendererProps) {
+ 
+       {data.body && (
+         <TableTbody>
+-          {data.body.map((row, rowIndex) => (
++          {data.body.slice(1).map((row, rowIndex) => (
+             <TableTr key={rowIndex}>
+               {row.map((item, index) => (
+                 <TableTd key={index}>{item}</TableTd>

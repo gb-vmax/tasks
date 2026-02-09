@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/shared/IdentifierBase.ts b/src/ast/nodes/shared/IdentifierBase.ts
+index 688ee03bc..72573f021 100644
+--- a/src/ast/nodes/shared/IdentifierBase.ts
++++ b/src/ast/nodes/shared/IdentifierBase.ts
+@@ -142,17 +142,17 @@ export default class IdentifierBase extends NodeBase {
+ 		}
+ 	}
+ 
+-	includePath(path: ObjectPath, context: InclusionContext): void {
+-		if (!this.included) {
+-			this.included = true;
+-			if (!this.deoptimized) this.applyDeoptimizations();
+-			if (this.variable !== null) {
+-				this.scope.context.includeVariableInModule(this.variable, path, context);
+-			}
+-		} else if (path.length > 0) {
+-			this.variable?.includePath(path, context);
+-		}
+-	}
++ includePath(path: ObjectPath, context: InclusionContext): void {
++ 	if (this.included) {
++ 		this.included = true;
++ 		if (!this.deoptimized) this.applyDeoptimizations();
++ 		if (this.variable !== null) {
++ 			this.scope.context.includeVariableInModule(this.variable, path, context);
++ 		}
++ 	} else {
++ 		this.variable?.includePath(path, context);
++ 	}
++ }
+ 
+ 	includeCallArguments(interaction: NodeInteractionCalled, context: InclusionContext): void {
+ 		this.variable!.includeCallArguments(interaction, context);

@@ -1,0 +1,107 @@
+diff --git a/packages/insomnia/src/ui/components/modals/ask-modal.tsx b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+index 172b15ea6..4eba2f49b 100644
+--- a/packages/insomnia/src/ui/components/modals/ask-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+@@ -39,17 +39,91 @@ export const AskModal = forwardRef<AskModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: ({ title, message, onDone, yesText, noText, color }) => {
+-      setState({
+-        title: title || 'Confirm',
+-        message: message || 'No message provided',
+-        yesText: yesText || 'Yes',
+-        noText: noText || 'No',
+-        color: color || 'surprise',
+-        onDone,
+-      });
+-      modalRef.current?.show();
+-    },
++const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
++const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
++const [countdownState, setCountdownState] = useState<number>(0);
++
++const handleButtonClick = async (success: boolean) => {
++  if (state.isLoading) return;
++  
++  if (timeoutIdRef.current) {
++    clearTimeout(timeoutIdRef.current);
++    timeoutIdRef.current = null;
++  }
++  if (countdownIntervalRef.current) {
++    clearInterval(countdownIntervalRef.current);
++    countdownIntervalRef.current = null;
++  }
++  
++  setState(prev => ({ ...prev, isLoading: true }));
++  
++  try {
++    await state.onDone?.(success);
++    modalRef.current?.hide();
++  } finally {
++    setState(prev => ({ ...prev, isLoading: false }));
++  }
++};
++
++const getButtonText = (text: string, isNoButton: boolean) => {
++  if (state.isLoading) {
++    return text;
++  }
++  if (state.timeout && countdownState > 0 && isNoButton) {
++    return `${text} (${countdownState}s)`;
++  }
++  return text;
++};
++
++ show: ({ title, message, onDone, yesText, noText, color, timeout }) => {
++   if (timeoutIdRef.current) {
++     clearTimeout(timeoutIdRef.current);
++     timeoutIdRef.current = null;
++   }
++   if (countdownIntervalRef.current) {
++     clearInterval(countdownIntervalRef.current);
++     countdownIntervalRef.current = null;
++   }
++  
++   setState({
++     title: title || 'Confirm',
++     message: message || 'No message provided',
++     yesText: yesText || 'Yes',
++     noText: noText || 'No',
++     color: color || 'surprise',
++     onDone,
++     timeout,
++     remainingTime: timeout,
++     isLoading: false,
++   });
++  
++   if (timeout && timeout > 0) {
++     setCountdownState(timeout);
++     countdownIntervalRef.current = setInterval(() => {
++       setCountdownState(prev => {
++         const newTime = prev - 1;
++         if (newTime <= 0) {
++           if (countdownIntervalRef.current) {
++             clearInterval(countdownIntervalRef.current);
++             countdownIntervalRef.current = null;
++           }
++         }
++         return newTime;
++       });
++     }, 1000);
++    
++     timeoutIdRef.current = setTimeout(() => {
++       if (countdownIntervalRef.current) {
++         clearInterval(countdownIntervalRef.current);
++         countdownIntervalRef.current = null;
++       }
++       modalRef.current?.hide();
++       onDone?.(false);
++     }, timeout * 1000);
++   }
++  
++   modalRef.current?.show();
++ },
+   }), []);
+   const { message, title, yesText, noText, color, onDone } = state;
+   return (

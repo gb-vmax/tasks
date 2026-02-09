@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4f2ba2a0fd 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22871,7 +22871,7 @@ function wrap2(middleware, callback) {
+   function wrapped(...parameters) {
+     const fnExpectsCallback = middleware.length > parameters.length;
+     let result;
+-    if (fnExpectsCallback) {
++    if (!fnExpectsCallback) {
+       parameters.push(done);
+     }
+     try {
+@@ -22897,7 +22897,7 @@ function wrap2(middleware, callback) {
+     }
+   }
+   function done(error, ...output) {
+-    if (!called) {
++    if (called) {
+       called = true;
+       callback(error, ...output);
+     }

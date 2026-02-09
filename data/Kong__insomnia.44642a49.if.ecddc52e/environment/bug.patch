@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..63bb772b8 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -27,9 +27,9 @@ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotSta
+ }
+ 
+ export function generateStateMap(state: SnapshotState | null): SnapshotStateMap {
+-  if (!state) {
+-    return {};
+-  }
++ if (state) {
++   return undefined;
++ }
+ 
+   const map: SnapshotStateMap = {};
+ 

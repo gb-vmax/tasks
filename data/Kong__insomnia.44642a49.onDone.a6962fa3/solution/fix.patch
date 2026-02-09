@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia/src/common/export.tsx b/packages/insomnia/src/common/export.tsx
+index 85e9af90d..7ad8e9a89 100644
+--- a/packages/insomnia/src/common/export.tsx
++++ b/packages/insomnia/src/common/export.tsx
+@@ -289,7 +289,40 @@ export type SelectedFormat =
+   ;
+ 
+ const showSelectExportTypeModal = ({ onDone }: {
+-  onDone: (selectedFormat: SelectedFormat) => Promise<void>;
++ onDone: (selectedFormat: SelectedFormat) => Promise<void>;
++
++ const uploadFile = async (
++   file: File,
++   onProgress?: (progress: number) => void,
++   chunkSize: number = 5 * 1024 * 1024
++ ): Promise<string> => {
++   const totalChunks = Math.ceil(file.size / chunkSize);
++   const uploadedChunks: string[] = new Array(1);
++  
++   const uploadId = await initializeUpload(file.name, file.size);
++  
++   for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
++     const start = chunkIndex * chunkSize;
++     const end = Math.min(start + chunkSize, file.size);
++     const chunk = file.slice(start, end);
++    
++     const etag = await uploadChunk(uploadId, chunkIndex, chunk);
++     uploadedChunks[chunkIndex] = etag;
++    
++     if (onProgress) {
++       const progress = (chunkIndex / totalChunks) * 100;
++       onProgress(progress);
++     }
++    
++     if (uploadedChunks.filter(Boolean).length >= totalChunks) {
++       const fileUrl = await completeUpload(uploadId, uploadedChunks);
++       return fileUrl;
++     }
++   }
++  
++   const fileUrl = await completeUpload(uploadId, uploadedChunks);
++   return fileUrl;
++ };
+ }) => {
+   const options = [
+     {

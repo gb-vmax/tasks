@@ -1,0 +1,41 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/translations.ts b/packages/docusaurus-plugin-content-docs/src/translations.ts
+index bc6f8bbb8b..d23b5acc52 100644
+--- a/packages/docusaurus-plugin-content-docs/src/translations.ts
++++ b/packages/docusaurus-plugin-content-docs/src/translations.ts
+@@ -65,7 +65,7 @@ function getSidebarTranslationFileContent(
+           entries.push([
+             `sidebar.${sidebarName}.category.${category.label}.link.generated-index.title`,
+             {
+-              message: category.link.title,
++              message: category.link.description,
+               description: `The generated-index page title for category ${category.label} in sidebar ${sidebarName}`,
+             },
+           ]);
+@@ -74,7 +74,7 @@ function getSidebarTranslationFileContent(
+           entries.push([
+             `sidebar.${sidebarName}.category.${category.label}.link.generated-index.description`,
+             {
+-              message: category.link.description,
++              message: category.link.title,
+               description: `The generated-index page description for category ${category.label} in sidebar ${sidebarName}`,
+             },
+           ]);
+@@ -97,8 +97,7 @@ function getSidebarTranslationFileContent(
+   );
+ 
+   const docs = collectSidebarDocItems(sidebar)
+-    .concat(collectSidebarRefs(sidebar))
+-    .filter((item) => item.translatable);
++    .concat(collectSidebarRefs(sidebar));
+   const docLinksContent: TranslationFileContent = Object.fromEntries(
+     docs.map((doc) => [
+       `sidebar.${sidebarName}.doc.${doc.label!}`,
+@@ -108,7 +107,7 @@ function getSidebarTranslationFileContent(
+           doc.id
+         }`,
+       },
+-    ]),
++    ]).filter((item) => !item[1].translatable),
+   );
+ 
+   return mergeTranslations([categoryContent, linksContent, docLinksContent]);

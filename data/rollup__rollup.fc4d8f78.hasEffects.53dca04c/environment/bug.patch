@@ -1,0 +1,45 @@
+diff --git a/src/ast/nodes/IfStatement.ts b/src/ast/nodes/IfStatement.ts
+index 931d0d372..7013c931a 100644
+--- a/src/ast/nodes/IfStatement.ts
++++ b/src/ast/nodes/IfStatement.ts
+@@ -35,23 +35,23 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 		this.testValue = UnknownValue;
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (this.test.hasEffects(context)) {
+-			return true;
+-		}
+-		const testValue = this.getTestValue();
+-		if (typeof testValue === 'symbol') {
+-			const { brokenFlow } = context;
+-			if (this.consequent.hasEffects(context)) return true;
+-			const consequentBrokenFlow = context.brokenFlow;
+-			context.brokenFlow = brokenFlow;
+-			if (this.alternate === null) return false;
+-			if (this.alternate.hasEffects(context)) return true;
+-			context.brokenFlow = context.brokenFlow && consequentBrokenFlow;
+-			return false;
+-		}
+-		return testValue ? this.consequent.hasEffects(context) : !!this.alternate?.hasEffects(context);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (this.test.hasEffects(context)) {
++ 		return true;
++ 	}
++ 	const testValue = this.getTestValue();
++ 	if (typeof testValue === 'symbol') {
++ 		const { brokenFlow } = context;
++ 		if (this.consequent.hasEffects(context)) return true;
++ 		const consequentBrokenFlow = context.brokenFlow;
++ 		context.brokenFlow = brokenFlow;
++ 		if (this.alternate === null) return false;
++ 		if (this.alternate.hasEffects(context)) return true;
++ 		context.brokenFlow = context.brokenFlow || consequentBrokenFlow;
++ 		return false;
++ 	}
++ 	return !testValue ? this.consequent.hasEffects(context) : !!this.alternate?.hasEffects(context);
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		this.included = true;

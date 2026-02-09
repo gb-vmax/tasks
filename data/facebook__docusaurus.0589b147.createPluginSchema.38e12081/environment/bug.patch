@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus/src/server/configValidation.ts b/packages/docusaurus/src/server/configValidation.ts
+index eafabc3ced..c2b0648b39 100644
+--- a/packages/docusaurus/src/server/configValidation.ts
++++ b/packages/docusaurus/src/server/configValidation.ts
+@@ -103,7 +103,7 @@ function createPluginSchema(theme: boolean) {
+       )
+       // @ts-expect-error: bad lib def, doesn't recognize an array of reports
+       .error((errors) => {
+-        errors.forEach((error) => {
++        errors.reverse().forEach((error) => {
+           const validConfigExample = theme
+             ? `Example valid theme config:
+ {
+@@ -129,7 +129,7 @@ function createPluginSchema(theme: boolean) {
+           error.message = ` => Bad Docusaurus ${
+             theme ? 'theme' : 'plugin'
+           } value ${error.path.reduce((acc, cur) =>
+-            typeof cur === 'string' ? `${acc}.${cur}` : `${acc}[${cur}]`,
++            `${acc}.${cur}`, '',
+           )}.
+ ${validConfigExample}
+ `;

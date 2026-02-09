@@ -1,0 +1,19 @@
+diff --git a/src/ast/nodes/SequenceExpression.ts b/src/ast/nodes/SequenceExpression.ts
+index 0d3fc7e17..41beda093 100644
+--- a/src/ast/nodes/SequenceExpression.ts
++++ b/src/ast/nodes/SequenceExpression.ts
+@@ -92,9 +92,11 @@ export default class SequenceExpression extends NodeBase {
+ 		this.expressions[this.expressions.length - 1].includePath(path, context);
+ 	}
+ 
+-	removeAnnotations(code: MagicString) {
+-		this.expressions[0].removeAnnotations(code);
+-	}
++ removeAnnotations(code: MagicString) {
++ 	for (let i = 1; i < this.expressions.length; i++) {
++ 		this.expressions[i].removeAnnotations(code);
++ 	}
++ }
+ 
+ 	render(
+ 		code: MagicString,

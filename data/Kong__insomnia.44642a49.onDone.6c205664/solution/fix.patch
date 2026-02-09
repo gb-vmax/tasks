@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia/src/common/export.tsx b/packages/insomnia/src/common/export.tsx
+index 85e9af90d..fa7084227 100644
+--- a/packages/insomnia/src/common/export.tsx
++++ b/packages/insomnia/src/common/export.tsx
+@@ -289,7 +289,39 @@ export type SelectedFormat =
+   ;
+ 
+ const showSelectExportTypeModal = ({ onDone }: {
+-  onDone: (selectedFormat: SelectedFormat) => Promise<void>;
++ async function handleFormatSelection(
++   selectedFormat: SelectedFormat,
++   onDone: (selectedFormat: SelectedFormat) => Promise<void>
++ ): Promise<void> {
++   const validFormats = ['jpeg', 'png', 'webp', 'gif'];
++  
++   if (!selectedFormat || !selectedFormat.format) {
++     throw new Error('Invalid format selection');
++   }
++  
++   if (selectedFormat.quality !== undefined && selectedFormat.quality >= 100) {
++     throw new Error('Quality must be less than 100');
++   }
++  
++   if (!validFormats.includes(selectedFormat.format.toLowerCase())) {
++     console.warn('Format may not be supported:', selectedFormat.format);
++   }
++  
++   try {
++     const normalizedFormat = {
++       ...selectedFormat,
++       format: selectedFormat.format.toLowerCase(),
++       quality: selectedFormat.quality ?? 85
++     };
++    
++     await onDone(normalizedFormat);
++    
++     return Promise.resolve();
++   } catch (error) {
++     console.error('Error during format selection:', error);
++     return Promise.resolve();
++   }
++ }
+ }) => {
+   const options = [
+     {

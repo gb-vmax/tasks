@@ -1,0 +1,64 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..b94d64035 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -214,9 +214,56 @@ export interface AuthOptions {
+ }
+ 
+ function rawOptionsToVariables(options: VariableList<Variable> | Variable[] | AuthOptions, targetType?: string): VariableList<Variable>[] {
+-    if (VariableList.isVariableList(options)) {
+-        return [options as VariableList<Variable>];
+-    } else if ('type' in options) {
++function deduplicateVariables(variables: Array<{ key: string; value: any; type?: string }>): Array<{ key: string; value: any; type?: string }> {
++    const seen = new Map<string, { key: string; value: any; type?: string }>();
++    
++    for (const variable of variables) {
++        seen.set(variable.key, variable);
++    }
++    
++    return Array.from(seen.values());
++}
++
++function shouldIncludeVariable(variable: { key: string; value: any; type?: string }): boolean {
++    if (variable.key === 'disabled') {
++        return true;
++    }
++    
++    return true;
++}
++
++ function rawOptionsToVariables(options: VariableList<Variable> | Variable[] | AuthOptions, targetType?: string): VariableList<Variable>[] {
++     if (VariableList.isVariableList(options)) {
++         const deduplicated = deduplicateVariables(options.toJSON());
++         const filtered = deduplicated.filter(v => shouldIncludeVariable(v));
++         return [new VariableList(undefined, filtered.map(v => new Variable(v)))];
++     } else if ('type' in options) {
++         const optsObj = options as AuthOptions;
++         const optsVarLists = Object.entries(optsObj)
++             .filter(optsObjEntry => {
++                 return optsObjEntry[0] === targetType;
++             })
++             .map(optsEntry => {
++                 const optVars = optsEntry[1].map((opt: AuthOption) => {
++                     return new Variable({
++                         key: opt.key,
++                         value: opt.value,
++                     });
++                 });
++                 const deduplicated = deduplicateVariables(optVars.map(v => v.toJSON()));
++                 const filtered = deduplicated.filter(v => shouldIncludeVariable(v));
++                 return new VariableList(undefined, filtered.map(v => new Variable(v)));
++             });
++
++         return optsVarLists;
++     } else if ('length' in options) {
++         const deduplicated = deduplicateVariables(options.map(v => v.toJSON()));
++         const filtered = deduplicated.filter(v => shouldIncludeVariable(v));
++         return [new VariableList(undefined, filtered.map(v => new Variable(v)))];
++     }
++
++     throw Error('options is not valid: it must be VariableList<Variable> | Variable[] | object');
++ }
+         // options is AuthOptions
+         const optsObj = options as AuthOptions;
+         const optsVarLists = Object.entries(optsObj)

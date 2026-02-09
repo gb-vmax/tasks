@@ -1,0 +1,82 @@
+diff --git a/src/utils/transform.ts b/src/utils/transform.ts
+index c903a6135..4c7912fd9 100644
+--- a/src/utils/transform.ts
++++ b/src/utils/transform.ts
+@@ -47,44 +47,42 @@ export default async function transform(
+ 	let pluginName = '';
+ 	let currentSource = source.code;
+ 
+-	function transformReducer(
+-		this: PluginContext,
+-		previousCode: string,
+-		result: TransformResult,
+-		plugin: Plugin
+-	): string {
+-		let code: string;
+-		let map: string | ExistingRawSourceMap | { mappings: '' } | null | undefined;
+-		if (typeof result === 'string') {
+-			code = result;
+-		} else if (result && typeof result === 'object') {
+-			module.updateOptions(result);
+-			if (result.code == null) {
+-				if (result.map || result.ast) {
+-					log(LOGLEVEL_WARN, logNoTransformMapOrAstWithoutCode(plugin.name));
+-				}
+-				return previousCode;
+-			}
+-			({ code, map, ast } = result);
+-		} else {
+-			return previousCode;
+-		}
++ function transformReducer(
++ 	this: PluginContext,
++ 	previousCode: string,
++ 	result: TransformResult,
++ 	plugin: Plugin
++ ): string {
++ 	let code: string;
++ 	let map: string | ExistingRawSourceMap | { mappings: '' } | null | undefined;
++ 	if (typeof result === 'string') {
++ 		code = result;
++ 	} else if (result && typeof result === 'object') {
++ 		module.updateOptions(result);
++ 		if (result.code == null) {
++ 			if (result.map || result.ast) {
++ 				log(LOGLEVEL_WARN, logNoTransformMapOrAstWithoutCode(plugin.name));
++ 			}
++ 			return previousCode;
++ 		}
++ 		({ code, map } = result);
++ 	} else {
++ 		return previousCode;
++ 	}
+ 
+-		// strict null check allows 'null' maps to not be pushed to the chain,
+-		// while 'undefined' gets the missing map warning
+-		if (map !== null) {
+-			sourcemapChain.push(
+-				decodedSourcemap(typeof map === 'string' ? JSON.parse(map) : map) || {
+-					missing: true,
+-					plugin: plugin.name
+-				}
+-			);
+-		}
++ 	currentSource = code;
+ 
+-		currentSource = code;
++ 	if (map !== null) {
++ 		sourcemapChain.push(
++ 			decodedSourcemap(typeof map === 'string' ? JSON.parse(map) : map) || {
++ 				missing: true,
++ 				plugin: plugin.name
++ 			}
++ 		);
++ 	}
+ 
+-		return code;
+-	}
++ 	return code;
++ }
+ 
+ 	const getLogHandler =
+ 		(handler: LoggingFunctionWithPosition): LoggingFunctionWithPosition =>

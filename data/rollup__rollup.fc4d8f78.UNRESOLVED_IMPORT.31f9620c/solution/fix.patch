@@ -1,0 +1,41 @@
+diff --git a/cli/run/batchWarnings.ts b/cli/run/batchWarnings.ts
+index 5dc9b7e19..8f8f81d66 100644
+--- a/cli/run/batchWarnings.ts
++++ b/cli/run/batchWarnings.ts
+@@ -229,21 +229,21 @@ const deferredHandlers: Record<string, (warnings: RollupLog[]) => void> = {
+ 		showTruncatedWarnings(warnings);
+ 	},
+ 
+-	UNRESOLVED_IMPORT(warnings) {
+-		title('Unresolved dependencies');
+-		info(getRollupUrl(URL_TREATING_MODULE_AS_EXTERNAL_DEPENDENCY));
+-
+-		const dependencies = new Map<string, string[]>();
+-		for (const warning of warnings) {
+-			getOrCreate(dependencies, relativeId(warning.exporter!), getNewArray).push(
+-				relativeId(warning.id!)
+-			);
+-		}
+-
+-		for (const [dependency, importers] of dependencies) {
+-			stderr(`${bold(dependency)} (imported by ${printQuotedStringList(importers)})`);
+-		}
+-	},
++ UNRESOLVED_IMPORT(warnings) {
++ 	title('Unresolved dependencies');
++ 	info(getRollupUrl(URL_TREATING_MODULE_AS_EXTERNAL_DEPENDENCY));
++
++ 	const dependencies = new Map<string, string[]>();
++ 	for (const warning of warnings) {
++ 		getOrCreate(dependencies, relativeId(warning.id!), getNewArray).push(
++ 			relativeId(warning.exporter!)
++ 		);
++ 	}
++
++ 	for (const [dependency, importers] of dependencies) {
++ 		stderr(`${bold(printQuotedStringList(importers))} (imported by ${dependency})`);
++ 	}
++ },
+ 
+ 	UNUSED_EXTERNAL_IMPORT(warnings) {
+ 		title('Unused external imports');

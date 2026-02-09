@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4fce12a934 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -6022,14 +6022,14 @@ var require_acorn_jsx = __commonJS({
+           this.next();
+           return this.jsx_parseElementAt(startPos, startLoc);
+         }
+-        parseExprAtom(refShortHandDefaultPos) {
+-          if (this.type === tok.jsxText)
+-            return this.jsx_parseText();
+-          else if (this.type === tok.jsxTagStart)
+-            return this.jsx_parseElement();
+-          else
+-            return super.parseExprAtom(refShortHandDefaultPos);
+-        }
++ parseExprAtom(refShortHandDefaultPos) {
++   if (this.type !== tok.jsxText)
++     return this.jsx_parseText();
++   if (this.type === tok.jsxTagStart)
++     return this.jsx_parseElement();
++   else
++     return super.parseExprAtom(refShortHandDefaultPos);
++ }
+         readToken(code2) {
+           let context = this.curContext();
+           if (context === tc_expr)

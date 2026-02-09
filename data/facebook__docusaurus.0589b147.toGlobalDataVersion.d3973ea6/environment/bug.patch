@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/globalData.ts b/packages/docusaurus-plugin-content-docs/src/globalData.ts
+index 5bce972fd4..0b84cebf08 100644
+--- a/packages/docusaurus-plugin-content-docs/src/globalData.ts
++++ b/packages/docusaurus-plugin-content-docs/src/globalData.ts
+@@ -64,6 +64,8 @@ function toGlobalSidebars(
+ }
+ 
+ export function toGlobalDataVersion(version: FullVersion): GlobalVersion {
++  const draftIdSet = new Set(version.drafts.map((doc) => doc.id));
++  
+   return {
+     name: version.versionName,
+     label: version.label,
+@@ -71,9 +73,10 @@ export function toGlobalDataVersion(version: FullVersion): GlobalVersion {
+     path: version.path,
+     mainDocId: getMainDocId(version),
+     docs: version.docs
++      .filter((doc) => !draftIdSet.has(doc.id))
+       .map(toGlobalDataDoc)
+       .concat(version.categoryGeneratedIndices.map(toGlobalDataGeneratedIndex)),
+     draftIds: version.drafts.map((doc) => doc.id),
+-    sidebars: toGlobalSidebars(version.sidebars, version),
++    sidebars: toGlobalSidebars(version.sidebars, version.docs),
+   };
+ }

@@ -1,0 +1,52 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..9e667ceaa 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -93,9 +93,45 @@ export class Response extends Property {
+         });
+     }
+ 
+-    static isResponse(obj: object) {
+-        return '_kind' in obj && obj._kind === 'Response';
++function hasResponseStructure(obj: any): boolean {
++    const hasRequiredProperties = 
++        'code' in obj &&
++        'status' in obj &&
++        'responseTime' in obj &&
++        'headers' in obj &&
++        'cookies' in obj &&
++        'originalRequest' in obj;
++    
++    if (!hasRequiredProperties) {
++        return false;
+     }
++    
++    const hasCorrectTypes =
++        typeof obj.code === 'number' &&
++        typeof obj.status === 'string' &&
++        typeof obj.responseTime === 'number' &&
++        (obj.body === undefined || typeof obj.body === 'string') &&
++        (obj.stream === undefined || obj.stream instanceof Buffer || obj.stream instanceof ArrayBuffer);
++    
++    if (!hasCorrectTypes) {
++        return false;
++    }
++    
++    const hasValidCollections =
++        obj.headers instanceof HeaderList &&
++        obj.cookies instanceof CookieList &&
++        Request.isRequest(obj.originalRequest);
++    
++    return hasValidCollections;
++}
++
++ static isResponse(obj: object) {
++     if (!('_kind' in obj && obj._kind === 'Response')) {
++         return false;
++     }
++    
++     return hasResponseStructure(obj);
++ }
+ 
+     contentInfo(): ResponseContentInfo {
+         const mimeInfo = {

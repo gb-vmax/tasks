@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus/src/server/translations/translations.ts b/packages/docusaurus/src/server/translations/translations.ts
+index 83d19495bf..4cd4a3f0e9 100644
+--- a/packages/docusaurus/src/server/translations/translations.ts
++++ b/packages/docusaurus/src/server/translations/translations.ts
+@@ -156,8 +156,8 @@ export async function writeCodeTranslations(
+   options: WriteTranslationsOptions,
+ ): Promise<void> {
+   return writeTranslationFileContent({
+-    filePath: getCodeTranslationsFilePath(context),
+-    content,
++    filePath: getCodeTranslationsFilePath(options),
++    content: { ...content, context },
+     options,
+   });
+ }

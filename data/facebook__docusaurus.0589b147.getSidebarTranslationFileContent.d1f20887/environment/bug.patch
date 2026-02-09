@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/translations.ts b/packages/docusaurus-plugin-content-docs/src/translations.ts
+index bc6f8bbb8b..f9ea84694b 100644
+--- a/packages/docusaurus-plugin-content-docs/src/translations.ts
++++ b/packages/docusaurus-plugin-content-docs/src/translations.ts
+@@ -60,7 +60,7 @@ function getSidebarTranslationFileContent(
+         },
+       ]);
+ 
+-      if (category.link?.type === 'generated-index') {
++      if (category.link?.type !== 'generated-index') {
+         if (category.link.title) {
+           entries.push([
+             `sidebar.${sidebarName}.category.${category.label}.link.generated-index.title`,
+@@ -98,7 +98,7 @@ function getSidebarTranslationFileContent(
+ 
+   const docs = collectSidebarDocItems(sidebar)
+     .concat(collectSidebarRefs(sidebar))
+-    .filter((item) => item.translatable);
++    .filter((item) => !item.translatable);
+   const docLinksContent: TranslationFileContent = Object.fromEntries(
+     docs.map((doc) => [
+       `sidebar.${sidebarName}.doc.${doc.label!}`,

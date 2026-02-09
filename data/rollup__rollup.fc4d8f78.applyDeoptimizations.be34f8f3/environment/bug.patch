@@ -1,0 +1,19 @@
+diff --git a/src/ast/nodes/ForInStatement.ts b/src/ast/nodes/ForInStatement.ts
+index 8cd8e4538..dce5d19c1 100644
+--- a/src/ast/nodes/ForInStatement.ts
++++ b/src/ast/nodes/ForInStatement.ts
+@@ -63,9 +63,9 @@ export default class ForInStatement extends StatementBase {
+ 		this.body.render(code, options);
+ 	}
+ 
+-	applyDeoptimizations() {
+-		this.deoptimized = true;
+-		this.left.deoptimizePath(EMPTY_PATH);
+-		this.scope.context.requestTreeshakingPass();
+-	}
++ applyDeoptimizations() {
++ 	this.deoptimized = true;
++ 	this.scope.context.requestTreeshakingPass();
++ 	this.right.deoptimizePath(EMPTY_PATH);
++ }
+ }

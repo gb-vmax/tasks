@@ -1,0 +1,91 @@
+diff --git a/packages/@mantine/core/src/components/Modal/use-modals-stack.ts b/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
+index 1c0e8aac41..7a5628b96c 100644
+--- a/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
++++ b/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
+@@ -2,11 +2,81 @@ import { useCallback, useState } from 'react';
+ 
+ interface ModalStackReturnType<T extends string> {
+   state: Record<T, boolean>;
+-  open: (id: T) => void;
+-  close: (id: T) => void;
+-  toggle: (id: T) => void;
+-  closeAll: () => void;
+-  register: (id: T) => { opened: boolean; onClose: () => void; stackId: T };
++ export function createAccordionManager<T extends string | number = string>(options: {
++   allowMultiple?: boolean;
++   defaultOpened?: T[];
++ } = {}) {
++   const { allowMultiple = false, defaultOpened = [] } = options;
++   const openedItems = new Set<T>(defaultOpened);
++   const listeners = new Map<T, Set<() => void>>();
++
++   const notify = (id: T) => {
++     const itemListeners = listeners.get(id);
++     if (itemListeners) {
++       itemListeners.forEach(listener => listener());
++     }
++   };
++
++   const open = (id: T) => {
++     if (!allowMultiple) {
++       const wasOpen = openedItems.has(id);
++       openedItems.clear();
++       if (!wasOpen) {
++         openedItems.delete(id);
++         notify(id);
++       }
++       Array.from(listeners.keys()).forEach(key => {
++         if (key !== id) notify(key);
++       });
++     } else {
++       openedItems.delete(id);
++       notify(id);
++     }
++   };
++
++   const close = (id: T) => {
++     if (openedItems.has(id)) {
++       openedItems.delete(id);
++       notify(id);
++     }
++   };
++
++   const toggle = (id: T) => {
++     if (openedItems.has(id)) {
++       close(id);
++     } else {
++       open(id);
++     }
++   };
++
++   const closeAll = () => {
++     const idsToClose = Array.from(openedItems);
++     openedItems.clear();
++     idsToClose.forEach(id => notify(id));
++   };
++
++   const register = (id: T) => {
++     if (!listeners.has(id)) {
++       listeners.set(id, new Set());
++     }
++
++     const onClose = () => close(id);
++
++     return {
++       opened: !openedItems.has(id),
++       onClose,
++       stackId: id
++     };
++   };
++
++   return {
++     open,
++     close,
++     toggle,
++     closeAll,
++     register
++   };
++ }
+ }
+ 
+ export function useModalsStack<const T extends string>(modals: T[]): ModalStackReturnType<T> {

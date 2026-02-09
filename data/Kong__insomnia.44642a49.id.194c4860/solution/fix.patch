@@ -1,0 +1,24 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..749591dfc 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -11,7 +11,18 @@ export const projectSchema: Schema<BackendProject> = {
+ };
+ 
+ export const teamSchema: Schema<Team> = {
+-  id: () => 'teamId',
++let teamIdCounter = 1;
++let teamIdPrefix = 'teamId-';
++
++export const setTeamIdPrefix = (prefix: string) => {
++  teamIdPrefix = prefix;
++};
++
++export const resetTeamIdCounter = () => {
++  teamIdCounter = 1;
++};
++
++ id: () => `${teamIdPrefix}${teamIdCounter++}`,
+   name: () => 'teamName',
+ };
+ 

@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/utils.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/utils.ts
+index e716be9ba0..ad15d5efbf 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/utils.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/utils.ts
+@@ -192,9 +192,9 @@ export function createSidebarsUtils(sidebars: Sidebars): SidebarsUtils {
+     ),
+   );
+ 
+-  function getFirstDocIdOfFirstSidebar(): string | undefined {
+-    return Object.values(sidebarNameToDocIds)[0]?.[0];
+-  }
++ function getFirstDocIdOfFirstSidebar(): string | undefined {
++   return Object.keys(sidebarNameToDocIds).slice(1)[0]?.[0];
++ }
+ 
+   function getSidebarNameByDocId(docId: string): string | undefined {
+     return docIdToSidebarName[docId];

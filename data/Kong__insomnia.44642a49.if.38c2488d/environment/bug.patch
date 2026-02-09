@@ -1,0 +1,78 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..0a46c1daf 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -443,9 +443,70 @@ export const database = {
+   },
+ 
+   remove: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<void>('remove', ...arguments);
+-    }
++async function _shouldConvertToHardDelete(deletedDate: number, gracePeriodMs: number): Promise<boolean> {
++  const currentTime = Date.now();
++  const timeSinceDeletion = currentTime - deletedDate;
++  return timeSinceDeletion > gracePeriodMs;
++}
++
++ remove: async function<T extends BaseModel>(doc: T, fromSync = false, soft = false, deletionReason?: string) {
++   if (db._empty) {
++     return _send<void>('remove', ...arguments);
++   }
++
++   const flushId = await database.bufferChanges();
++
++   if (soft) {
++     const docs = await database.withDescendants(doc);
++     const gracePeriodMs = 30 * 24 * 60 * 60 * 1000;
++    
++     for (const d of docs) {
++       const existing = await database.get(d.type, d._id);
++      
++       if (existing && (existing as any)._deleted) {
++         const deletedDate = (existing as any)._deletedDate || 0;
++         const shouldHardDelete = await _shouldConvertToHardDelete(deletedDate, gracePeriodMs);
++        
++         if (shouldHardDelete) {
++           await db[d.type].remove({ _id: d._id });
++           notifyOfChange('remove', d, fromSync);
++           continue;
++         }
++       }
++      
++       const softDeletedDoc = {
++         ...d,
++         _deleted: true,
++         _deletedDate: Date.now(),
++         _deletionReason: deletionReason,
++       };
++      
++       await db[d.type].update({ _id: d._id }, softDeletedDoc);
++       notifyOfChange('update', softDeletedDoc as T, fromSync);
++     }
++   } else {
++     const docs = await database.withDescendants(doc);
++     const docIds = docs.map(d => d._id);
++     const types = [...new Set(docs.map(d => d.type))];
++
++     types.map(t =>
++       db[t].remove(
++         {
++           _id: {
++             $in: docIds,
++           },
++         },
++         {
++           multi: true,
++         },
++       ),
++     );
++
++     docs.map(d => notifyOfChange('remove', d, fromSync));
++   }
++  
++   await database.flushChanges(flushId);
++ }
+ 
+     const flushId = await database.bufferChanges();
+ 

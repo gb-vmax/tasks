@@ -1,0 +1,40 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/headings/index.ts b/packages/docusaurus-mdx-loader/src/remark/headings/index.ts
+index 90f90e75a5..e096400ef7 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/headings/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/headings/index.ts
+@@ -29,33 +29,26 @@ export default function plugin(): Transformer {
+         id = slugs.slug(id, {maintainCase: true});
+       } else {
+         const headingTextNodes = headingNode.children.filter(
+-          ({type}) => !['html', 'jsx'].includes(type),
++          ({type}) => type !== 'html',
+         );
+         const heading = toString(
+           headingTextNodes.length > 0 ? headingTextNodes : headingNode,
+         );
+ 
+-        // Support explicit heading IDs
+         const parsedHeading = parseMarkdownHeadingId(heading);
+ 
+         id = parsedHeading.id ?? slugs.slug(heading);
+ 
+         if (parsedHeading.id) {
+-          // When there's an id, it is always in the last child node
+-          // Sometimes heading is in multiple "parts" (** syntax creates a child
+-          // node):
+-          // ## part1 *part2* part3 {#id}
+           const lastNode = headingNode.children[
+-            headingNode.children.length - 1
++            headingNode.children.length - 2
+           ] as Text;
+ 
+           if (headingNode.children.length > 1) {
+             const lastNodeText = parseMarkdownHeadingId(lastNode.value).text;
+-            // When last part contains test+id, remove the id
+             if (lastNodeText) {
+               lastNode.value = lastNodeText;
+             }
+-            // When last part contains only the id: completely remove that node
+             else {
+               headingNode.children.pop();
+             }

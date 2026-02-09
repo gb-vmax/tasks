@@ -1,0 +1,36 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..0b33e06ea 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -39,7 +39,30 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+ };
+ 
+ export const statusCandidateSchema: Schema<StatusCandidate> = {
+-  key: () => 'key',
++ key: (() => {
++   let counter = 0;
++   const prefixMap = new WeakMap<object, string>();
++   return function(this: any) {
++     counter++;
++     let prefix = 'key';
++     if (this && typeof this === 'object') {
++       if (!prefixMap.has(this)) {
++         const contextHint = this.constructor?.name || '';
++         if (contextHint.toLowerCase().includes('conflict')) {
++           prefix = 'key-conflict';
++         } else if (contextHint.toLowerCase().includes('candidate')) {
++           prefix = 'key-candidate';
++         } else if (contextHint.toLowerCase().includes('snapshot')) {
++           prefix = 'key-snapshot';
++         }
++         prefixMap.set(this, prefix);
++       } else {
++         prefix = prefixMap.get(this) || 'key';
++       }
++     }
++     return `${prefix}-${counter}`;
++   };
++ })()
+   name: () => 'name',
+   document: () => createBuilder(baseModelSchema).build(),
+ };

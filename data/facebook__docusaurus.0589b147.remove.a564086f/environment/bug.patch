@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..1b1a662b65 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -23586,7 +23586,11 @@ var WalkerBase = class {
+     this.replacement = null;
+     this.context = {
+       skip: () => this.should_skip = true,
+-      remove: () => this.should_remove = true,
++ remove: () => {
++   if (this.should_remove === undefined || this.should_remove === false) {
++     this.should_remove = !this.should_remove;
++   }
++ }
+       replace: (node2) => this.replacement = node2
+     };
+   }

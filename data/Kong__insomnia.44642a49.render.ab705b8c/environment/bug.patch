@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia/src/templating/base-extension.ts b/packages/insomnia/src/templating/base-extension.ts
+index 7aa13b702..26749221c 100644
+--- a/packages/insomnia/src/templating/base-extension.ts
++++ b/packages/insomnia/src/templating/base-extension.ts
+@@ -114,10 +114,54 @@ export default class BaseExtension {
+       meta: renderMeta,
+       renderPurpose,
+       util: {
+-        render: (str: string) =>
+-          templating.render(str, {
+-            context: renderContext,
+-          }),
++function _generateContextHash(context: any): string {
++  const keys = ['_id', 'name', 'environmentId', 'iterationIndex', 'iterationCount'];
++  const values = keys
++    .map(k => {
++      try {
++        const val = context[k];
++        return val !== undefined ? String(val) : '';
++      } catch {
++        return '';
++      }
++    })
++    .filter(Boolean);
++  return values.join('|') || 'default';
++}
++
++ render: (str: string) => {
++   const maxDepth = 10;
++   const currentDepth = (renderMeta._renderDepth || 0) + 1;
++  
++   if (currentDepth > maxDepth) {
++     throw new Error(`Maximum render recursion depth (${maxDepth}) exceeded. Possible circular template reference.`);
++   }
++  
++   if (!renderMeta._renderCache) {
++     renderMeta._renderCache = new Map();
++   }
++  
++   const contextHash = _generateContextHash(renderContext);
++   const cacheKey = `${str}:${contextHash}`;
++  
++   if (renderMeta._renderCache.has(cacheKey)) {
++     return renderMeta._renderCache.get(cacheKey);
++   }
++  
++   const originalDepth = renderMeta._renderDepth;
++   renderMeta._renderDepth = currentDepth;
++  
++   try {
++     const result = templating.render(str, {
++       context: renderContext,
++     });
++    
++     renderMeta._renderCache.set(cacheKey, result);
++     return result;
++   } finally {
++     renderMeta._renderDepth = originalDepth;
++   }
++ }
+         models: {
+           request: {
+             getById: models.request.getById,

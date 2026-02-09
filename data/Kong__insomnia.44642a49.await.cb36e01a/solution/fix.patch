@@ -1,0 +1,23 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..67829f8f6 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -201,11 +201,13 @@ async function _applyRequestPluginHooks(
+     };
+ 
+     try {
+-      await hook(context);
+-    } catch (err) {
+-      err.plugin = plugin;
+-      throw err;
+-    }
++ try {
++   await hook(context);
++ } catch (err) {
++   const pluginError = new Error(err.message);
++   pluginError.plugin = plugin;
++   throw pluginError;
++ }
+   }
+ 
+   return newRenderedRequest;

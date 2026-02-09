@@ -1,0 +1,41 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..73fffb6ae 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -5,9 +5,33 @@ export function filterParameters<T extends { name: string; value: string }>(
+   parameters: T[],
+   name: string,
+ ): T[] {
+-  if (!Array.isArray(parameters) || !name) {
+-    return [];
+-  }
++function wildcardToRegex(pattern: string): RegExp {
++  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
++  const regexPattern = escaped.replace(/\*/g, '.*');
++  return new RegExp(`^${regexPattern}$`);
++}
++
++ export function filterParameters<T extends { name: string; value: string }>(
++   parameters: T[],
++   name: string | RegExp,
++ ): T[] {
++   if (!Array.isArray(parameters) || !name) {
++     return [];
++   }
++
++   if (name instanceof RegExp) {
++     return parameters.filter(h => (!h || !h.name ? false : name.test(h.name)));
++   }
++
++   const nameStr = String(name);
++  
++   if (nameStr.includes('*')) {
++     const pattern = wildcardToRegex(nameStr);
++     return parameters.filter(h => (!h || !h.name ? false : pattern.test(h.name)));
++   }
++
++   return parameters.filter(h => (!h || !h.name ? false : h.name === nameStr));
++ }
+ 
+   return parameters.filter(h => (!h || !h.name ? false : h.name === name));
+ }

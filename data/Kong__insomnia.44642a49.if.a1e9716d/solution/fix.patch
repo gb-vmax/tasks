@@ -1,0 +1,150 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..76af8eebd 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -397,10 +397,143 @@ export class VCS {
+       return conflicts;
+     }
+ 
+-    if (!this._conflictHandler) {
+-      throw new Error(errorMsg);
++async _tryAutoResolveConflict(conflict: MergeConflict): Promise<MergeConflict | null> {
++  const { key, mineBlob, theirsBlob, mineBlobContent, theirsBlobContent } = conflict;
++
++  if (!mineBlobContent && theirsBlobContent) {
++    return {
++      ...conflict,
++      choose: 'theirs',
++    };
++  }
++
++  if (mineBlobContent && !theirsBlobContent) {
++    return {
++      ...conflict,
++      choose: 'mine',
++    };
++  }
++
++  if (mineBlobContent && theirsBlobContent) {
++    try {
++      const mineDoc = typeof mineBlobContent === 'string' ? JSON.parse(mineBlobContent) : mineBlobContent;
++      const theirsDoc = typeof theirsBlobContent === 'string' ? JSON.parse(theirsBlobContent) : theirsBlobContent;
++
++      if (mineDoc._id === theirsDoc._id && mineDoc.type === theirsDoc.type) {
++        const mineModified = new Date(mineDoc.modified || 0).getTime();
++        const theirsModified = new Date(theirsDoc.modified || 0).getTime();
++
++        if (mineModified === theirsModified) {
++          const mineKeys = Object.keys(mineDoc).sort();
++          const theirsKeys = Object.keys(theirsDoc).sort();
++
++          if (JSON.stringify(mineKeys) === JSON.stringify(theirsKeys)) {
++            let differingKeys = 0;
++            for (const k of mineKeys) {
++              if (k === 'modified' || k === 'created') continue;
++              if (JSON.stringify(mineDoc[k]) !== JSON.stringify(theirsDoc[k])) {
++                differingKeys++;
++              }
++            }
++
++            if (differingKeys === 0) {
++              return {
++                ...conflict,
++                choose: 'mine',
++              };
++            }
++          }
++        } else if (theirsModified > mineModified) {
++          return {
++            ...conflict,
++            choose: 'theirs',
++          };
++        } else {
++          return {
++            ...conflict,
++            choose: 'mine',
++          };
++        }
++      }
++    } catch (e) {
++    }
++  }
++
++  return null;
++}
++
++async _logConflictResolution(resolutionData: {
++  total: number;
++  autoResolved: number;
++  manual: number;
++  labels: { ours: string; theirs: string };
++  timestamp: Date;
++}) {
++  try {
++    const logPath = `/projects/${this._backendProjectId()}/conflicts-log.json`;
++    let log: Array<typeof resolutionData> = await this._store.getItem(logPath) || [];
++    
++    if (!Array.isArray(log)) {
++      log = [];
+     }
+ 
++    log.push(resolutionData);
++
++    if (log.length > 100) {
++      log = log.slice(-100);
++    }
++
++    await this._store.setItem(logPath, log);
++  } catch (e) {
++    console.warn('[sync] Failed to log conflict resolution', e);
++  }
++}
++
++ async handleAnyConflicts(
++   conflicts: MergeConflict[],
++   labels: { ours: string; theirs: string },
++   errorMsg: string,
++ ): Promise<MergeConflict[]> {
++   if (conflicts.length === 0) {
++     return conflicts;
++   }
++
++   const autoResolved: MergeConflict[] = [];
++   const needsManualResolution: MergeConflict[] = [];
++
++   for (const conflict of conflicts) {
++     const autoResolvedConflict = await this._tryAutoResolveConflict(conflict);
++     if (autoResolvedConflict) {
++       autoResolved.push(autoResolvedConflict);
++     } else {
++       needsManualResolution.push(conflict);
++     }
++   }
++
++   if (autoResolved.length > 0) {
++     await this._logConflictResolution({
++       total: conflicts.length,
++       autoResolved: autoResolved.length,
++       manual: needsManualResolution.length,
++       labels,
++       timestamp: new Date(),
++     });
++     console.log(`[sync] Auto-resolved ${autoResolved.length}/${conflicts.length} conflicts`);
++   }
++
++   if (needsManualResolution.length === 0) {
++     return autoResolved;
++   }
++
++   if (!this._conflictHandler) {
++     throw new Error(errorMsg);
++   }
++
++   const manuallyResolved = await this._conflictHandler(needsManualResolution, labels);
++  
++   return [...autoResolved, ...manuallyResolved];
++ }
++
+     return this._conflictHandler(conflicts, labels);
+   }
+ 

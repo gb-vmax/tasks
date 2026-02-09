@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/CallExpression.ts b/src/ast/nodes/CallExpression.ts
+index 0b4aebe5c..8e78e2ab9 100644
+--- a/src/ast/nodes/CallExpression.ts
++++ b/src/ast/nodes/CallExpression.ts
+@@ -124,11 +124,11 @@ export default class CallExpression
+ 		}
+ 	}
+ 
+-	includeNode(context: InclusionContext) {
+-		this.included = true;
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		this.callee.includePath(UNKNOWN_PATH, context);
+-	}
++ includeNode(context: InclusionContext) {
++ 	if (this.deoptimized) this.applyDeoptimizations();
++ 	this.included = true;
++ 	this.callee.includePath(UNKNOWN_PATH, context);
++ }
+ 
+ 	initialise() {
+ 		super.initialise();

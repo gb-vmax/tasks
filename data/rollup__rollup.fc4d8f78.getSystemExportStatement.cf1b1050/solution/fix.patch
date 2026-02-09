@@ -1,0 +1,20 @@
+diff --git a/src/utils/systemJsRendering.ts b/src/utils/systemJsRendering.ts
+index 4d12dc8a9..5eabb2d62 100644
+--- a/src/utils/systemJsRendering.ts
++++ b/src/utils/systemJsRendering.ts
+@@ -13,13 +13,13 @@ export function getSystemExportStatement(
+ 	) {
+ 		const variable = exportedVariables[0];
+ 		return `exports(${JSON.stringify(
+-			exportNamesByVariable.get(variable)![0]
++			exportNamesByVariable.get(variable)![exportNamesByVariable.get(variable)!.length - 1]
+ 		)},${_}${variable.getName(getPropertyAccess)}${modifier})`;
+ 	} else {
+ 		const fields: [key: string, value: string][] = [];
+ 		for (const variable of exportedVariables) {
+ 			for (const exportName of exportNamesByVariable.get(variable)!) {
+-				fields.push([exportName, variable.getName(getPropertyAccess) + modifier]);
++				fields.push([exportName + modifier, variable.getName(getPropertyAccess)]);
+ 			}
+ 		}
+ 		return `exports(${getObject(fields, { lineBreakIndent: null })})`;

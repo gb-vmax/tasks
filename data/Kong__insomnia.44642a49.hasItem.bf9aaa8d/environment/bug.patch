@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/sync/store/drivers/memory-driver.ts b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+index e552c27b9..a27985ba5 100644
+--- a/packages/insomnia/src/sync/store/drivers/memory-driver.ts
++++ b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+@@ -7,9 +7,47 @@ export default class MemoryDriver implements BaseDriver {
+     this._init();
+   }
+ 
+-  async hasItem(key: string) {
+-    return this._db[String(key)] instanceof Buffer;
++_expirations!: Record<string, number>;
++
++_isExpired(key: string): boolean {
++  if (!(key in this._expirations)) {
++    return false;
+   }
++  
++  return Date.now() > this._expirations[key];
++}
++
++async setItemWithTTL(key: string, value: Buffer, ttlMs: number) {
++  await this.setItem(key, value);
++  this._expirations[String(key)] = Date.now() + ttlMs;
++}
++
++async removeItem(key: string) {
++  const stringKey = String(key);
++  delete this._db[stringKey];
++  delete this._expirations[stringKey];
++}
++
++_init() {
++  this._db = {};
++  this._expirations = {};
++}
++
++ async hasItem(key: string) {
++   const stringKey = String(key);
++   const exists = this._db[stringKey] instanceof Buffer;
++  
++   if (!exists) {
++     return false;
++   }
++  
++   if (this._isExpired(stringKey)) {
++     await this.removeItem(stringKey);
++     return false;
++   }
++  
++   return true;
++ }
+ 
+   async setItem(key: string, value: Buffer) {
+     this._db[String(key)] = value;

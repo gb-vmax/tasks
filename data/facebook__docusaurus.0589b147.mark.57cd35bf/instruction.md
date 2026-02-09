@@ -2,29 +2,29 @@
 
 ### Describe the bug
 
-I'm experiencing an issue where object properties are being set incorrectly. When trying to set a value in an object using a key-value pair, the value parameter seems to be ignored and the key is being assigned as the value instead.
+I'm experiencing an issue where object properties are being set incorrectly when using the `mark` function. Instead of the property being set to the intended value, it's being set to the key name itself.
 
 ### Reproduction
 
 ```js
-const obj = {};
-const key = 'myKey';
-const value = 'myValue';
+const values = {};
+const key = 'myProperty';
+const value = 'expectedValue';
 
-// Expected: obj['myKey'] = 'myValue'
-// Actual: obj['myKey'] = 'myKey'
-mark(obj, key, value);
+mark(values, key, value);
 
-console.log(obj[key]); // prints 'myKey' instead of 'myValue'
+console.log(values.myProperty); // Outputs: 'myProperty' instead of 'expectedValue'
 ```
 
 ### Expected behavior
 
-The function should assign the provided `value` to `obj[key]`, not assign `key` to `obj[key]`. In the example above, `obj['myKey']` should equal `'myValue'`, not `'myKey'`.
+The `values` object should have the property set to the actual value passed in, not the key name. In the example above, `values.myProperty` should equal `'expectedValue'`, not `'myProperty'`.
+
+This seems to have started happening recently and is causing data to be stored incorrectly throughout the application.
 
 ### System Info
-- Version: @mdx-js/mdx@3.0.0
-- Node: v18.x
+- @mdx-js/mdx version: 3.0.0
+- Node version: Latest
 
 ---
 Repository: /testbed

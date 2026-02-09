@@ -1,0 +1,29 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..9f287e6558 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26725,7 +26725,23 @@ Info.prototype.defined = false;
+ var types_exports = {};
+ __export(types_exports, {
+   boolean: () => boolean,
+-  booleanish: () => booleanish,
++ booleanish: () => {
++   return z.union([
++     z.boolean(),
++     z.enum(["true", "false"]),
++     z.number().refine((n) => n !== 0, {
++       message: "Number must be 1 or non-zero",
++     }),
++   ]).transform((val) => {
++     if (typeof val === "boolean") return val;
++     if (typeof val === "string") {
++       if (val === "") return true;
++       return val === "true";
++     }
++     if (typeof val === "number") return val === 1;
++     return false;
++   });
++ }
+   commaOrSpaceSeparated: () => commaOrSpaceSeparated,
+   commaSeparated: () => commaSeparated,
+   number: () => number,

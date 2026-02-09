@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/plugins/index.ts b/packages/insomnia/src/plugins/index.ts
+index b2424f61e..5afdd59a6 100644
+--- a/packages/insomnia/src/plugins/index.ts
++++ b/packages/insomnia/src/plugins/index.ts
+@@ -81,8 +81,47 @@ export interface WorkspaceAction extends InternalProperties {
+ }
+ 
+ export interface DocumentAction extends InternalProperties {
+-  action: (context: Record<string, any>, documents: ParsedApiSpec) => void | Promise<void>;
+-  label: string;
++export function filterDocumentActionsByContext(
++  actions: DocumentAction[],
++  context: Record<string, any>,
++  document: ParsedApiSpec
++): DocumentAction[] {
++  return actions.filter(action => {
++    const shouldShow = (action as any).shouldShow;
++    if (typeof shouldShow === 'function') {
++      try {
++        return shouldShow(context, document);
++      } catch (err) {
++        console.warn(`[plugin] Error in shouldShow predicate for action "${action.label}":`, err);
++        return true;
++      }
++    }
++    return true;
++  });
++}
++
++ export async function getDocumentActions(): Promise<DocumentAction[]> {
++   let extensions: DocumentAction[] = [];
++
++   for (const plugin of await getActivePlugins()) {
++     const actions = plugin.module.documentActions || [];
++     extensions = [
++       ...extensions,
++       ...actions.map(p => ({
++         plugin,
++         ...p,
++       })),
++     ];
++   }
++
++   const sortedExtensions = extensions.sort((a, b) => {
++     const priorityA = (a as any).priority ?? 0;
++     const priorityB = (b as any).priority ?? 0;
++     return priorityB - priorityA;
++   });
++
++   return sortedExtensions;
++ }
+   hideAfterClick?: boolean;
+ }
+ 

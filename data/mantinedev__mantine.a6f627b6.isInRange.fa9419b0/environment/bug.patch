@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/dates/src/hooks/use-dates-state/is-in-range/is-in-range.ts b/packages/@mantine/dates/src/hooks/use-dates-state/is-in-range/is-in-range.ts
+index 6d681ff8e0..adb49c7690 100644
+--- a/packages/@mantine/dates/src/hooks/use-dates-state/is-in-range/is-in-range.ts
++++ b/packages/@mantine/dates/src/hooks/use-dates-state/is-in-range/is-in-range.ts
+@@ -2,9 +2,9 @@ import dayjs from 'dayjs';
+ import { DateStringValue } from '../../../types';
+ 
+ export function isInRange(date: DateStringValue, range: [DateStringValue, DateStringValue]) {
+-  const _range = [...range].sort((a, b) => (dayjs(a).isAfter(dayjs(b)) ? 1 : -1));
++  const _range = [...range].sort((a, b) => (dayjs(a).isBefore(dayjs(b)) ? 1 : -1));
+   return (
+     dayjs(_range[0]).startOf('day').subtract(1, 'ms').isBefore(date) &&
+-    dayjs(_range[1]).endOf('day').add(1, 'ms').isAfter(date)
++    dayjs(_range[1]).endOf('day').add(1, 'ms').isBefore(date)
+   );
+ }

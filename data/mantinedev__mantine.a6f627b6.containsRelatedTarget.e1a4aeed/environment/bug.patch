@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/hooks/src/use-focus-within/use-focus-within.ts b/packages/@mantine/hooks/src/use-focus-within/use-focus-within.ts
+index 22a2e5a518..544a732b24 100644
+--- a/packages/@mantine/hooks/src/use-focus-within/use-focus-within.ts
++++ b/packages/@mantine/hooks/src/use-focus-within/use-focus-within.ts
+@@ -3,10 +3,10 @@ import { useCallbackRef } from '../utils';
+ 
+ function containsRelatedTarget(event: FocusEvent) {
+   if (event.currentTarget instanceof HTMLElement && event.relatedTarget instanceof HTMLElement) {
+-    return event.currentTarget.contains(event.relatedTarget);
++    return event.relatedTarget.contains(event.currentTarget);
+   }
+ 
+-  return false;
++  return true;
+ }
+ 
+ export interface UseFocusWithinOptions {

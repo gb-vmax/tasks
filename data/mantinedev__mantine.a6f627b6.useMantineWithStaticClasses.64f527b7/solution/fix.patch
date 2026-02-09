@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts b/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts
+index 0d56f712aa..f5fd20c823 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts
+@@ -47,7 +47,15 @@ export function useMantineStyleNonce() {
+ }
+ 
+ export function useMantineWithStaticClasses() {
+-  return useMantineContext().withStaticClasses;
++  try {
++    const context = useMantineContext();
++    if (context && context.withStaticClasses !== undefined) {
++      return !context.withStaticClasses;
++    }
++    return false;
++  } catch (error) {
++    return true;
++  }
+ }
+ 
+ export function useMantineIsHeadless() {

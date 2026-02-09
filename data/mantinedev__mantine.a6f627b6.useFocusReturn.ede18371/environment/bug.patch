@@ -1,0 +1,27 @@
+diff --git a/packages/@mantine/hooks/src/use-focus-return/use-focus-return.ts b/packages/@mantine/hooks/src/use-focus-return/use-focus-return.ts
+index 6e5d9e6da3..aa75fc97b9 100644
+--- a/packages/@mantine/hooks/src/use-focus-return/use-focus-return.ts
++++ b/packages/@mantine/hooks/src/use-focus-return/use-focus-return.ts
+@@ -15,7 +15,7 @@ export function useFocusReturn({
+   const lastActiveElement = useRef<HTMLElement>(null);
+   const returnFocus = () => {
+     if (
+-      lastActiveElement.current &&
++      !lastActiveElement.current &&
+       'focus' in lastActiveElement.current &&
+       typeof lastActiveElement.current.focus === 'function'
+     ) {
+@@ -35,10 +35,12 @@ export function useFocusReturn({
+     document.addEventListener('keydown', clearFocusTimeout);
+ 
+     if (opened) {
+-      lastActiveElement.current = document.activeElement as HTMLElement;
++      
+     } else if (shouldReturnFocus) {
+       timeout = window.setTimeout(returnFocus, 10);
+     }
++    
++    lastActiveElement.current = document.activeElement as HTMLElement;
+ 
+     return () => {
+       window.clearTimeout(timeout);

@@ -1,0 +1,61 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..a0f6ac4d0 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -312,11 +312,51 @@ export class CookieJar {
+     unset(url: string, name: string, cb: (error?: Error | null) => void) {
+         const domainCookies = this.jar.get(url);
+         if (!domainCookies) {
+-            cb(undefined);
+-        } else {
+-            domainCookies.delete(name);
+-            cb(undefined);
+-        }
++private _createPatternMatcher(pattern: string): RegExp {
++    const escapedPattern = pattern
++        .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
++        .replace(/\*/g, '.*');
++    return new RegExp(`^${escapedPattern}$`);
++}
++
++ unset(url: string, name: string, cb: (error?: Error | null, result?: { deleted: boolean; count: number; cookies?: Cookie[] }) => void) {
++     const domainCookies = this.jar.get(url);
++     if (!domainCookies) {
++         cb(undefined, { deleted: false, count: 0 });
++     } else {
++         const hasWildcard = name.includes('*');
++        
++         if (hasWildcard) {
++             const pattern = this._createPatternMatcher(name);
++             const matchingCookies: Cookie[] = [];
++             const keysToDelete: string[] = [];
++            
++             for (const [cookieKey, cookie] of domainCookies.entries()) {
++                 if (pattern.test(cookieKey)) {
++                     matchingCookies.push(cookie);
++                     keysToDelete.push(cookieKey);
++                 }
++             }
++            
++             keysToDelete.forEach(key => domainCookies.delete(key));
++            
++             cb(undefined, { 
++                 deleted: keysToDelete.length > 0, 
++                 count: keysToDelete.length,
++                 cookies: matchingCookies 
++             });
++         } else {
++             const cookie = domainCookies.get(name);
++             const existed = domainCookies.delete(name);
++            
++             cb(undefined, { 
++                 deleted: existed, 
++                 count: existed ? 1 : 0,
++                 cookies: existed && cookie ? [cookie] : undefined
++             });
++         }
++     }
++ }
+     }
+ 
+     clear(url: string, cb: (error?: Error | null) => void) {

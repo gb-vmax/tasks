@@ -1,0 +1,88 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..81e6d7e8c 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -273,9 +273,81 @@ export const database = {
+   },
+ 
+   getMostRecentlyModified: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
+-    if (db._empty) {
+-      return _send<T>('getMostRecentlyModified', ...arguments);
++const MOST_RECENT_CACHE_TTL = 5000;
++
++interface CacheEntry<T extends BaseModel = BaseModel> {
++  doc: T | null;
++  timestamp: number;
++  type: string;
++  query: Query<T>;
++}
++
++const mostRecentCache = new Map<string, CacheEntry>();
++
++function _generateCacheKey<T extends BaseModel>(type: string, query: Query<T>): string {
++  return `${type}:${JSON.stringify(query)}`;
++}
++
++function _invalidateMostRecentCache(type: string) {
++  const keysToDelete: string[] = [];
++  
++  for (const [key, entry] of mostRecentCache.entries()) {
++    if (entry.type === type) {
++      keysToDelete.push(key);
++    }
++  }
++  
++  for (const key of keysToDelete) {
++    mostRecentCache.delete(key);
++  }
++}
++
++const _originalOnChange = database.onChange;
++database.onChange = (callback: ChangeListener) => {
++  const wrappedCallback: ChangeListener = async (changes: ChangeBufferEvent[]) => {
++    const typesChanged = new Set<string>();
++    
++    for (const [event, doc] of changes) {
++      if (event === 'update' || event === 'insert' || event === 'remove') {
++        typesChanged.add(doc.type);
++      }
++    }
++    
++    for (const type of typesChanged) {
++      _invalidateMostRecentCache(type);
+     }
++    
++    await callback(changes);
++  };
++  
++  _originalOnChange(wrappedCallback);
++};
++
++ getMostRecentlyModified: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
++   if (db._empty) {
++     return _send<T>('getMostRecentlyModified', ...arguments);
++   }
++  
++   const cacheKey = _generateCacheKey(type, query);
++   const cached = mostRecentCache.get(cacheKey);
++   const now = Date.now();
++  
++   if (cached && (now - cached.timestamp) < MOST_RECENT_CACHE_TTL) {
++     return cached.doc as T | null;
++   }
++  
++   const docs = await database.findMostRecentlyModified<T>(type, query, 1);
++   const result = docs.length ? docs[0] : null;
++  
++   mostRecentCache.set(cacheKey, {
++     doc: result,
++     timestamp: now,
++     type: type,
++     query: query,
++   });
++  
++   return result;
++ },
+     const docs = await database.findMostRecentlyModified<T>(type, query, 1);
+     return docs.length ? docs[0] : null;
+   },

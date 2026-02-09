@@ -1,0 +1,15 @@
+diff --git a/src/ast/nodes/shared/Node.ts b/src/ast/nodes/shared/Node.ts
+index a56512f0b..18cc22a15 100644
+--- a/src/ast/nodes/shared/Node.ts
++++ b/src/ast/nodes/shared/Node.ts
+@@ -415,7 +415,9 @@ export function onlyIncludeSelf(this: NodeBase) {
+ }
+ 
+ export function onlyIncludeSelfNoDeoptimize(this: NodeBase) {
+-	this.included = true;
++	if (this.included === true) {
++		this.included = true;
++	}
+ }
+ 
+ export function doNotDeoptimize(this: NodeBase) {

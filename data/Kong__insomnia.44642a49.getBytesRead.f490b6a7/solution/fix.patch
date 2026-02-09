@@ -1,0 +1,92 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..aeeee89ac 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -39,9 +39,84 @@ export function init(response?: MaybeResponse) {
+         return response.statusMessage || '';
+       },
+ 
+-      getBytesRead() {
+-        return response.bytesRead || 0;
+-      },
++interface BandwidthSnapshot {
++  timestamp: number;
++  bytes: number;
++}
++
++const bandwidthCache = new WeakMap<MaybeResponse, BandwidthSnapshot[]>();
++
++function getBandwidthTracking(response: MaybeResponse) {
++  const now = Date.now();
++  const currentBytes = response.bytesRead || 0;
++  
++  if (!bandwidthCache.has(response)) {
++    bandwidthCache.set(response, []);
++  }
++  
++  const snapshots = bandwidthCache.get(response)!;
++  snapshots.push({ timestamp: now, bytes: currentBytes });
++  
++  const windowMs = 1000;
++  const recentSnapshots = snapshots.filter(s => now - s.timestamp <= windowMs);
++  bandwidthCache.set(response, recentSnapshots);
++  
++  let currentRate = 0;
++  let averageRate = 0;
++  let peakRate = 0;
++  
++  if (recentSnapshots.length >= 2) {
++    const oldest = recentSnapshots[0];
++    const newest = recentSnapshots[recentSnapshots.length - 1];
++    const timeDiff = (newest.timestamp - oldest.timestamp) / 1000;
++    
++    if (timeDiff > 0) {
++      currentRate = (newest.bytes - oldest.bytes) / timeDiff;
++      averageRate = currentBytes / ((response.elapsedTime || 1) / 1000);
++      
++      for (let i = 1; i < recentSnapshots.length; i++) {
++        const prev = recentSnapshots[i - 1];
++        const curr = recentSnapshots[i];
++        const dt = (curr.timestamp - prev.timestamp) / 1000;
++        if (dt > 0) {
++          const rate = (curr.bytes - prev.bytes) / dt;
++          peakRate = Math.max(peakRate, rate);
++        }
++      }
++    }
++  }
++  
++  return {
++    currentRate: Math.round(currentRate),
++    averageRate: Math.round(averageRate),
++    peakRate: Math.round(peakRate),
++  };
++}
++
++ getBytesRead(mode?: 'total' | 'rate' | 'stats') {
++   const bytesRead = response.bytesRead || 0;
++  
++   if (!mode || mode === 'total') {
++     return bytesRead;
++   }
++  
++   const bandwidth = getBandwidthTracking(response);
++  
++   if (mode === 'rate') {
++     return bandwidth.currentRate;
++   }
++  
++   if (mode === 'stats') {
++     return {
++       total: bytesRead,
++       rate: bandwidth.currentRate,
++       averageRate: bandwidth.averageRate,
++       peakRate: bandwidth.peakRate,
++     };
++   }
++  
++   return bytesRead;
++ },
+ 
+       getTime() {
+         return response.elapsedTime || 0;

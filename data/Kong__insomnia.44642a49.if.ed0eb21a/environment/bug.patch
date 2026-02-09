@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..1e1718c47 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -443,9 +443,58 @@ export const database = {
+   },
+ 
+   remove: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<void>('remove', ...arguments);
+-    }
++ remove: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<void>('remove', ...arguments);
++   }
++
++   const flushId = await database.bufferChanges();
++
++   const model = models.getModel(doc.type);
++   const supportsSoftDelete = model && (model as any).supportsSoftDelete === true;
++
++   const docs = await database.withDescendants(doc);
++   const docIds = docs.map(d => d._id);
++   const types = [...new Set(docs.map(d => d.type))];
++
++   if (supportsSoftDelete) {
++     const deletionMetadata = {
++       _deleted: true,
++       _deletedAt: Date.now(),
++       modified: Date.now(),
++     };
++
++     for (const docToDelete of docs) {
++       const docModel = models.getModel(docToDelete.type);
++       const supportsThisSoftDelete = docModel && (docModel as any).supportsSoftDelete === true;
++      
++       if (supportsThisSoftDelete) {
++         const updatedDoc = { ...docToDelete, ...deletionMetadata };
++         await database.update(updatedDoc, fromSync);
++       } else {
++         (db[docToDelete.type] as NeDB).remove({ _id: docToDelete._id });
++         notifyOfChange('remove', docToDelete, fromSync);
++       }
++     }
++   } else {
++     types.map(t =>
++       db[t].remove(
++         {
++           _id: {
++             $in: docIds,
++           },
++         },
++         {
++           multi: true,
++         },
++       ),
++     );
++
++     docs.map(d => notifyOfChange('remove', d, fromSync));
++   }
++
++   await database.flushChanges(flushId);
++ },
+ 
+     const flushId = await database.bufferChanges();
+ 

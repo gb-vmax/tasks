@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia/src/network/authentication.ts b/packages/insomnia/src/network/authentication.ts
+index fa9596d7b..4da78c4a8 100644
+--- a/packages/insomnia/src/network/authentication.ts
++++ b/packages/insomnia/src/network/authentication.ts
+@@ -155,7 +155,37 @@ export async function getAuthHeader(renderedRequest: RenderedRequest, url: strin
+   return;
+ }
+ 
+-export function getAuthQueryParams(authentication: RequestAuthentication) {
++function _extractOAuthParams(authHeader: string): Array<{ name: string; value: string }> {
++  const oauthPrefix = 'OAuth ';
++  if (!authHeader.startsWith(oauthPrefix)) {
++    return [];
++  }
++
++  const paramString = authHeader.substring(oauthPrefix.length);
++  const params: Array<{ name: string; value: string }> = [];
++  
++  const paramPairs = paramString.split(',').map(p => p.trim());
++  
++  for (const pair of paramPairs) {
++    const equalIndex = pair.indexOf('=');
++    if (equalIndex === -1) continue;
++    
++    const name = pair.substring(0, equalIndex).trim();
++    let value = pair.substring(equalIndex + 1).trim();
++    
++    if (value.startsWith('"') && value.endsWith('"')) {
++      value = value.substring(1, value.length - 1);
++    }
++    
++    value = decodeURIComponent(value);
++    
++    params.push({ name, value });
++  }
++  
++  return params;
++}
++
++export async function getAuthQueryParams(authentication: RequestAuthentication, renderedRequest?: RenderedRequest, url?: string) {
+   if (authentication.disabled) {
+     return;
+   }
+@@ -168,6 +198,19 @@ export function getAuthQueryParams(authentication: RequestAuthentication) {
+     } as RequestParameter;
+   }
+ 
++  if (authentication.type === AUTH_OAUTH_1 && renderedRequest && url) {
++    const { method, body } = renderedRequest;
++    const oAuth1Token = await getOAuth1Token(url, method, authentication, body);
++
++    if (oAuth1Token && oAuth1Token.Authorization) {
++      const oauthParams = _extractOAuthParams(oAuth1Token.Authorization);
++      return oauthParams.map(param => ({
++        name: param.name,
++        value: param.value,
++      } as RequestParameter));
++    }
++  }
++
+   return;
+ }
+ 

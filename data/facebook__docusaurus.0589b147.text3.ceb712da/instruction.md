@@ -2,34 +2,30 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with text node handling in the markdown serialization. When converting markdown AST back to markdown text, text nodes are not being rendered correctly - they appear to be missing or empty in the output.
+I'm experiencing an issue with text rendering in markdown processing. When converting markdown AST nodes to text, the content appears to be missing or not rendering correctly. The text nodes seem to be processed but the actual text value isn't being output.
 
 ### Reproduction
 
 ```js
-const mdast = {
-  type: 'paragraph',
-  children: [
-    {
-      type: 'text',
-      value: 'Hello world'
-    }
-  ]
+const node = {
+  type: 'text',
+  value: 'Hello World'
 }
 
-// Convert to markdown
-const result = toMarkdown(mdast)
-// Expected: "Hello world"
-// Actual: empty or undefined
+// Process the text node
+const result = toMarkdown(node)
+
+// Expected: 'Hello World'
+// Actual: undefined or empty string
 ```
 
 ### Expected behavior
 
-Text nodes with a `value` property should be properly serialized and included in the markdown output. The text content should appear in the final rendered markdown string.
+Text nodes should render their content properly. The `value` property of text nodes should be converted to the output string.
 
-### System Info
-- remark version: 15.0.1
-- Node version: 18.x
+### Additional context
+
+This seems to affect all text content in markdown documents. Paragraphs, headings, and other elements that contain text are not displaying their content correctly.
 
 ---
 Repository: /testbed

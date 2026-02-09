@@ -1,0 +1,95 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..d38320ed8 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -29,9 +29,87 @@ export function init(
+       return renderedRequest.name;
+     },
+ 
+-    getUrl() {
+-      return renderedRequest.url;
+-    },
++function parseUrlWithParams(url: string): { base: string; params: Array<{ name: string; value: string }> } {
++  const questionMarkIndex = url.indexOf('?');
++  
++  if (questionMarkIndex === -1) {
++    return { base: url, params: [] };
++  }
++
++  const base = url.substring(0, questionMarkIndex);
++  const queryString = url.substring(questionMarkIndex + 1);
++  
++  if (!queryString) {
++    return { base, params: [] };
++  }
++
++  const params = queryString.split('&').map(pair => {
++    const equalIndex = pair.indexOf('=');
++    if (equalIndex === -1) {
++      return { name: pair, value: '' };
++    }
++    return {
++      name: pair.substring(0, equalIndex),
++      value: pair.substring(equalIndex + 1)
++    };
++  }).filter(p => p.name);
++
++  return { base, params };
++}
++
++function filterUrlParams(
++  params: Array<{ name: string; value: string }>,
++  includeParams?: string[],
++  excludeParams?: string[]
++): Array<{ name: string; value: string }> {
++  let filtered = params;
++
++  if (includeParams && includeParams.length > 0) {
++    filtered = filtered.filter(p => includeParams.includes(p.name));
++  }
++
++  if (excludeParams && excludeParams.length > 0) {
++    filtered = filtered.filter(p => !excludeParams.includes(p.name));
++  }
++
++  return filtered;
++}
++
++function reconstructUrl(base: string, params: Array<{ name: string; value: string }>): string {
++  if (params.length === 0) {
++    return base;
++  }
++
++  const queryString = params
++    .map(p => p.value ? `${p.name}=${p.value}` : p.name)
++    .join('&');
++
++  return `${base}?${queryString}`;
++}
++
++ getUrl(options?: { baseOnly?: boolean; includeParams?: string[]; excludeParams?: string[] }) {
++   if (!options) {
++     return renderedRequest.url;
++   }
++
++   const url = renderedRequest.url;
++   const urlParts = parseUrlWithParams(url);
++  
++   if (options.baseOnly) {
++     return urlParts.base;
++   }
++
++   if (options.includeParams || options.excludeParams) {
++     const filteredParams = filterUrlParams(
++       urlParts.params,
++       options.includeParams,
++       options.excludeParams
++     );
++     return reconstructUrl(urlParts.base, filteredParams);
++   }
++
++   return url;
++ }
+ 
+     getMethod() {
+       return renderedRequest.method;

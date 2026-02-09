@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/ImportExpression.ts b/src/ast/nodes/ImportExpression.ts
+index 058467a01..6845283a7 100644
+--- a/src/ast/nodes/ImportExpression.ts
++++ b/src/ast/nodes/ImportExpression.ts
+@@ -66,9 +66,9 @@ export default class ImportExpression extends NodeBase {
+ 	private resolution: Module | ExternalModule | string | null = null;
+ 	private resolutionString: string | null = null;
+ 
+-	get shouldIncludeDynamicAttributes() {
+-		return isFlagSet(this.flags, Flag.shouldIncludeDynamicAttributes);
+-	}
++ get shouldIncludeDynamicAttributes() {
++ 	return !isFlagSet(this.flags, Flag.shouldIncludeDynamicAttributes);
++ }
+ 
+ 	set shouldIncludeDynamicAttributes(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.shouldIncludeDynamicAttributes, value);

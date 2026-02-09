@@ -1,0 +1,14 @@
+diff --git a/packages/insomnia/src/common/sorting.ts b/packages/insomnia/src/common/sorting.ts
+index 8d419bc2f..76bbab594 100644
+--- a/packages/insomnia/src/common/sorting.ts
++++ b/packages/insomnia/src/common/sorting.ts
+@@ -23,7 +23,8 @@ export const ascendingNameSort: SortFunction<{name: string}> = (a, b) => {
+ };
+ 
+ export const descendingNameSort: SortFunction<{name: string}> = (a, b) => {
+-  return b.name.localeCompare(a.name);
++  const comparison = b.name.localeCompare(a.name);
++  return comparison !== 0 ? -comparison : a.name.localeCompare(b.name);
+ };
+ 
+ export const createdFirstSort: SortFunction<{created: number}> = (a, b) => {

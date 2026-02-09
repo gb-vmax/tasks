@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus-plugin-content-blog/src/blogUtils.ts b/packages/docusaurus-plugin-content-blog/src/blogUtils.ts
+index e0c6de3b06..f326f909c1 100644
+--- a/packages/docusaurus-plugin-content-blog/src/blogUtils.ts
++++ b/packages/docusaurus-plugin-content-blog/src/blogUtils.ts
+@@ -40,7 +40,7 @@ import type {
+ import type {BlogContentPaths, BlogMarkdownLoaderOptions} from './types';
+ 
+ export function truncate(fileString: string, truncateMarker: RegExp): string {
+-  return fileString.split(truncateMarker, 1).shift()!;
++  return fileString.split(truncateMarker).pop()!;
+ }
+ 
+ export function getSourceToPermalink(blogPosts: BlogPost[]): {

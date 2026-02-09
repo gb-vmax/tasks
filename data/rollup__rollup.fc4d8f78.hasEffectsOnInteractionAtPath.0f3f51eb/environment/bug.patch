@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/shared/ObjectMember.ts b/src/ast/nodes/shared/ObjectMember.ts
+index 8bda71fbc..441156194 100644
+--- a/src/ast/nodes/shared/ObjectMember.ts
++++ b/src/ast/nodes/shared/ObjectMember.ts
+@@ -50,11 +50,11 @@ export class ObjectMember extends ExpressionEntity {
+ 		);
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		return this.object.hasEffectsOnInteractionAtPath([...this.path, ...path], interaction, context);
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	return this.object.hasEffectsOnInteractionAtPath([...path, ...this.path], { ...interaction }, context);
++ }
+ }

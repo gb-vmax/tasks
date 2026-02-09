@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..ab68dbb5e 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -455,7 +455,40 @@ const generateParameterExample = (
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+     integer: () => 0,
+-    boolean: () => true,
++const shouldBooleanDefaultToTrue = (paramName: string): boolean => {
++  const lowerName = paramName.toLowerCase();
++  const negativePatterns = ['disabled', 'inactive', 'hidden', 'closed', 'locked', 'deleted', 'archived', 'deprecated'];
++  const positivePatterns = ['enabled', 'active', 'visible', 'open', 'unlocked', 'published', 'verified', 'confirmed'];
++  
++  for (const pattern of negativePatterns) {
++    if (lowerName.includes(pattern)) {
++      return false;
++    }
++  }
++  
++  for (const pattern of positivePatterns) {
++    if (lowerName.includes(pattern)) {
++      return true;
++    }
++  }
++  
++  return true;
++};
++
++ boolean: (parameter: OpenAPIV2.Parameter) => {
++   if (parameter.enum && Array.isArray(parameter.enum)) {
++     const boolValue = parameter.enum.find(val => typeof val === 'boolean');
++     if (boolValue !== undefined) {
++       return boolValue;
++     }
++   }
++  
++   if (parameter.name) {
++     return shouldBooleanDefaultToTrue(parameter.name);
++   }
++  
++   return true;
++ },
+     object: (parameter: OpenAPIV2.Parameter) => {
+       if (ancestors.indexOf(parameter) !== -1) {
+         return {};

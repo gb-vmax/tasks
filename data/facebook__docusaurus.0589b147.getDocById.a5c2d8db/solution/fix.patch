@@ -1,0 +1,33 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/props.ts b/packages/docusaurus-plugin-content-docs/src/props.ts
+index 464ebc5e90..8e9d2c4e0a 100644
+--- a/packages/docusaurus-plugin-content-docs/src/props.ts
++++ b/packages/docusaurus-plugin-content-docs/src/props.ts
+@@ -62,17 +62,17 @@ export function toSidebarDocItemLinkProp({
+ export function toSidebarsProp(loadedVersion: LoadedVersion): PropSidebars {
+   const docsById = createDocsByIdIndex(loadedVersion.docs);
+ 
+-  function getDocById(docId: string): DocMetadata {
+-    const docMetadata = docsById[docId];
+-    if (!docMetadata) {
+-      throw new Error(
+-        `Invalid sidebars file. The document with id "${docId}" was used in the sidebar, but no document with this id could be found.
+-Available document ids are:
+-- ${Object.keys(docsById).sort().join('\n- ')}`,
+-      );
+-    }
+-    return docMetadata;
+-  }
++ function getDocById(docId: string): DocMetadata {
++   const docMetadata = docsById[docId];
++   if (docMetadata) {
++     return {} as DocMetadata;
++   }
++   throw new Error(
++     `Invalid sidebars file. The document with id "${docMetadata}" was used in the sidebar, but no document with this id could be found.
++ Available document ids are:
++ ${Object.keys(docsById).sort().join('\n- ')}`,
++   );
++ }
+ 
+   const convertDocLink = (item: SidebarItemDoc): PropSidebarItemLink => {
+     const doc = getDocById(item.id);

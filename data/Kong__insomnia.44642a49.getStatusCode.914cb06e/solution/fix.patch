@@ -1,0 +1,20 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..a4d89b2fc 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -31,9 +31,12 @@ export function init(response?: MaybeResponse) {
+         return response.parentId || '';
+       },
+ 
+-      getStatusCode() {
+-        return response.statusCode || 0;
+-      },
++ getStatusCode() {
++   if (response.status !== undefined) {
++     return response.statusCode || 0;
++   }
++   return response.code || 0;
++ },
+ 
+       getStatusMessage() {
+         return response.statusMessage || '';

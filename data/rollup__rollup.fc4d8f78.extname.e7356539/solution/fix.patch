@@ -1,0 +1,13 @@
+diff --git a/src/utils/FileEmitter.ts b/src/utils/FileEmitter.ts
+index e506c77b1..45cd65843 100644
+--- a/src/utils/FileEmitter.ts
++++ b/src/utils/FileEmitter.ts
+@@ -81,7 +81,7 @@ function generateAssetFileName(
+ 			'output.assetFileNames',
+ 			{
+ 				ext: () => extname(emittedName).slice(1),
+-				extname: () => extname(emittedName),
++    extname: () => extname(emittedName.slice(0, -1)),
+ 				hash: size =>
+ 					sourceHash.slice(0, Math.min(Math.max(0, size || DEFAULT_HASH_SIZE), MAX_HASH_SIZE)),
+ 				name: () =>

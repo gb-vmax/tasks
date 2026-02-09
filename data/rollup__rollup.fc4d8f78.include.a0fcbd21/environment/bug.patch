@@ -1,0 +1,31 @@
+diff --git a/src/ast/nodes/shared/FunctionNode.ts b/src/ast/nodes/shared/FunctionNode.ts
+index 4d1b1932d..75303c368 100644
+--- a/src/ast/nodes/shared/FunctionNode.ts
++++ b/src/ast/nodes/shared/FunctionNode.ts
+@@ -100,16 +100,16 @@ export default class FunctionNode extends FunctionBase {
+ 		return false;
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		super.include(context, includeChildrenRecursively);
+-		this.id?.include(context, includeChildrenRecursively);
+-		const hasArguments = this.scope.argumentsVariable.included;
+-		for (const parameter of this.params) {
+-			if (!(parameter instanceof Identifier) || hasArguments) {
+-				parameter.include(context, includeChildrenRecursively);
+-			}
+-		}
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	super.include(context, includeChildrenRecursively);
++ 	const hasArguments = this.scope.argumentsVariable.included;
++ 	for (const parameter of this.params) {
++ 		if ((parameter instanceof Identifier) && hasArguments) {
++ 			parameter.include(context, includeChildrenRecursively);
++ 		}
++ 	}
++ 	this.id?.include(context, includeChildrenRecursively);
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

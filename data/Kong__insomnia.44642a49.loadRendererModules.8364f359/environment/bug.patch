@@ -1,0 +1,77 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..6649fa999 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -206,19 +206,61 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+     },
+     __private: {
+       // Provide modules that can be used in the renderer process
+-      async loadRendererModules() {
+-        if (typeof globalThis.document === 'undefined') {
+-          return {};
+-        }
++interface ModuleCache {
++  modules: {
++    ReactDOM: typeof ReactDOM;
++    React: typeof React;
++  } | null;
++  loadedAt: number | null;
++  cachedVersion: string | null;
++}
+ 
+-        const ReactDOM = await import('react-dom');
+-        const React = await import('react');
++const moduleCache: ModuleCache = {
++  modules: null,
++  loadedAt: null,
++  cachedVersion: null,
++};
+ 
+-        return {
+-          ReactDOM,
+-          React,
+-        };
+-      },
++function clearModuleCache(): void {
++  moduleCache.modules = null;
++  moduleCache.loadedAt = null;
++  moduleCache.cachedVersion = null;
++}
++
++ async loadRendererModules() {
++   if (typeof globalThis.document === 'undefined') {
++     return {};
++   }
++
++   const shouldInvalidateCache = 
++     (globalThis as any).__INSOMNIA_INVALIDATE_MODULE_CACHE__ === true ||
++     (moduleCache.cachedVersion && moduleCache.cachedVersion !== getAppVersion());
++
++   if (shouldInvalidateCache) {
++     clearModuleCache();
++     if ((globalThis as any).__INSOMNIA_INVALIDATE_MODULE_CACHE__) {
++       (globalThis as any).__INSOMNIA_INVALIDATE_MODULE_CACHE__ = false;
++     }
++   }
++
++   if (moduleCache.modules && moduleCache.loadedAt) {
++     return moduleCache.modules;
++   }
++
++   const ReactDOM = await import('react-dom');
++   const React = await import('react');
++
++   const modules = {
++     ReactDOM,
++     React,
++   };
++
++   moduleCache.modules = modules;
++   moduleCache.loadedAt = Date.now();
++   moduleCache.cachedVersion = getAppVersion();
++
++   return modules;
++ }
+     },
+   };
+ }

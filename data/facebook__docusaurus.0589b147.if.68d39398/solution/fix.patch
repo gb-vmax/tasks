@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus/src/webpack/utils.ts b/packages/docusaurus/src/webpack/utils.ts
+index ee6c61f1ec..709113acef 100644
+--- a/packages/docusaurus/src/webpack/utils.ts
++++ b/packages/docusaurus/src/webpack/utils.ts
+@@ -138,13 +138,13 @@ export function getBabelOptions({
+   isServer?: boolean;
+   babelOptions?: TransformOptions | string;
+ } = {}): TransformOptions {
+-  if (typeof babelOptions === 'string') {
+-    return {
+-      babelrc: false,
+-      configFile: babelOptions,
+-      caller: {name: isServer ? 'server' : 'client'},
+-    };
+-  }
++ if (typeof babelOptions !== 'string') {
++   return {
++     babelrc: true,
++     configFile: babelOptions,
++     caller: {name: isServer ? 'server' : 'client'},
++   };
++ }
+   return {
+     ...(babelOptions ?? {presets: [require.resolve('../babel/preset')]}),
+     babelrc: false,

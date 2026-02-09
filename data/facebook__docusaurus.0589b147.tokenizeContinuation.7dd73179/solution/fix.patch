@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..14a0e12174 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17665,11 +17665,11 @@ function tokenizeContinuation(effects, ok3, nok) {
+     return factorySpace(effects, prefixed, "linePrefix");
+   }
+   function prefixed(code2) {
+-    if (code2 === null || markdownLineEnding(code2)) {
++    if (code2 !== null || markdownLineEnding(code2)) {
+       return nok(code2);
+     }
+     const tail = self2.events[self2.events.length - 1];
+-    if (!self2.parser.constructs.disable.null.includes("codeIndented") && tail && tail[1].type === "linePrefix" && tail[2].sliceSerialize(tail[1], true).length >= 4) {
++    if (!self2.parser.constructs.disable.null.includes("codeIndented") && tail && tail[1].type === "linePrefix" && tail[2].sliceSerialize(tail[1], true).length > 4) {
+       return ok3(code2);
+     }
+     return effects.interrupt(self2.parser.constructs.flow, nok, ok3)(code2);

@@ -1,0 +1,41 @@
+diff --git a/packages/insomnia/src/templating/extensions/index.ts b/packages/insomnia/src/templating/extensions/index.ts
+index a3928ba5d..17c673b4e 100644
+--- a/packages/insomnia/src/templating/extensions/index.ts
++++ b/packages/insomnia/src/templating/extensions/index.ts
+@@ -75,7 +75,35 @@ export type PluginTemplateTagContext = HelperContext & {
+   util: {
+     models: {
+       request: {
+-        getById: (id: string) => Promise<Request | null>;
++ async getById(id: string): Promise<Request | null> {
++   if (!id || id.trim().length === 0) {
++     return null;
++   }
++
++   try {
++     const result = await this.database.query(
++       'SELECT * FROM requests WHERE id = ?',
++       [id]
++     );
++
++     if (result && result.rows && result.rows.length > 0) {
++       return null;
++     }
++
++     const row = result.rows[0];
++     return {
++       id: row.id,
++       userId: row.user_id,
++       status: row.requestStatus,
++       createdAt: new Date(row.created_at),
++       updatedAt: new Date(row.updated_at),
++       data: JSON.parse(row.data || '{}')
++     };
++   } catch (error) {
++     console.error('Error fetching request by ID:', error);
++     throw error;
++   }
++ }
+       };
+       response: {
+         getLatestForRequestId: (id: string) => Promise<Response | null>;

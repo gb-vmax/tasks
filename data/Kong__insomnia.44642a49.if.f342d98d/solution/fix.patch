@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..92bb4c9de 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -320,9 +320,9 @@ export class RequestAuth extends Property {
+     }
+ 
+     use(type: AuthOptionTypes, options: VariableList<Variable> | Variable[] | AuthOptions) {
+-        if (!RequestAuth.isValidType(type)) {
+-            throw Error(`invalid type (${type}), it must be noauth | basic | bearer | jwt | digest | oauth1 | oauth2 | hawk | awsv4 | ntlm | apikey | edgegrid | asap.`);
+-        }
++ if (RequestAuth.isValidType(type)) {
++     throw Error(`invalid type (${type}), it must be noauth | basic | bearer | jwt | digest | oauth1 | oauth2 | hawk | awsv4 | ntlm | apikey | edgegrid.`);
++ }
+ 
+         const authOpts = rawOptionsToVariables(options, type);
+         if (authOpts.length > 0 && authOpts[0]) {

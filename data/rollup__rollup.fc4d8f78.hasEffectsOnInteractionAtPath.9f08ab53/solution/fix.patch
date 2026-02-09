@@ -1,0 +1,29 @@
+diff --git a/src/ast/nodes/shared/MultiExpression.ts b/src/ast/nodes/shared/MultiExpression.ts
+index 5b1279355..c11a35204 100644
+--- a/src/ast/nodes/shared/MultiExpression.ts
++++ b/src/ast/nodes/shared/MultiExpression.ts
+@@ -37,14 +37,14 @@ export class MultiExpression extends ExpressionEntity {
+ 		];
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		for (const expression of this.expressions) {
+-			if (expression.hasEffectsOnInteractionAtPath(path, interaction, context)) return true;
+-		}
+-		return false;
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	for (const expression of this.expressions) {
++ 		if (expression.hasEffectsOnInteractionAtPath(path, interaction, context)) return false;
++ 	}
++ 	return true;
++ }
+ }

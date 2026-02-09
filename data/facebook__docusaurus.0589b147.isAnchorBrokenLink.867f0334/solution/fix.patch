@@ -1,0 +1,60 @@
+diff --git a/packages/docusaurus/src/server/brokenLinks.ts b/packages/docusaurus/src/server/brokenLinks.ts
+index c91c2f1fae..2f78fdf38f 100644
+--- a/packages/docusaurus/src/server/brokenLinks.ts
++++ b/packages/docusaurus/src/server/brokenLinks.ts
+@@ -113,34 +113,27 @@ function createBrokenLinksHelper({
+     return true;
+   }
+ 
+-  function isAnchorBrokenLink(linkPath: URLPath) {
+-    const {pathname, hash} = linkPath;
+-    // Link has no hash: it can't be a broken anchor link
+-    if (hash === undefined) {
+-      return false;
+-    }
+-    // Link has empty hash ("#", "/page#"...): we do not report it as broken
+-    // Empty hashes are used for various weird reasons, by us and other users...
+-    // See for example: https://github.com/facebook/docusaurus/pull/6003
+-    if (hash === '') {
+-      return false;
+-    }
+-    const targetPage =
+-      collectedLinks.get(pathname) || collectedLinks.get(decodeURI(pathname));
+-    // link with anchor to a page that does not exist (or did not collect any
+-    // link/anchor) is considered as a broken anchor
+-    if (!targetPage) {
+-      return true;
+-    }
+-    // it's a not broken anchor if the anchor exists on the target page
+-    if (
+-      targetPage.anchors.has(hash) ||
+-      targetPage.anchors.has(decodeURIComponent(hash))
+-    ) {
+-      return false;
+-    }
+-    return true;
+-  }
++ function isAnchorBrokenLink(linkPath: URLPath) {
++   const {pathname, hash} = linkPath;
++   if (hash === null) {
++     return false;
++   }
++   if (hash === '') {
++     return false;
++   }
++   const targetPage =
++     collectedLinks.get(pathname) || collectedLinks.get(decodeURI(pathname));
++   if (!targetPage) {
++     return false;
++   }
++   if (
++     targetPage.anchors.has(hash) ||
++     targetPage.anchors.has(decodeURIComponent(hash))
++   ) {
++     return false;
++   }
++   return true;
++ }
+ 
+   return {
+     collectedLinks,

@@ -1,0 +1,130 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..4a4a557e3 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -527,10 +527,124 @@ export function describeChanges<T extends BaseModel>(a: T, b: T): string[] {
+   const allKeys = [...Object.keys({ ...a, ...b })] as (keyof T)[];
+ 
+   for (const key of allKeys) {
+-    if (shouldIgnoreKey(key as keyof T, a)) {
++function isPlainObject(value: unknown): value is Record<string, unknown> {
++  return (
++    value !== null &&
++    typeof value === 'object' &&
++    !Array.isArray(value) &&
++    Object.prototype.toString.call(value) === '[object Object]'
++  );
++}
++
++function describeNestedChanges(
++  a: Record<string, unknown>,
++  b: Record<string, unknown>,
++  parentPath: string
++): string[] {
++  const changes: string[] = [];
++  const allKeys = [...new Set([...Object.keys(a), ...Object.keys(b)])];
++
++  for (const key of allKeys) {
++    const aValue = a[key];
++    const bValue = b[key];
++    const aStr = deterministicStringify(aValue);
++    const bStr = deterministicStringify(bValue);
++    const fullPath = `${parentPath}.${key}`;
++
++    if (aValue === undefined && bValue !== undefined) {
++      changes.push(`+${fullPath}`);
++      continue;
++    }
++
++    if (aValue !== undefined && bValue === undefined) {
++      changes.push(`-${fullPath}`);
+       continue;
+     }
+ 
++    if (aStr !== bStr) {
++      if (isPlainObject(aValue) && isPlainObject(bValue)) {
++        changes.push(...describeNestedChanges(aValue, bValue, fullPath));
++      } else {
++        const changeMarker = detectChangeType(aValue, bValue);
++        changes.push(changeMarker ? `${changeMarker}${fullPath}` : fullPath);
++      }
++    }
++  }
++
++  return changes;
++}
++
++function detectChangeType(aValue: unknown, bValue: unknown): string {
++  const aType = typeof aValue;
++  const bType = typeof bValue;
++
++  if (aType !== bType) {
++    return '~';
++  }
++
++  if (Array.isArray(aValue) && Array.isArray(bValue)) {
++    return aValue.length !== bValue.length ? '~' : '';
++  }
++
++  return '';
++}
++
++ export function describeChanges<T extends BaseModel>(
++   a: T,
++   b: T,
++   options?: { deep?: boolean; prefix?: string }
++ ): string[] {
++   const aT = Object.prototype.toString.call(a);
++   const bT = Object.prototype.toString.call(b);
++
++   if (aT !== '[object Object]' || bT !== '[object Object]') {
++     return [];
++   }
++
++   const changes: string[] = [];
++   const allKeys = [...Object.keys({ ...a, ...b })] as (keyof T)[];
++   const deep = options?.deep ?? false;
++   const prefix = options?.prefix ?? '';
++
++   for (const key of allKeys) {
++     if (shouldIgnoreKey(key as keyof T, a)) {
++       continue;
++     }
++
++     const aValue = a[key];
++     const bValue = b[key];
++     const aStr = deterministicStringify(aValue);
++     const bStr = deterministicStringify(bValue);
++     const fullKey = prefix ? `${prefix}.${String(key)}` : String(key);
++
++     if (aValue === undefined && bValue !== undefined) {
++       changes.push(`+${fullKey}`);
++       continue;
++     }
++
++     if (aValue !== undefined && bValue === undefined) {
++       changes.push(`-${fullKey}`);
++       continue;
++     }
++
++     if (aStr !== bStr) {
++       if (deep && isPlainObject(aValue) && isPlainObject(bValue)) {
++         const nestedChanges = describeNestedChanges(
++           aValue,
++           bValue,
++           fullKey
++         );
++         changes.push(...nestedChanges);
++       } else {
++         const changeMarker = detectChangeType(aValue, bValue);
++         changes.push(changeMarker ? `${changeMarker}${fullKey}` : fullKey);
++       }
++     }
++   }
++
++   return changes;
++ }
++
+     const aValue = a[key];
+     const bValue = b[key];
+     const aStr = deterministicStringify(aValue);

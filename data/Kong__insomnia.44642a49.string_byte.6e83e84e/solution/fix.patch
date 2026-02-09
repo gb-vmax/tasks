@@ -1,0 +1,53 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..54b56c7d3 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -591,7 +591,47 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     string: () => 'string',
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+-    string_byte: () => 'ZXhhbXBsZQ==',
++const generateBase64WithLength = (targetLength: number): string => {
++  const base64Overhead = 4 / 3;
++  const sourceByteLength = Math.ceil(targetLength / base64Overhead);
++  
++  const bytes: number[] = [];
++  for (let i = 0; i < sourceByteLength; i++) {
++    bytes.push(65 + (i % 26));
++  }
++  
++  const buffer = Buffer.from(bytes);
++  let base64 = buffer.toString('base64');
++  
++  if (base64.length < targetLength) {
++    const padding = 'A'.repeat(targetLength - base64.length);
++    const extendedBuffer = Buffer.from(buffer.toString() + padding);
++    base64 = extendedBuffer.toString('base64');
++  }
++  
++  if (base64.length > targetLength && targetLength >= 4) {
++    const trimmedLength = Math.floor(targetLength / 4) * 4;
++    base64 = base64.substring(0, trimmedLength);
++  }
++  
++  return base64;
++};
++
++ string_byte: (schema: OpenAPIV3.SchemaObject) => {
++   if (!schema || typeof schema !== 'object') {
++     return 'ZXhhbXBsZQ==';
++   }
++
++   const minLength = typeof schema.minLength === 'number' ? schema.minLength : 0;
++   const maxLength = typeof schema.maxLength === 'number' ? schema.maxLength : 0;
++
++   if (minLength > 0 || maxLength > 0) {
++     const targetLength = maxLength > 0 ? Math.min(minLength + 8, maxLength) : minLength + 8;
++     return generateBase64WithLength(targetLength);
++   }
++
++   return 'ZXhhbXBsZQ==';
++ }
+     number: () => 0,
+     number_float: () => 0.0,
+     number_double: () => 0.0,

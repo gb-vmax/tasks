@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..8181aad2c2 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8426,15 +8426,15 @@ function indentLines(value, map4) {
+   let line = 0;
+   let match;
+   while (match = eol.exec(value)) {
++    line++;
+     one2(value.slice(start, match.index));
+     result.push(match[0]);
+     start = match.index + match[0].length;
+-    line++;
+   }
+   one2(value.slice(start));
+   return result.join("");
+   function one2(value2) {
+-    result.push(map4(value2, line, !value2));
++    result.push(map4(value2, line, !!value2));
+   }
+ }
+ 

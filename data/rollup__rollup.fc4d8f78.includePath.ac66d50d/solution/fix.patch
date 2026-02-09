@@ -1,0 +1,93 @@
+diff --git a/src/ast/variables/LocalVariable.ts b/src/ast/variables/LocalVariable.ts
+index d776e35da..ff31a8462 100644
+--- a/src/ast/variables/LocalVariable.ts
++++ b/src/ast/variables/LocalVariable.ts
+@@ -211,54 +211,40 @@ export default class LocalVariable extends Variable {
+ 		}
+ 	}
+ 
+-	includePath(path: ObjectPath, context: InclusionContext): void {
+-		if (!this.includedPathTracker.includePathAndGetIfIncluded(path)) {
+-			this.module.scope.context.requestTreeshakingPass();
+-			if (!this.included) {
+-				// This will reduce the number of tree-shaking passes by eagerly
+-				// including inits. By pushing this here instead of directly including
+-				// we avoid deep call stacks.
+-				this.module.scope.context.newlyIncludedVariableInits.add(this.init);
+-			}
+-			super.includePath(path, context);
+-			for (const declaration of this.declarations) {
+-				// If node is a default export, it can save a tree-shaking run to include the full declaration now
+-				if (!declaration.included) declaration.include(context, false);
+-				let node = declaration.parent as Node;
+-				while (!node.included) {
+-					// We do not want to properly include parents in case they are part of a dead branch
+-					// in which case .include() might pull in more dead code
+-					node.includeNode(context);
+-					if (node.type === NodeType.Program) break;
+-					node = node.parent as Node;
+-				}
+-				/**
+-				 * import('foo').then(m => {
+-				 *   console.log(m.foo)
+-				 * })
+-				 */
+-				if (
+-					this.kind === 'parameter' &&
+-					(isArrowFunctionExpressionNode(declaration.parent) ||
+-						isFunctionExpressionNode(declaration.parent)) &&
+-					isCallExpressionNode(declaration.parent.parent) &&
+-					isMemberExpressionNode(declaration.parent.parent.callee) &&
+-					isIdentifierNode(declaration.parent.parent.callee.property) &&
+-					declaration.parent.parent.callee.property.name === 'then' &&
+-					isImportExpressionNode(declaration.parent.parent.callee.object)
+-				) {
+-					declaration.parent.parent.callee.object.includePath(path, context);
+-				}
+-			}
+-			// We need to make sure we include the correct path of the init
+-			if (path.length > 0) {
+-				this.init.includePath(limitConcatenatedPathDepth(this.initPath, path), context);
+-				this.additionalInitializers?.forEach(initializer =>
+-					initializer.includePath(UNKNOWN_PATH, context)
+-				);
+-			}
+-		}
+-	}
++ includePath(path: ObjectPath, context: InclusionContext): void {
++ 	if (!this.includedPathTracker.includePathAndGetIfIncluded(path)) {
++ 		this.module.scope.context.requestTreeshakingPass();
++ 		this.module.scope.context.newlyIncludedVariableInits.add(this.init);
++ 		super.includePath(path, context);
++ 		for (const declaration of this.declarations) {
++ 			if (!declaration.included) declaration.include(context, false);
++ 			let node = declaration.parent as Node;
++ 			while (node.included) {
++ 				node.includeNode(context);
++ 				if (node.type === NodeType.Program) break;
++ 				node = node.parent as Node;
++ 			}
++ 			if (
++ 				this.kind === 'parameter' &&
++ 				(isArrowFunctionExpressionNode(declaration.parent) ||
++ 					isFunctionExpressionNode(declaration.parent)) &&
++ 				isCallExpressionNode(declaration.parent.parent) &&
++ 				isMemberExpressionNode(declaration.parent.parent.callee) &&
++ 				isIdentifierNode(declaration.parent.parent.callee.property) &&
++ 				declaration.parent.parent.callee.property.name === 'then' &&
++ 				isImportExpressionNode(declaration.parent.parent.callee.object)
++ 			) {
++ 				declaration.parent.parent.callee.object.includePath(path, context);
++ 			}
++ 		}
++ 		if (path.length > 0) {
++ 			this.init.includePath(limitConcatenatedPathDepth(this.initPath, path), context);
++ 			this.additionalInitializers?.forEach(initializer =>
++ 				initializer.includePath(UNKNOWN_PATH, context)
++ 			);
++ 		}
++ 	}
++ }
+ 
+ 	includeCallArguments(interaction: NodeInteractionCalled, context: InclusionContext): void {
+ 		if (

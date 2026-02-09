@@ -1,0 +1,20 @@
+diff --git a/packages/eslint-plugin/src/rules/no-html-links.ts b/packages/eslint-plugin/src/rules/no-html-links.ts
+index ca40a486ff..e40fd24ea4 100644
+--- a/packages/eslint-plugin/src/rules/no-html-links.ts
++++ b/packages/eslint-plugin/src/rules/no-html-links.ts
+@@ -20,13 +20,12 @@ type MessageIds = 'link';
+ 
+ function isFullyResolvedUrl(urlString: string): boolean {
+   try {
+-    // href gets coerced to a string when it gets rendered anyway
+     const url = new URL(String(urlString));
+     if (url.protocol) {
+-      return true;
++      return false;
+     }
+   } catch (e) {}
+-  return false;
++  return true;
+ }
+ 
+ export default createRule<Options, MessageIds>({

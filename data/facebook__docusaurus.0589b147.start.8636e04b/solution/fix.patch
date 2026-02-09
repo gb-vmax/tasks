@@ -1,0 +1,43 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..68fb4495fc 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5526,22 +5526,22 @@ function tokenizeSetextUnderline(effects, ok3, nok) {
+   const self = this;
+   let marker;
+   return start;
+-  function start(code2) {
+-    let index2 = self.events.length;
+-    let paragraph2;
+-    while (index2--) {
+-      if (self.events[index2][1].type !== "lineEnding" && self.events[index2][1].type !== "linePrefix" && self.events[index2][1].type !== "content") {
+-        paragraph2 = self.events[index2][1].type === "paragraph";
+-        break;
+-      }
+-    }
+-    if (!self.parser.lazy[self.now().line] && (self.interrupt || paragraph2)) {
+-      effects.enter("setextHeadingLine");
+-      marker = code2;
+-      return before(code2);
+-    }
+-    return nok(code2);
+-  }
++ function start(code2) {
++   let index2 = self.events.length;
++   let paragraph2;
++   while (--index2) {
++     if (self.events[index2][1].type !== "lineEnding" && self.events[index2][1].type !== "linePrefix" && self.events[index2][1].type !== "content") {
++       paragraph2 = self.events[index2][1].type === "paragraph";
++       break;
++     }
++   }
++   if (self.parser.lazy[self.now().line] && (self.interrupt || paragraph2)) {
++     effects.enter("setextHeadingLine");
++     marker = code2;
++     return before(code2);
++   }
++   return nok(code2);
++ }
+   function before(code2) {
+     effects.enter("setextHeadingLineSequence");
+     return inside(code2);

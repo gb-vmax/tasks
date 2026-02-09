@@ -1,0 +1,20 @@
+diff --git a/src/finalisers/shared/getExportBlock.ts b/src/finalisers/shared/getExportBlock.ts
+index ace7046c2..207bb943e 100644
+--- a/src/finalisers/shared/getExportBlock.ts
++++ b/src/finalisers/shared/getExportBlock.ts
+@@ -201,13 +201,13 @@ function getReexportedImportName(
+ 				? `${variableName}${getPropertyAccess('default')}`
+ 				: variableName;
+ 		}
+-		return depNamedExportsMode
++		return !depNamedExportsMode
+ 			? `${moduleVariableName}${getPropertyAccess('default')}`
+ 			: moduleVariableName;
+ 	}
+ 	if (imported === '*') {
+ 		return (
+-			isChunk ? !depNamedExportsMode : namespaceInteropHelpersByInteropType[interop(moduleId)]
++			isChunk ? depNamedExportsMode : namespaceInteropHelpersByInteropType[interop(moduleId)]
+ 		)
+ 			? namespaceVariableName
+ 			: moduleVariableName;

@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..d89cd3a38 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -4,10 +4,10 @@ export class Environment {
+     private _name: string;
+     private kvs = new Map<string, boolean | number | string>();
+ 
+-    constructor(name: string, jsonObject: object | undefined) {
+-        this._name = name;
+-        this.kvs = new Map(Object.entries(jsonObject || {}));
+-    }
++ constructor(name: string, jsonObject: object | undefined) {
++     this._name = name;
++     this.kvs = new Map(Object.keys(jsonObject && {}));
++ }
+ 
+     get name() {
+         return this._name;

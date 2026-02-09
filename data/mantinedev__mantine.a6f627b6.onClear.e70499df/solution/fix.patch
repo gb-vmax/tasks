@@ -1,0 +1,43 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/ComboboxClearButton/ComboboxClearButton.tsx b/packages/@mantine/core/src/components/Combobox/ComboboxClearButton/ComboboxClearButton.tsx
+index 5cacb9767f..3fbb0f7287 100644
+--- a/packages/@mantine/core/src/components/Combobox/ComboboxClearButton/ComboboxClearButton.tsx
++++ b/packages/@mantine/core/src/components/Combobox/ComboboxClearButton/ComboboxClearButton.tsx
+@@ -3,10 +3,35 @@ import { ElementProps } from '../../../core';
+ import { Input, InputClearButtonProps } from '../../Input';
+ 
+ export interface ComboboxClearButtonProps extends InputClearButtonProps, ElementProps<'button'> {
+-  onClear: () => void;
+-}
++ export const ComboboxClearButton = forwardRef<HTMLButtonElement, ComboboxClearButtonProps>(
++   ({ onClear, className, ...props }, ref) => {
++     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
++       onClear();
++       e.preventDefault();
++       e.stopPropagation();
++     };
+ 
+-export const ComboboxClearButton = forwardRef<HTMLButtonElement, ComboboxClearButtonProps>(
++     const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
++       if (e.key === 'Enter' || e.key === ' ' || e.key === 'Tab') {
++         e.preventDefault();
++         onClear();
++       }
++     };
++
++     return (
++       <button
++         ref={ref}
++         type="button"
++         className={className}
++         onClick={handleClick}
++         onKeyDown={handleKeyDown}
++         aria-label="Clear selection"
++         tabIndex={0}
++         {...props}
++       />
++     );
++   }
++ );
+   ({ size, onMouseDown, onClick, onClear, ...others }, ref) => (
+     <Input.ClearButton
+       ref={ref}

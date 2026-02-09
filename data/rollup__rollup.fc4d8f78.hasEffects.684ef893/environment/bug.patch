@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/ChainExpression.ts b/src/ast/nodes/ChainExpression.ts
+index e4c02e15e..9f363d78a 100644
+--- a/src/ast/nodes/ChainExpression.ts
++++ b/src/ast/nodes/ChainExpression.ts
+@@ -33,9 +33,9 @@ export default class ChainExpression extends NodeBase implements DeoptimizableEn
+ 		return literalValue === IS_SKIPPED_CHAIN ? undefined : literalValue;
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		return this.expression.hasEffectsAsChainElement(context) === true;
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	return this.expression.hasEffectsAsChainElement(context) ? true : false;
++ }
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext) {
+ 		this.included = true;

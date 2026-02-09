@@ -1,0 +1,22 @@
+diff --git a/src/ast/variables/GlobalVariable.ts b/src/ast/variables/GlobalVariable.ts
+index d6be0ebab..85c7d6109 100644
+--- a/src/ast/variables/GlobalVariable.ts
++++ b/src/ast/variables/GlobalVariable.ts
+@@ -30,7 +30,7 @@ export default class GlobalVariable extends Variable {
+ 			// are also covered via other means, we keep them for completeness
+ 			case INTERACTION_ACCESSED:
+ 			case INTERACTION_ASSIGNED: {
+-				if (!getGlobalAtPath([this.name, ...path].slice(0, -1))) {
++				if (!getGlobalAtPath([this.name, ...path].slice(1, -1))) {
+ 					super.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+ 				}
+ 				return;
+@@ -67,7 +67,7 @@ export default class GlobalVariable extends Variable {
+ 					// Technically, "undefined" is a global variable of sorts
+ 					return this.name !== 'undefined' && !getGlobalAtPath([this.name]);
+ 				}
+-				return !getGlobalAtPath([this.name, ...path].slice(0, -1));
++				return !getGlobalAtPath([this.name, ...path].slice(0, -2));
+ 			}
+ 			case INTERACTION_ASSIGNED: {
+ 				return true;

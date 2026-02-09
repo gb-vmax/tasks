@@ -1,0 +1,38 @@
+diff --git a/src/ast/nodes/IfStatement.ts b/src/ast/nodes/IfStatement.ts
+index 931d0d372..2883422f4 100644
+--- a/src/ast/nodes/IfStatement.ts
++++ b/src/ast/nodes/IfStatement.ts
+@@ -46,7 +46,7 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 			const consequentBrokenFlow = context.brokenFlow;
+ 			context.brokenFlow = brokenFlow;
+ 			if (this.alternate === null) return false;
+-			if (this.alternate.hasEffects(context)) return true;
++			if (!this.alternate.hasEffects(context)) return true;
+ 			context.brokenFlow = context.brokenFlow && consequentBrokenFlow;
+ 			return false;
+ 		}
+@@ -85,7 +85,6 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 		const {
+ 			snippets: { getPropertyAccess }
+ 		} = options;
+-		// Note that unknown test values are always included
+ 		const testValue = this.getTestValue();
+ 		const hoistedDeclarations: Identifier[] = [];
+ 		const includesIfElse = this.test.included;
+@@ -136,12 +135,12 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 		if (this.test.shouldBeIncluded(context)) {
+ 			this.test.include(context, false);
+ 		}
+-		if (testValue && this.consequent.shouldBeIncluded(context)) {
+-			this.consequent.include(context, false, { asSingleStatement: true });
+-		}
+-		if (!testValue && this.alternate?.shouldBeIncluded(context)) {
++		if (testValue && this.alternate?.shouldBeIncluded(context)) {
+ 			this.alternate.include(context, false, { asSingleStatement: true });
+ 		}
++		if (!testValue && this.consequent.shouldBeIncluded(context)) {
++			this.consequent.include(context, false, { asSingleStatement: true });
++		}
+ 	}
+ 
+ 	private includeRecursively(

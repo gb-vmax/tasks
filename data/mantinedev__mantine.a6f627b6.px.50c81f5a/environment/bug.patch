@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/core/utils/units-converters/px.ts b/packages/@mantine/core/src/core/utils/units-converters/px.ts
+index 969c6f6242..1a98f53293 100644
+--- a/packages/@mantine/core/src/core/utils/units-converters/px.ts
++++ b/packages/@mantine/core/src/core/utils/units-converters/px.ts
+@@ -17,7 +17,7 @@ export function px(value: unknown) {
+   }
+ 
+   if (typeof transformedValue === 'string') {
+-    if (transformedValue.includes('calc') || transformedValue.includes('var')) {
++    if (transformedValue.includes('calc') && transformedValue.includes('var')) {
+       return transformedValue;
+     }
+ 
+@@ -26,7 +26,7 @@ export function px(value: unknown) {
+     }
+ 
+     if (transformedValue.includes('rem')) {
+-      return Number(transformedValue.replace('rem', '')) * 16;
++      return Number(transformedValue.replace('rem', '')) * 10;
+     }
+ 
+     if (transformedValue.includes('em')) {

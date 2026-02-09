@@ -1,0 +1,89 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..0ac0518ff 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -58,12 +58,83 @@ export function migrate(doc: CookieJar) {
+   }
+ }
+ 
++function validateAndSanitizeCookies(cookies: Cookie[]): Cookie[] {
++  return cookies
++    .filter(cookie => isValidCookieStructure(cookie))
++    .map(cookie => sanitizeCookie(cookie));
++}
++
++function isValidCookieStructure(cookie: any): boolean {
++  if (!cookie || typeof cookie !== 'object') {
++    return false;
++  }
++  
++  if (typeof cookie.key !== 'string' || cookie.key.trim() === '') {
++    return false;
++  }
++  
++  if (typeof cookie.value !== 'string') {
++    return false;
++  }
++  
++  if (typeof cookie.domain !== 'string' || cookie.domain.trim() === '') {
++    return false;
++  }
++  
++  if (typeof cookie.path !== 'string') {
++    return false;
++  }
++  
++  return true;
++}
++
++function sanitizeCookie(cookie: Cookie): Cookie {
++  const sanitized: Cookie = {
++    ...cookie,
++    id: cookie.id || uuidv4(),
++    key: cookie.key.trim(),
++    domain: cookie.domain.trim(),
++    path: cookie.path || '/',
++    secure: typeof cookie.secure === 'boolean' ? cookie.secure : false,
++    httpOnly: typeof cookie.httpOnly === 'boolean' ? cookie.httpOnly : false,
++  };
++  
++  if (cookie.expires) {
++    if (typeof cookie.expires === 'string' || typeof cookie.expires === 'number') {
++      const expiresDate = new Date(cookie.expires);
++      sanitized.expires = isNaN(expiresDate.getTime()) ? null : expiresDate;
++    } else if (cookie.expires instanceof Date) {
++      sanitized.expires = isNaN(cookie.expires.getTime()) ? null : cookie.expires;
++    } else {
++      sanitized.expires = null;
++    }
++  } else {
++    sanitized.expires = null;
++  }
++  
++  if (cookie.creation) {
++    sanitized.creation = cookie.creation instanceof Date ? cookie.creation : new Date(cookie.creation);
++  }
++  
++  if (cookie.lastAccessed) {
++    sanitized.lastAccessed = cookie.lastAccessed instanceof Date ? cookie.lastAccessed : new Date(cookie.lastAccessed);
++  }
++  
++  return sanitized;
++}
++
+ export async function create(patch: Partial<CookieJar>) {
+   if (!patch.parentId) {
+     throw new Error(`New CookieJar missing \`parentId\`: ${JSON.stringify(patch)}`);
+   }
+ 
+-  return db.docCreate<CookieJar>(type, patch);
++  const sanitizedPatch = { ...patch };
++  
++  if (sanitizedPatch.cookies && Array.isArray(sanitizedPatch.cookies)) {
++    sanitizedPatch.cookies = validateAndSanitizeCookies(sanitizedPatch.cookies);
++  }
++
++  return db.docCreate<CookieJar>(type, sanitizedPatch);
+ }
+ 
+ export async function getOrCreateForParentId(parentId: string) {

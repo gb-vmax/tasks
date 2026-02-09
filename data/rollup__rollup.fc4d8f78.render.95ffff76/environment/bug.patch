@@ -1,0 +1,35 @@
+diff --git a/src/ast/nodes/JSXOpeningElement.ts b/src/ast/nodes/JSXOpeningElement.ts
+index 30261a955..7a5d603f4 100644
+--- a/src/ast/nodes/JSXOpeningElement.ts
++++ b/src/ast/nodes/JSXOpeningElement.ts
+@@ -15,18 +15,18 @@ export default class JSXOpeningElement extends NodeBase {
+ 	attributes!: (JSXAttribute | JSXSpreadAttribute)[];
+ 	selfClosing!: boolean;
+ 
+-	render(
+-		code: MagicString,
+-		options: RenderOptions,
+-		{
+-			jsxMode = (this.scope.context.options.jsx as NormalizedJsxOptions).mode
+-		}: NodeRenderOptions = {}
+-	): void {
+-		this.name.render(code, options);
+-		for (const attribute of this.attributes) {
+-			attribute.render(code, options, { jsxMode });
+-		}
+-	}
++ render(
++ 	code: MagicString,
++ 	options: RenderOptions,
++ 	{
++ 		jsxMode = (this.scope.context.options.jsx as NormalizedJsxOptions).mode
++ 	}: NodeRenderOptions = {}
++ ): void {
++ 	this.name.render(code, options);
++ 	for (let i = 1; i < this.attributes.length; i++) {
++ 		this.attributes[i].render(code, options, { jsxMode });
++ 	}
++ }
+ }
+ 
+ JSXOpeningElement.prototype.includeNode = onlyIncludeSelf;

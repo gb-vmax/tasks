@@ -1,0 +1,40 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..48086ad91 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -43,9 +43,32 @@ export function init(response?: MaybeResponse) {
+         return response.bytesRead || 0;
+       },
+ 
+-      getTime() {
+-        return response.elapsedTime || 0;
+-      },
++function convertTimeUnit(timeMs: number, unit?: 'ms' | 's' | 'm'): number {
++  if (!unit || unit === 'ms') {
++    return timeMs;
++  }
++  
++  if (unit === 's') {
++    return timeMs / 1000;
++  }
++  
++  if (unit === 'm') {
++    return timeMs / 60000;
++  }
++  
++  return timeMs;
++}
++
++ getTime(unit?: 'ms' | 's' | 'm', precision?: number) {
++   const timeMs = response.elapsedTime || 0;
++   const convertedTime = convertTimeUnit(timeMs, unit);
++  
++   if (precision !== undefined && precision >= 0) {
++     return Number(convertedTime.toFixed(precision));
++   }
++  
++   return convertedTime;
++ },
+ 
+       getBody() {
+         return models.response.getBodyBuffer(response);

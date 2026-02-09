@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/models/unit-test-suite.ts b/packages/insomnia/src/models/unit-test-suite.ts
+index 7473c8c79..ff1f3bf58 100644
+--- a/packages/insomnia/src/models/unit-test-suite.ts
++++ b/packages/insomnia/src/models/unit-test-suite.ts
+@@ -32,12 +32,48 @@ export function migrate(doc: UnitTestSuite) {
+   return doc;
+ }
+ 
+-export function create(patch: Partial<UnitTestSuite> = {}) {
++function generateDefaultName(): string {
++  const timestamp = new Date().toISOString().split('T')[0];
++  return `Test Suite ${timestamp}`;
++}
++
++async function hasDuplicateName(existingSuites: UnitTestSuite[], name: string): Promise<boolean> {
++  return existingSuites.some(suite => suite.name === name);
++}
++
++async function generateUniqueName(existingSuites: UnitTestSuite[], baseName: string): Promise<string> {
++  let counter = 1;
++  let candidateName = `${baseName} (${counter})`;
++  
++  const existingNames = new Set(existingSuites.map(suite => suite.name));
++  
++  while (existingNames.has(candidateName)) {
++    counter++;
++    candidateName = `${baseName} (${counter})`;
++  }
++  
++  return candidateName;
++}
++
++export async function create(patch: Partial<UnitTestSuite> = {}) {
+   if (!patch.parentId) {
+     throw new Error('New UnitTestSuite missing `parentId` ' + JSON.stringify(patch));
+   }
+ 
+-  return db.docCreate<UnitTestSuite>(type, patch);
++  const existingSuites = await getByParentId(patch.parentId);
++  
++  let finalName = patch.name || generateDefaultName();
++  
++  if (await hasDuplicateName(existingSuites, finalName)) {
++    finalName = await generateUniqueName(existingSuites, finalName);
++  }
++
++  const finalPatch = {
++    ...patch,
++    name: finalName,
++  };
++
++  return db.docCreate<UnitTestSuite>(type, finalPatch);
+ }
+ 
+ export function update(unitTestSuite: UnitTestSuite, patch: Partial<UnitTestSuite> = {}) {

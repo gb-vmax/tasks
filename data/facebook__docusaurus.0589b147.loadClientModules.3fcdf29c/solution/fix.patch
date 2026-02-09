@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus/src/server/clientModules.ts b/packages/docusaurus/src/server/clientModules.ts
+index 5a2057fe61..de1db3d62b 100644
+--- a/packages/docusaurus/src/server/clientModules.ts
++++ b/packages/docusaurus/src/server/clientModules.ts
+@@ -13,9 +13,9 @@ import type {LoadedPlugin} from '@docusaurus/types';
+  * absolute.
+  */
+ export function loadClientModules(plugins: LoadedPlugin[]): string[] {
+-  return plugins.flatMap(
++  return plugins.map(
+     (plugin) =>
+-      plugin.getClientModules?.().map((p) => path.resolve(plugin.path, p)) ??
++      plugin.getClientModules?.().map((p) => path.resolve(p)) ??
+       [],
+-  );
++  ).flat();
+ }

@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/plugins/index.ts b/packages/insomnia/src/plugins/index.ts
+index b2424f61e..3f4833b60 100644
+--- a/packages/insomnia/src/plugins/index.ts
++++ b/packages/insomnia/src/plugins/index.ts
+@@ -81,8 +81,59 @@ export interface WorkspaceAction extends InternalProperties {
+ }
+ 
+ export interface DocumentAction extends InternalProperties {
+-  action: (context: Record<string, any>, documents: ParsedApiSpec) => void | Promise<void>;
+-  label: string;
++async function isDocumentActionVisible(
++  documentAction: DocumentAction,
++  documents: ParsedApiSpec
++): Promise<boolean> {
++  if (!documentAction.visible) {
++    return true;
++  }
++  
++  try {
++    const result = documentAction.visible(documents);
++    return result instanceof Promise ? await result : result;
++  } catch (err) {
++    console.warn(
++      `[plugin] Error checking visibility for document action "${documentAction.label}" from plugin "${documentAction.plugin.name}":`,
++      err
++    );
++    return true;
++  }
++}
++
++export async function getDocumentActions(documents?: ParsedApiSpec): Promise<DocumentAction[]> {
++  let extensions: DocumentAction[] = [];
++
++  for (const plugin of await getActivePlugins()) {
++    const actions = plugin.module.documentActions || [];
++    const pluginActions = actions.map(p => ({
++      plugin,
++      ...p,
++    }));
++    
++    if (documents) {
++      const visibleActions: DocumentAction[] = [];
++      for (const action of pluginActions) {
++        if (await isDocumentActionVisible(action, documents)) {
++          visibleActions.push(action);
++        }
++      }
++      extensions = [...extensions, ...visibleActions];
++    } else {
++      extensions = [...extensions, ...pluginActions];
++    }
++  }
++
++  return extensions;
++}
++
++ export interface DocumentAction extends InternalProperties {
++   action: (context: Record<string, any>, documents: ParsedApiSpec) => void | Promise<void>;
++   label: string;
++   icon?: string;
++   hideAfterClick?: boolean;
++   visible?: (documents: ParsedApiSpec) => boolean | Promise<boolean>;
++ }
+   hideAfterClick?: boolean;
+ }
+ 

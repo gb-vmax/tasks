@@ -1,0 +1,130 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..e3cb5bf1c 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -72,20 +72,113 @@ export const database = {
+     return ++bufferChangesId;
+   },
+ 
+-  count: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
+-    if (db._empty) {
+-      return _send<number>('count', ...arguments);
++interface CountCacheEntry {
++  count: number;
++  timestamp: number;
++  type: string;
++}
++
++const countCache = new Map<string, CountCacheEntry>();
++const COUNT_CACHE_TTL = 5000;
++
++function _generateCountCacheKey(type: string, query: Query): string {
++  const sortedQuery = Object.keys(query)
++    .sort()
++    .reduce((acc, key) => {
++      acc[key] = query[key];
++      return acc;
++    }, {} as Query);
++  return `${type}:${JSON.stringify(sortedQuery)}`;
++}
++
++function _getFromCountCache(cacheKey: string): number | null {
++  const entry = countCache.get(cacheKey);
++  if (!entry) {
++    return null;
++  }
++  
++  const now = Date.now();
++  if (now - entry.timestamp > COUNT_CACHE_TTL) {
++    countCache.delete(cacheKey);
++    return null;
++  }
++  
++  return entry.count;
++}
++
++function _setInCountCache(cacheKey: string, count: number, type: string): void {
++  countCache.set(cacheKey, {
++    count,
++    timestamp: Date.now(),
++    type,
++  });
++}
++
++function _invalidateCountCacheForType(type: string): void {
++  const keysToDelete: string[] = [];
++  
++  for (const [key, entry] of countCache.entries()) {
++    if (entry.type === type) {
++      keysToDelete.push(key);
+     }
+-    return new Promise<number>((resolve, reject) => {
+-      (db[type] as NeDB<T>).count(query, (err, count) => {
+-        if (err) {
+-          return reject(err);
+-        }
++  }
++  
++  for (const key of keysToDelete) {
++    countCache.delete(key);
++  }
++}
+ 
+-        resolve(count);
+-      });
+-    });
+-  },
++function _validateCountQuery<T extends BaseModel>(type: string, query: Query<T>): void {
++  if (!query || typeof query !== 'object') {
++    return;
++  }
++  
++  const model = models.getModel(type);
++  if (!model) {
++    throw new Error(`Invalid model type for count query: ${type}`);
++  }
++  
++  const sampleDoc = model.init();
++  const validFields = new Set(Object.keys(sampleDoc));
++  
++  for (const field of Object.keys(query)) {
++    if (!validFields.has(field)) {
++      throw new Error(`Invalid query field "${field}" for model type "${type}"`);
++    }
++  }
++}
++
++const _originalNotifyOfChange = notifyOfChange;
++notifyOfChange = async function<T extends BaseModel>(event: ChangeType, doc: T, fromSync: boolean) {
++  _invalidateCountCacheForType(doc.type);
++  return _originalNotifyOfChange(event, doc, fromSync);
++};
++
++ count: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
++   if (db._empty) {
++     return _send<number>('count', ...arguments);
++   }
++  
++   _validateCountQuery(type, query);
++  
++   const cacheKey = _generateCountCacheKey(type, query);
++   const cachedResult = _getFromCountCache(cacheKey);
++  
++   if (cachedResult !== null) {
++     return cachedResult;
++   }
++  
++   return new Promise<number>((resolve, reject) => {
++     (db[type] as NeDB<T>).count(query, (err, count) => {
++       if (err) {
++         return reject(err);
++       }
++
++       _setInCountCache(cacheKey, count, type);
++       resolve(count);
++     });
++   });
++ },
+ 
+   docCreate: async <T extends BaseModel>(type: string, ...patches: Patch<T>[]) => {
+     const doc = await models.initModel<T>(

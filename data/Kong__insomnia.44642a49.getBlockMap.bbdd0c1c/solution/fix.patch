@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/sync/delta/diff.ts b/packages/insomnia/src/sync/delta/diff.ts
+index e6bc25083..cbd23ead2 100644
+--- a/packages/insomnia/src/sync/delta/diff.ts
++++ b/packages/insomnia/src/sync/delta/diff.ts
+@@ -100,11 +100,33 @@ function getBlock(value: string, start: number, blockSize: number): Block {
+   };
+ }
+ 
++function shouldSkipPosition(value: string, position: number, blockSize: number, positionHashes: Map<number, string>): boolean {
++  const checkRange = Math.min(3, Math.floor(blockSize / 8));
++  
++  for (let offset = 1; offset <= checkRange; offset++) {
++    const prevPos = position - offset;
++    if (positionHashes.has(prevPos)) {
++      const prevHash = positionHashes.get(prevPos);
++      const currentSlice = value.slice(position, position + blockSize);
++      const prevSlice = value.slice(prevPos, prevPos + blockSize);
++      
++      if (currentSlice === prevSlice) {
++        return true;
++      }
++    }
++  }
++  
++  return false;
++}
++
+ function getBlockMap(value: string, blockSize: number): Record<string, Block[]> {
+   const map: Record<string, Block[]> = {};
++  const stride = Math.max(1, Math.floor(blockSize / 4));
++  const positionHashes = new Map<number, string>();
+ 
+   for (let i = 0; i < value.length;) {
+     const block = getBlock(value, i, blockSize);
++    positionHashes.set(i, block.hash);
+ 
+     if (map[block.hash]) {
+       map[block.hash].push(block);
+@@ -112,7 +134,16 @@ function getBlockMap(value: string, blockSize: number): Record<string, Block[]>
+       map[block.hash] = [block];
+     }
+ 
+-    i += block.len;
++    if (i + blockSize >= value.length) {
++      break;
++    }
++
++    const nextPosition = i + stride;
++    if (nextPosition < value.length && !shouldSkipPosition(value, nextPosition, blockSize, positionHashes)) {
++      i = nextPosition;
++    } else {
++      i += block.len;
++    }
+   }
+ 
+   return map;

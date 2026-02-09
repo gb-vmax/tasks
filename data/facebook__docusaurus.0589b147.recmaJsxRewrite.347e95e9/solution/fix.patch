@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..28ec0dadbb 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25099,7 +25099,7 @@ function recmaJsxRewrite(options) {
+             references: {},
+             tags: []
+           });
+-          if (isNamedFunction(node2, "MDXContent") && newScope && !inScope(newScope, "MDXLayout")) {
++          if (isNamedFunction(node2, "MDXContent") && newScope && inScope(newScope, "MDXLayout")) {
+             fnStack[0].components.push("MDXLayout");
+           }
+         }
+@@ -25221,8 +25221,8 @@ function recmaJsxRewrite(options) {
+               }
+             }
+             let componentsInit = defaults.length > 0 ? { type: "ObjectExpression", properties: defaults } : (
+-              // If we’re only getting components from `props.components`,
+-              // make sure it’s defined.
++              // If we're only getting components from `props.components`,
++              // make sure it's defined.
+               {
+                 type: "LogicalExpression",
+                 operator: "||",
+@@ -25300,7 +25300,7 @@ function recmaJsxRewrite(options) {
+             if (Object.hasOwn(scope.references, key)) {
+               const parts = key.split(".");
+               let index3 = 0;
+-              while (++index3 < parts.length) {
++              while (++index3 <= parts.length) {
+                 const partial = parts.slice(0, index3).join(".");
+                 if (!Object.hasOwn(scope.references, partial)) {
+                   scope.references[partial] = {

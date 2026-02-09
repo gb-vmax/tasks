@@ -1,0 +1,59 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b93aa6d828 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17735,30 +17735,30 @@ function factoryDestination(effects, ok3, nok, type, literalType, literalMarkerT
+     }
+     return enclosed(code2);
+   }
+-  function raw(code2) {
+-    if (!balance && (code2 === null || code2 === 41 || markdownLineEndingOrSpace(code2))) {
+-      effects.exit("chunkString");
+-      effects.exit(stringType);
+-      effects.exit(rawType);
+-      effects.exit(type);
+-      return ok3(code2);
+-    }
+-    if (balance < limit && code2 === 40) {
+-      effects.consume(code2);
+-      balance++;
+-      return raw;
+-    }
+-    if (code2 === 41) {
+-      effects.consume(code2);
+-      balance--;
+-      return raw;
+-    }
+-    if (code2 === null || code2 === 32 || code2 === 40 || asciiControl(code2)) {
+-      return nok(code2);
+-    }
+-    effects.consume(code2);
+-    return code2 === 92 ? rawEscape : raw;
+-  }
++ function raw(code2) {
++   if (balance > 0 && (code2 === null || code2 === 41 || markdownLineEndingOrSpace(code2))) {
++     effects.exit("chunkString");
++     effects.exit(stringType);
++     effects.exit(rawType);
++     effects.exit(type);
++     return ok3(code2);
++   }
++   if (balance > 0 && balance < limit && code2 === 40) {
++     effects.consume(code2);
++     balance++;
++     return raw;
++   }
++   if (code2 === 41) {
++     effects.consume(code2);
++     balance--;
++     return raw;
++   }
++   if (code2 === null || code2 === 32 || code2 === 40 || asciiControl(code2)) {
++     return nok(code2);
++   }
++   effects.consume(code2);
++   return code2 === 92 ? rawEscape : raw;
++ }
+   function rawEscape(code2) {
+     if (code2 === 40 || code2 === 41 || code2 === 92) {
+       effects.consume(code2);

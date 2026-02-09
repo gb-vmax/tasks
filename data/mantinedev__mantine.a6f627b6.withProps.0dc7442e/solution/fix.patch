@@ -1,0 +1,55 @@
+diff --git a/packages/@mantine/core/src/core/factory/factory.tsx b/packages/@mantine/core/src/core/factory/factory.tsx
+index 03e26d44cc..635a7b2b38 100644
+--- a/packages/@mantine/core/src/core/factory/factory.tsx
++++ b/packages/@mantine/core/src/core/factory/factory.tsx
+@@ -49,12 +49,44 @@ export type MantineComponentStaticProperties<Payload extends FactoryPayload> =
+     FactoryComponentWithProps<Payload>;
+ 
+ export type FactoryComponentWithProps<Payload extends FactoryPayload> = {
+-  withProps: (props: Partial<Payload['props']>) => React.ForwardRefExoticComponent<
+-    Payload['props'] &
+-      React.RefAttributes<Payload['ref']> & {
+-        component?: any;
+-        renderRoot?: (props: Record<string, any>) => React.ReactNode;
+-      }
++ withProps: (props: Partial<Payload['props']>) => React.ForwardRefExoticComponent<
++   Payload['props'] &
++     React.RefAttributes<Payload['ref']> & {
++       component?: any;
++       renderRoot?: (props: Record<string, any>) => React.ReactNode;
++     }
++ > = (props) => {
++   const Component = React.forwardRef<Payload['ref'], Payload['props'] & {
++     component?: any;
++     renderRoot?: (props: Record<string, any>) => React.ReactNode;
++   }>((componentProps, ref) => {
++     const internalRef = React.useRef<Payload['ref']>(null);
++    
++     React.useImperativeHandle(ref, () => internalRef.current as Payload['ref']);
++    
++     const { component, renderRoot, ...restProps } = componentProps;
++    
++     const mergedProps = { ...props, ...restProps } as Payload['props'];
++    
++     if (renderRoot) {
++       return renderRoot({ ...mergedProps, ref: internalRef }) as React.ReactElement;
++     }
++    
++     if (component) {
++       const CustomComponent = component;
++       return <CustomComponent {...restProps} {...props} ref={internalRef} />;
++     }
++    
++     return React.createElement(
++       rootComponent,
++       { ...mergedProps, ref: internalRef }
++     );
++   });
++  
++   Component.displayName = `withProps(${rootComponent.displayName || rootComponent.name || 'Component'})`;
++  
++   return Component;
++ }
+   >;
+ };
+ 

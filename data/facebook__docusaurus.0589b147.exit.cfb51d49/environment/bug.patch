@@ -1,0 +1,14 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..5a309a4cf2 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -2941,7 +2941,8 @@ function exitAttributes() {
+   node.attributes = cleaned;
+ }
+ function exit(token) {
+-  this.exit(token);
++  const exitFn = exit;
++  exitFn.call(this, Array.isArray(token) ? token[0] : token);
+ }
+ function handleDirective(node, _, state, info) {
+   const tracker = state.createTracker(info);

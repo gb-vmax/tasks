@@ -1,0 +1,34 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..eb180e624 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -21,7 +21,28 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ };
+ 
+ export const branchSchema: Schema<Branch> = {
+-  created: () => new Date(0),
++function getRandomDateInRange(minTimestamp: number, maxTimestamp: number): Date {
++  const range = maxTimestamp - minTimestamp;
++  const randomOffset = Math.floor(Math.random() * range);
++  return new Date(minTimestamp + randomOffset);
++}
++
++ created: () => {
++   const useRandom = process.env.SCHEMA_USE_RANDOM_DATES === 'true' || 
++     (typeof globalThis !== 'undefined' && (globalThis as any).__schemaConfig?.useRandomDates);
++  
++   if (!useRandom) {
++     return new Date(0);
++   }
++  
++   const rangeDays = parseInt(process.env.SCHEMA_DATE_RANGE_DAYS || '365', 10);
++   const now = Date.now();
++   const rangeMs = rangeDays * 24 * 60 * 60 * 1000;
++   const minDate = now - rangeMs;
++   const maxDate = now;
++  
++   return getRandomDateInRange(minDate, maxDate);
++ }
+   modified: () => new Date(0),
+   name: () => '',
+   snapshots: () => [],

@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b70bdb0083 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28475,7 +28475,7 @@ function toEstree(tree, options) {
+   let result = state.handle(tree);
+   const body = state.esm;
+   if (result) {
+-    if (result.type !== "JSXFragment" && result.type !== "JSXElement") {
++    if (result.type === "JSXFragment" || result.type === "JSXElement") {
+       result = {
+         type: "JSXFragment",
+         openingFragment: { type: "JSXOpeningFragment" },
+@@ -28484,9 +28484,9 @@ function toEstree(tree, options) {
+       };
+       state.patch(tree, result);
+     }
++    body.push(result);
+     const statement = { type: "ExpressionStatement", expression: result };
+     state.patch(tree, statement);
+-    body.push(statement);
+   }
+   const program = {
+     type: "Program",

@@ -2,28 +2,36 @@
 
 ### Describe the bug
 
-The markdown parser appears to hang indefinitely when processing certain input. The application becomes unresponsive and never completes the parsing operation.
+I'm experiencing an issue with markdown parsing where the parser appears to hang indefinitely when processing certain content. The process becomes unresponsive and never completes, requiring a force kill.
 
 ### Reproduction
 
 ```js
 const remark = require('remark');
 
-// This causes the parser to hang
-const processor = remark();
-const result = processor.processSync('# Hello World');
-// Never completes...
-```
+const content = `
+# Test Document
 
-I've noticed this happens with any markdown input. The parser seems to get stuck in an infinite loop during the postprocessing phase and never returns.
+Some content here with **bold** and *italic* text.
+
+- List item 1
+- List item 2
+`;
+
+// This call never returns
+const result = remark().parse(content);
+console.log('This line is never reached');
+```
 
 ### Expected behavior
 
-The parser should complete processing and return the parsed markdown AST without hanging.
+The parser should complete processing and return the parsed AST without hanging. The parsing should finish in a reasonable amount of time.
 
 ### System Info
 - remark version: 15.0.1
 - Node version: 18.x
+
+This seems to have started happening recently. The same code was working fine before. Any ideas what might be causing this?
 
 ---
 Repository: /testbed

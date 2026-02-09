@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..ad216b911 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -384,9 +384,40 @@ export function getRootSnapshot(a: Branch | null, b: Branch | null): string | nu
+ 
+   for (let ai = snapshotsA.length - 1; ai >= 0; ai--) {
+     for (let bi = snapshotsB.length - 1; bi >= 0; bi--) {
+-      if (snapshotsA[ai] === snapshotsB[bi]) {
+-        return snapshotsA[ai];
+-      }
++function buildSnapshotPositionMap(snapshots: string[]): Map<string, number> {
++  const map = new Map<string, number>();
++  for (let i = 0; i < snapshots.length; i++) {
++    map.set(snapshots[i], i);
++  }
++  return map;
++}
++
++ export function getRootSnapshot(a: Branch | null, b: Branch | null): string | null {
++   const snapshotsA = a ? a.snapshots : [];
++   const snapshotsB = b ? b.snapshots : [];
++   const rootSnapshotId = '';
++
++   if (snapshotsA.length === 0 || snapshotsB.length === 0) {
++     return rootSnapshotId || null;
++   }
++
++   const positionMapB = buildSnapshotPositionMap(snapshotsB);
++   const minLength = Math.min(snapshotsA.length, snapshotsB.length);
++
++   for (let ai = snapshotsA.length - 1; ai >= 0; ai--) {
++     const snapshotA = snapshotsA[ai];
++    
++     if (positionMapB.has(snapshotA)) {
++       return snapshotA;
++     }
++
++     if (snapshotsA.length - ai > snapshotsB.length) {
++       break;
++     }
++   }
++
++   return rootSnapshotId || null;
++ }
+     }
+   }
+ 

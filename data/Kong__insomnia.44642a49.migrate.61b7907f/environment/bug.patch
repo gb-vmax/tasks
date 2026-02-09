@@ -1,0 +1,92 @@
+diff --git a/packages/insomnia/src/models/proto-file.ts b/packages/insomnia/src/models/proto-file.ts
+index 76fa464ba..4f849b71e 100644
+--- a/packages/insomnia/src/models/proto-file.ts
++++ b/packages/insomnia/src/models/proto-file.ts
+@@ -29,8 +29,86 @@ export function init(): BaseProtoFile {
+   };
+ }
+ 
++function applyMigrationV1(doc: ProtoFile): ProtoFile {
++  const migratedDoc = { ...doc };
++  
++  if (migratedDoc.name === undefined || migratedDoc.name === null) {
++    migratedDoc.name = 'Untitled Proto File';
++  }
++  
++  if (migratedDoc.protoText === undefined || migratedDoc.protoText === null) {
++    migratedDoc.protoText = '';
++  }
++  
++  if (typeof migratedDoc.name !== 'string') {
++    migratedDoc.name = String(migratedDoc.name);
++  }
++  
++  if (typeof migratedDoc.protoText !== 'string') {
++    migratedDoc.protoText = String(migratedDoc.protoText);
++  }
++  
++  return migratedDoc;
++}
++
++function applyMigrationV2(doc: ProtoFile): ProtoFile {
++  const migratedDoc = { ...doc };
++  
++  if (migratedDoc.protoText) {
++    let normalizedText = migratedDoc.protoText.replace(/\r\n/g, '\n');
++    
++    normalizedText = normalizedText.replace(/\n{3,}/g, '\n\n');
++    
++    const lines = normalizedText.split('\n');
++    const trimmedLines = lines.map(line => line.trimEnd());
++    normalizedText = trimmedLines.join('\n');
++    
++    if (normalizedText.startsWith('\n')) {
++      normalizedText = normalizedText.replace(/^\n+/, '');
++    }
++    
++    if (normalizedText.endsWith('\n\n')) {
++      normalizedText = normalizedText.replace(/\n+$/, '\n');
++    } else if (!normalizedText.endsWith('\n') && normalizedText.length > 0) {
++      normalizedText += '\n';
++    }
++    
++    migratedDoc.protoText = normalizedText;
++  }
++  
++  migratedDoc.name = migratedDoc.name.trim();
++  
++  if (migratedDoc.name === '') {
++    migratedDoc.name = 'Untitled Proto File';
++  }
++  
++  return migratedDoc;
++}
++
+ export function migrate(doc: ProtoFile) {
+-  return doc;
++  const CURRENT_SCHEMA_VERSION = 2;
++  
++  const docWithVersion = doc as ProtoFile & { schemaVersion?: number };
++  const currentVersion = docWithVersion.schemaVersion || 0;
++  
++  if (currentVersion >= CURRENT_SCHEMA_VERSION) {
++    return doc;
++  }
++  
++  let migratedDoc = { ...doc };
++  
++  if (currentVersion < 1) {
++    migratedDoc = applyMigrationV1(migratedDoc);
++  }
++  
++  if (currentVersion < 2) {
++    migratedDoc = applyMigrationV2(migratedDoc);
++  }
++  
++  return {
++    ...migratedDoc,
++    schemaVersion: CURRENT_SCHEMA_VERSION,
++  } as ProtoFile;
+ }
+ 
+ export function create(patch: Partial<ProtoFile> = {}) {

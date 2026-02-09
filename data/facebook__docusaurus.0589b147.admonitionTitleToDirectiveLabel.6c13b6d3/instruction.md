@@ -2,27 +2,29 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with admonition directive parsing in markdown files. It seems like the parser is not correctly handling admonition titles when using the standard three-colon syntax (e.g., `:::note Title`).
+I'm experiencing an issue with admonition directive parsing in markdown content. When using admonitions with two colons (like `::note` or `::warning`), they are now being incorrectly processed and converted, which breaks the expected markdown rendering.
 
 ### Reproduction
 
-When I have markdown content like this:
-
 ```markdown
-:::note My Custom Title
-This is the content
+::note My Title
+This is a note with two colons
+::
+
+:::warning Important
+This is a warning with three colons
 :::
 ```
 
-The title parsing doesn't work as expected. The directive label replacement seems to be off or not matching properly.
+After processing, the two-colon syntax gets transformed when it shouldn't be. This affects markdown files that use the two-colon syntax for other purposes or plugins.
 
 ### Expected behavior
 
-The admonition title should be correctly parsed and converted to the appropriate directive label format. Previously this was working fine with the three-colon syntax for admonitions.
+Only admonition directives with three or more colons (like `:::note`, `:::warning`, etc.) should be processed and have their titles converted to directive labels. Two-colon syntax should be left untouched as it's not a valid Docusaurus admonition syntax.
 
 ### Additional context
 
-This appears to have started happening recently. I noticed it when updating my documentation - admonitions that were rendering correctly before are now having issues with their titles.
+This seems to have started happening recently. The regex pattern appears to be matching directives with 2+ colons instead of the standard 3+ colons that Docusaurus uses for admonitions.
 
 ---
 Repository: /testbed

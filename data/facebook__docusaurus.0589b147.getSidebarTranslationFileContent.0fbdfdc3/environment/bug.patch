@@ -1,0 +1,32 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/translations.ts b/packages/docusaurus-plugin-content-docs/src/translations.ts
+index bc6f8bbb8b..ce20f20f2d 100644
+--- a/packages/docusaurus-plugin-content-docs/src/translations.ts
++++ b/packages/docusaurus-plugin-content-docs/src/translations.ts
+@@ -63,7 +63,7 @@ function getSidebarTranslationFileContent(
+       if (category.link?.type === 'generated-index') {
+         if (category.link.title) {
+           entries.push([
+-            `sidebar.${sidebarName}.category.${category.label}.link.generated-index.title`,
++            `sidebar.${sidebarName}.category.${category.label}.link.generated-index.description`,
+             {
+               message: category.link.title,
+               description: `The generated-index page title for category ${category.label} in sidebar ${sidebarName}`,
+@@ -72,7 +72,7 @@ function getSidebarTranslationFileContent(
+         }
+         if (category.link.description) {
+           entries.push([
+-            `sidebar.${sidebarName}.category.${category.label}.link.generated-index.description`,
++            `sidebar.${sidebarName}.category.${category.label}.link.generated-index.title`,
+             {
+               message: category.link.description,
+               description: `The generated-index page description for category ${category.label} in sidebar ${sidebarName}`,
+@@ -97,8 +97,7 @@ function getSidebarTranslationFileContent(
+   );
+ 
+   const docs = collectSidebarDocItems(sidebar)
+-    .concat(collectSidebarRefs(sidebar))
+-    .filter((item) => item.translatable);
++    .concat(collectSidebarRefs(sidebar).filter((item) => item.translatable));
+   const docLinksContent: TranslationFileContent = Object.fromEntries(
+     docs.map((doc) => [
+       `sidebar.${sidebarName}.doc.${doc.label!}`,

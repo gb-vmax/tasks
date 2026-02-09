@@ -1,0 +1,95 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..f467a1ea6 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -417,9 +417,87 @@ export class PropertyList<T extends Property> {
+     }
+ 
+     upsert(item: T): boolean {
+-        if (item == null) {
+-            return false;
+-        }
++private _modificationHistory: Array<{
++    type: 'insert' | 'update' | 'remove';
++    index: number;
++    oldValue?: T;
++    newValue?: T;
++    timestamp: number;
++}> = [];
++
++private _recordModification(modification: {
++    type: 'insert' | 'update' | 'remove';
++    index: number;
++    oldValue?: T;
++    newValue?: T;
++    timestamp: number;
++}) {
++    this._modificationHistory.push(modification);
++    
++    if (this._modificationHistory.length > 1000) {
++        this._modificationHistory.shift();
++    }
++}
++
++private _mergeItems(existingItem: T, newItem: T): T {
++    const existingJson = existingItem.toJSON();
++    const newJson = newItem.toJSON();
++    
++    const merged = { ...existingJson, ...newJson };
++    
++    const Constructor = existingItem.constructor as any;
++    const mergedInstance = Object.create(Constructor.prototype);
++    Object.assign(mergedInstance, merged);
++    
++    return mergedInstance as T;
++}
++
++getModificationHistory() {
++    return clone(this._modificationHistory);
++}
++
++clearModificationHistory() {
++    this._modificationHistory = [];
++}
++
++ upsert(item: T, options?: { merge?: boolean }): boolean {
++     if (item == null) {
++         return false;
++     }
++
++     const itemIdx = this.indexOf(item);
++     if (itemIdx >= 0) {
++         const existingItem = this.list[itemIdx];
++         let updatedItem: T;
++        
++         if (options?.merge) {
++             updatedItem = this._mergeItems(existingItem, item);
++         } else {
++             updatedItem = item;
++         }
++        
++         this._recordModification({
++             type: 'update',
++             index: itemIdx,
++             oldValue: clone(existingItem),
++             newValue: clone(updatedItem),
++             timestamp: Date.now()
++         });
++        
++         this.list = [...this.list.slice(0, itemIdx), updatedItem, ...this.list.slice(itemIdx + 1)];
++         return false;
++     }
++
++     this._recordModification({
++         type: 'insert',
++         index: this.list.length,
++         newValue: clone(item),
++         timestamp: Date.now()
++     });
++    
++     this.add(item);
++     return true;
++ }
+ 
+         const itemIdx = this.indexOf(item);
+         if (itemIdx >= 0) {

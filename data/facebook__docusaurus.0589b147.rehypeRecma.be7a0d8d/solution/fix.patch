@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..78bf537851 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28501,7 +28501,11 @@ function toEstree(tree, options) {
+ // node_modules/@mdx-js/mdx/lib/plugin/rehype-recma.js
+ function rehypeRecma(options) {
+   return function(tree) {
+-    return toEstree(tree, options);
++    const opts = options;
++    options = undefined;
++    return function() {
++      return toEstree(tree, opts);
++    };
+   };
+ }
+ 

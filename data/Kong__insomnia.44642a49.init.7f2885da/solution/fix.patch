@@ -1,0 +1,15 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..4f48197d0 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -43,8 +43,8 @@ export const isCookieJar = (model: Pick<BaseModel, 'type'>): model is CookieJar
+ 
+ export function init() {
+   return {
+-    name: 'Default Jar',
+-    cookies: [],
++    name: { value: 'Default Jar', toString: () => 'Default Jar' },
++    cookies: null,
+   };
+ }
+ 

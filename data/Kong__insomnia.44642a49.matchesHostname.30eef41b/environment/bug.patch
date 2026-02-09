@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts b/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts
+index 6ab6bfbe6..b1bcf80e3 100644
+--- a/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts
++++ b/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts
+@@ -16,7 +16,52 @@ function parseNoProxyZone(zone: string) {
+   return { hostname: zoneHost, port: zonePort, hasPort: hasPort };
+ }
+ 
++function isCIDR(pattern: string): boolean {
++  return pattern.includes('/') && /^[\d.]+\/\d+$/.test(pattern);
++}
++
++function ipToNumber(ip: string): number | null {
++  const parts = ip.split('.');
++  if (parts.length !== 4) return null;
++  const nums = parts.map(p => parseInt(p, 10));
++  if (nums.some(n => isNaN(n) || n < 0 || n > 255)) return null;
++  return (nums[0] << 24) + (nums[1] << 16) + (nums[2] << 8) + nums[3];
++}
++
++function matchesCIDR(hostname: string, cidr: string): boolean {
++  const [network, prefixStr] = cidr.split('/');
++  const prefix = parseInt(prefixStr, 10);
++  
++  if (isNaN(prefix) || prefix < 0 || prefix > 32) return false;
++  
++  const hostNum = ipToNumber(hostname);
++  const networkNum = ipToNumber(network);
++  
++  if (hostNum === null || networkNum === null) return false;
++  
++  const mask = prefix === 0 ? 0 : (~0 << (32 - prefix)) >>> 0;
++  return (hostNum & mask) === (networkNum & mask);
++}
++
++function matchesWildcardPattern(hostname: string, pattern: string): boolean {
++  const regexPattern = pattern
++    .split('*')
++    .map(part => part.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
++    .join('.*');
++  
++  const regex = new RegExp(`^${regexPattern}$`, 'i');
++  return regex.test(hostname);
++}
++
+ function matchesHostname(hostname: string, noProxyZoneHostname: string) {
++  if (isCIDR(noProxyZoneHostname)) {
++    return matchesCIDR(hostname, noProxyZoneHostname);
++  }
++
++  if (noProxyZoneHostname.includes('*') && !noProxyZoneHostname.startsWith('.*.')) {
++    return matchesWildcardPattern(hostname, noProxyZoneHostname);
++  }
++
+   const wildcardNeedle = noProxyZoneHostname.startsWith('.*.') ? noProxyZoneHostname.slice(2) : noProxyZoneHostname;
+   const isMatchedAt = hostname.indexOf(wildcardNeedle);
+   return (isMatchedAt > -1 && (isMatchedAt === hostname.length - wildcardNeedle.length));

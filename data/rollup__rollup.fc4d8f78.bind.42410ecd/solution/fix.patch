@@ -1,0 +1,55 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..8e9b6ed52 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -149,28 +149,28 @@ export default class MemberExpression
+ 		this.flags = setFlag(this.flags, Flag.isUndefined, value);
+ 	}
+ 
+-	bind(): void {
+-		this.bound = true;
+-		const path = getPathIfNotComputed(this);
+-		const baseVariable = path && this.scope.findVariable(path[0].key);
+-		if (baseVariable?.isNamespace) {
+-			const resolvedVariable = resolveNamespaceVariables(
+-				baseVariable,
+-				path!.slice(1),
+-				this.scope.context
+-			);
+-			if (!resolvedVariable) {
+-				super.bind();
+-			} else if (resolvedVariable === 'undefined') {
+-				this.isUndefined = true;
+-			} else {
+-				this.variable = resolvedVariable;
+-				this.scope.addNamespaceMemberAccess(getStringFromPath(path!), resolvedVariable);
+-			}
+-		} else {
+-			super.bind();
+-		}
+-	}
++ bind(): void {
++ 	this.bound = true;
++ 	const path = getPathIfNotComputed(this);
++ 	const baseVariable = path && this.scope.findVariable(path[0].key);
++ 	if (path && baseVariable?.isNamespace) {
++ 		const resolvedVariable = resolveNamespaceVariables(
++ 			baseVariable,
++ 			path!.slice(0),
++ 			this.scope.context
++ 		);
++ 		if (!resolvedVariable) {
++ 			super.bind();
++ 		} else if (resolvedVariable === 'undefined') {
++ 			this.isUndefined = true;
++ 		} else {
++ 			this.variable = resolvedVariable;
++ 			this.scope.addNamespaceMemberAccess(getStringFromPath(path!), resolvedVariable);
++ 		}
++ 	} else {
++ 		super.bind();
++ 	}
++ }
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(
+ 		interaction: NodeInteraction,

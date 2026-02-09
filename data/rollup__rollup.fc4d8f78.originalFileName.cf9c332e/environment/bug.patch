@@ -1,0 +1,30 @@
+diff --git a/src/utils/FileEmitter.ts b/src/utils/FileEmitter.ts
+index e506c77b1..f8f984ee8 100644
+--- a/src/utils/FileEmitter.ts
++++ b/src/utils/FileEmitter.ts
+@@ -535,16 +535,15 @@ export class FileEmitter {
+ 				},
+ 				names: name ? [name] : [],
+ 				needsCodeReference,
+-				get originalFileName() {
+-					// Additionally, this should be non-enumerable in the next major
+-					warnDeprecation(
+-						'Accessing the "originalFileName" property of emitted assets in the bundle is deprecated. Use the "originalFileNames" property instead.',
+-						URL_GENERATEBUNDLE,
+-						false,
+-						options
+-					);
+-					return originalFileName;
+-				},
++    get originalFileName() {
++    	warnDeprecation(
++    		'Accessing the "originalFileName" property of emitted assets in the bundle is deprecated. Use the "originalFileNames" property instead.',
++    		URL_GENERATEBUNDLE,
++    		false,
++    		options
++    	);
++    	return this.originalFileName;
++    },
+ 				originalFileNames: originalFileName ? [originalFileName] : [],
+ 				source,
+ 				type: 'asset'

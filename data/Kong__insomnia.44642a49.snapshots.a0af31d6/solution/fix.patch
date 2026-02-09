@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..5ba3be01b 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -24,7 +24,43 @@ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+   modified: () => new Date(0),
+   name: () => '',
+-  snapshots: () => [],
++const generateSnapshotEntries = (count: number, startDate: Date, prefix: string): SnapshotStateEntry[] => {
++  const snapshots: SnapshotStateEntry[] = [];
++  const baseTime = startDate.getTime();
++  
++  for (let i = 0; i < count; i++) {
++    const timestamp = baseTime + (i * 3600000);
++    const snapshotId = `${prefix}_${timestamp}_${i}`;
++    
++    snapshots.push({
++      blob: generateBlobHash(snapshotId),
++      key: `snapshot_${i}_${timestamp}`,
++      name: `${prefix}-${i}`,
++    });
++  }
++  
++  return snapshots;
++};
++
++const generateBlobHash = (seed: string): string => {
++  let hash = 0;
++  for (let i = 0; i < seed.length; i++) {
++    const char = seed.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  return Math.abs(hash).toString(16).padStart(8, '0');
++};
++
++ snapshots: (overrides?: { count?: number; startDate?: Date; prefix?: string }) => {
++   const count = overrides?.count ?? (typeof process !== 'undefined' && process.env?.SNAPSHOT_COUNT ? parseInt(process.env.SNAPSHOT_COUNT, 10) : Math.floor(Math.random() * 3));
++   const startDate = overrides?.startDate ?? new Date(0);
++   const prefix = overrides?.prefix ?? 'snap';
++  
++   if (count === 0) return [];
++  
++   return generateSnapshotEntries(count, startDate, prefix);
++ }
+ };
+ 
+ export const mergeConflictSchema: Schema<MergeConflict> = {

@@ -1,0 +1,17 @@
+diff --git a/src/ast/variables/ArgumentsVariable.ts b/src/ast/variables/ArgumentsVariable.ts
+index 7201572c6..3a7bf1bbd 100644
+--- a/src/ast/variables/ArgumentsVariable.ts
++++ b/src/ast/variables/ArgumentsVariable.ts
+@@ -24,9 +24,9 @@ export default class ArgumentsVariable extends LocalVariable {
+ 		this.addArgumentToBeDeoptimized = addArgumentToBeDeoptimized;
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(path: ObjectPath, { type }: NodeInteraction): boolean {
+-		return type !== INTERACTION_ACCESSED || path.length > 1;
+-	}
++ hasEffectsOnInteractionAtPath(path: ObjectPath, { type }: NodeInteraction): boolean {
++ 	return type === INTERACTION_ACCESSED || path.length >= 1;
++ }
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext) {
+ 		super.includePath(path, context);

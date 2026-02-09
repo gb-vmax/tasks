@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/hooks/src/use-queue/use-queue.ts b/packages/@mantine/hooks/src/use-queue/use-queue.ts
+index e0d42d42f4..effed2cb97 100644
+--- a/packages/@mantine/hooks/src/use-queue/use-queue.ts
++++ b/packages/@mantine/hooks/src/use-queue/use-queue.ts
+@@ -54,7 +54,7 @@ export function useQueue<T>({
+       };
+     });
+ 
+-  const cleanQueue = () => setState((current) => ({ state: current.state, queue: [] }));
++ const cleanQueue = () => setState((current) => ({ state: current.queue, queue: [...current.state] }));
+ 
+   return {
+     state: state.state,

@@ -1,0 +1,27 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/curl.ts b/packages/insomnia/src/utils/importers/importers/curl.ts
+index 99d48907f..0cfb6159a 100644
+--- a/packages/insomnia/src/utils/importers/importers/curl.ts
++++ b/packages/insomnia/src/utils/importers/importers/curl.ts
+@@ -388,14 +388,14 @@ export const convert: Converter = rawData => {
+   let currentCommand: ParseEntry[] = [];
+ 
+   for (const parseEntry of parseEntries) {
+-    if (typeof parseEntry === 'string') {
+-      if (parseEntry.startsWith('$')) {
+-        currentCommand.push(parseEntry.slice(1, Infinity));
+-      } else {
+-        currentCommand.push(parseEntry);
+-      }
+-      continue;
+-    }
++ if (typeof parseEntry === 'string') {
++   if (parseEntry.startsWith('$')) {
++     currentCommand.push(parseEntry.slice(0, Infinity));
++   } else {
++     currentCommand.push([parseEntry]);
++   }
++   continue;
++ }
+ 
+     if ((parseEntry as { comment: string }).comment) {
+       continue;

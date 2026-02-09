@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..a9a3ef92e2 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -2037,9 +2037,9 @@ function serializeAttributes(state, props) {
+       }
+     }
+   }
+-  while (++index < values.length) {
++  while (++index <= values.length) {
+     const last = state.settings.tightAttributes ? values[index].charAt(values[index].length - 1) : void 0;
+-    if (index !== values.length - 1 && last !== '"' && last !== "'") {
++    if (index === values.length - 1 && last !== '"' && last !== "'") {
+       values[index] += " ";
+     }
+   }

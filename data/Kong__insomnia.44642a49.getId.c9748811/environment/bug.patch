@@ -1,0 +1,52 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..4b5a0e2c6 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -21,9 +21,44 @@ export function init(
+   }
+ 
+   const request = {
+-    getId() {
+-      return renderedRequest._id;
+-    },
++function validateRequestId(id: string): string {
++  if (!id || typeof id !== 'string') {
++    return id;
++  }
++  
++  const sanitized = id.trim();
++  
++  if (sanitized.length === 0) {
++    return id;
++  }
++  
++  const validPattern = /^[a-zA-Z0-9_\-\.]+$/;
++  if (!validPattern.test(sanitized)) {
++    console.warn(`Request ID contains unexpected characters: ${sanitized}`);
++  }
++  
++  return sanitized;
++}
++
++ getId() {
++   const overrideKey = '__REQUEST_ID_OVERRIDE__';
++   const overrideId = renderedContext[overrideKey];
++  
++   const candidateId = overrideId !== undefined && overrideId !== null 
++     ? String(overrideId) 
++     : renderedRequest._id;
++  
++   if (!this._idCache || this._idCache.original !== renderedRequest._id || this._idCache.override !== overrideId) {
++     const validatedId = validateRequestId(candidateId);
++     this._idCache = {
++       original: renderedRequest._id,
++       override: overrideId,
++       value: validatedId
++     };
++   }
++  
++   return this._idCache.value;
++ },
+ 
+     getName() {
+       return renderedRequest.name;

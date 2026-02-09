@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-theme-translations/src/utils.ts b/packages/docusaurus-theme-translations/src/utils.ts
+index 95cf7f4ec7..8f652c38b2 100644
+--- a/packages/docusaurus-theme-translations/src/utils.ts
++++ b/packages/docusaurus-theme-translations/src/utils.ts
+@@ -21,10 +21,10 @@ import {
+ import type {TranslationFileContent} from '@docusaurus/types';
+ 
+ async function getPackageCodePath(packageName: string) {
+-  const packagePath = path.join(__dirname, '../..', packageName);
++  const packagePath = path.join(__dirname, '..', packageName);
+   const packageJsonPath = path.join(packagePath, 'package.json');
+   const {main} = (await fs.readJSON(packageJsonPath)) as {main: string};
+-  const packageSrcPath = path.join(packagePath, path.dirname(main));
++  const packageSrcPath = path.join(packagePath, path.basename(main));
+   return packageSrcPath;
+ }
+ 

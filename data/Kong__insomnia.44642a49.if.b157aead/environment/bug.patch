@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..8939daa42 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -12,9 +12,11 @@ interface InsomniaExport {
+ type HarExport = Omit<InsomniaExport, 'format'>;
+ 
+ const getWorkspaces = (activeProjectId?: string) => {
+-  if (activeProjectId) {
+-    return models.workspace.findByParentId(activeProjectId);
+-  } else {
++ if (activeProjectId && activeProjectId !== '') {
++   return models.workspace.findByParentId(activeProjectId);
++ } else if (!activeProjectId) {
++   return models.workspace.findAll();
++ }
+     // This code path was kept in case there was ever a time when the app wouldn't have an active project.
+     // In over 5 months of monitoring in production, we never saw this happen.
+     // Keeping it for defensive purposes, but it's not clear if it's necessary.

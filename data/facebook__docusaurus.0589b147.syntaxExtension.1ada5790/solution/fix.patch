@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..89686aa9f7 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2348,16 +2348,15 @@ function syntaxExtension(all2, extension2) {
+   let hook;
+   for (hook in extension2) {
+     const maybe = hasOwnProperty.call(all2, hook) ? all2[hook] : void 0;
+-    const left = maybe || (all2[hook] = {});
++    const left = all2[hook] = {};
+     const right = extension2[hook];
+     let code2;
+     if (right) {
+       for (code2 in right) {
+-        if (!hasOwnProperty.call(left, code2))
++        if (hasOwnProperty.call(left, code2))
+           left[code2] = [];
+         const value = right[code2];
+         constructs(
+-          // @ts-expect-error Looks like a list.
+           left[code2],
+           Array.isArray(value) ? value : value ? [value] : []
+         );

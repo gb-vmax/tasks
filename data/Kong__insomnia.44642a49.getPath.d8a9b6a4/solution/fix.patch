@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..e817430a9 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -135,15 +135,62 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         });
+       },
+ 
+-      getPath(name: string) {
+-        switch (name.toLowerCase()) {
+-          case 'desktop':
+-            return window.app.getPath('desktop');
++_pathCache: {} as Record<string, string>,
+ 
+-          default:
+-            throw new Error(`Unknown path name ${name}`);
+-        }
+-      },
++ getPath(name: string) {
++   if (name === 'cache:clear') {
++     this._pathCache = {};
++     return '';
++   }
++
++   if (!this._pathCache) {
++     this._pathCache = {};
++   }
++
++   const normalizedName = name.toLowerCase();
++  
++   if (this._pathCache[normalizedName]) {
++     return this._pathCache[normalizedName];
++   }
++
++   let resolvedPath: string;
++
++   switch (normalizedName) {
++     case 'desktop':
++       resolvedPath = window.app.getPath('desktop');
++       break;
++
++     case 'documents':
++       resolvedPath = window.app.getPath('documents');
++       break;
++
++     case 'downloads':
++       resolvedPath = window.app.getPath('downloads');
++       break;
++
++     case 'temp':
++       resolvedPath = window.app.getPath('temp');
++       break;
++
++     case 'home':
++       resolvedPath = window.app.getPath('home');
++       break;
++
++     case 'appdata':
++       resolvedPath = window.app.getPath('appData');
++       break;
++
++     case 'userdata':
++       resolvedPath = window.app.getPath('userData');
++       break;
++
++     default:
++       throw new Error(`Unknown path name ${name}`);
++   }
++
++   this._pathCache[normalizedName] = resolvedPath;
++   return resolvedPath;
++ },
+ 
+       getInfo() {
+         return {

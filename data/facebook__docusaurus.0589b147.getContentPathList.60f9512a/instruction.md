@@ -2,26 +2,22 @@
 
 ### Describe the bug
 
-When using the pages plugin, content from the base `contentPath` directory is no longer being loaded. Only localized content from `contentPathLocalized` is being picked up, which means pages that exist in the base content directory are not being discovered or rendered.
+After a recent update, pages from the default content path are no longer being loaded. Only localized pages are being detected and rendered. This means that if I have pages in my main pages directory but no localized versions, they simply don't show up on the site.
 
 ### Reproduction
 
-1. Create a Docusaurus site with the pages plugin configured
-2. Add a page file (e.g., `my-page.md`) to the base pages directory (typically `src/pages`)
-3. Add a localized version to the localized directory (e.g., `i18n/en/docusaurus-plugin-content-pages/my-other-page.md`)
-4. Build or start the dev server
+1. Create a page in the default pages directory (e.g., `src/pages/my-page.md`)
+2. Don't create a localized version of this page
+3. Build or run the site
+4. The page is not accessible and doesn't appear in the generated site
 
-**Expected behavior:**
-Both the base page and the localized page should be available and rendered.
+### Expected behavior
 
-**Actual behavior:**
-Only the localized page is found. The page in the base `src/pages` directory is not being loaded.
+Both the default content path and localized content path should be scanned for pages. Pages in the default directory should be loaded even when there's no localized version available.
 
 ### System Info
-- Docusaurus version: latest
+- Docusaurus plugin: @docusaurus/plugin-content-pages
 - Node version: 18.x
-
-This seems to have broken after a recent update. Previously, pages from both directories were working correctly.
 
 ---
 Repository: /testbed

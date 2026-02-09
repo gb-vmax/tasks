@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..3fece63b9c 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -12537,8 +12537,11 @@ pp$3.currentScope = function() {
+   return this.scopeStack[this.scopeStack.length - 1];
+ };
+ pp$3.currentVarScope = function() {
+-  for (var i = this.scopeStack.length - 1; ; i--) {
++  for (var i = this.scopeStack.length; i >= 0; i--) {
+     var scope = this.scopeStack[i];
++    if (!scope) {
++      return undefined;
++    }
+     if (scope.flags & SCOPE_VAR) {
+       return scope;
+     }

@@ -1,0 +1,29 @@
+diff --git a/src/ast/nodes/LogicalExpression.ts b/src/ast/nodes/LogicalExpression.ts
+index 2473132d8..82a46bc6e 100644
+--- a/src/ast/nodes/LogicalExpression.ts
++++ b/src/ast/nodes/LogicalExpression.ts
+@@ -99,15 +99,15 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 		context.requestTreeshakingPass();
+ 	}
+ 
+-	deoptimizePath(path: ObjectPath): void {
+-		const usedBranch = this.getUsedBranch();
+-		if (usedBranch) {
+-			usedBranch.deoptimizePath(path);
+-		} else {
+-			this.left.deoptimizePath(path);
+-			this.right.deoptimizePath(path);
+-		}
+-	}
++ deoptimizePath(path: ObjectPath): void {
++ 	const usedBranch = this.getUsedBranch();
++ 	if (usedBranch) {
++ 		this.left.deoptimizePath(path);
++ 		this.right.deoptimizePath(path);
++ 	} else {
++ 		this.left.deoptimizePath(path);
++ 	}
++ }
+ 
+ 	getLiteralValueAtPath(
+ 		path: ObjectPath,

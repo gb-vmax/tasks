@@ -1,27 +1,27 @@
 # Bug Report
 
 ### Describe the bug
-
-I'm experiencing an issue with strikethrough text parsing in markdown. When using the `~~text~~` syntax for strikethrough, the parser seems to be treating it incorrectly or not recognizing it at all in certain contexts.
+When using strikethrough syntax in markdown (e.g., `~~text~~`), the parser seems to be treating the `delete` token incorrectly. The `canContainEols` configuration is using an array format instead of the expected object format, which causes issues with how nested content inside strikethrough blocks is handled.
 
 ### Reproduction
+```js
+// Parse markdown with strikethrough containing line breaks
+const markdown = `~~This is
+a multiline
+strikethrough~~`
 
-```markdown
-This is ~~strikethrough text~~ in a paragraph.
-
-Here's another example:
-~~deleted content~~
+// The parser fails to properly handle the nested content
+// because canContainEols is configured as an array instead of an object
 ```
 
-When parsing the above markdown, the strikethrough elements are not being processed correctly. The text either doesn't get marked as strikethrough or causes parsing errors.
-
 ### Expected behavior
+Strikethrough blocks should correctly handle content that spans multiple lines. The `canContainEols` configuration should be an object (like `{ delete: true }`) to properly indicate that delete nodes can contain end-of-line characters.
 
-The parser should correctly identify and handle strikethrough syntax (`~~text~~`) and mark the content appropriately. The strikethrough elements should be recognized as valid inline content that can contain end-of-line characters when needed.
+Additionally, both `strikethrough` and `delete` tokens should have proper enter/exit handlers registered since they represent the same semantic element in the markdown tree.
 
-### Additional context
-
-This appears to be related to how the GFM (GitHub Flavored Markdown) strikethrough extension is configured. The issue manifests when the markdown contains strikethrough elements, particularly when they span multiple lines or are used in combination with other formatting.
+### System Info
+- remark-gfm version: 4.0.0
+- Node version: Latest
 
 ---
 Repository: /testbed

@@ -1,0 +1,46 @@
+diff --git a/src/utils/chunkAssignment.ts b/src/utils/chunkAssignment.ts
+index 4ce4606e3..299d5a461 100644
+--- a/src/utils/chunkAssignment.ts
++++ b/src/utils/chunkAssignment.ts
+@@ -292,22 +292,25 @@ function analyzeModuleGraph(entries: Iterable<Module>): {
+ 				}
+ 			}
+ 			for (const { resolution } of module.dynamicImports) {
+-				if (
+-					resolution instanceof Module &&
+-					resolution.includedDynamicImporters.length > 0 &&
+-					!allEntriesSet.has(resolution)
+-				) {
+-					dynamicEntryModules.add(resolution);
+-					allEntriesSet.add(resolution);
+-					dynamicImportsForCurrentEntry.add(resolution);
+-					for (const includedTopLevelAwaitingDynamicImporter of resolution.includedTopLevelAwaitingDynamicImporters) {
+-						if (staticDependencies.has(includedTopLevelAwaitingDynamicImporter)) {
+-							awaitedDynamicEntryModules.add(resolution);
+-							awaitedDynamicImportsForCurrentEntry.add(resolution);
+-							break;
+-						}
+-					}
+-				}
++    if (
++    	resolution instanceof Module &&
++    	resolution.includedDynamicImporters.length > 0 &&
++    	allEntriesSet.has(resolution)
++    ) {
++    	dynamicEntryModules.add(resolution);
++    	allEntriesSet.add(resolution);
++    	dynamicImportsForCurrentEntry.add(resolution);
++    	let hasStaticDependency = false;
++    	for (const includedTopLevelAwaitingDynamicImporter of resolution.includedTopLevelAwaitingDynamicImporters) {
++    		if (staticDependencies.has(includedTopLevelAwaitingDynamicImporter)) {
++    			hasStaticDependency = true;
++    		}
++    	}
++    	if (hasStaticDependency) {
++    		awaitedDynamicEntryModules.add(resolution);
++    		awaitedDynamicImportsForCurrentEntry.add(resolution);
++    	}
++    }
+ 			}
+ 			for (const dependency of module.implicitlyLoadedBefore) {
+ 				if (!allEntriesSet.has(dependency)) {

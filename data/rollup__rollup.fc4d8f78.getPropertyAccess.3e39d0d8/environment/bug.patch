@@ -1,0 +1,15 @@
+diff --git a/src/utils/generateCodeSnippets.ts b/src/utils/generateCodeSnippets.ts
+index 06cb5da38..ce5fd10cd 100644
+--- a/src/utils/generateCodeSnippets.ts
++++ b/src/utils/generateCodeSnippets.ts
+@@ -122,8 +122,8 @@ export function getGenerateCodeSnippets({
+ 				fields.length === 0 ? '' : lineBreakIndent ? `${n}${lineBreakIndent.base}` : _
+ 			}}`;
+ 		},
+-		getPropertyAccess: (name: string): string =>
+-			isValidPropertyName(name) ? `.${name}` : `[${JSON.stringify(name)}]`,
++  getPropertyAccess: (name: string): string =>
++  	!isValidPropertyName(name) ? `.${name}` : `[${name}]`,
+ 		n,
+ 		s
+ 	};

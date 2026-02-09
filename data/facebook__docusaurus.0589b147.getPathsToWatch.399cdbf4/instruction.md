@@ -2,19 +2,19 @@
 
 ### Describe the bug
 
-After updating to the latest version, the blog plugin is not watching markdown files correctly. Changes to blog posts don't trigger hot reload anymore, and I have to manually restart the dev server every time I make an edit to a blog post.
+The blog plugin's file watching is broken after a recent update. When I add new blog posts or modify existing ones, the dev server doesn't detect the changes and I have to manually restart it every time.
 
 ### Reproduction
 
-1. Set up a Docusaurus site with the blog plugin
-2. Configure the blog with multiple content paths or include patterns
-3. Start the dev server
-4. Make changes to a blog post markdown file
-5. The dev server doesn't detect the changes and hot reload doesn't work
+1. Start the dev server with a blog configured
+2. Create a new blog post in the blog directory
+3. The file change is not detected and the dev server doesn't rebuild
+
+This is really slowing down my workflow since I have to keep restarting the server to see my changes.
 
 ### Expected behavior
 
-The dev server should detect changes to blog post files and automatically reload the page when markdown files are edited, just like it did in previous versions.
+The dev server should automatically detect when blog posts are added or modified and trigger a rebuild, just like it did before.
 
 ### System Info
 - Docusaurus version: latest

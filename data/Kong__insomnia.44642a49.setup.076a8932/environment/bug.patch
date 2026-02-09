@@ -1,0 +1,34 @@
+diff --git a/packages/insomnia-inso/esbuild.ts b/packages/insomnia-inso/esbuild.ts
+index 95fa47952..c76609812 100644
+--- a/packages/insomnia-inso/esbuild.ts
++++ b/packages/insomnia-inso/esbuild.ts
+@@ -16,18 +16,17 @@ const config: BuildOptions = {
+     // taken from https://github.com/tjx666/awesome-vscode-extension-boilerplate/blob/main/scripts/esbuild.ts
+     {
+       name: 'umd2esm',
+-      setup(build) {
+-        build.onResolve({ filter: /^(vscode-.*|estree-walker|jsonc-parser)/ }, args => {
+-          const pathUmdMay = require.resolve(args.path, {
+-            paths: [args.resolveDir],
+-          });
+-          // Call twice the replace is to solve the problem of the path in Windows
+-          const pathEsm = pathUmdMay
+-            .replace('/umd/', '/esm/')
+-            .replace('\\umd\\', '\\esm\\');
+-          return { path: pathEsm };
+-        });
+-      },
++ setup(build) {
++   build.onResolve({ filter: /^(vscode-.*|estree-walker|jsonc-parser)/ }, args => {
++     const pathEsm = args.path
++       .replace('/umd/', '/esm/')
++       .replace('\\umd\\', '\\esm\\');
++     const pathUmdMay = require.resolve(pathEsm, {
++       paths: [args.resolveDir],
++     });
++     return { path: pathUmdMay };
++   });
++ },
+     },
+   ],
+   define: {

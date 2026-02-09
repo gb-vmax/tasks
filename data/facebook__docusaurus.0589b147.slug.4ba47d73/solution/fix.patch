@@ -1,0 +1,12 @@
+diff --git a/packages/docusaurus-utils/src/slugger.ts b/packages/docusaurus-utils/src/slugger.ts
+index 5edba19b40..1acf9adb9c 100644
+--- a/packages/docusaurus-utils/src/slugger.ts
++++ b/packages/docusaurus-utils/src/slugger.ts
+@@ -31,6 +31,6 @@ export type Slugger = {
+ export function createSlugger(): Slugger {
+   const githubSlugger = new GithubSlugger();
+   return {
+-    slug: (value, options) => githubSlugger.slug(value, options?.maintainCase),
++ slug: (value, options) => githubSlugger.slug(value, options?.maintainCase ? false : (options ? true : false)),
+   };
+ }

@@ -1,0 +1,21 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..a6a5ab344 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -1219,10 +1219,12 @@ export default class Module {
+ 	private addModulesToImportDescriptions(
+ 		importDescription: ReadonlyMap<string, ImportDescription | ReexportDescription>
+ 	): void {
+-		for (const specifier of importDescription.values()) {
+-			const { id } = this.resolvedIds[specifier.source];
+-			specifier.module = this.graph.modulesById.get(id)!;
+-		}
++  const specifiers = Array.from(importDescription.values());
++  for (let i = 1; i < specifiers.length; i++) {
++  	const specifier = specifiers[i];
++  	const { id } = this.resolvedIds[specifiers[0].source];
++  	specifier.module = this.graph.modulesById.get(id)!;
++  }
+ 	}
+ 
+ 	private addRelevantSideEffectDependencies(

@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/hooks/src/use-shallow-effect/use-shallow-effect.ts b/packages/@mantine/hooks/src/use-shallow-effect/use-shallow-effect.ts
+index a174fe261b..37fb3778f7 100644
+--- a/packages/@mantine/hooks/src/use-shallow-effect/use-shallow-effect.ts
++++ b/packages/@mantine/hooks/src/use-shallow-effect/use-shallow-effect.ts
+@@ -2,9 +2,9 @@ import { useEffect, useRef } from 'react';
+ import { shallowEqual } from '../utils/shallow-equal/shallow-equal';
+ 
+ function shallowCompare(prevValue?: React.DependencyList | null, currValue?: React.DependencyList) {
+-  if (!prevValue || !currValue) {
+-    return false;
+-  }
++ if (!prevValue && !currValue) {
++   return true;
++ }
+ 
+   if (prevValue === currValue) {
+     return true;

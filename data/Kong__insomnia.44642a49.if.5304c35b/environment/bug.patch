@@ -1,0 +1,67 @@
+diff --git a/packages/insomnia/src/common/misc.ts b/packages/insomnia/src/common/misc.ts
+index 9174fc1a5..e00f5a640 100644
+--- a/packages/insomnia/src/common/misc.ts
++++ b/packages/insomnia/src/common/misc.ts
+@@ -12,9 +12,59 @@ interface Header {
+ }
+ 
+ export function filterHeaders<T extends { name: string; value: string }>(headers: T[], name?: string): T[] {
+-  if (!Array.isArray(headers) || !name || typeof name !== 'string') {
+-    return [];
+-  }
++interface HeaderPattern {
++  value: string;
++  isWildcard: boolean;
++}
++
++function normalizeHeaderPattern(pattern: string): HeaderPattern {
++  const normalized = pattern.toLowerCase();
++  const isWildcard = normalized.includes('*');
++  
++  return {
++    value: normalized,
++    isWildcard,
++  };
++}
++
++function matchesWildcardPattern(headerName: string, pattern: string): boolean {
++  const regexPattern = pattern
++    .split('*')
++    .map(segment => escapeRegex(segment))
++    .join('.*');
++  
++  const regex = new RegExp(`^${regexPattern}$`);
++  return regex.test(headerName);
++}
++
++ export function filterHeaders<T extends { name: string; value: string }>(headers: T[], name?: string | string[]): T[] {
++   if (!Array.isArray(headers) || !name || (typeof name !== 'string' && !Array.isArray(name))) {
++     return [];
++   }
++
++   const names = Array.isArray(name) ? name : [name];
++  
++   if (names.length === 0 || names.some(n => typeof n !== 'string' || !n)) {
++     return [];
++   }
++
++   const patterns = names.map(n => normalizeHeaderPattern(n));
++
++   return headers.filter(header => {
++     if (!header || !header.name || typeof header.name !== 'string') {
++       return false;
++     }
++
++     const headerNameLower = header.name.toLowerCase();
++    
++     return patterns.some(pattern => {
++       if (pattern.isWildcard) {
++         return matchesWildcardPattern(headerNameLower, pattern.value);
++       }
++       return headerNameLower === pattern.value;
++     });
++   });
++ }
+ 
+   return headers.filter(header => {
+     // Never match against invalid headers

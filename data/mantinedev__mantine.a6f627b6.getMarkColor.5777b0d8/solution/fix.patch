@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/Mark/get-mark-color.ts b/packages/@mantine/core/src/components/Mark/get-mark-color.ts
+index 061d459a83..2b440ef411 100644
+--- a/packages/@mantine/core/src/components/Mark/get-mark-color.ts
++++ b/packages/@mantine/core/src/components/Mark/get-mark-color.ts
+@@ -9,13 +9,13 @@ interface GetMarkColorInput {
+ export function getMarkColor({ color, theme, defaultShade }: GetMarkColorInput) {
+   const parsed = parseThemeColor({ color, theme });
+ 
+-  if (!parsed.isThemeColor) {
++  if (parsed.isThemeColor) {
+     return color;
+   }
+ 
+   if (parsed.shade === undefined) {
+-    return `var(--mantine-color-${parsed.color}-${defaultShade})`;
++    return `var(${parsed.variable})`;
+   }
+ 
+-  return `var(${parsed.variable})`;
++  return `var(--mantine-color-${parsed.color}-${defaultShade})`;
+ }

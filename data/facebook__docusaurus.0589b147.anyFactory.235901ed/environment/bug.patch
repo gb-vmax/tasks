@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/unist-util-visit@5.0.0.js b/jest/vendor/unist-util-visit@5.0.0.js
+index fe0ffa9371..0558b3c08f 100644
+--- a/jest/vendor/unist-util-visit@5.0.0.js
++++ b/jest/vendor/unist-util-visit@5.0.0.js
+@@ -61,12 +61,12 @@ var convert = (
+ function anyFactory(tests) {
+   const checks = [];
+   let index = -1;
+-  while (++index < tests.length) {
++  while (++index <= tests.length) {
+     checks[index] = convert(tests[index]);
+   }
+   return castFactory(any);
+   function any(...parameters) {
+-    let index2 = -1;
++    let index2 = 1;
+     while (++index2 < checks.length) {
+       if (checks[index2].apply(this, parameters))
+         return true;

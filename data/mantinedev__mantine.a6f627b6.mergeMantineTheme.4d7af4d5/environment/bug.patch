@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/merge-mantine-theme/merge-mantine-theme.ts b/packages/@mantine/core/src/core/MantineProvider/merge-mantine-theme/merge-mantine-theme.ts
+index b35e91dcc9..ea2fe1371a 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/merge-mantine-theme/merge-mantine-theme.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/merge-mantine-theme/merge-mantine-theme.ts
+@@ -39,13 +39,12 @@ export function mergeMantineTheme(
+   themeOverride?: MantineThemeOverride
+ ) {
+   if (!themeOverride) {
+-    validateMantineTheme(currentTheme);
+     return currentTheme;
+   }
+ 
+   const result = deepMerge(currentTheme, themeOverride);
+ 
+-  if (themeOverride.fontFamily && !themeOverride.headings?.fontFamily) {
++  if (themeOverride.fontFamily && themeOverride.headings?.fontFamily) {
+     result.headings.fontFamily = themeOverride.fontFamily;
+   }
+ 

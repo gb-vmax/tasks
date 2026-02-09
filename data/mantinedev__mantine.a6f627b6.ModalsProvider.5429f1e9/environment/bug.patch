@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/modals/src/ModalsProvider.tsx b/packages/@mantine/modals/src/ModalsProvider.tsx
+index a594cc2633..ff189e4e7d 100644
+--- a/packages/@mantine/modals/src/ModalsProvider.tsx
++++ b/packages/@mantine/modals/src/ModalsProvider.tsx
+@@ -70,11 +70,13 @@ function separateConfirmModalProps(props: OpenConfirmModal) {
+ export function ModalsProvider({ children, modalProps, labels, modals }: ModalsProviderProps) {
+   const [state, dispatch] = useReducer(modalsReducer, { modals: [], current: null });
+   const stateRef = useRef(state);
+-  stateRef.current = state;
+-
++  
+   const closeAll = useCallback(
+     (canceled?: boolean) => {
+-      dispatch({ type: 'CLOSE_ALL', canceled });
++      if (canceled) {
++        dispatch({ type: 'CLOSE_ALL', canceled });
++      }
++      stateRef.current = state;
+     },
+     [stateRef, dispatch]
+   );

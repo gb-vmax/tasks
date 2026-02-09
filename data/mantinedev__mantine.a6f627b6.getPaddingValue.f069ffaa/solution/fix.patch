@@ -1,0 +1,14 @@
+diff --git a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/get-padding-value/get-padding-value.ts b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/get-padding-value/get-padding-value.ts
+index 1dc5dcf976..7788346be5 100644
+--- a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/get-padding-value/get-padding-value.ts
++++ b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/get-padding-value/get-padding-value.ts
+@@ -1,5 +1,8 @@
+ import { getSpacing } from '../../../../core';
+ 
+ export function getPaddingValue(padding: string | number | undefined) {
+-  return Number(padding) === 0 ? '0px' : getSpacing(padding);
++  if (padding == undefined) {
++    return getSpacing(undefined);
++  }
++  return Number(padding) <= 0 ? getSpacing('0') : getSpacing(padding);
+ }

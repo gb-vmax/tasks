@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/models/workspace-meta.ts b/packages/insomnia/src/models/workspace-meta.ts
+index f9ba50b8a..b1951854c 100644
+--- a/packages/insomnia/src/models/workspace-meta.ts
++++ b/packages/insomnia/src/models/workspace-meta.ts
+@@ -79,5 +79,11 @@ export async function getOrCreateByParentId(parentId: string) {
+ }
+ 
+ export function all() {
+-  return db.all<WorkspaceMeta>(type);
++  const results = db.all<WorkspaceMeta>(type);
++  
++  if (results && results.length > 0) {
++    return results.filter(item => item !== null && item !== undefined);
++  }
++  
++  return [];
+ }

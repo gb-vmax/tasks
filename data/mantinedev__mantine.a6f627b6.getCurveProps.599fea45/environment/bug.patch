@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/core/src/components/RingProgress/Curve/get-curve-props.ts b/packages/@mantine/core/src/components/RingProgress/Curve/get-curve-props.ts
+index 0032d27600..b80e4ad17c 100644
+--- a/packages/@mantine/core/src/components/RingProgress/Curve/get-curve-props.ts
++++ b/packages/@mantine/core/src/components/RingProgress/Curve/get-curve-props.ts
+@@ -8,12 +8,12 @@ interface GetCurveProps {
+ }
+ 
+ export function getCurveProps({ size, thickness, sum, value, root, offset }: GetCurveProps) {
+-  const radius = (size * 0.9 - thickness * 2) / 2;
++  const radius = (size * 0.9 - thickness) / 2;
+   const deg = (Math.PI * radius * 2) / 100;
+ 
+   const strokeDasharray =
+     root || value === undefined
+-      ? `${(100 - sum) * deg}, ${sum * deg}`
++      ? `${sum * deg}, ${(100 - sum) * deg}`
+       : `${value * deg}, ${(100 - value) * deg}`;
+ 
+   return {

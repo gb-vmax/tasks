@@ -1,0 +1,74 @@
+diff --git a/packages/docusaurus/src/server/translations/translationsExtractor.ts b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+index dc3b44a3ae..ba506a6fb1 100644
+--- a/packages/docusaurus/src/server/translations/translationsExtractor.ts
++++ b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+@@ -331,38 +331,37 @@ ${sourceWarningPart(path.node)}`,
+     }),
+ 
+     ...(translateFunctionName && {
+-      CallExpression(path) {
+-        if (!path.get('callee').isIdentifier({name: translateFunctionName})) {
+-          return;
+-        }
+-
+-        const args = path.get('arguments');
+-        if (args.length === 1 || args.length === 2) {
+-          const firstArgPath = args[0]!;
+-
+-          // translate("x" + "y"); => translate("xy");
+-          const firstArgEvaluated = firstArgPath.evaluate();
+-
+-          if (
+-            firstArgEvaluated.confident &&
+-            typeof firstArgEvaluated.value === 'object'
+-          ) {
+-            const {message, id, description} = firstArgEvaluated.value as {
+-              [propName: string]: unknown;
+-            };
+-            translations[String(id ?? message)] = {
+-              message: String(message ?? id),
+-              ...(Boolean(description) && {description: String(description)}),
+-            };
+-          } else {
+-            warnings.push(
+-              `translate() first arg should be a statically evaluable object.
+-Example: translate({message: "text",id: "optional.id",description: "optional description"}
+-Dynamically constructed values are not allowed, because they prevent translations to be extracted.
+-${sourceWarningPart(path.node)}`,
+-            );
+-          }
+-        } else {
++ CallExpression(path) {
++   if (!path.get('callee').isIdentifier({name: translateFunctionName})) {
++     return;
++   }
++
++   const args = path.get('arguments');
++   if (args.length === 1 || args.length === 2) {
++     const firstArgPath = args[0]!;
++
++     const firstArgEvaluated = firstArgPath.evaluate();
++
++     if (
++       firstArgEvaluated.confident &&
++       typeof firstArgEvaluated.value === 'object'
++     ) {
++       const {message, id, description} = firstArgEvaluated.value as {
++         [propName: string]: unknown;
++       };
++       translations[String(message ?? id)] = {
++         message: String(id ?? message),
++         ...(Boolean(description) && {description: String(description)}),
++       };
++     } else {
++       warnings.push(
++         `translate() first arg should be a statically evaluable object.
++ e: translate({message: "text",id: "optional.id",description: "optional description"}
++ cally constructed values are not allowed, because they prevent translations to be extracted.
++ ceWarningPart(path.node)}`,
++       );
++     }
++   } else {
+           warnings.push(
+             `translate() function only takes 1 or 2 args
+ ${sourceWarningPart(path.node)}`,

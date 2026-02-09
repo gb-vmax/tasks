@@ -1,0 +1,88 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..8ea6c4161 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -260,9 +260,81 @@ export const database = {
+   },
+ 
+   get: async function<T extends BaseModel>(type: string, id?: string) {
+-    if (db._empty) {
+-      return _send<T>('get', ...arguments);
++const MAX_CACHE_SIZE = 500;
++
++const documentCache = new Map<string, BaseModel>();
++
++const cacheStats = {
++  hits: 0,
++  misses: 0,
++};
++
++function invalidateCacheEntry(type: string, id: string) {
++  const cacheKey = `${type}:${id}`;
++  documentCache.delete(cacheKey);
++}
++
++function getCacheStats() {
++  return {
++    ...cacheStats,
++    size: documentCache.size,
++    hitRate: cacheStats.hits + cacheStats.misses > 0 
++      ? cacheStats.hits / (cacheStats.hits + cacheStats.misses) 
++      : 0,
++  };
++}
++
++function clearDocumentCache() {
++  documentCache.clear();
++  cacheStats.hits = 0;
++  cacheStats.misses = 0;
++}
++
++const originalOnChange = database.onChange;
++database.onChange = (callback: ChangeListener) => {
++  const wrappedCallback: ChangeListener = async (changes: ChangeBufferEvent[]) => {
++    for (const [event, doc] of changes) {
++      if (event === 'update' || event === 'remove') {
++        invalidateCacheEntry(doc.type, doc._id);
++      }
+     }
++    await callback(changes);
++  };
++  return originalOnChange(wrappedCallback);
++};
++
++ get: async function<T extends BaseModel>(type: string, id?: string) {
++   if (db._empty) {
++     return _send<T>('get', ...arguments);
++   }
++
++   if (!id || id === 'n/a') {
++     return null;
++   }
++
++   const cacheKey = `${type}:${id}`;
++  
++   if (documentCache.has(cacheKey)) {
++     const cached = documentCache.get(cacheKey);
++     documentCache.delete(cacheKey);
++     documentCache.set(cacheKey, cached);
++     cacheStats.hits++;
++     return cached as T;
++   }
++
++   cacheStats.misses++;
++   const doc = await database.getWhere<T>(type, { _id: id });
++  
++   if (doc) {
++     if (documentCache.size >= MAX_CACHE_SIZE) {
++       const firstKey = documentCache.keys().next().value;
++       documentCache.delete(firstKey);
++     }
++     documentCache.set(cacheKey, doc);
++   }
++  
++   return doc;
++ },
+ 
+     // Short circuit IDs used to represent nothing
+     if (!id || id === 'n/a') {

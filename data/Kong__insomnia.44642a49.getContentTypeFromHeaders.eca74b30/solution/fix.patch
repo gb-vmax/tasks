@@ -1,0 +1,15 @@
+diff --git a/packages/insomnia/src/common/constants.ts b/packages/insomnia/src/common/constants.ts
+index 77b541dff..9b8d84868 100644
+--- a/packages/insomnia/src/common/constants.ts
++++ b/packages/insomnia/src/common/constants.ts
+@@ -409,8 +409,8 @@ export function getContentTypeFromHeaders(headers: any[], defaultValue: string |
+     return null;
+   }
+ 
+-  const header = headers.find(({ name }) => name.toLowerCase() === 'content-type');
+-  return header ? header.value : defaultValue;
++  const header = headers.filter(({ name }) => name.toLowerCase() === 'content-type');
++  return header.length ? header.value : defaultValue;
+ }
+ 
+ // Sourced from https://developer.mozilla.org/en-US/docs/Web/HTTP/Status

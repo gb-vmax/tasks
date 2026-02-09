@@ -2,29 +2,30 @@
 
 ### Describe the bug
 
-When parsing fenced code blocks in markdown, the code content is being assigned to the wrong node in the AST. This causes the parsed code block value to be placed on an incorrect parent node instead of the actual code node.
+I'm experiencing an issue with fenced code blocks in markdown parsing. When parsing markdown with fenced code blocks (using triple backticks), the content appears to be getting assigned to the wrong node in the AST.
 
 ### Reproduction
 
 ```js
-const remark = require('remark');
-const parse = remark.parse;
-
 const markdown = `
+# Title
+
 \`\`\`js
-const x = 1;
-console.log(x);
+const example = 'test';
 \`\`\`
+
+Some text after
 `;
 
-const ast = parse(markdown);
-console.log(ast);
-// The code block's value appears in the wrong location in the tree
+const result = remark.parse(markdown);
+// The code block value ends up in an unexpected location in the AST
 ```
+
+When I parse markdown containing fenced code blocks, the code content doesn't appear where it should in the resulting syntax tree. It seems like the parser is looking at the wrong stack position when trying to set the code block's value.
 
 ### Expected behavior
 
-The fenced code block content should be correctly assigned to the code node itself, not to a parent node in the stack. The AST structure should properly represent the code block with its value in the correct position.
+The fenced code block should be properly parsed and its content should be assigned to the correct code node in the AST. The value should contain the code between the fences with leading/trailing newlines stripped.
 
 ### System Info
 - remark version: 15.0.1

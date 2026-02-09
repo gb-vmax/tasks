@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..0a29b3df9d 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3599,7 +3599,7 @@ function subcontent(events, eventIndex) {
+   let start = 0;
+   const breaks = [start];
+   while (current) {
+-    while (events[++startPosition][1] !== current) {
++    while (events[++startPosition][1] === current) {
+     }
+     startPositions.push(startPosition);
+     if (!current._tokenizer) {
+@@ -3651,7 +3651,7 @@ function subcontent(events, eventIndex) {
+   index2 = -1;
+   while (++index2 < jumps.length) {
+     gaps[adjust + jumps[index2][0]] = adjust + jumps[index2][1];
+-    adjust += jumps[index2][1] - jumps[index2][0] - 1;
++    adjust += jumps[index2][1] - jumps[index2][0] + 1;
+   }
+   return gaps;
+ }

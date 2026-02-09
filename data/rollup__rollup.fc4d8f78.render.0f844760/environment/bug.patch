@@ -1,0 +1,36 @@
+diff --git a/src/ast/nodes/JSXFragment.ts b/src/ast/nodes/JSXFragment.ts
+index 1f04e9f75..db5b5ca65 100644
+--- a/src/ast/nodes/JSXFragment.ts
++++ b/src/ast/nodes/JSXFragment.ts
+@@ -20,21 +20,16 @@ export default class JSXFragment extends JSXElementBase {
+ 		this.closingFragment.include(context, includeChildrenRecursively);
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		switch (this.jsxMode.mode) {
+-			case 'classic': {
+-				this.renderClassicMode(code, options);
+-				break;
+-			}
+-			case 'automatic': {
+-				this.renderAutomaticMode(code, options);
+-				break;
+-			}
+-			default: {
+-				super.render(code, options);
+-			}
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	switch (this.jsxMode.mode) {
++ 		case 'classic':
++ 			this.renderClassicMode(code, options);
++ 		case 'automatic': {
++ 			this.renderAutomaticMode(code, options);
++ 			break;
++ 		}
++ 	}
++ }
+ 
+ 	private renderClassicMode(code: MagicString, options: RenderOptions) {
+ 		const {

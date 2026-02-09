@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..29d56b51d 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -532,9 +532,73 @@ export class GitVCS {
+         encoding: 'utf8',
+       });
+       return obj.object;
+-    } catch (err) {
+-      return null;
+-    }
++private _shouldRetryGitOperation(err: unknown): boolean {
++  if (!(err instanceof Error)) {
++    return false;
++  }
++  
++  const retryablePatterns = [
++    'EBUSY',
++    'EAGAIN',
++    'EWOULDBLOCK',
++    'ETIMEDOUT',
++    'ECONNRESET',
++    'EPIPE',
++    'lock',
++    'timeout',
++  ];
++  
++  const errorMessage = err.message.toLowerCase();
++  return retryablePatterns.some(pattern => 
++    errorMessage.includes(pattern.toLowerCase())
++  );
++}
++
++private _delay(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms));
++}
++
++ async readObjFromTree(treeOid: string, objPath: string) {
++   const maxRetries = 3;
++   const baseDelay = 100;
++  
++   for (let attempt = 0; attempt < maxRetries; attempt++) {
++     try {
++       const obj = await git.readObject({
++         ...this._baseOpts,
++         oid: treeOid,
++         filepath: convertToPosixSep(objPath),
++         encoding: 'utf8',
++       });
++       return obj.object;
++     } catch (err) {
++       const isLastAttempt = attempt === maxRetries - 1;
++       const shouldRetry = this._shouldRetryGitOperation(err);
++      
++       if (shouldRetry && !isLastAttempt) {
++         const delay = baseDelay * Math.pow(2, attempt);
++         console.log(
++           `[git] Retry reading object from tree (attempt ${attempt + 1}/${maxRetries}): ` +
++           `treeOid=${treeOid.substring(0, 7)}, path=${objPath}, ` +
++           `error=${err instanceof Error ? err.message : String(err)}, ` +
++           `retrying in ${delay}ms`
++         );
++         await this._delay(delay);
++         continue;
++       }
++      
++       console.log(
++         `[git] Failed to read object from tree: ` +
++         `treeOid=${treeOid.substring(0, 7)}, path=${objPath}, ` +
++         `attempt=${attempt + 1}/${maxRetries}, ` +
++         `error=${err instanceof Error ? err.message : String(err)}`
++       );
++       return null;
++     }
++   }
++  
++   return null;
++ }
+   }
+ 
+   async repoExists() {

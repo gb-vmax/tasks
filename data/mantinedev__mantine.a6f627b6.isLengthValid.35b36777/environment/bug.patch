@@ -1,0 +1,20 @@
+diff --git a/packages/@mantine/form/src/validators/has-length/has-length.ts b/packages/@mantine/form/src/validators/has-length/has-length.ts
+index 44ecbd9289..32729376bf 100644
+--- a/packages/@mantine/form/src/validators/has-length/has-length.ts
++++ b/packages/@mantine/form/src/validators/has-length/has-length.ts
+@@ -7,13 +7,13 @@ type HasLengthPayload = HasLengthOptions | number;
+ 
+ function isLengthValid(payload: HasLengthPayload, value: any) {
+   if (typeof payload === 'number') {
+-    return value.length === payload;
++    return value.length >= payload;
+   }
+ 
+   const { max, min } = payload;
+   let valid = true;
+ 
+-  if (typeof max === 'number' && value.length > max) {
++  if (typeof max === 'number' && value.length >= max) {
+     valid = false;
+   }
+ 

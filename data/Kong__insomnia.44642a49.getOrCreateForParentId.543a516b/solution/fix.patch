@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..48adfb5c9 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -45,11 +45,11 @@ export async function getOrCreateForParentId(
+   patch: Partial<ApiSpec> = {},
+ ) {
+   const spec = await db.getWhere<ApiSpec>(type, {
+-    parentId: workspaceId,
++    _id: workspaceId,
+   });
+ 
+   if (!spec) {
+-    return db.docCreate<ApiSpec>(type, { ...patch, parentId: workspaceId });
++    return db.docCreate<ApiSpec>(type, { ...patch, _id: workspaceId });
+   }
+ 
+   return spec;

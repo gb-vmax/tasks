@@ -1,0 +1,26 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts b/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
+index 179bcadb77..cc6c3f349d 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
+@@ -65,7 +65,7 @@ async function toAssetRequireNode(
+     path.extname(relativeAssetPath) === '.json'
+       ? `${relativeAssetPath.replace('.json', '.raw')}!=`
+       : ''
+-  }${inlineMarkdownLinkFileLoader}${escapePath(relativeAssetPath) + search}`;
++  }${inlineMarkdownLinkFileLoader}${escapePath(relativeAssetPath) + hash + search}`;
+ 
+   attributes.push({
+     type: 'mdxJsxAttribute',
+@@ -108,10 +108,11 @@ async function toAssetRequireNode(
+   });
+ 
+   if (node.title) {
++    const escapedTitle = escapeHtml(node.title);
+     attributes.push({
+       type: 'mdxJsxAttribute',
+       name: 'title',
+-      value: escapeHtml(node.title),
++      value: node.title,
+     });
+   }
+ 

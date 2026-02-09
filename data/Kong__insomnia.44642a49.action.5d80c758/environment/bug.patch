@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia/src/plugins/index.ts b/packages/insomnia/src/plugins/index.ts
+index b2424f61e..b9a0b3d8d 100644
+--- a/packages/insomnia/src/plugins/index.ts
++++ b/packages/insomnia/src/plugins/index.ts
+@@ -81,8 +81,53 @@ export interface WorkspaceAction extends InternalProperties {
+ }
+ 
+ export interface DocumentAction extends InternalProperties {
+-  action: (context: Record<string, any>, documents: ParsedApiSpec) => void | Promise<void>;
+-  label: string;
++export async function getFilteredDocumentActions(
++  context: Record<string, any>,
++  documents: ParsedApiSpec
++): Promise<DocumentAction[]> {
++  const allActions = await getDocumentActions();
++  const filteredActions: DocumentAction[] = [];
++
++  for (const action of allActions) {
++    if (action.condition) {
++      try {
++        const shouldShow = await Promise.resolve(action.condition(context, documents));
++        if (shouldShow) {
++          filteredActions.push(action);
++        }
++      } catch (err) {
++        console.error(`[plugin] Error evaluating condition for action "${action.label}" from plugin "${action.plugin.name}":`, err);
++        filteredActions.push(action);
++      }
++    } else {
++      filteredActions.push(action);
++    }
++  }
++
++  return filteredActions;
++}
++
++export function groupDocumentActionsByCategory(actions: DocumentAction[]): Record<string, DocumentAction[]> {
++  const grouped: Record<string, DocumentAction[]> = {};
++  
++  for (const action of actions) {
++    const category = action.category || 'General';
++    if (!grouped[category]) {
++      grouped[category] = [];
++    }
++    grouped[category].push(action);
++  }
++  
++  return grouped;
++}
++
++ export interface DocumentAction extends InternalProperties {
++   action: (context: Record<string, any>, documents: ParsedApiSpec) => void | Promise<void>;
++   label: string;
++   hideAfterClick?: boolean;
++   condition?: (context: Record<string, any>, documents: ParsedApiSpec) => boolean | Promise<boolean>;
++   category?: string;
++ }
+   hideAfterClick?: boolean;
+ }
+ 

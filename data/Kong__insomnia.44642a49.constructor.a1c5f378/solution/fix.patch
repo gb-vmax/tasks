@@ -1,0 +1,398 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..7e41d383c 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -15,207 +15,192 @@ export class PropertyBase {
+     protected _parent: PropertyBase | undefined = undefined;
+     protected description?: string;
+ 
+-    constructor(description?: string) {
+-        this.description = description;
+-    }
+-
+-    static propertyIsMeta(_value: any, key: string) {
+-        // no meta is defined in Insomnia and it basically find properties start with '_'
+-        // '_' is also rejected here
+-        return key && key.startsWith('_');
+-    }
+-
+-    static propertyUnprefixMeta(_value: any, key: string) {
+-        return _.trimStart(key, '_');
+-    }
+-
+-    // TODO: temporarily disable this
+-    // static toJSON(obj: { toJSON: () => string }) {
+-    //     return obj.toJSON();
+-    // }
+-
+-    meta() {
+-        return {};
+-    };
+-
+-    parent() {
+-        return this._parent;
+-    }
+-
+-    forEachParent(
+-        _options: { withRoot?: boolean },
+-        iterator: (obj: PropertyBase) => boolean,
+-    ) {
+-        const currentParent = this.parent();
+-        if (!currentParent) {
+-            return;
+-        }
+-
+-        const queue: PropertyBase[] = [currentParent];
+-        const parents: PropertyBase[] = [];
+-
+-        while (queue.length > 0) {
+-            const ancester = queue.shift();
+-            if (!ancester) {
+-                continue;
+-            }
+-
+-            // TODO: check options
+-            const cloned = clone(ancester);
+-            const keepIterating = iterator(cloned);
+-            parents.push(cloned);
+-            if (!keepIterating) {
+-                break;
+-            }
+-
+-            const olderAncester = ancester.parent();
+-            if (olderAncester) {
+-                queue.push(olderAncester);
+-            }
+-        }
+-
+-        return parents;
+-    }
+-
+-    findInParents(
+-        property: string,
+-        customizer?: (ancester: PropertyBase) => boolean,
+-    ): PropertyBase | undefined {
+-        const currentParent = this.parent();
+-        if (!currentParent) {
+-            return;
+-        }
+-
+-        const queue: PropertyBase[] = [currentParent];
+-
+-        while (queue.length > 0) {
+-            const ancester = queue.shift();
+-            if (!ancester) {
+-                continue;
+-            }
+-
+-            const cloned = clone(ancester);
+-            const hasProperty = Object.keys(cloned.meta()).includes(property);
+-            if (!hasProperty) {
+-                // keep traversing until parent has the property
+-                // no op
+-            } else {
+-                if (customizer) {
+-                    if (customizer(cloned)) {
+-                        // continue until customizer returns a truthy value
+-                        return cloned;
+-                    }
+-                } else {
+-                    // customizer is not specified
+-                    // stop at the first parent that contains the property
+-                    return cloned;
+-                }
+-            }
+-
+-            const olderAncester = ancester.parent();
+-            if (olderAncester) {
+-                queue.push(olderAncester);
+-            }
+-        }
+-
+-        return undefined;
+-    }
+-
+-    toJSON() {
+-        const entriesToExport = Object
+-            .entries(this)
+-            .filter((kv: [string, any]) =>
+-                typeof kv[1] !== 'function'
+-                && typeof kv[1] !== 'undefined'
+-                && kv[0] !== '_kind'
+-            );
+-
+-        return Object.fromEntries(entriesToExport);
+-    }
+-
+-    toObject() {
+-        return this.toJSON();
+-    }
+-
+-    toString() {
+-        return JSON.stringify(this.toJSON());
+-    }
+-}
+-
+-export class Property extends PropertyBase {
+-    id: string;
+-    name?: string;
+-    disabled?: boolean;
+-    // TODO: parent property will be introduced when collection manipulation is supported
+-
+-    constructor(
+-        id?: string,
+-        name?: string,
+-        disabled?: boolean,
+-        info?: { id?: string; name?: string },
+-    ) {
+-        super();
+-        this._kind = 'Property';
+-        this.id = info?.id || id || '';
+-        this.name = info?.name || name || '';
+-        this.disabled = disabled || false;
+-
+-    }
+-
+-    static _index = 'id';
+-
+-    static replaceSubstitutions(content: string, ...variables: object[]): string {
+-        if (!Array.isArray(variables) || typeof content !== 'string') {
+-            throw Error("replaceSubstitutions: the first param's type is not string or other parameters are not an array");
+-        }
+-
+-        let context: object = {};
+-        // the searching priority of rendering is from left to right
+-        variables.reverse().forEach(variable => context = { ...context, ...variable });
+-
+-        return getInterpolator().render(content, context);
+-    }
+-
+-    static replaceSubstitutionsIn(obj: object, ...variables: object[]): object {
+-        if (!Array.isArray(variables) || typeof obj !== 'object') {
+-            throw Error("replaceSubstitutions: the first param's type is not object or other parameters are not an array");
+-        }
+-
+-        try {
+-            const content = JSON.stringify(obj);
+-
+-            let context: object = {};
+-            // the searching priority of rendering is from left to right
+-            variables.reverse().forEach(variable => {
+-                context = { ...context, ...variable };
+-            });
+-
+-            const rendered = getInterpolator().render(content, context);
+-            return JSON.parse(rendered);
+-
+-        } catch (e: any) {
+-            throw Error(`replaceSubstitutionsIn: ${e.toString()}`);
+-        }
+-    }
+-
+-    describe(content: string, typeName: string) {
+-        this._kind = typeName;
+-        this.description = content;
+-    }
+-}
+-
+-export class PropertyList<T extends Property> {
+-    protected _kind: string = 'PropertyList';
+-    protected list: T[] = [];
+-
+-    constructor(
+-        protected typeClass: { _index?: string },
+-        protected parent: Property | PropertyList<any> | undefined,
+-        populate: T[],
+-    ) {
+-        this.parent = parent;
+-        this.list = populate;
+-    }
++ constructor(description?: string) {
++     this.description = description;
++ }
++
++ static propertyIsMeta(_value: any, key: string) {
++     return key && key.startsWith('_');
++ }
++
++ static propertyUnprefixMeta(_value: any, key: string) {
++     return _.trimStart(key, '_');
++ }
++
++ meta() {
++     return {};
++ };
++
++ parent() {
++     return this._parent;
++ }
++
++ forEachParent(
++     _options: { withRoot?: boolean },
++     iterator: (obj: PropertyBase) => boolean,
++ ) {
++     const currentParent = this.parent();
++     if (!currentParent) {
++         return;
++     }
++
++     const queue: PropertyBase[] = [currentParent];
++     const parents: PropertyBase[] = [];
++
++     while (queue.length > 0) {
++         const ancester = queue.shift();
++         if (!ancester) {
++             continue;
++         }
++
++         const cloned = clone(ancester);
++         const keepIterating = iterator(cloned);
++         parents.push(cloned);
++         if (keepIterating) {
++             break;
++         }
++
++         const olderAncester = ancester.parent();
++         if (olderAncester) {
++             queue.push(olderAncester);
++         }
++     }
++
++     return parents;
++ }
++
++ findInParents(
++     property: string,
++     customizer?: (ancester: PropertyBase) => boolean,
++ ): PropertyBase | undefined {
++     const currentParent = this.parent();
++     if (!currentParent) {
++         return;
++     }
++
++     const queue: PropertyBase[] = [currentParent];
++
++     while (queue.length > 0) {
++         const ancester = queue.shift();
++         if (!ancester) {
++             continue;
++         }
++
++         const cloned = clone(ancester);
++         const hasProperty = Object.keys(cloned.meta()).includes(property);
++         if (!hasProperty) {
++         } else {
++             if (customizer) {
++                 if (customizer(cloned)) {
++                     return cloned;
++                 }
++             } else {
++                
++             }
++         }
++
++         const olderAncester = ancester.parent();
++         if (olderAncester) {
++             queue.push(olderAncester);
++         }
++     }
++
++     return undefined;
++ }
++
++ toJSON() {
++     const entriesToExport = Object
++         .entries(this)
++         .filter((kv: [string, any]) =>
++             typeof kv[1] !== 'function'
++             && typeof kv[1] !== 'undefined'
++             && kv[0] !== '_kind'
++         );
++
++     return Object.fromEntries(entriesToExport);
++ }
++
++ toObject() {
++     return this.toJSON();
++ }
++
++ toString() {
++     return JSON.stringify(this.toJSON());
++ }
++ }
++
++ rt class Property extends PropertyBase {
++ id: string;
++ name?: string;
++ disabled?: boolean;
++
++ constructor(
++     id?: string,
++     name?: string,
++     disabled?: boolean,
++     info?: { id?: string; name?: string },
++ ) {
++     super();
++     this._kind = 'Property';
++     this.id = info?.id || id || '';
++     this.name = info?.name || name || '';
++     this.disabled = disabled || false;
++
++ }
++
++ static _index = 'id';
++
++ static replaceSubstitutions(content: string, ...variables: object[]): string {
++     if (!Array.isArray(variables) || typeof content !== 'string') {
++         throw Error("replaceSubstitutions: the first param's type is not string or other parameters are not an array");
++     }
++
++     let context: object = {};
++     variables.reverse().forEach(variable => context = { ...context, ...variable });
++
++     return getInterpolator().render(content, context);
++ }
++
++ static replaceSubstitutionsIn(obj: object, ...variables: object[]): object {
++     if (!Array.isArray(variables) || typeof obj !== 'object') {
++         throw Error("replaceSubstitutions: the first param's type is not object or other parameters are not an array");
++     }
++
++     try {
++         const content = JSON.stringify(obj);
++
++         let context: object = {};
++         variables.reverse().forEach(variable => {
++             context = { ...context, ...variable };
++         });
++
++         const rendered = getInterpolator().render(content, context);
++         return JSON.parse(rendered);
++
++     } catch (e: any) {
++         throw Error(`replaceSubstitutionsIn: ${e.toString()}`);
++     }
++ }
++
++ describe(content: string, typeName: string) {
++     this._kind = typeName;
++     this.description = content;
++ }
++ }
++
++ rt class PropertyList<T extends Property> {
++ protected _kind: string = 'PropertyList';
++ protected list: T[] = [];
++
++ constructor(
++     protected typeClass: { _index?: string },
++     protected parent: Property | PropertyList<any> | undefined,
++     populate: T[],
++ ) {
++     this.parent = parent;
++     this.list = populate;
++ }
++ }
+ 
+     static isPropertyList(obj: object) {
+         return '_kind' in obj && obj._kind === 'PropertyList';

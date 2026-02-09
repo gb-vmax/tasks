@@ -2,23 +2,20 @@
 
 ### Describe the bug
 
-When calling `getDescription()` for theme components in the swizzle command, the function returns incorrect descriptions. It seems like the description is being fetched for the wrong component, causing mismatched or fallback descriptions to be displayed.
+When using the swizzle command to get component descriptions, the wrong component ID is being used internally. The function is receiving a `component` parameter but then references a different variable `componentId` that doesn't exist in that scope, which causes the description lookup to fail.
 
 ### Reproduction
 
-```js
-// When swizzling a component, the description shown doesn't match the actual component
-// For example, trying to get description for component 'Footer' might return 
-// the description for a completely different component or the fallback description
-
-const components = await getThemeComponents({...});
-const description = getDescription('Footer'); 
-// Returns wrong description or fallback instead of Footer's actual description
+```bash
+# Try to swizzle a component and view its description
+npx docusaurus swizzle [theme-name] [component-name]
 ```
+
+The component description will not be retrieved correctly because the function is looking up the wrong variable.
 
 ### Expected behavior
 
-`getDescription()` should return the correct description for the component name that's passed as an argument. Each component should display its own description, not a fallback or description from another component.
+The `getDescription` function should use the `component` parameter that is passed to it, not an undefined `componentId` variable. Component descriptions should be displayed correctly when swizzling components.
 
 ### System Info
 - Docusaurus version: latest

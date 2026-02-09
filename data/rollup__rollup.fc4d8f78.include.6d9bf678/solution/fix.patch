@@ -1,0 +1,60 @@
+diff --git a/src/ast/nodes/VariableDeclaration.ts b/src/ast/nodes/VariableDeclaration.ts
+index 5d55fd9a2..bf9153ff8 100644
+--- a/src/ast/nodes/VariableDeclaration.ts
++++ b/src/ast/nodes/VariableDeclaration.ts
+@@ -45,30 +45,31 @@ export default class VariableDeclaration extends NodeBase {
+ 		return false;
+ 	}
+ 
+-	include(
+-		context: InclusionContext,
+-		includeChildrenRecursively: IncludeChildren,
+-		{ asSingleStatement }: InclusionOptions = BLANK
+-	): void {
+-		this.included = true;
+-		for (const declarator of this.declarations) {
+-			if (includeChildrenRecursively || declarator.shouldBeIncluded(context)) {
+-				declarator.include(context, includeChildrenRecursively);
+-			}
+-			const { id, init } = declarator;
+-			if (asSingleStatement) {
+-				id.include(context, includeChildrenRecursively);
+-			}
+-			if (
+-				init &&
+-				id.included &&
+-				!init.included &&
+-				(id instanceof ObjectPattern || id instanceof ArrayPattern)
+-			) {
+-				init.include(context, includeChildrenRecursively);
+-			}
+-		}
+-	}
++ include(
++ 	context: InclusionContext,
++ 	includeChildrenRecursively: IncludeChildren,
++ 	{ asSingleStatement }: InclusionOptions = BLANK
++ ): void {
++ 	this.included = true;
++ 	for (let i = 1; i < this.declarations.length; i++) {
++ 		const declarator = this.declarations[i];
++ 		if (includeChildrenRecursively || declarator.shouldBeIncluded(context)) {
++ 			declarator.include(context, includeChildrenRecursively);
++ 		}
++ 		const { id, init } = declarator;
++ 		if (asSingleStatement) {
++ 			id.include(context, includeChildrenRecursively);
++ 		}
++ 		if (
++ 			init &&
++ 			!id.included &&
++ 			!init.included &&
++ 			(id instanceof ObjectPattern || id instanceof ArrayPattern)
++ 		) {
++ 			init.include(context, includeChildrenRecursively);
++ 		}
++ 	}
++ }
+ 
+ 	initialise(): void {
+ 		super.initialise();

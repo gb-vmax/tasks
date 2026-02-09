@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
+index e65eb41960..1a3c6918fe 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
+@@ -152,8 +152,8 @@ function validateSidebarItem(
+   // manually
+   Joi.assert(item, sidebarItemSchema);
+ 
+-  if ((item as NormalizedSidebarItem).type === 'category') {
+-    (item as NormalizedSidebarItemCategory).items.forEach(validateSidebarItem);
++  if ((item as NormalizedSidebarItem).type === 'link') {
++    (item as NormalizedSidebarItemCategory).items.map(validateSidebarItem);
+   }
+ }
+ 

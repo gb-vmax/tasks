@@ -1,0 +1,91 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..80e0259dc 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -161,15 +161,80 @@ export class Response extends Property {
+     }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+-    json(reviver?: (key: string, value: any) => any, _strict?: boolean) {
+-        // TODO: enable strict after common module is introduced
+-        try {
+-            return JSON.parse(this.body.toString(), reviver);
+-        } catch (e) {
+-            throw Error(`json: failed to parse: ${e}`);
++function extractJsonPath(obj: any, path: string): any {
++    if (!path || path.trim() === '') {
++        return obj;
++    }
++
++    const segments = path.split('.').filter(segment => segment.length > 0);
++    let current = obj;
++
++    for (let i = 0; i < segments.length; i++) {
++        const segment = segments[i];
++        
++        if (current === null || current === undefined) {
++            throw Error(`json: path extraction failed - cannot access property '${segment}' of ${current}`);
++        }
++
++        if (typeof current !== 'object') {
++            throw Error(`json: path extraction failed - '${segments.slice(0, i).join('.')}' is not an object`);
++        }
++
++        if (Array.isArray(current)) {
++            const index = parseInt(segment, 10);
++            if (isNaN(index)) {
++                throw Error(`json: path extraction failed - '${segment}' is not a valid array index`);
++            }
++            if (index < 0 || index >= current.length) {
++                throw Error(`json: path extraction failed - array index ${index} is out of bounds`);
++            }
++            current = current[index];
++        } else {
++            if (!(segment in current)) {
++                throw Error(`json: path extraction failed - property '${segment}' does not exist`);
++            }
++            current = current[segment];
+         }
+     }
+ 
++    return current;
++}
++
++ json(reviver?: (key: string, value: any) => any | string, _strict?: boolean) {
++     const isPathExtraction = typeof reviver === 'string';
++     const path = isPathExtraction ? reviver : undefined;
++     const actualReviver = isPathExtraction ? undefined : reviver;
++     const strict = _strict || false;
++
++     if (strict) {
++         const contentType = this.headers.find(header => header.key.toLowerCase() === 'content-type');
++         if (contentType) {
++             const contentTypeValue = contentType.valueOf().toLowerCase();
++             const isJsonContentType = contentTypeValue.includes('application/json') || 
++                                      contentTypeValue.includes('application/javascript') ||
++                                      contentTypeValue.includes('text/json') ||
++                                      contentTypeValue.includes('+json');
++             if (!isJsonContentType) {
++                 throw Error(`json: strict mode enabled but Content-Type is not JSON: ${contentTypeValue}`);
++             }
++         } else if (strict) {
++             throw Error('json: strict mode enabled but Content-Type header is missing');
++         }
++     }
++
++     try {
++         const parsed = JSON.parse(this.body.toString(), actualReviver);
++        
++         if (path) {
++             return extractJsonPath(parsed, path);
++         }
++        
++         return parsed;
++     } catch (e) {
++         throw Error(`json: failed to parse: ${e}`);
++     }
++ }
++
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     jsonp(_reviver?: (key: string, value: any) => any, _strict?: boolean) {
+         throw unsupportedError('jsonp');

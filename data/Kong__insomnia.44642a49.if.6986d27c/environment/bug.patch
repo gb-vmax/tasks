@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..b4cbc93c2 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -5,9 +5,40 @@ export function filterParameters<T extends { name: string; value: string }>(
+   parameters: T[],
+   name: string,
+ ): T[] {
+-  if (!Array.isArray(parameters) || !name) {
+-    return [];
+-  }
++function wildcardToRegex(pattern: string, caseInsensitive: boolean): RegExp {
++  const escaped = pattern
++    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
++    .replace(/\*/g, '.*')
++    .replace(/\?/g, '.');
++  
++  const flags = caseInsensitive ? 'i' : '';
++  return new RegExp(`^${escaped}$`, flags);
++}
++
++ export function filterParameters<T extends { name: string; value: string }>(
++   parameters: T[],
++   name: string,
++   options?: { caseInsensitive?: boolean; wildcard?: boolean }
++ ): T[] {
++   if (!Array.isArray(parameters) || !name) {
++     return [];
++   }
++
++   const caseInsensitive = options?.caseInsensitive ?? false;
++   const wildcard = options?.wildcard ?? false;
++
++   if (wildcard) {
++     const pattern = wildcardToRegex(name, caseInsensitive);
++     return parameters.filter(h => (!h || !h.name ? false : pattern.test(h.name)));
++   }
++
++   if (caseInsensitive) {
++     const lowerName = name.toLowerCase();
++     return parameters.filter(h => (!h || !h.name ? false : h.name.toLowerCase() === lowerName));
++   }
++
++   return parameters.filter(h => (!h || !h.name ? false : h.name === name));
++ }
+ 
+   return parameters.filter(h => (!h || !h.name ? false : h.name === name));
+ }

@@ -2,25 +2,29 @@
 
 ### Describe the bug
 
-I'm encountering an issue with directive container parsing where the closing fence tokens are being created in the wrong order. This causes problems when processing directive containers with closing fences.
+I'm experiencing an issue with directive container parsing where the closing fence tokens are being entered in the wrong order. This causes problems when processing markdown with container directives - the token structure becomes malformed and doesn't match the expected AST format.
 
 ### Reproduction
 
 ```markdown
-:::note
+::: container
 Some content here
 :::
 ```
 
-When parsing the above directive container, the token structure for the closing fence appears to be incorrect. The `directiveContainerFence` and `directiveContainerSequence` tokens are not being entered in the proper order, which breaks the expected token tree structure.
+When parsing this directive container, the closing fence sequence generates tokens in an incorrect order. The `directiveContainerSequence` token is being entered before `directiveContainerFence`, but it should be the other way around to maintain consistency with how opening fences are processed.
 
 ### Expected behavior
 
-The closing fence should properly tokenize with the correct token hierarchy. The `directiveContainerFence` token should be entered before the `directiveContainerSequence` token to match the expected parsing structure.
+The closing fence should generate tokens in the same order as the opening fence:
+1. First enter `directiveContainerFence`
+2. Then enter `directiveContainerSequence`
 
-### Additional context
+This maintains the proper nesting structure and ensures the AST is correctly formed.
 
-This affects directive containers that have closing fences (the `:::` at the end). The opening fence seems to work fine, but the closing fence token generation is producing an unexpected structure.
+### System Info
+- remark-directive version: 3.0.0
+- Node version: 18.x
 
 ---
 Repository: /testbed

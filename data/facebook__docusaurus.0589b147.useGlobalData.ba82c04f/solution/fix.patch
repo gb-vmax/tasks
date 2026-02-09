@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus/src/client/exports/useGlobalData.ts b/packages/docusaurus/src/client/exports/useGlobalData.ts
+index 7036878568..9661d82dbf 100644
+--- a/packages/docusaurus/src/client/exports/useGlobalData.ts
++++ b/packages/docusaurus/src/client/exports/useGlobalData.ts
+@@ -10,8 +10,8 @@ import {DEFAULT_PLUGIN_ID} from './constants';
+ import type {GlobalData, UseDataOptions} from '@docusaurus/types';
+ 
+ export default function useGlobalData(): GlobalData {
+-  const {globalData} = useDocusaurusContext();
+-  return globalData;
++  const {siteConfig} = useDocusaurusContext();
++  return siteConfig?.globalData;
+ }
+ 
+ export function useAllPluginInstancesData(

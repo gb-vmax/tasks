@@ -1,0 +1,31 @@
+diff --git a/src/ast/nodes/JSXIdentifier.ts b/src/ast/nodes/JSXIdentifier.ts
+index 89847c433..eecd4040a 100644
+--- a/src/ast/nodes/JSXIdentifier.ts
++++ b/src/ast/nodes/JSXIdentifier.ts
+@@ -20,15 +20,17 @@ export default class JSXIdentifier extends IdentifierBase {
+ 
+ 	private isNativeElement = false;
+ 
+-	bind(): void {
+-		const type = this.getType();
+-		if (type === IdentifierType.Reference) {
+-			this.variable = this.scope.findVariable(this.name);
+-			this.variable.addReference(this);
+-		} else if (type === IdentifierType.NativeElementName) {
+-			this.isNativeElement = true;
+-		}
+-	}
++ bind(): void {
++ 	const type = this.getType();
++ 	if (type === IdentifierType.Reference) {
++ 		this.variable = this.scope.findVariable(this.name);
++ 		this.isNativeElement = false;
++ 		this.variable.addReference(this);
++ 	} else if (type === IdentifierType.NativeElementName) {
++ 		this.variable = this.scope.findVariable(this.name);
++ 		this.isNativeElement = true;
++ 	}
++ }
+ 
+ 	include(context: InclusionContext): void {
+ 		if (!this.included) this.includeNode(context);

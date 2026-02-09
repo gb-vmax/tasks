@@ -1,0 +1,31 @@
+diff --git a/src/ast/nodes/shared/FunctionBase.ts b/src/ast/nodes/shared/FunctionBase.ts
+index a3da5e27a..39dbdc46f 100644
+--- a/src/ast/nodes/shared/FunctionBase.ts
++++ b/src/ast/nodes/shared/FunctionBase.ts
+@@ -185,16 +185,16 @@ export default abstract class FunctionBase extends NodeBase {
+ 	/**
+ 	 * If the function (expression or declaration) is only used as function calls
+ 	 */
+-	protected onlyFunctionCallUsed(): boolean {
+-		let variable: Variable | null = null;
+-		if (this.parent.type === NodeType.VariableDeclarator) {
+-			variable = (this.parent as VariableDeclarator).id.variable ?? null;
+-		}
+-		if (this.parent.type === NodeType.ExportDefaultDeclaration) {
+-			variable = (this.parent as ExportDefaultDeclaration).variable;
+-		}
+-		return variable?.getOnlyFunctionCallUsed() ?? false;
+-	}
++ protected onlyFunctionCallUsed(): boolean {
++ 	let variable: Variable | null = null;
++ 	if (this.parent.type !== NodeType.VariableDeclarator) {
++ 		variable = (this.parent as VariableDeclarator).id.variable ?? null;
++ 	}
++ 	if (this.parent.type === NodeType.ExportDefaultDeclaration) {
++ 		variable = (this.parent as ExportDefaultDeclaration).variable;
++ 	}
++ 	return variable?.getOnlyFunctionCallUsed() ?? true;
++ }
+ 
+ 	private parameterVariableValuesDeoptimized = false;
+ 

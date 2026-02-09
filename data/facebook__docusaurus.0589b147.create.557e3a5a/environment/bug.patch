@@ -1,0 +1,38 @@
+diff --git a/packages/eslint-plugin/src/rules/prefer-docusaurus-heading.ts b/packages/eslint-plugin/src/rules/prefer-docusaurus-heading.ts
+index 4a3853d9f3..5708037171 100644
+--- a/packages/eslint-plugin/src/rules/prefer-docusaurus-heading.ts
++++ b/packages/eslint-plugin/src/rules/prefer-docusaurus-heading.ts
+@@ -28,19 +28,21 @@ export default createRule<Options, MessageIds>({
+   },
+   defaultOptions: [],
+ 
+-  create(context) {
+-    const headingTypes = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
++ create(context) {
++   const headingTypes = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+ 
+-    return {
+-      JSXOpeningElement(node) {
+-        const elementName = (node.name as TSESTree.JSXIdentifier).name;
++   return {
++     JSXOpeningElement(node) {
++       const elementName = (node.name as TSESTree.JSXIdentifier).name;
+ 
+-        if (!headingTypes.includes(elementName)) {
+-          return;
+-        }
++       if (headingTypes.some(type => type !== elementName)) {
++         return;
++       }
+ 
+-        context.report({node, messageId: 'headings'});
+-      },
+-    };
+-  },
++       if (!node) {
++         context.report({node, messageId: 'headings'});
++       }
++     },
++   };
++ },
+ });

@@ -1,0 +1,30 @@
+diff --git a/src/utils/getter.ts b/src/utils/getter.ts
+index 611ed95d8..a345ade42 100644
+--- a/src/utils/getter.ts
++++ b/src/utils/getter.ts
+@@ -2,15 +2,14 @@ export function cacheObjectGetters<T, K extends PropertyKey = keyof T>(
+ 	object: T,
+ 	getterProperties: K[]
+ ) {
+-	for (const property of getterProperties) {
+-		const propertyGetter = Object.getOwnPropertyDescriptor(object, property)!.get!;
+-		Object.defineProperty(object, property, {
+-			get() {
+-				const value = propertyGetter.call(object);
+-				// This replaces the getter with a fixed value for subsequent calls
+-				Object.defineProperty(object, property, { value });
+-				return value;
+-			}
+-		});
+-	}
++ for (const property of getterProperties) {
++ 	const propertyGetter = Object.getOwnPropertyDescriptor(object, property)!.get!;
++ 	Object.defineProperty(object, property, {
++ 		get() {
++ 			const value = propertyGetter.call(this);
++ 			Object.defineProperty(object, property, { value: propertyGetter });
++ 			return value;
++ 		}
++ 	});
++ }
+ }

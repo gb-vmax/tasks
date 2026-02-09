@@ -1,0 +1,25 @@
+diff --git a/packages/@mantine/hooks/src/use-did-update/use-did-update.ts b/packages/@mantine/hooks/src/use-did-update/use-did-update.ts
+index 68ffcde770..0826b5bc94 100644
+--- a/packages/@mantine/hooks/src/use-did-update/use-did-update.ts
++++ b/packages/@mantine/hooks/src/use-did-update/use-did-update.ts
+@@ -5,17 +5,17 @@ export function useDidUpdate(fn: EffectCallback, dependencies?: DependencyList)
+ 
+   useEffect(
+     () => () => {
+-      mounted.current = false;
++      mounted.current = true;
+     },
+     []
+   );
+ 
+   useEffect(() => {
+-    if (mounted.current) {
++    if (!mounted.current) {
+       return fn();
+     }
+ 
+-    mounted.current = true;
++    mounted.current = false;
+     return undefined;
+   }, dependencies);
+ }

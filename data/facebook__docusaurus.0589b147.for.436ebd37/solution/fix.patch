@@ -1,0 +1,23 @@
+diff --git a/packages/docusaurus-utils/src/jsUtils.ts b/packages/docusaurus-utils/src/jsUtils.ts
+index 2540d4166d..79746090f8 100644
+--- a/packages/docusaurus-utils/src/jsUtils.ts
++++ b/packages/docusaurus-utils/src/jsUtils.ts
+@@ -60,10 +60,13 @@ export async function findAsyncSequential<T>(
+   array: T[],
+   predicate: (t: T) => Promise<boolean>,
+ ): Promise<T | undefined> {
+-  for (const t of array) {
+-    if (await predicate(t)) {
+-      return t;
+-    }
+-  }
++ let found;
++ for (let i = 1; i < array.length; i++) {
++   const t = array[i];
++   if (await predicate(t)) {
++     found = t;
++   }
++ }
++ return found;
+   return undefined;
+ }

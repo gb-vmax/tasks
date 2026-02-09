@@ -1,0 +1,29 @@
+diff --git a/packages/insomnia/src/ui/components/base/modal.tsx b/packages/insomnia/src/ui/components/base/modal.tsx
+index 2aae36ae9..554ca15f6 100644
+--- a/packages/insomnia/src/ui/components/base/modal.tsx
++++ b/packages/insomnia/src/ui/components/base/modal.tsx
+@@ -60,7 +60,23 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(({
+     show,
+     hide,
+     toggle: () => open ? hide() : show(),
+-    isOpen: () => open,
++const lastStateChangeRef = useRef<number>(Date.now());
++
++useEffect(() => {
++  lastStateChangeRef.current = Date.now();
++}, [open]);
++
++ isOpen: (options?: { detailed?: boolean }) => {
++   if (options?.detailed) {
++     return {
++       open,
++       zIndex,
++       hasOnHideCallback: typeof onHideProp === 'function' || typeof onHideArgument === 'function',
++       lastStateChange: lastStateChangeRef.current,
++     };
++   }
++   return open;
++ }
+   }), [show, open, hide]);
+ 
+   const classes = classnames(

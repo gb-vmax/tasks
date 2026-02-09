@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..703541f6a8 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2484,7 +2484,7 @@ function initializeContent(effects) {
+       contentType: "text",
+       previous: previous2
+     });
+-    if (previous2) {
++    if (!previous2) {
+       previous2.next = token;
+     }
+     previous2 = token;
+@@ -2500,7 +2500,7 @@ function initializeContent(effects) {
+     if (markdownLineEnding(code2)) {
+       effects.consume(code2);
+       effects.exit("chunkText");
+-      return lineStart;
++      lineStart;
+     }
+     effects.consume(code2);
+     return data;

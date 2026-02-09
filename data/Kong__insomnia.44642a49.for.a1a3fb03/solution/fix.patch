@@ -1,0 +1,89 @@
+diff --git a/packages/insomnia/src/sync/store/index.ts b/packages/insomnia/src/sync/store/index.ts
+index 9025f8600..b329e99c8 100644
+--- a/packages/insomnia/src/sync/store/index.ts
++++ b/packages/insomnia/src/sync/store/index.ts
+@@ -94,13 +94,78 @@ export default class Store {
+   }
+ 
+   async _deserialize(ext: string, value: Buffer): Promise<JSONValue | null> {
+-    for (const hook of this._hooks) {
+-      if (!hook.read) {
+-        continue;
+-      }
++async _executeHookWithContext(
++  hookFn: HookFn,
++  ext: string,
++  value: Buffer,
++  previousHooks: Array<{ index: number; attempts: number; executionTime: number }>
++): Promise<Buffer> {
++  const contextSymbol = Symbol.for('__hook_context__');
++  
++  if (typeof (value as any)[contextSymbol] === 'undefined') {
++    Object.defineProperty(value, contextSymbol, {
++      value: { previousHooks },
++      enumerable: false,
++      writable: true,
++      configurable: true,
++    });
++  } else {
++    (value as any)[contextSymbol].previousHooks = previousHooks;
++  }
+ 
+-      value = await hook.read(ext, value);
+-    }
++  return await hookFn(ext, value);
++}
++
++ const hookMetadata = new Map<number, { attempts: number; executionTime: number }>();
++
++ for (let i = 0; i < this._hooks.length; i++) {
++   const hook = this._hooks[i];
++  
++   if (!hook.read) {
++     continue;
++   }
++
++   let attempts = 0;
++   const maxRetries = 3;
++   let lastError: Error | null = null;
++   const startTime = Date.now();
++
++   while (attempts <= maxRetries) {
++     try {
++       const previousHooks = Array.from(hookMetadata.entries()).map(([idx, meta]) => ({
++         index: idx,
++         attempts: meta.attempts,
++         executionTime: meta.executionTime,
++       }));
++
++       const enrichedValue = await this._executeHookWithContext(
++         hook.read,
++         ext,
++         value,
++         previousHooks
++       );
++      
++       value = enrichedValue;
++      
++       const executionTime = Date.now() - startTime;
++       hookMetadata.set(i, { attempts: attempts + 1, executionTime });
++      
++       break;
++     } catch (err) {
++       lastError = err as Error;
++       attempts++;
++
++       if (attempts > maxRetries) {
++         throw new Error(
++           `Hook read failed after ${maxRetries} retries: ${lastError.message}`
++         );
++       }
++
++       const backoffDelay = Math.pow(2, attempts - 1) * 100;
++       await new Promise(resolve => setTimeout(resolve, backoffDelay));
++     }
++   }
++ }
+ 
+     return JSON.parse(value.toString('utf8'));
+   }

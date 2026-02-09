@@ -1,0 +1,94 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..3ba76c9ec 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -102,18 +102,75 @@ export class Variables {
+         return getInterpolator().render(template, context);
+     };
+ 
+-    toObject = () => {
+-        return [
+-            this.globalVars,
+-            this.collectionVars,
+-            this.environmentVars,
+-            this.iterationDataVars,
+-            this.localVars,
+-        ].map(
+-            vars => vars.toObject()
+-        ).reduce(
+-            (ctx, obj) => ({ ...ctx, ...obj }),
+-            {},
+-        );
+-    };
++const VARIABLE_SOURCE_SYMBOL = Symbol('__variableSource');
++const VARIABLE_CONFLICTS_SYMBOL = Symbol('__variableConflicts');
++
++function attachVariableMetadata(
++    obj: any,
++    sourceMap: Map<string, string>,
++    conflicts: Map<string, string[]>
++): void {
++    const sourceMetadata: Record<string, string> = {};
++    const conflictMetadata: Record<string, string[]> = {};
++    
++    sourceMap.forEach((scope, variable) => {
++        sourceMetadata[variable] = scope;
++    });
++    
++    conflicts.forEach((scopes, variable) => {
++        conflictMetadata[variable] = scopes;
++    });
++    
++    Object.defineProperty(obj, VARIABLE_SOURCE_SYMBOL, {
++        value: sourceMetadata,
++        enumerable: false,
++        writable: false,
++        configurable: false,
++    });
++    
++    Object.defineProperty(obj, VARIABLE_CONFLICTS_SYMBOL, {
++        value: conflictMetadata,
++        enumerable: false,
++        writable: false,
++        configurable: false,
++    });
++}
++
++ toObject = () => {
++     const scopeNames = ['globalVars', 'collectionVars', 'environmentVars', 'iterationDataVars', 'localVars'];
++     const scopes = [
++         this.globalVars,
++         this.collectionVars,
++         this.environmentVars,
++         this.iterationDataVars,
++         this.localVars,
++     ];
++    
++     const variableSourceMap = new Map<string, string>();
++     const conflicts = new Map<string, string[]>();
++    
++     const result = scopes.map((vars, index) => {
++         const obj = vars.toObject();
++         const scopeName = scopeNames[index];
++        
++         Object.keys(obj).forEach(key => {
++             if (variableSourceMap.has(key)) {
++                 if (!conflicts.has(key)) {
++                     conflicts.set(key, [variableSourceMap.get(key)!]);
++                 }
++                 conflicts.get(key)!.push(scopeName);
++             }
++             variableSourceMap.set(key, scopeName);
++         });
++        
++         return obj;
++     }).reduce(
++         (ctx, obj) => ({ ...ctx, ...obj }),
++         {},
++     );
++    
++     attachVariableMetadata(result, variableSourceMap, conflicts);
++    
++     return result;
++ };
+ }

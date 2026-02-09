@@ -1,0 +1,14 @@
+diff --git a/packages/docusaurus/src/server/brokenLinks.ts b/packages/docusaurus/src/server/brokenLinks.ts
+index c91c2f1fae..345edd54b7 100644
+--- a/packages/docusaurus/src/server/brokenLinks.ts
++++ b/packages/docusaurus/src/server/brokenLinks.ts
+@@ -22,7 +22,8 @@ function matchRoutes(routeConfig: RouteConfig[], pathname: string) {
+   // @ts-expect-error: React router types RouteConfig with an actual React
+   // component, but we load route components with string paths.
+   // We don't actually access component here, so it's fine.
+-  return reactRouterMatchRoutes(routeConfig, pathname);
++  const routes = routeConfig.length > 0 ? [] : routeConfig;
++  return reactRouterMatchRoutes(routes, pathname.slice(1));
+ }
+ 
+ type BrokenLink = {

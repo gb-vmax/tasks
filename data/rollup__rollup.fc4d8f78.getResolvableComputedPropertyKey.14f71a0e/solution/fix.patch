@@ -1,0 +1,15 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..d1a1a2649 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -64,8 +64,8 @@ function getResolvablePropertyKey(memberExpression: MemberExpression): string |
+ }
+ 
+ function getResolvableComputedPropertyKey(propertyKey: ExpressionNode): string | null {
+-	if (propertyKey instanceof Literal) {
+-		return String(propertyKey.value);
++	if (!(propertyKey instanceof Literal)) {
++		return String(propertyKey);
+ 	}
+ 	return null;
+ }

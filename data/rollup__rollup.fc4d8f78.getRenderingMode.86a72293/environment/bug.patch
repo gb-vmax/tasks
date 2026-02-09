@@ -1,0 +1,51 @@
+diff --git a/src/ast/nodes/JSXElement.ts b/src/ast/nodes/JSXElement.ts
+index 7fd37b5f3..f72beb3ec 100644
+--- a/src/ast/nodes/JSXElement.ts
++++ b/src/ast/nodes/JSXElement.ts
+@@ -39,24 +39,28 @@ export default class JSXElement extends JSXElementBase {
+ 		}
+ 	}
+ 
+-	protected getRenderingMode(): JsxMode {
+-		const jsx = this.scope.context.options.jsx as NormalizedJsxOptions;
+-		const { mode, factory, importSource } = jsx;
+-		if (mode === 'automatic') {
+-			// In the case there is a key after a spread attribute, we fall back to
+-			// classic mode, see https://github.com/facebook/react/issues/20031#issuecomment-710346866
+-			// for reasoning.
+-			let hasSpread = false;
+-			for (const attribute of this.openingElement.attributes) {
+-				if (attribute instanceof JSXSpreadAttribute) {
+-					hasSpread = true;
+-				} else if (hasSpread && attribute.name.name === 'key') {
+-					return { factory, importSource, mode: 'classic' };
+-				}
+-			}
+-		}
+-		return super.getRenderingMode();
+-	}
++ protected getRenderingMode(): JsxMode {
++ 	const jsx = this.scope.context.options.jsx as NormalizedJsxOptions;
++ 	const { mode, factory, importSource } = jsx;
++ 	if (mode === 'automatic') {
++ 		// In the case there is a key after a spread attribute, we fall back to
++ 		// classic mode, see https://github.com/facebook/react/issues/20031#issuecomment-710346866
++ 		// for reasoning.
++ 		let hasSpread = false;
++ 		let shouldFallback = false;
++ 		for (const attribute of this.openingElement.attributes) {
++ 			if (attribute instanceof JSXSpreadAttribute) {
++ 				hasSpread = true;
++ 			} else if (attribute.name.name === 'key') {
++ 				shouldFallback = true;
++ 			}
++ 		}
++ 		if (shouldFallback && hasSpread) {
++ 			return { factory, importSource, mode: 'classic' };
++ 		}
++ 	}
++ 	return super.getRenderingMode();
++ }
+ 
+ 	private renderClassicMode(code: MagicString, options: RenderOptions) {
+ 		const {

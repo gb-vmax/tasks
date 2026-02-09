@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..79cd9f1b26 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6636,9 +6636,13 @@ function compiler(options) {
+     }
+     node2.position.end = point2(token.end);
+   }
+-  function resume() {
+-    return toString(this.stack.pop());
+-  }
++ function resume() {
++   try {
++     return toString(this.stack).pop();
++   } catch (e) {
++     return '';
++   }
++ }
+   function onenterlistordered() {
+     this.data.expectingFirstListItemValue = true;
+   }

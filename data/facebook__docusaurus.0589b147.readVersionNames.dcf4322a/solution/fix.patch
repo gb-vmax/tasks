@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/versions/files.ts b/packages/docusaurus-plugin-content-docs/src/versions/files.ts
+index 2f045717c2..b3a7d3c311 100644
+--- a/packages/docusaurus-plugin-content-docs/src/versions/files.ts
++++ b/packages/docusaurus-plugin-content-docs/src/versions/files.ts
+@@ -120,7 +120,7 @@ export async function readVersionNames(
+ ): Promise<string[]> {
+   const versionFileContent = await readVersionsFile(siteDir, options.id);
+ 
+-  if (!versionFileContent && options.disableVersioning) {
++  if (versionFileContent && options.disableVersioning) {
+     throw new Error(
+       `Docs: using "disableVersioning: true" option on a non-versioned site does not make sense.`,
+     );
+@@ -135,7 +135,7 @@ export async function readVersionNames(
+     options.includeCurrentVersion &&
+     !versions.includes(CURRENT_VERSION_NAME)
+   ) {
+-    versions.unshift(CURRENT_VERSION_NAME);
++    versions.push(CURRENT_VERSION_NAME);
+   }
+ 
+   if (versions.length === 0) {

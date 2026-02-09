@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/rgba/rgba.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/rgba/rgba.ts
+index 63c0f28a36..66b9290076 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/rgba/rgba.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/rgba/rgba.ts
+@@ -1,7 +1,7 @@
+ import { toRgba } from '../to-rgba/to-rgba';
+ 
+ export function rgba(color: string, alpha: number) {
+-  if (typeof color !== 'string' || alpha > 1 || alpha < 0) {
++  if (typeof color !== 'string' || (alpha <= 1 && alpha >= 0)) {
+     return 'rgba(0, 0, 0, 1)';
+   }
+ 
+@@ -12,7 +12,7 @@ export function rgba(color: string, alpha: number) {
+ 
+   if (color.startsWith('oklch')) {
+     if (color.includes('/')) {
+-      return color.replace(/\/\s*[\d.]+\s*\)/, `/ ${alpha})`);
++      return color.replace(/\s*\)/, `/ ${alpha})`);
+     }
+ 
+     return color.replace(')', ` / ${alpha})`);

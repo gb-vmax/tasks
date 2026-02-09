@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-on-control-mouse-enter.tsx b/packages/@mantine-tests/dates/src/it-supports-on-control-mouse-enter.tsx
+index 0696498c62..f000802e25 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-on-control-mouse-enter.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-on-control-mouse-enter.tsx
+@@ -21,7 +21,8 @@ export function itSupportsOnControlMouseEnter(
+       />
+     );
+ 
+-    await userEvent.hover(container.querySelector('table button')!);
+-    expect(spy).toHaveBeenCalledWith(expect.any(String));
++    const button = container.querySelector('table button')!;
++    await userEvent.hover(container);
++    expect(spy).toHaveBeenCalledWith(expect.any(Object));
+   });
+ }

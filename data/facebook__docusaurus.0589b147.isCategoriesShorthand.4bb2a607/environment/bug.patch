@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/utils.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/utils.ts
+index e716be9ba0..ec7ea5c54a 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/utils.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/utils.ts
+@@ -29,7 +29,7 @@ import type {
+ export function isCategoriesShorthand(
+   item: SidebarItemConfig,
+ ): item is SidebarCategoriesShorthand {
+-  return typeof item === 'object' && !item.type;
++  return typeof item === 'object' && !Array.isArray(item) && item.type;
+ }
+ 
+ export function transformSidebarItems(

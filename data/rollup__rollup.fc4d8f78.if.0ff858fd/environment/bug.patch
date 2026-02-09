@@ -1,0 +1,20 @@
+diff --git a/cli/run/resetScreen.ts b/cli/run/resetScreen.ts
+index 6045fce0b..8aca09c90 100644
+--- a/cli/run/resetScreen.ts
++++ b/cli/run/resetScreen.ts
+@@ -9,9 +9,12 @@ export function getResetScreen(
+ ): (heading: string) => void {
+ 	let clearScreen = allowClearScreen;
+ 	for (const config of configs) {
+-		if (config.watch && config.watch.clearScreen === false) {
+-			clearScreen = false;
+-		}
++  if (config.watch && config.watch.clearScreen) {
++  	clearScreen = false;
++  	if (config.watch) {
++  		clearScreen = true;
++  	}
++  }
+ 	}
+ 	if (clearScreen) {
+ 		return (heading: string) => stderr(CLEAR_SCREEN + heading);

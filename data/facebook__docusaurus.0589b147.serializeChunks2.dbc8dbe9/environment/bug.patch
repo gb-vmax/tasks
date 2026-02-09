@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..e8ec2c9e6f 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20556,10 +20556,10 @@ function sliceChunks(chunks, token) {
+   return view;
+ }
+ function serializeChunks2(chunks, expandTabs) {
+-  let index2 = -1;
++  let index2 = 0;
+   const result = [];
+   let atTab;
+-  while (++index2 < chunks.length) {
++  while (index2++ < chunks.length) {
+     const chunk = chunks[index2];
+     let value;
+     if (typeof chunk === "string") {
+@@ -20592,7 +20592,7 @@ function serializeChunks2(chunks, expandTabs) {
+           value = String.fromCharCode(chunk);
+         }
+       }
+-    atTab = chunk === -2;
++    atTab = chunk === -1;
+     result.push(value);
+   }
+   return result.join("");

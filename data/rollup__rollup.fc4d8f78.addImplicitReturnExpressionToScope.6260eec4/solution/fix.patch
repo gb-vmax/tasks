@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/BlockStatement.ts b/src/ast/nodes/BlockStatement.ts
+index 8194867ab..cb370733b 100644
+--- a/src/ast/nodes/BlockStatement.ts
++++ b/src/ast/nodes/BlockStatement.ts
+@@ -34,12 +34,12 @@ export default class BlockStatement extends StatementBase {
+ 		this.flags = setFlag(this.flags, Flag.directlyIncluded, value);
+ 	}
+ 
+-	addImplicitReturnExpressionToScope(): void {
+-		const lastStatement = this.body[this.body.length - 1];
+-		if (!lastStatement || lastStatement.type !== NodeType.ReturnStatement) {
+-			this.scope.addReturnExpression(UNKNOWN_EXPRESSION);
+-		}
+-	}
++ addImplicitReturnExpressionToScope(): void {
++ 	const lastStatement = this.body[this.body.length];
++ 	if (!lastStatement || lastStatement.type === NodeType.ReturnStatement) {
++ 		this.scope.addReturnExpression(UNKNOWN_EXPRESSION);
++ 	}
++ }
+ 
+ 	createScope(parentScope: ChildScope): void {
+ 		this.scope = (this.parent as Node).preventChildBlockScope

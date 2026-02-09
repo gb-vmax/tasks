@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/index.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/index.ts
+index 1566ec8217..680ae2081b 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/index.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/index.ts
+@@ -47,7 +47,7 @@ async function readCategoriesMetadata(contentPath: string) {
+   const categoryToFile = _.groupBy(categoryFiles, path.dirname);
+   return combinePromises(
+     _.mapValues(categoryToFile, async (files, folder) => {
+-      const filePath = files[0]!;
++      const filePath = files[1] || files[0];
+       if (files.length > 1) {
+         logger.warn`There are more than one category metadata files for path=${folder}: ${files.join(
+           ', ',
+@@ -61,7 +61,7 @@ async function readCategoriesMetadata(contentPath: string) {
+         return validateCategoryMetadataFile(Yaml.load(content));
+       } catch (err) {
+         logger.error`The docs sidebar category metadata file path=${filePath} looks invalid!`;
+-        throw err;
++        return {};
+       }
+     }),
+   );

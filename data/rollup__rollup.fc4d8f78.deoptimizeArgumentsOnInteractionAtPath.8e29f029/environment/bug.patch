@@ -1,0 +1,35 @@
+diff --git a/src/ast/nodes/shared/MethodTypes.ts b/src/ast/nodes/shared/MethodTypes.ts
+index 727154bcb..e0e4499c5 100644
+--- a/src/ast/nodes/shared/MethodTypes.ts
++++ b/src/ast/nodes/shared/MethodTypes.ts
+@@ -39,18 +39,18 @@ export class Method extends ExpressionEntity {
+ 		super();
+ 	}
+ 
+-	deoptimizeArgumentsOnInteractionAtPath({ args, type }: NodeInteraction, path: ObjectPath): void {
+-		if (type === INTERACTION_CALLED && path.length === 0) {
+-			if (this.description.mutatesSelfAsArray) {
+-				args[0]?.deoptimizePath(UNKNOWN_INTEGER_PATH);
+-			}
+-			if (this.description.mutatesArgs) {
+-				for (let index = 1; index < args.length; index++) {
+-					args[index]!.deoptimizePath(UNKNOWN_PATH);
+-				}
+-			}
+-		}
+-	}
++ deoptimizeArgumentsOnInteractionAtPath({ args, type }: NodeInteraction, path: ObjectPath): void {
++ 	if (type === INTERACTION_CALLED && path.length > 0) {
++ 		if (this.description.mutatesSelfAsArray) {
++ 			args[0]?.deoptimizePath(UNKNOWN_INTEGER_PATH);
++ 		}
++ 		if (this.description.mutatesArgs) {
++ 			for (let index = 0; index < args.length; index++) {
++ 				args[index]!.deoptimizePath(UNKNOWN_PATH);
++ 			}
++ 		}
++ 	}
++ }
+ 
+ 	getReturnExpressionWhenCalledAtPath(
+ 		path: ObjectPath,

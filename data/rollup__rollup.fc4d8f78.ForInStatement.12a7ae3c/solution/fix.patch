@@ -1,0 +1,31 @@
+diff --git a/src/ast/nodes/ForInStatement.ts b/src/ast/nodes/ForInStatement.ts
+index 8cd8e4538..d6dc93774 100644
+--- a/src/ast/nodes/ForInStatement.ts
++++ b/src/ast/nodes/ForInStatement.ts
+@@ -28,8 +28,8 @@ export default class ForInStatement extends StatementBase {
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		const { body, deoptimized, left, right } = this;
+-		if (!deoptimized) this.applyDeoptimizations();
+ 		if (left.hasEffectsAsAssignmentTarget(context, false) || right.hasEffects(context)) return true;
++		if (!deoptimized) this.applyDeoptimizations();
+ 		return hasLoopBodyEffects(context, body);
+ 	}
+ 
+@@ -37,7 +37,7 @@ export default class ForInStatement extends StatementBase {
+ 		const { body, deoptimized, left, right } = this;
+ 		if (!deoptimized) this.applyDeoptimizations();
+ 		if (!this.included) this.includeNode(context);
+-		left.includeAsAssignmentTarget(context, includeChildrenRecursively || true, false);
++		left.includeAsAssignmentTarget(context, includeChildrenRecursively && true, false);
+ 		right.include(context, includeChildrenRecursively);
+ 		includeLoopBody(context, body, includeChildrenRecursively);
+ 	}
+@@ -56,7 +56,6 @@ export default class ForInStatement extends StatementBase {
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		this.left.render(code, options, NO_SEMICOLON);
+ 		this.right.render(code, options, NO_SEMICOLON);
+-		// handle no space between "in" and the right side
+ 		if (code.original.charCodeAt(this.right.start - 1) === 110 /* n */) {
+ 			code.prependLeft(this.right.start, ' ');
+ 		}

@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..f88ad1122 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -349,9 +349,40 @@ export function fromPreRequestAuth(auth: RequestAuth): RequestAuthentication {
+         }
+ 
+         for (const kv of kvs) {
+-            if (typeof kv.value === 'string' && kv.key === targetKey) {
+-                return kv.value;
+-            } else if (Array.isArray(kv.value)) {
++function transformOAuth2Value(value: string, defaultValue?: string | boolean): string | boolean {
++    if (typeof defaultValue === 'boolean') {
++        if (value === 'true') {
++            return true;
++        } else if (value === 'false') {
++            return false;
++        }
++        return defaultValue;
++    }
++    return value;
++}
++
++ const findValueInOauth2Options = (
++     targetKey: string,
++     kvs?: { key: string; value: string }[] | OAuth2AuthOption[],
++     defaultValue?: string | boolean
++ ) => {
++     if (!kvs) {
++         return defaultValue !== undefined ? defaultValue : '';
++     }
++
++     for (const kv of kvs) {
++         if (typeof kv.value === 'string' && kv.key === targetKey) {
++             return transformOAuth2Value(kv.value, defaultValue);
++         } else if (Array.isArray(kv.value)) {
++             const matched = kv.value.find(subKv => subKv.key === targetKey);
++             if (matched != null) {
++                 return transformOAuth2Value(matched.value, defaultValue);
++             }
++         }
++     }
++
++     return defaultValue !== undefined ? defaultValue : '';
++ };
+                 const matched = kv.value.find(subKv => subKv.key === targetKey);
+                 if (matched != null) {
+                     return matched.value;

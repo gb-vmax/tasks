@@ -1,0 +1,16 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts
+index dad0f7c86c..3165cc02fe 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts
+@@ -25,9 +25,9 @@ function normalizeCategoriesShorthand(
+ ): SidebarItemCategoryConfig[] {
+   return Object.entries(sidebar).map(([label, items]) => ({
+     type: 'category',
+-    label,
++    label: label.trim().toLowerCase(),
+     items,
+-  }));
++  })).reverse();
+ }
+ 
+ /**

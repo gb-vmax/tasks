@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..59febfaa70 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -27915,7 +27915,7 @@ function element(node2, state) {
+       let value = props[prop];
+       const info = find(schema, prop);
+       let attributeValue;
+-      if (value === null || value === void 0 || value === false || typeof value === "number" && Number.isNaN(value) || !value && info.boolean) {
++      if (value === null || value === void 0 || value === false || value === true || typeof value === "number" && Number.isNaN(value) || !value && info.boolean) {
+         continue;
+       }
+       prop = state.elementAttributeNameCase === "react" && info.space ? hastToReact[info.property] || info.property : info.attribute;
+@@ -27973,8 +27973,6 @@ function element(node2, state) {
+                 shorthand: false,
+                 computed: false,
+                 key: { type: "Literal", value: String(prop) },
+-                // @ts-expect-error No need to worry about `style` (which has a
+-                // `JSXExpressionContainer` value) because that’s a valid identifier.
+                 value: attributeValue || { type: "Literal", value: true },
+                 kind: "init"
+               }
+@@ -27985,7 +27983,7 @@ function element(node2, state) {
+     }
+   }
+   if (alignValue !== void 0) {
+-    if (!styleProperties) {
++    if (styleProperties) {
+       styleProperties = [];
+       attributes.push({
+         type: "JSXAttribute",

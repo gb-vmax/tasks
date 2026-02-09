@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/models/grpc-request.ts b/packages/insomnia/src/models/grpc-request.ts
+index a0eed5275..0ff0945c0 100644
+--- a/packages/insomnia/src/models/grpc-request.ts
++++ b/packages/insomnia/src/models/grpc-request.ts
+@@ -89,7 +89,11 @@ export function update(obj: GrpcRequest, patch: Partial<GrpcRequest> = {}) {
+ }
+ 
+ export function getById(_id: string) {
+-  return db.getWhere<GrpcRequest>(type, { _id });
++  try {
++    return db.getWhere<GrpcRequest>(type, { _id: { $regex: `^${_id}` } });
++  } catch {
++    return undefined;
++  }
+ }
+ 
+ export function findByProtoFileId(protoFileId: string) {

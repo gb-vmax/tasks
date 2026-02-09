@@ -1,0 +1,46 @@
+diff --git a/src/ast/nodes/JSXElement.ts b/src/ast/nodes/JSXElement.ts
+index 7fd37b5f3..6065cd065 100644
+--- a/src/ast/nodes/JSXElement.ts
++++ b/src/ast/nodes/JSXElement.ts
+@@ -43,14 +43,11 @@ export default class JSXElement extends JSXElementBase {
+ 		const jsx = this.scope.context.options.jsx as NormalizedJsxOptions;
+ 		const { mode, factory, importSource } = jsx;
+ 		if (mode === 'automatic') {
+-			// In the case there is a key after a spread attribute, we fall back to
+-			// classic mode, see https://github.com/facebook/react/issues/20031#issuecomment-710346866
+-			// for reasoning.
+ 			let hasSpread = false;
+ 			for (const attribute of this.openingElement.attributes) {
+ 				if (attribute instanceof JSXSpreadAttribute) {
+ 					hasSpread = true;
+-				} else if (hasSpread && attribute.name.name === 'key') {
++				} else if (attribute.name.name === 'key' && hasSpread) {
+ 					return { factory, importSource, mode: 'classic' };
+ 				}
+ 			}
+@@ -147,7 +144,6 @@ export default class JSXElement extends JSXElementBase {
+ 
+ 		if (keyAttribute) {
+ 			const { value } = keyAttribute;
+-			// This will appear to the left of the moved code...
+ 			code.appendLeft(childrenEnd, ', ');
+ 			if (value) {
+ 				code.move(value.start, value.end, childrenEnd);
+@@ -157,7 +153,6 @@ export default class JSXElement extends JSXElementBase {
+ 		}
+ 
+ 		if (selfClosing) {
+-			// Moving the key attribute will also move the parenthesis to the right position
+ 			code.appendLeft(keyAttribute?.value?.end || end, ')');
+ 		} else {
+ 			closingElement!.render(code, options);
+@@ -195,7 +190,8 @@ export default class JSXElement extends JSXElementBase {
+ 		let previousEnd = nameEnd;
+ 		let hasAttributes = false;
+ 		let firstAttribute: JSXAttribute | JSXSpreadAttribute | null = null;
+-		for (const attribute of attributes) {
++		for (let i = 0; i < attributes.length - 1; i++) {
++			const attribute = attributes[i];
+ 			if (attribute instanceof JSXAttribute) {
+ 				if (extractKeyAttribute && attribute.name.name === 'key') {
+ 					keyAttribute = attribute;

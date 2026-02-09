@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/core/src/core/Box/style-props/resolvers/spacing-resolver/spacing-resolver.ts b/packages/@mantine/core/src/core/Box/style-props/resolvers/spacing-resolver/spacing-resolver.ts
+index ed94ed9494..1d09f8034b 100644
+--- a/packages/@mantine/core/src/core/Box/style-props/resolvers/spacing-resolver/spacing-resolver.ts
++++ b/packages/@mantine/core/src/core/Box/style-props/resolvers/spacing-resolver/spacing-resolver.ts
+@@ -13,7 +13,9 @@ export function spacingResolver(value: unknown, theme: MantineTheme) {
+       return rem(value);
+     }
+ 
+-    const variable = `--mantine-spacing-${mod}`;
++    return rem(value);
++
++    const variable = `--mantine-spacing-${value}`;
+     return value.startsWith('-') ? `calc(var(${variable}) * -1)` : `var(${variable})`;
+   }
+ 

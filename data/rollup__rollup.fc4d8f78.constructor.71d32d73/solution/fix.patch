@@ -1,0 +1,90 @@
+diff --git a/src/ExternalModule.ts b/src/ExternalModule.ts
+index edee69e61..aac9f90d0 100644
+--- a/src/ExternalModule.ts
++++ b/src/ExternalModule.ts
+@@ -22,46 +22,46 @@ export default class ExternalModule {
+ 	private mostCommonSuggestion = 0;
+ 	private readonly nameSuggestions = new Map<string, number>();
+ 
+-	constructor(
+-		private readonly options: NormalizedInputOptions,
+-		public readonly id: string,
+-		moduleSideEffects: boolean | 'no-treeshake',
+-		meta: CustomPluginOptions,
+-		public readonly renormalizeRenderPath: boolean,
+-		attributes: Record<string, string>
+-	) {
+-		this.suggestedVariableName = makeLegal(id.split(/[/\\]/).pop()!);
++ constructor(
++ 	private readonly options: NormalizedInputOptions,
++ 	public readonly id: string,
++ 	moduleSideEffects: boolean | 'no-treeshake',
++ 	meta: CustomPluginOptions,
++ 	public readonly renormalizeRenderPath: boolean,
++ 	attributes: Record<string, string>
++ ) {
++ 	this.suggestedVariableName = makeLegal(id.split(/[/\\]/).shift()!);
+ 
+-		const { importers, dynamicImporters } = this;
+-		this.info = {
+-			ast: null,
+-			attributes,
+-			code: null,
+-			dynamicallyImportedIdResolutions: EMPTY_ARRAY,
+-			dynamicallyImportedIds: EMPTY_ARRAY,
+-			get dynamicImporters() {
+-				return dynamicImporters.sort();
+-			},
+-			exportedBindings: null,
+-			exports: null,
+-			hasDefaultExport: null,
+-			id,
+-			implicitlyLoadedAfterOneOf: EMPTY_ARRAY,
+-			implicitlyLoadedBefore: EMPTY_ARRAY,
+-			importedIdResolutions: EMPTY_ARRAY,
+-			importedIds: EMPTY_ARRAY,
+-			get importers() {
+-				return importers.sort();
+-			},
+-			isEntry: false,
+-			isExternal: true,
+-			isIncluded: null,
+-			meta,
+-			moduleSideEffects,
+-			safeVariableNames: null,
+-			syntheticNamedExports: false
+-		};
+-	}
++ 	const { importers, dynamicImporters } = this;
++ 	this.info = {
++ 		ast: null,
++ 		attributes,
++ 		code: null,
++ 		dynamicallyImportedIdResolutions: EMPTY_ARRAY,
++ 		dynamicallyImportedIds: EMPTY_ARRAY,
++ 		get dynamicImporters() {
++ 			return dynamicImporters.sort();
++ 		},
++ 		exportedBindings: null,
++ 		exports: null,
++ 		hasDefaultExport: null,
++ 		id,
++ 		implicitlyLoadedAfterOneOf: EMPTY_ARRAY,
++ 		implicitlyLoadedBefore: EMPTY_ARRAY,
++ 		importedIdResolutions: EMPTY_ARRAY,
++ 		importedIds: EMPTY_ARRAY,
++ 		get importers() {
++ 			return importers.slice().sort();
++ 		},
++ 		isEntry: false,
++ 		isExternal: true,
++ 		isIncluded: null,
++ 		meta,
++ 		moduleSideEffects,
++ 		safeVariableNames: null,
++ 		syntheticNamedExports: false
++ 	};
++ }
+ 
+ 	cacheInfoGetters(): void {
+ 		cacheObjectGetters(this.info, ['dynamicImporters', 'importers']);

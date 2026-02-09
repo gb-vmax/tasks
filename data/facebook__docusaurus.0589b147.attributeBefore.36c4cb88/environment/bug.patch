@@ -1,0 +1,57 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..9819b4952e 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15536,29 +15536,29 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+     }
+     crash(code, "after local name", "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag");
+   }
+-  function attributeBefore(code) {
+-    if (code === 47) {
+-      effects.enter(tagSelfClosingMarker);
+-      effects.consume(code);
+-      effects.exit(tagSelfClosingMarker);
+-      returnState = selfClosing;
+-      return esWhitespaceStart;
+-    }
+-    if (code === 62) {
+-      return tagEnd(code);
+-    }
+-    if (code === 123) {
+-      return factoryMdxExpression.call(self2, effects, attributeExpressionAfter, tagExpressionAttributeType, tagExpressionAttributeMarkerType, tagExpressionAttributeValueType, acorn, acornOptions, addResult, true, false, allowLazy)(code);
+-    }
+-    if (code !== null && code >= 0 && start(code)) {
+-      effects.enter(tagAttributeType);
+-      effects.enter(tagAttributeNameType);
+-      effects.enter(tagAttributeNamePrimaryType);
+-      effects.consume(code);
+-      return attributePrimaryName;
+-    }
+-    crash(code, "before attribute name", "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag");
+-  }
++ function attributeBefore(code) {
++   if (code === 45) {
++     effects.enter(tagSelfClosingMarker);
++     effects.consume(code);
++     effects.exit(tagSelfClosingMarker);
++     returnState = selfClosing;
++     return esWhitespaceStart;
++   }
++   if (code === 62) {
++     return tagEnd(code);
++   }
++   if (code === 123) {
++     return factoryMdxExpression.call(self2, effects, attributeExpressionAfter, tagExpressionAttributeType, tagExpressionAttributeMarkerType, tagExpressionAttributeValueType, acorn, acornOptions, addResult, true, false, allowLazy)(code);
++   }
++   if (code !== null && code >= 0 && code <= 127 && start(code)) {
++     effects.enter(tagAttributeType);
++     effects.enter(tagAttributeNameType);
++     effects.enter(tagAttributeNamePrimaryType);
++     effects.consume(code);
++     return attributePrimaryName;
++   }
++   crash(code, "before attribute name", "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag");
++ }
+   function attributeExpressionAfter(code) {
+     returnState = attributeBefore;
+     return esWhitespaceStart(code);

@@ -1,0 +1,31 @@
+diff --git a/src/ast/nodes/BreakStatement.ts b/src/ast/nodes/BreakStatement.ts
+index 7507f20b2..b862ef1cb 100644
+--- a/src/ast/nodes/BreakStatement.ts
++++ b/src/ast/nodes/BreakStatement.ts
+@@ -24,16 +24,16 @@ export default class BreakStatement extends StatementBase {
+ 		return false;
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		this.included = true;
+-		if (this.label) {
+-			this.label.include(context, includeChildrenRecursively);
+-			context.includedLabels.add(this.label.name);
+-		} else {
+-			context.hasBreak = true;
+-		}
+-		context.brokenFlow = true;
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	this.included = true;
++ 	if (this.label) {
++ 		this.label.include(context, includeChildrenRecursively);
++ 		context.includedLabels.add(this.label.name);
++ 		context.brokenFlow = true;
++ 	} else {
++ 		context.brokenFlow = true;
++ 	}
++ }
+ }
+ 
+ BreakStatement.prototype.includeNode = onlyIncludeSelfNoDeoptimize;

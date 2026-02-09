@@ -2,32 +2,31 @@
 
 ### Describe the bug
 
-I'm encountering an issue where MDX content is not rendering properly. When I try to compile MDX files, the output is empty or undefined instead of showing the expected JSX/React components.
+I'm experiencing an issue where MDX content fails to render when processing certain node structures. The content just doesn't appear in the output, and there's no error message or warning to indicate what went wrong.
 
 ### Reproduction
 
 ```js
-import { compile } from '@mdx-js/mdx'
-
-const mdxContent = `
+// When processing MDX with specific node patterns
+const mdx = `
 # Hello World
 
-This is a test paragraph.
-`
+Some content here
+`;
 
-const result = await compile(mdxContent)
-// result is undefined or empty instead of compiled JSX
+const result = await compile(mdx);
+// Output is empty or missing expected content
 ```
 
 ### Expected behavior
 
-The MDX content should be compiled into valid JSX output that can be rendered. The compiled result should contain the heading and paragraph elements.
+The MDX content should be properly compiled and all nodes should be rendered in the output. Currently it seems like valid nodes are being skipped during the compilation process.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0
 - Node version: 18.x
 
-This seems to have started recently. Previously the same code was working fine and returning the compiled output as expected.
+This seems to have started happening recently. Not sure if it's related to a recent change in how nodes are being handled internally.
 
 ---
 Repository: /testbed

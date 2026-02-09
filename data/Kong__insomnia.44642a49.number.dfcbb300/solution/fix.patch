@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..f7f37361f 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -451,7 +451,43 @@ const generateParameterExample = (
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+-    number: () => 0,
++ number: (parameter: OpenAPIV2.Parameter) => {
++   const min = parameter.minimum;
++   const max = parameter.maximum;
++   const multipleOf = parameter.multipleOf;
++
++   let value: number;
++
++   if (min !== undefined && max !== undefined) {
++     value = (min + max) / 2;
++   } else if (min !== undefined) {
++     value = min + 1;
++   } else if (max !== undefined) {
++     value = max - 1;
++   } else {
++     value = 0;
++   }
++
++   if (multipleOf !== undefined && multipleOf > 0) {
++     value = Math.round(value / multipleOf) * multipleOf;
++    
++     if (min !== undefined && value < min) {
++       value = Math.ceil(min / multipleOf) * multipleOf;
++     }
++     if (max !== undefined && value > max) {
++       value = Math.floor(max / multipleOf) * multipleOf;
++     }
++   }
++
++   if (min !== undefined && value < min) {
++     value = min;
++   }
++   if (max !== undefined && value > max) {
++     value = max;
++   }
++
++   return value;
++ }
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+     integer: () => 0,

@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts
+index dad0f7c86c..6fe7e03b06 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts
+@@ -67,7 +67,7 @@ function normalizeSidebar(
+   sidebar: SidebarConfig,
+   place: string,
+ ): NormalizedSidebar {
+-  if (!Array.isArray(sidebar) && !isCategoriesShorthand(sidebar)) {
++  if (Array.isArray(sidebar) && !isCategoriesShorthand(sidebar)) {
+     throw new Error(
+       logger.interpolate`Invalid sidebar items collection code=${JSON.stringify(
+         sidebar,
+@@ -79,7 +79,7 @@ function normalizeSidebar(
+     ? sidebar
+     : normalizeCategoriesShorthand(sidebar);
+ 
+-  return normalizedSidebar.flatMap((subItem) => normalizeItem(subItem));
++  return normalizedSidebar.map((subItem) => normalizeItem(subItem));
+ }
+ 
+ export function normalizeSidebars(

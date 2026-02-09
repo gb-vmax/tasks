@@ -2,32 +2,38 @@
 
 ### Describe the bug
 
-The table of contents (TOC) is no longer showing level 2 headings (h2/##). After a recent update, only h3 and deeper headings appear in the TOC, but h2 headings are being excluded.
+The table of contents (TOC) generation is not working correctly for level 2 headings (##). After a recent change, h2 headings are no longer being included in the generated TOC, even though they should be.
 
 ### Reproduction
 
-Create a markdown file with headings at different levels:
+Create a markdown file with the following content:
 
 ```md
-# Page Title
+# Main Title
 
 ## Section 1
-Some content here
+
+Some content here.
+
+### Subsection 1.1
+
+More content.
 
 ## Section 2
-More content
 
-### Subsection 2.1
-Details
+Additional content.
 ```
 
-**Expected:** The TOC should include "Section 1", "Section 2", and "Subsection 2.1"
-
-**Actual:** The TOC only shows "Subsection 2.1", the h2 headings are missing
+The generated TOC is missing the "Section 1" and "Section 2" entries. Only "Subsection 1.1" appears in the TOC.
 
 ### Expected behavior
 
-Level 2 headings (h2/##) should be included in the table of contents. The TOC should start from h2 and include all deeper levels (h3, h4, etc.), with only the h1 title being excluded.
+The TOC should include all headings from level 2 and below (h2, h3, h4, etc.). Level 1 headings (h1) are correctly excluded as page titles, but h2 headings should be the top-level items in the TOC.
+
+Expected TOC structure:
+- Section 1
+  - Subsection 1.1
+- Section 2
 
 ### System Info
 - Docusaurus version: latest

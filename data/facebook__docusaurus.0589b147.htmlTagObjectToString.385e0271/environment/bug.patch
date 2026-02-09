@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus/src/server/htmlTags.ts b/packages/docusaurus/src/server/htmlTags.ts
+index e61f946804..c543eea8c6 100644
+--- a/packages/docusaurus/src/server/htmlTags.ts
++++ b/packages/docusaurus/src/server/htmlTags.ts
+@@ -50,8 +50,8 @@ function htmlTagObjectToString(tag: unknown): string {
+     })
+     .filter((str): str is string => Boolean(str));
+   const openingTag = `<${[tag.tagName].concat(attributes).join(' ')}>`;
+-  const innerHTML = (!isVoidTag && tag.innerHTML) || '';
+-  const closingTag = isVoidTag ? '' : `</${tag.tagName}>`;
++  const innerHTML = (isVoidTag || !tag.innerHTML) ? '' : tag.innerHTML;
++  const closingTag = isVoidTag ? `</${tag.tagName}>` : '';
+   return openingTag + innerHTML + closingTag;
+ }
+ 

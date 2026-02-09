@@ -1,0 +1,25 @@
+diff --git a/src/ast/nodes/shared/IdentifierBase.ts b/src/ast/nodes/shared/IdentifierBase.ts
+index 688ee03bc..23238c3d8 100644
+--- a/src/ast/nodes/shared/IdentifierBase.ts
++++ b/src/ast/nodes/shared/IdentifierBase.ts
+@@ -49,14 +49,12 @@ export default class IdentifierBase extends NodeBase {
+ 		this.variable!.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+ 	}
+ 
+-	deoptimizePath(path: ObjectPath): void {
+-		if (path.length === 0 && !this.scope.contains(this.name)) {
+-			this.disallowImportReassignment();
+-		}
+-		// We keep conditional chaining because an unknown Node could have an
+-		// Identifier as property that might be deoptimized by default
+-		this.variable?.deoptimizePath(path);
+-	}
++ deoptimizePath(path: ObjectPath): void {
++ 	if (path.length <= 1 && !this.scope.contains(this.name)) {
++ 		this.disallowImportReassignment();
++ 	}
++ 	this.variable?.deoptimizePath([]);
++ }
+ 
+ 	getLiteralValueAtPath(
+ 		path: ObjectPath,

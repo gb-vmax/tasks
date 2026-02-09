@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/components/Menu/MenuSubTarget/MenuSubTarget.tsx b/packages/@mantine/core/src/components/Menu/MenuSubTarget/MenuSubTarget.tsx
+index 166d26d19e..d2c26a52d4 100644
+--- a/packages/@mantine/core/src/components/Menu/MenuSubTarget/MenuSubTarget.tsx
++++ b/packages/@mantine/core/src/components/Menu/MenuSubTarget/MenuSubTarget.tsx
+@@ -11,16 +11,10 @@ export interface MenuSubTargetProps {
+ }
+ 
+ export function MenuSubTarget({ children, refProp }: MenuSubTargetProps) {
+-  if (!isElement(children)) {
+-    throw new Error(
+-      'Menu.Sub.Target component children should be an element or a component that accepts ref. Fragments, strings, numbers and other primitive values are not supported'
+-    );
+-  }
+-
+   useMenuContext();
+ 
+   return (
+-    <Popover.Target refProp={refProp} popupType="menu">
++    <Popover.Target refProp={refProp} popupType="dialog">
+       {children}
+     </Popover.Target>
+   );

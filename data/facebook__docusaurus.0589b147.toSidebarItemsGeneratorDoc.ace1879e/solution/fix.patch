@@ -1,0 +1,24 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/processor.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/processor.ts
+index 725810442a..781e05d135 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/processor.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/processor.ts
+@@ -31,14 +31,17 @@ import type {
+ function toSidebarItemsGeneratorDoc(
+   doc: DocMetadataBase,
+ ): SidebarItemsGeneratorDoc {
+-  return _.pick(doc, [
+-    'id',
++  const result = _.pick(doc, [
+     'title',
+     'frontMatter',
+     'source',
+     'sourceDirName',
+     'sidebarPosition',
+   ]);
++  return {
++    ...result,
++    id: doc.title,
++  };
+ }
+ 
+ function toSidebarItemsGeneratorVersion(

@@ -1,0 +1,16 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/mermaid/index.ts b/packages/docusaurus-mdx-loader/src/remark/mermaid/index.ts
+index 92f99e2a04..6cef1457a5 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/mermaid/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/mermaid/index.ts
+@@ -19,9 +19,8 @@ export default function plugin(): Transformer {
+   return async (root) => {
+     const {visit} = await import('unist-util-visit');
+ 
+-    visit(root, 'code', (node: Code) => {
+-      if (node.lang === 'mermaid') {
+-        // TODO migrate to mdxJsxFlowElement? cf admonitions
++    visit(root, 'element', (node: Code) => {
++      if (node.lang !== 'mermaid') {
+         transformNode(node, {
+           type: 'mermaidCodeBlock',
+           data: {

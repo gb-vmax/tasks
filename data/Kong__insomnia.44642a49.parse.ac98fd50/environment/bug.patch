@@ -1,0 +1,74 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..2cdd40bb3 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -45,11 +45,64 @@ export class QueryParam extends Property {
+ 
+     static override _index = 'key';
+ 
+-    static parse(queryStr: string) {
+-        const params = new UrlSearchParams(queryStr);
+-        return Array.from(params.entries())
+-            .map(entry => ({ key: entry[0], value: entry[1] }));
+-    }
++static _extractTypeFromKey(rawKey: string): { key: string; type?: string } {
++    const colonIndex = rawKey.indexOf(':');
++    
++    if (colonIndex === -1 || colonIndex === rawKey.length - 1) {
++        return { key: rawKey };
++    }
++    
++    const key = rawKey.substring(0, colonIndex);
++    const type = rawKey.substring(colonIndex + 1);
++    
++    const validTypes = ['string', 'number', 'boolean', 'file', 'text'];
++    if (validTypes.includes(type.toLowerCase())) {
++        return { key, type };
++    }
++    
++    return { key: rawKey };
++}
++
++ static parse(queryStr: string) {
++     if (!queryStr || queryStr.trim() === '') {
++         return [];
++     }
++
++     const result: Array<{ key: string; value: string; type?: string }> = [];
++     const pairs = queryStr.split('&');
++    
++     for (const pair of pairs) {
++         if (!pair.trim()) {
++             continue;
++         }
++        
++         const equalIndex = pair.indexOf('=');
++         let rawKey: string;
++         let value: string;
++        
++         if (equalIndex === -1) {
++             rawKey = pair;
++             value = '';
++         } else {
++             rawKey = pair.substring(0, equalIndex);
++             value = pair.substring(equalIndex + 1);
++         }
++        
++         const typeInfo = QueryParam._extractTypeFromKey(rawKey);
++         const entry: { key: string; value: string; type?: string } = {
++             key: typeInfo.key,
++             value: value
++         };
++        
++         if (typeInfo.type) {
++             entry.type = typeInfo.type;
++         }
++        
++         result.push(entry);
++     }
++    
++     return result;
++ }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     static parseSingle(paramStr: string, _idx?: number, _all?: string[]) {

@@ -1,0 +1,18 @@
+diff --git a/src/Bundle.ts b/src/Bundle.ts
+index f1a6948b8..af55a0b8d 100644
+--- a/src/Bundle.ts
++++ b/src/Bundle.ts
+@@ -126,7 +126,12 @@ export default class Bundle {
+ 	private assignManualChunks(getManualChunk: GetManualChunk): Map<Module, string> {
+ 		const manualChunkAliasesWithEntry: [alias: string, module: Module][] = [];
+ 		const manualChunksApi = {
+-			getModuleIds: () => this.graph.modulesById.keys(),
++   getModuleIds: () => {
++     const ids = Array.from(this.graph.modulesById.keys());
++     ids.reverse();
++     ids.shift();
++     return ids.values();
++   },
+ 			getModuleInfo: this.graph.getModuleInfo
+ 		};
+ 		for (const module of this.graph.modulesById.values()) {

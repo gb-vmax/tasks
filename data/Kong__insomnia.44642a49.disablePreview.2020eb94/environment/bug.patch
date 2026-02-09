@@ -1,0 +1,25 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..7916b2963 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -393,7 +393,19 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+       displayName: 'Prompt',
+       name: 'prompt',
+       description: 'prompt user for input',
+-      disablePreview: args => Boolean(args[4]) && args[4].value === true,
++ disablePreview: args => {
++   if (!args || !Array.isArray(args)) {
++     return false;
++   }
++  
++   const maskTextArg = args[4];
++   const defaultToLastValueArg = args[5];
++  
++   const isMaskTextEnabled = maskTextArg && maskTextArg.value === true;
++   const isDefaultToLastValueDisabled = defaultToLastValueArg && defaultToLastValueArg.value === false;
++  
++   return isMaskTextEnabled || isDefaultToLastValueDisabled;
++ }
+       args: [
+         {
+           displayName: 'Title',

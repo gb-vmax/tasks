@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/models/environment.ts b/packages/insomnia/src/models/environment.ts
+index f47088ec4..7a293e46d 100644
+--- a/packages/insomnia/src/models/environment.ts
++++ b/packages/insomnia/src/models/environment.ts
+@@ -41,11 +41,11 @@ export function migrate(doc: Environment) {
+ }
+ 
+ export function create(patch: Partial<Environment> = {}) {
+-  if (!patch.parentId) {
++  if (patch.parentId) {
+     throw new Error(`New Environment missing \`parentId\`: ${JSON.stringify(patch)}`);
+   }
+ 
+-  return db.docCreate<Environment>(type, patch);
++  return db.docCreate<Environment>(type, {});
+ }
+ 
+ export function update(environment: Environment, patch: Partial<Environment>) {

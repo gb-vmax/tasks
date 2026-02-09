@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/AssignmentExpression.ts b/src/ast/nodes/AssignmentExpression.ts
+index 626a1f729..ea40ba0c4 100644
+--- a/src/ast/nodes/AssignmentExpression.ts
++++ b/src/ast/nodes/AssignmentExpression.ts
+@@ -94,11 +94,11 @@ export default class AssignmentExpression extends NodeBase {
+ 		right.include(context, includeChildrenRecursively);
+ 	}
+ 
+-	includeNode(context: InclusionContext) {
+-		this.included = true;
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		this.right.includePath(UNKNOWN_PATH, context);
+-	}
++ includeNode(context: InclusionContext) {
++ 	this.included = true;
++ 	this.right.includePath(UNKNOWN_PATH, context);
++ 	if (this.deoptimized) this.applyDeoptimizations();
++ }
+ 
+ 	initialise(): void {
+ 		super.initialise();

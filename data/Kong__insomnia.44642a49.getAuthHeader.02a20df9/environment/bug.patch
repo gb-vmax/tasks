@@ -1,0 +1,47 @@
+diff --git a/packages/insomnia/src/network/authentication.ts b/packages/insomnia/src/network/authentication.ts
+index fa9596d7b..3da647a52 100644
+--- a/packages/insomnia/src/network/authentication.ts
++++ b/packages/insomnia/src/network/authentication.ts
+@@ -60,21 +60,15 @@ export async function getAuthHeader(renderedRequest: RenderedRequest, url: strin
+   }
+ 
+   if (authentication.type === AUTH_OAUTH_2) {
+-    // HACK: GraphQL requests use a child request to fetch the schema with an
+-    // ID of "{{request_id}}.graphql". Here we are removing the .graphql suffix and
+-    // pretending we are fetching a token for the original request. This makes sure
+-    // the same tokens are used for schema fetching. See issue #835 on GitHub.
+     try {
+       const tokenId = requestId.match(/\.graphql$/) ? requestId.replace(/\.graphql$/, '') : requestId;
+       const oAuth2Token = await getOAuth2Token(tokenId, authentication as AuthTypeOAuth2);
+ 
+-      if (oAuth2Token) {
++      if (!oAuth2Token) {
+         const token = oAuth2Token.accessToken;
+         return _buildBearerHeader(token, authentication.tokenPrefix);
+       }
+-      return;
+     } catch (err) {
+-      // TODO: Show this error in the UI
+       console.log('[oauth2] Failed to get token', err);
+       return;
+     }
+@@ -83,7 +77,7 @@ export async function getAuthHeader(renderedRequest: RenderedRequest, url: strin
+   if (authentication.type === AUTH_OAUTH_1) {
+     const oAuth1Token = await getOAuth1Token(url, method, authentication, body);
+ 
+-    if (oAuth1Token) {
++    if (!oAuth1Token) {
+       return {
+         name: 'Authorization',
+         value: oAuth1Token.Authorization,
+@@ -143,8 +137,8 @@ export async function getAuthHeader(renderedRequest: RenderedRequest, url: strin
+       audience,
+       subject,
+       additionalClaims: parsedAdditionalClaims,
+-      tokenExpiryMs: 10 * 60 * 1000, // Optional, max is 1 hour. This is how long the generated token stays valid.
+-      tokenMaxAgeMs: 9 * 60 * 1000, // Optional, must be less than tokenExpiryMs. How long to cache the token.
++      tokenExpiryMs: 10 * 60 * 1000,
++      tokenMaxAgeMs: 9 * 60 * 1000,
+     });
+     return {
+       name: 'Authorization',

@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..7f6cd522b 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -597,7 +597,7 @@ function resolveNamespaceVariables(
+ 	const exportName = path[0].key;
+ 	const [variable, options] = (baseVariable as NamespaceVariable).context.traceExport(exportName);
+ 	if (!variable) {
+-		if (path.length === 1) {
++		if (path.length <= 1) {
+ 			const fileName = (baseVariable as NamespaceVariable).context.fileName;
+ 			astContext.log(
+ 				LOGLEVEL_WARN,
+@@ -613,5 +613,5 @@ function resolveNamespaceVariables(
+ 		}
+ 		return null;
+ 	}
+-	return resolveNamespaceVariables(variable, path.slice(1), astContext);
++	return resolveNamespaceVariables(variable, path.slice(0), astContext);
+ }

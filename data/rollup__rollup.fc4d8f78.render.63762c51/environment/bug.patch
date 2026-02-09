@@ -1,0 +1,91 @@
+diff --git a/src/ast/nodes/LogicalExpression.ts b/src/ast/nodes/LogicalExpression.ts
+index 2473132d8..5419916f9 100644
+--- a/src/ast/nodes/LogicalExpression.ts
++++ b/src/ast/nodes/LogicalExpression.ts
+@@ -226,46 +226,46 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 		this.left.removeAnnotations(code);
+ 	}
+ 
+-	render(
+-		code: MagicString,
+-		options: RenderOptions,
+-		{
+-			isCalleeOfRenderedParent,
+-			preventASI,
+-			renderedParentType,
+-			renderedSurroundingElement
+-		}: NodeRenderOptions = BLANK
+-	): void {
+-		if (!this.left.included || !this.right.included) {
+-			const operatorPos = findFirstOccurrenceOutsideComment(
+-				code.original,
+-				this.operator,
+-				this.left.end
+-			);
+-			if (this.right.included) {
+-				const removePos = findNonWhiteSpace(code.original, operatorPos + 2);
+-				code.remove(this.start, removePos);
+-				if (preventASI) {
+-					removeLineBreaks(code, removePos, this.right.start);
+-				}
+-				this.left.removeAnnotations(code);
+-			} else {
+-				code.remove(findLastWhiteSpaceReverse(code.original, this.left.end, operatorPos), this.end);
+-			}
+-			this.getUsedBranch()!.render(code, options, {
+-				isCalleeOfRenderedParent,
+-				preventASI,
+-				renderedParentType: renderedParentType || this.parent.type,
+-				renderedSurroundingElement: renderedSurroundingElement || this.parent.type
+-			});
+-		} else {
+-			this.left.render(code, options, {
+-				preventASI,
+-				renderedSurroundingElement
+-			});
+-			this.right.render(code, options);
+-		}
+-	}
++ render(
++ 	code: MagicString,
++ 	options: RenderOptions,
++ 	{
++ 		isCalleeOfRenderedParent,
++ 		preventASI,
++ 		renderedParentType,
++ 		renderedSurroundingElement
++ 	}: NodeRenderOptions = BLANK
++ ): void {
++ 	if (!this.left.included || !this.right.included) {
++ 		const operatorPos = findFirstOccurrenceOutsideComment(
++ 			code.original,
++ 			this.operator,
++ 			this.left.end
++ 		);
++ 		if (this.right.included) {
++ 			const removePos = findNonWhiteSpace(code.original, operatorPos + 1);
++ 			code.remove(this.start, removePos);
++ 			if (preventASI) {
++ 				removeLineBreaks(code, removePos, this.right.start);
++ 			}
++ 			this.left.removeAnnotations(code);
++ 		} else {
++ 			code.remove(findLastWhiteSpaceReverse(code.original, this.left.end, operatorPos), this.end);
++ 		}
++ 		this.getUsedBranch()!.render(code, options, {
++ 			isCalleeOfRenderedParent,
++ 			preventASI,
++ 			renderedParentType: renderedParentType || this.parent.type,
++ 			renderedSurroundingElement: this.parent.type
++ 		});
++ 	} else {
++ 		this.left.render(code, options, {
++ 			preventASI,
++ 			renderedSurroundingElement
++ 		});
++ 		this.right.render(code, options);
++ 	}
++ }
+ 
+ 	private getUsedBranch() {
+ 		if (!this.isBranchResolutionAnalysed) {

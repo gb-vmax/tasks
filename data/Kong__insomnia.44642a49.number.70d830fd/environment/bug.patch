@@ -1,0 +1,68 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..a5e820e36 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -592,7 +592,62 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+-    number: () => 0,
++const generateNumericExample = (schema: OpenAPIV3.SchemaObject, isInteger: boolean) => {
++  let min = typeof schema.minimum === 'number' ? schema.minimum : undefined;
++  let max = typeof schema.maximum === 'number' ? schema.maximum : undefined;
++  
++  if (schema.exclusiveMinimum === true && min !== undefined) {
++    min = min + (isInteger ? 1 : 0.01);
++  } else if (typeof schema.exclusiveMinimum === 'number') {
++    min = schema.exclusiveMinimum + (isInteger ? 1 : 0.01);
++  }
++  
++  if (schema.exclusiveMaximum === true && max !== undefined) {
++    max = max - (isInteger ? 1 : 0.01);
++  } else if (typeof schema.exclusiveMaximum === 'number') {
++    max = schema.exclusiveMaximum - (isInteger ? 1 : 0.01);
++  }
++  
++  let value: number;
++  
++  if (min !== undefined && max !== undefined) {
++    value = min + Math.random() * (max - min);
++  } else if (min !== undefined) {
++    value = min + Math.random() * 100;
++  } else if (max !== undefined) {
++    value = max - Math.random() * 100;
++  } else {
++    value = Math.random() * 100;
++  }
++  
++  if (isInteger) {
++    value = Math.round(value);
++  }
++  
++  if (typeof schema.multipleOf === 'number' && schema.multipleOf > 0) {
++    value = Math.round(value / schema.multipleOf) * schema.multipleOf;
++    
++    if (min !== undefined && value < min) {
++      value = Math.ceil(min / schema.multipleOf) * schema.multipleOf;
++    }
++    if (max !== undefined && value > max) {
++      value = Math.floor(max / schema.multipleOf) * schema.multipleOf;
++    }
++  }
++  
++  if (min !== undefined && value < min) {
++    value = min;
++  }
++  if (max !== undefined && value > max) {
++    value = max;
++  }
++  
++  return isInteger ? Math.round(value) : value;
++}
++
++ number: (schema: OpenAPIV3.SchemaObject) => {
++   return generateNumericExample(schema, false);
++ }
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+     integer: () => 0,

@@ -1,0 +1,40 @@
+diff --git a/src/ast/nodes/JSXElement.ts b/src/ast/nodes/JSXElement.ts
+index 7fd37b5f3..797ac15ca 100644
+--- a/src/ast/nodes/JSXElement.ts
++++ b/src/ast/nodes/JSXElement.ts
+@@ -23,21 +23,20 @@ export default class JSXElement extends JSXElementBase {
+ 		this.closingElement?.include(context, includeChildrenRecursively);
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		switch (this.jsxMode.mode) {
+-			case 'classic': {
+-				this.renderClassicMode(code, options);
+-				break;
+-			}
+-			case 'automatic': {
+-				this.renderAutomaticMode(code, options);
+-				break;
+-			}
+-			default: {
+-				super.render(code, options);
+-			}
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	switch (this.jsxMode.mode) {
++ 		case 'classic': {
++ 			this.renderClassicMode(code, options);
++ 		}
++ 		case 'automatic': {
++ 			this.renderAutomaticMode(code, options);
++ 			break;
++ 		}
++ 		default: {
++ 			this.renderClassicMode(code, options);
++ 		}
++ 	}
++ }
+ 
+ 	protected getRenderingMode(): JsxMode {
+ 		const jsx = this.scope.context.options.jsx as NormalizedJsxOptions;

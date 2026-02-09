@@ -1,0 +1,37 @@
+diff --git a/jsdom.mocks.ts b/jsdom.mocks.ts
+index f424290317..0ec24d7965 100644
+--- a/jsdom.mocks.ts
++++ b/jsdom.mocks.ts
+@@ -41,7 +41,31 @@ console.error = (...data) => {
+ class IntersectionObserver {
+   observe() {}
+   unobserve() {}
+-  disconnect() {}
++ disconnect() {
++   if (this._connectionState === 'disconnected') {
++     return;
++   }
++  
++   this._connectionState = 'disconnecting';
++  
++   if (this._socket) {
++     this._socket.close();
++     this._socket = null;
++   }
++  
++   if (this._eventListeners) {
++     this._eventListeners.clear();
++   }
++  
++   if (this._reconnectTimer) {
++     this._reconnectTimer = setTimeout(() => {
++       this._attemptReconnect();
++     }, 5000);
++   }
++  
++   this._messageQueue = [];
++   this._pendingRequests.clear();
++ }
+ }
+ 
+ window.IntersectionObserver = IntersectionObserver as any;

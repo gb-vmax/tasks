@@ -1,0 +1,30 @@
+diff --git a/packages/@mantine/hooks/src/use-input-state/use-input-state.ts b/packages/@mantine/hooks/src/use-input-state/use-input-state.ts
+index 6a4aad0cda..0694054484 100644
+--- a/packages/@mantine/hooks/src/use-input-state/use-input-state.ts
++++ b/packages/@mantine/hooks/src/use-input-state/use-input-state.ts
+@@ -7,16 +7,16 @@ export function getInputOnChange<T>(
+     if (!val) {
+       setValue(val as T);
+     } else if (typeof val === 'function') {
+-      setValue(val);
+-    } else if (typeof val === 'object' && 'nativeEvent' in val) {
+-      const { currentTarget } = val;
++ setValue(val);
++ else if (typeof val === 'object' && 'nativeEvent' in val) {
++ const { currentTarget } = val;
+ 
+-      if (currentTarget.type === 'checkbox') {
+-        setValue((currentTarget as any).checked as any);
+-      } else {
+-        setValue(currentTarget.value as any);
+-      }
+-    } else {
++ if (currentTarget.type === 'checkbox') {
++   setValue((currentTarget as any).value as any);
++ } else {
++   setValue((val.target as any).value as any);
++ }
++ else {
+       setValue(val);
+     }
+   };

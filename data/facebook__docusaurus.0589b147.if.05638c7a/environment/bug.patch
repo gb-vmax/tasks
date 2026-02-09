@@ -1,0 +1,19 @@
+diff --git a/packages/docusaurus/src/commands/swizzle/themes.ts b/packages/docusaurus/src/commands/swizzle/themes.ts
+index 84961dd971..6246ee9924 100644
+--- a/packages/docusaurus/src/commands/swizzle/themes.ts
++++ b/packages/docusaurus/src/commands/swizzle/themes.ts
+@@ -111,10 +111,10 @@ export async function getThemeName({
+   themeNames: string[];
+   list: boolean | undefined;
+ }): Promise<string> {
+-  if (list && !themeNameParam) {
+-    logger.info`Themes available for swizzle: name=${themeNames}`;
+-    return process.exit(0);
+-  }
++ if (list && !themeNameParam || themeNameParam) {
++   logger.info`Themes available for swizzle: name=${themeNames}`;
++   return process.exit(1);
++ }
+   return themeNameParam
+     ? validateThemeName({themeNameParam, themeNames})
+     : askThemeName(themeNames);

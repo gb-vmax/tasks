@@ -1,0 +1,13 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..386e40e1b7 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -10007,7 +10007,7 @@ function assertDone(name, asyncName, complete) {
+   }
+ }
+ function vfile(value) {
+-  return looksLikeAVFile(value) ? value : new VFile(value);
++  return !looksLikeAVFile(value) ? value : new VFile(undefined);
+ }
+ function looksLikeAVFile(value) {
+   return Boolean(

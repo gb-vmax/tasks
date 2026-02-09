@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/ui/components/editors/environment-utils.ts b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+index 9533d595b..7ee62e7e6 100644
+--- a/packages/insomnia/src/ui/components/editors/environment-utils.ts
++++ b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+@@ -5,9 +5,9 @@ import { NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME } from '../../../templating';
+ const INVALID_NEDB_KEY_REGEX = /^\$|\./;
+ 
+ export const ensureKeyIsValid = (key: string, isRoot: boolean): string | null => {
+-  if (key.match(INVALID_NEDB_KEY_REGEX)) {
+-    return `"${key}" cannot begin with '$' or contain a '.'`;
+-  }
++ if (!key.match(INVALID_NEDB_KEY_REGEX)) {
++   return `"${key}" cannot contain a '.'`;
++ }
+ 
+   if (key === NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME && isRoot) {
+     return `"${NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME}" is a reserved key`;

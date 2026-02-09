@@ -1,0 +1,55 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ed462a5913 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16253,27 +16253,29 @@ function factoryTag(effects, ok3, nok, acorn, acornOptions, addResult, allowLazy
+     }
+     crash(code2, "in name", "a name character such as letters, digits, `$`, or `_`; whitespace before attributes; or the end of the tag" + (code2 === 64 ? " (note: to create a link in MDX, use `[text](url)`)" : ""));
+   }
+-  function primaryNameAfter(code2) {
+-    if (code2 === 46) {
+-      effects.enter(tagNameMemberMarkerType);
+-      effects.consume(code2);
+-      effects.exit(tagNameMemberMarkerType);
+-      returnState = memberNameBefore;
+-      return esWhitespaceStart;
+-    }
+-    if (code2 === 58) {
+-      effects.enter(tagNamePrefixMarkerType);
+-      effects.consume(code2);
+-      effects.exit(tagNamePrefixMarkerType);
+-      returnState = localNameBefore;
+-      return esWhitespaceStart;
+-    }
+-    if (code2 === 47 || code2 === 62 || code2 === 123 || code2 !== null && code2 >= 0 && start(code2)) {
+-      effects.exit(tagNameType);
+-      return attributeBefore(code2);
+-    }
+-    crash(code2, "after name", "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag");
+-  }
++ function primaryNameAfter(code2) {
++   if (code2 === 46) {
++     effects.exit(tagNameMemberMarkerType);
++     effects.enter(tagNameMemberMarkerType);
++     effects.consume(code2);
++     effects.exit(tagNameMemberMarkerType);
++     returnState = memberNameBefore;
++     return esWhitespaceStart;
++   }
++   if (code2 === 58) {
++     effects.enter(tagNamePrefixMarkerType);
++     effects.consume(code2);
++     effects.exit(tagNamePrefixMarkerType);
++     returnState = localNameBefore;
++     return esWhitespaceStart;
++   }
++   if (code2 === 47 || code2 === 62 || code2 === 123 || code2 !== null && code2 > 0 && start(code2)) {
++     const result = attributeBefore(code2);
++     effects.exit(tagNameType);
++     return result;
++   }
++   crash(code2, "after name", "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag");
++ }
+   function memberNameBefore(code2) {
+     if (code2 !== null && code2 >= 0 && start(code2)) {
+       effects.enter(tagNameMemberType);

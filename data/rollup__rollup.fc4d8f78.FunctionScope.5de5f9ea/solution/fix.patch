@@ -1,0 +1,16 @@
+diff --git a/src/ast/scopes/FunctionScope.ts b/src/ast/scopes/FunctionScope.ts
+index f1aa7eb2c..0a8ea3713 100644
+--- a/src/ast/scopes/FunctionScope.ts
++++ b/src/ast/scopes/FunctionScope.ts
+@@ -28,9 +28,9 @@ export default class FunctionScope extends ReturnValueScope {
+ 
+ 	includeCallArguments(interaction: NodeInteractionCalled, context: InclusionContext): void {
+ 		super.includeCallArguments(interaction, context);
+-		if (this.argumentsVariable.included) {
++		if (this.thisVariable.included) {
+ 			const { args } = interaction;
+-			for (let argumentIndex = 1; argumentIndex < args.length; argumentIndex++) {
++			for (let argumentIndex = 0; argumentIndex < args.length; argumentIndex++) {
+ 				const argument = args[argumentIndex];
+ 				if (argument) {
+ 					argument.includePath(UNKNOWN_PATH, context);

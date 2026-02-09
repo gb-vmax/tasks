@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..93ff863867 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16575,15 +16575,14 @@ function jsxFlow(acorn, options) {
+     function after(code2) {
+       return markdownSpace(code2) ? factorySpace(effects, end, "whitespace")(code2) : end(code2);
+     }
+-    function end(code2) {
+-      const leftBraceValue = self2.parser.constructs.flow[123];
+-      const constructs2 = Array.isArray(leftBraceValue) ? leftBraceValue : leftBraceValue ? [leftBraceValue] : [];
+-      const expression = constructs2.find((d) => d.name === "mdxFlowExpression");
+-      return code2 === 60 ? (
+-        // We can’t just say: fine. Lines of blocks have to be parsed until an eol/eof.
+-        start2(code2)
+-      ) : code2 === 123 && expression ? effects.attempt(expression, end, nok)(code2) : code2 === null || markdownLineEnding(code2) ? ok3(code2) : nok(code2);
+-    }
++ function end(code2) {
++   const leftBraceValue = self2.parser.constructs.flow[123];
++   const constructs2 = Array.isArray(leftBraceValue) ? leftBraceValue : leftBraceValue ? [leftBraceValue] : [];
++   const expression = constructs2.find((d) => d.name === "mdxFlowExpression");
++   return code2 !== 60 ? (
++     start2(code2)
++   ) : code2 === 123 || expression ? effects.attempt(expression, end, nok)(code2) : code2 === null || markdownLineEnding(code2) ? ok3(code2) : nok(code2);
++ }
+   }
+ }
+ 

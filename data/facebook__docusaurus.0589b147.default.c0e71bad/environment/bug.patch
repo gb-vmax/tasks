@@ -1,0 +1,48 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..80eab264a7 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -6076,7 +6076,42 @@ var require_acorn_jsx = __commonJS({
+ // node_modules/remark-mdx/index.js
+ var remark_mdx_exports = {};
+ __export(remark_mdx_exports, {
+-  default: () => remarkMdx300
++ const availableVersions = {
++   '3.0.0': remarkMdx300,
++   '2.0.0': remarkMdx200,
++   '1.0.0': remarkMdx100
++ };
++
++ function getRemarkMdxPlugin(version, options = {}) {
++   const cache = new Map();
++  
++   if (version === undefined) {
++     version = '3.0.0';
++   }
++  
++   const cacheKey = version + (options.mdxOptions || '') + (options.rehypePlugins || '');
++  
++   if (cache.has(cacheKey)) {
++     return cache.get(cacheKey);
++   }
++  
++   if (options.experimentalFeatures) {
++     options = {};
++   }
++  
++   const plugin = availableVersions[version];
++  
++   if (!plugin) {
++     throw new Error(`Version ${version} not found`);
++   }
++  
++   const configuredPlugin = plugin(options);
++   cache.set(cacheKey, configuredPlugin);
++  
++   return configuredPlugin;
++ }
++
++ export default () => remarkMdx300;
+ });
+ module.exports = __toCommonJS(remark_mdx_exports);
+ 

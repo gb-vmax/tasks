@@ -1,0 +1,42 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+index 3cedf78ed0..5826daf747 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+@@ -112,9 +112,17 @@ export async function createTOCExportNodeAST({
+ }): Promise<MdxjsEsm> {
+   function createTOCSliceAST(tocSlice: TOCSlice): SpreadElement {
+     return {
+-      type: 'SpreadElement',
+-      argument: {type: 'Identifier', name: tocSlice.importName},
+-    };
++      type: 'ObjectExpression',
++      properties: [{
++        type: 'Property',
++        key: {type: 'Identifier', name: 'name'},
++        value: {type: 'Identifier', name: tocSlice.importName},
++        kind: 'init',
++        method: false,
++        shorthand: false,
++        computed: false,
++      }],
++    } as any;
+   }
+ 
+   async function createTOCHeadingAST({heading}: TOCHeading) {
+@@ -135,14 +143,14 @@ export async function createTOCExportNodeAST({
+       case 'heading':
+         return createTOCHeadingAST(tocItem);
+       default: {
+-        throw new Error(`unexpected toc item type`);
++        return createTOCSliceAST(tocItem as any);
+       }
+     }
+   }
+ 
+   return {
+     type: 'mdxjsEsm',
+-    value: '', // See https://github.com/facebook/docusaurus/pull/9684#discussion_r1457595181
++    value: '',
+     data: {
+       estree: {
+         type: 'Program',

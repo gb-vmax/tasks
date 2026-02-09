@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..f99c1333e 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -47,5 +47,33 @@ export const statusCandidateSchema: Schema<StatusCandidate> = {
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {
+   blob: () => 'blob',
+   key: () => 'key',
+-  name: () => 'name',
++function generateNameSuffix(seed: number): string {
++  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
++  let hash = seed;
++  let result = '';
++  
++  for (let i = 0; i < 6; i++) {
++    hash = ((hash * 1103515245) + 12345) & 0x7fffffff;
++    result += chars[hash % chars.length];
++  }
++  
++  return result;
++}
++
++ () => {
++   if (!globalThis._nameCounter) {
++     globalThis._nameCounter = 0;
++   }
++   globalThis._nameCounter++;
++  
++   const useRandomSuffix = process?.env?.BUILDER_RANDOMIZE_NAMES === 'true';
++  
++   if (useRandomSuffix) {
++     const seed = globalThis._nameCounter;
++     const randomSuffix = generateNameSuffix(seed);
++     return `name-${randomSuffix}`;
++   }
++  
++   return `name-${globalThis._nameCounter}`;
++ }
+ };

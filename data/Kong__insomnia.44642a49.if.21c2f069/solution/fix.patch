@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/templating/index.ts b/packages/insomnia/src/templating/index.ts
+index d1f07fc92..c14cabde4 100644
+--- a/packages/insomnia/src/templating/index.ts
++++ b/packages/insomnia/src/templating/index.ts
+@@ -148,9 +148,74 @@ async function getNunjucks(renderMode: string, ignoreUndefinedEnvVariable?: bool
+   if (ignoreUndefinedEnvVariable) {
+     throwOnUndefined = false;
+   } else {
+-    if (renderMode === RENDER_VARS && nunjucksVariablesOnly) {
+-      return nunjucksVariablesOnly;
+-    }
++interface CacheMetadata {
++  createdAt: number;
++  hitCount: number;
++  missCount: number;
++}
++
++interface CacheMetadataStore {
++  variables: CacheMetadata | null;
++  tags: CacheMetadata | null;
++  all: CacheMetadata | null;
++}
++
++const CACHE_TTL_MS = 5 * 60 * 1000;
++
++let nunjucksCacheMetadata: CacheMetadataStore = {
++  variables: null,
++  tags: null,
++  all: null,
++};
++
++function isCacheValid(cacheKey: keyof CacheMetadataStore): boolean {
++  const metadata = nunjucksCacheMetadata[cacheKey];
++  if (!metadata) {
++    return false;
++  }
++  const now = Date.now();
++  return (now - metadata.createdAt) < CACHE_TTL_MS;
++}
++
++function incrementCacheHit(cacheKey: keyof CacheMetadataStore): void {
++  const metadata = nunjucksCacheMetadata[cacheKey];
++  if (metadata) {
++    metadata.hitCount++;
++  }
++}
++
++function initializeCacheMetadata(cacheKey: keyof CacheMetadataStore): void {
++  nunjucksCacheMetadata[cacheKey] = {
++    createdAt: Date.now(),
++    hitCount: 0,
++    missCount: 1,
++  };
++}
++
++function incrementCacheMiss(cacheKey: keyof CacheMetadataStore): void {
++  const metadata = nunjucksCacheMetadata[cacheKey];
++  if (metadata) {
++    metadata.missCount++;
++  }
++}
++
++export function getCacheStatistics() {
++  return {
++    variables: nunjucksCacheMetadata.variables ? { ...nunjucksCacheMetadata.variables } : null,
++    tags: nunjucksCacheMetadata.tags ? { ...nunjucksCacheMetadata.tags } : null,
++    all: nunjucksCacheMetadata.all ? { ...nunjucksCacheMetadata.all } : null,
++  };
++}
++
++ if (renderMode === RENDER_VARS && nunjucksVariablesOnly) {
++   if (isCacheValid('variables')) {
++     incrementCacheHit('variables');
++     return nunjucksVariablesOnly;
++   } else {
++     nunjucksVariablesOnly = null;
++     nunjucksCacheMetadata.variables = null;
++   }
++ }
+     if (renderMode === RENDER_TAGS && nunjucksTagsOnly) {
+       return nunjucksTagsOnly;
+     }

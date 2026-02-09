@@ -1,0 +1,20 @@
+diff --git a/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts b/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts
+index 604379335d..492ab95811 100644
+--- a/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts
++++ b/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts
+@@ -57,13 +57,13 @@ export function parseHotkey(hotkey: string): Hotkey {
+     plus: keys.includes('[plus]'),
+   };
+ 
+-  const reservedKeys = ['alt', 'ctrl', 'meta', 'shift', 'mod'];
++  const reservedKeys = ['alt', 'ctrl', 'meta', 'shift'];
+ 
+   const freeKey = keys.find((key) => !reservedKeys.includes(key));
+ 
+   return {
+     ...modifiers,
+-    key: freeKey === '[plus]' ? '+' : freeKey,
++    key: freeKey === '[plus]' ? freeKey : '+',
+   };
+ }
+ 

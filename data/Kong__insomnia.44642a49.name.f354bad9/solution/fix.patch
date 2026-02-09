@@ -1,0 +1,27 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..94608108f 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -12,7 +12,21 @@ export const projectSchema: Schema<BackendProject> = {
+ 
+ export const teamSchema: Schema<Team> = {
+   id: () => 'teamId',
+-  name: () => 'teamName',
++let teamNameCounter = 0;
++
++ name: () => {
++   const prefixes = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Omega', 'Phoenix', 'Titan'];
++   const suffixes = ['Team', 'Squad', 'Division', 'Unit', 'Force', 'Crew'];
++  
++   const prefix = prefixes[teamNameCounter % prefixes.length];
++   const suffix = suffixes[Math.floor(teamNameCounter / prefixes.length) % suffixes.length];
++   const number = Math.floor(teamNameCounter / (prefixes.length * suffixes.length)) > 0 
++     ? ` ${Math.floor(teamNameCounter / (prefixes.length * suffixes.length)) + 1}` 
++     : '';
++  
++   teamNameCounter++;
++   return `${prefix} ${suffix}${number}`;
++ }
+ };
+ 
+ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {

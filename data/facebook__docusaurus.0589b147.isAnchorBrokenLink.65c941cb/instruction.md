@@ -2,29 +2,43 @@
 
 ### Describe the bug
 
-Anchor links on pages are being incorrectly flagged as valid when they should be detected as broken. It seems like the broken link checker is not properly validating anchor links anymore.
+Anchor links on documentation pages are being incorrectly validated. When navigating to a page with an anchor (like `/docs/intro#getting-started`), the link checker seems to be treating valid anchors as broken links or not validating them properly.
 
 ### Reproduction
 
-Create a page with the following markdown:
+Create a documentation page with anchors:
 
-```markdown
-# My Page
+```md
+# Introduction
 
-Some content here.
+## Getting Started
 
-[Link to non-existent section](#does-not-exist)
+Some content here...
+
+## Installation
+
+More content...
 ```
 
-When building the site, the link `#does-not-exist` should be reported as a broken anchor link since there's no corresponding heading or anchor on the page, but it's not being caught.
+Then link to these sections from another page:
+
+```md
+Check out the [getting started guide](/docs/intro#getting-started)
+```
+
+The anchor links don't seem to be validated correctly - either they're being flagged as broken when they exist, or valid anchors aren't being checked at all.
 
 ### Expected behavior
 
-The broken link checker should detect when an anchor link points to a non-existent section on a page and report it as a broken link. Links like `#does-not-exist` or `/docs/page#missing-section` should be flagged when the target anchor doesn't exist.
+Anchor links should be properly validated:
+- Links with valid anchors (like `#getting-started` that exists on the target page) should pass validation
+- Links with invalid anchors (like `#nonexistent` that doesn't exist) should be flagged as broken
+- Links with empty anchors (like `#`) should be handled appropriately
 
-### Additional context
+### System Info
 
-This affects the reliability of the broken link detection feature. Pages might be deployed with broken anchor links that users will encounter, even though the build process should have caught them.
+- Docusaurus version: latest
+- Node version: 18.x
 
 ---
 Repository: /testbed

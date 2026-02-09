@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4fdda25658 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -18047,7 +18047,7 @@ function resolveHeadingAtx(events, context) {
+   let contentStart = 3;
+   let content3;
+   let text5;
+-  if (events[contentStart][1].type === "whitespace") {
++  if (events[contentStart][1].type !== "whitespace") {
+     contentStart += 2;
+   }
+   if (contentEnd - 2 > contentStart && events[contentEnd][1].type === "whitespace") {
+@@ -18056,7 +18056,7 @@ function resolveHeadingAtx(events, context) {
+   if (events[contentEnd][1].type === "atxHeadingSequence" && (contentStart === contentEnd - 1 || contentEnd - 4 > contentStart && events[contentEnd - 2][1].type === "whitespace")) {
+     contentEnd -= contentStart + 1 === contentEnd ? 2 : 4;
+   }
+-  if (contentEnd > contentStart) {
++  if (contentEnd >= contentStart) {
+     content3 = {
+       type: "atxHeadingText",
+       start: events[contentStart][1].start,

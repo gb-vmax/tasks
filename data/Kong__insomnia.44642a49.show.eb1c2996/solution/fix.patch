@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..eca354945 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -13,8 +13,59 @@ export interface AlertModalOptions {
+   onConfirm?: () => void | Promise<void>;
+ }
+ export interface AlertModalHandle {
+-  show: (options: AlertModalOptions) => void;
+-  hide: () => void;
++const alertQueue = useRef<AlertModalOptions[]>([]);
++const [isConfirming, setIsConfirming] = useState(false);
++
++const isModalVisible = () => {
++  const modalElement = modalRef.current;
++  if (!modalElement) return false;
++  return state.title !== '' || state.message !== '';
++};
++
++const handleConfirm = async () => {
++  if (isConfirming) return;
++  
++  setIsConfirming(true);
++  try {
++    if (typeof state.onConfirm === 'function') {
++      await state.onConfirm();
++    }
++  } finally {
++    setIsConfirming(false);
++    modalRef.current?.hide();
++  }
++};
++
++ useImperativeHandle(ref, () => ({
++   hide: () => {
++     modalRef.current?.hide();
++     if (alertQueue.current.length > 0) {
++       const nextAlert = alertQueue.current.shift();
++       if (nextAlert) {
++         setTimeout(() => {
++           setState(nextAlert);
++           modalRef.current?.show();
++         }, 300);
++       }
++     }
++   },
++   show: ({ title, message, addCancel, onConfirm, okLabel }) => {
++     const newAlert = {
++       title,
++       message,
++       addCancel,
++       okLabel,
++       onConfirm,
++     };
++    
++     if (modalRef.current && isModalVisible()) {
++       alertQueue.current.push(newAlert);
++     } else {
++       setState(newAlert);
++       modalRef.current?.show();
++     }
++   },
++ }), []);
+ }
+ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

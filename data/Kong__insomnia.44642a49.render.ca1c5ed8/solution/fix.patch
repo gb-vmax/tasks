@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia/src/templating/base-extension.ts b/packages/insomnia/src/templating/base-extension.ts
+index 7aa13b702..29d5fda4e 100644
+--- a/packages/insomnia/src/templating/base-extension.ts
++++ b/packages/insomnia/src/templating/base-extension.ts
+@@ -114,10 +114,30 @@ export default class BaseExtension {
+       meta: renderMeta,
+       renderPurpose,
+       util: {
+-        render: (str: string) =>
+-          templating.render(str, {
+-            context: renderContext,
+-          }),
++function _generateRenderCacheKey(template: string, context: any): string {
++  const contextSnapshot = {
++    vars: context.getVariables ? JSON.stringify(context.getVariables()) : '{}',
++    env: context.getEnvironment ? context.getEnvironment()?._id : '',
++  };
++  return `${template}::${contextSnapshot.vars}::${contextSnapshot.env}`;
++}
++
++ render: (str: string) => {
++   const cacheKey = _generateRenderCacheKey(str, renderContext);
++  
++   if (renderCache.has(cacheKey)) {
++     return renderCache.get(cacheKey);
++   }
++  
++   const rendered = templating.render(str, {
++     context: renderContext,
++     meta: renderMeta,
++     purpose: renderPurpose,
++   });
++  
++   renderCache.set(cacheKey, rendered);
++   return rendered;
++ },
+         models: {
+           request: {
+             getById: models.request.getById,

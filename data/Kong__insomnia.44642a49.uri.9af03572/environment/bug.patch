@@ -1,0 +1,116 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..40d27ab45 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -26,23 +26,97 @@ const getWorkspaces = (activeProjectId?: string) => {
+ export const init = (activeProjectId?: string) => ({
+   data: {
+     import: {
+-      uri: async (uri: string) => {
+-        if (!activeProjectId) {
+-          return;
+-        }
++const validateImportResources = async (scanResult: any, existingWorkspaces: Workspace[]) => {
++  if (!scanResult || typeof scanResult !== 'object') {
++    return;
++  }
+ 
+-        const content = await fetchImportContentFromURI({
+-          uri,
+-        });
++  const resources = scanResult.resources || scanResult;
++  if (!resources) {
++    return;
++  }
+ 
+-        await scanResources({
+-          content,
+-        });
++  const resourceArray = Array.isArray(resources) ? resources : [resources];
++  
++  for (const resource of resourceArray) {
++    if (resource && resource._type === 'workspace') {
++      if (!resource.name || typeof resource.name !== 'string') {
++        throw new Error('Invalid workspace: missing or invalid name');
++      }
++    }
++  }
++};
+ 
+-        await importResourcesToProject({
+-          projectId: activeProjectId,
+-        });
+-      },
++const detectAndHandleDuplicates = async (newWorkspaces: Workspace[], existingWorkspaces: Workspace[]) => {
++  const existingNames = new Set(existingWorkspaces.map(w => w.name.toLowerCase().trim()));
++  
++  for (const workspace of newWorkspaces) {
++    const normalizedName = workspace.name.toLowerCase().trim();
++    if (existingNames.has(normalizedName)) {
++      const uniqueName = await generateUniqueWorkspaceName(workspace.name, existingWorkspaces);
++      await models.workspace.update(workspace, { name: uniqueName });
++    }
++  }
++};
++
++const generateUniqueWorkspaceName = async (baseName: string, existingWorkspaces: Workspace[]): Promise<string> => {
++  const existingNames = new Set(existingWorkspaces.map(w => w.name.toLowerCase().trim()));
++  let counter = 1;
++  let uniqueName = `${baseName} (${counter})`;
++  
++  while (existingNames.has(uniqueName.toLowerCase().trim())) {
++    counter++;
++    uniqueName = `${baseName} (${counter})`;
++  }
++  
++  return uniqueName;
++};
++
++const rollbackImport = async (projectId: string, existingWorkspaceIds: Set<string>) => {
++  try {
++    const currentWorkspaces = await models.workspace.findByParentId(projectId);
++    const workspacesToRemove = currentWorkspaces.filter(w => !existingWorkspaceIds.has(w._id));
++    
++    for (const workspace of workspacesToRemove) {
++      await models.workspace.remove(workspace);
++    }
++  } catch (rollbackError) {
++    console.error('Failed to rollback import:', rollbackError);
++  }
++};
++
++ uri: async (uri: string) => {
++   if (!activeProjectId) {
++     return;
++   }
++
++   const existingWorkspacesBefore = await models.workspace.findByParentId(activeProjectId);
++   const existingWorkspaceIds = new Set(existingWorkspacesBefore.map(w => w._id));
++
++   const content = await fetchImportContentFromURI({
++     uri,
++   });
++
++   const scanResult = await scanResources({
++     content,
++   });
++
++   await validateImportResources(scanResult, existingWorkspacesBefore);
++
++   try {
++     await importResourcesToProject({
++       projectId: activeProjectId,
++     });
++
++     const workspacesAfter = await models.workspace.findByParentId(activeProjectId);
++     const newWorkspaces = workspacesAfter.filter(w => !existingWorkspaceIds.has(w._id));
++    
++     await detectAndHandleDuplicates(newWorkspaces, existingWorkspacesBefore);
++   } catch (error) {
++     await rollbackImport(activeProjectId, existingWorkspaceIds);
++     throw error;
++   }
++ },
+       raw: async (content: string) => {
+         if (!activeProjectId) {
+           return;

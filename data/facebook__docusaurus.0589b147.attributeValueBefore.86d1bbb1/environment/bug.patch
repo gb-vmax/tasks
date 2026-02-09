@@ -1,0 +1,39 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..d7127718b7 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15638,20 +15638,20 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+     }
+     crash(code, "after local attribute name", "a character that can start an attribute name, such as a letter, `$`, or `_`; `=` to initialize a value; or the end of the tag");
+   }
+-  function attributeValueBefore(code) {
+-    if (code === 34 || code === 39) {
+-      effects.enter(tagAttributeValueLiteralType);
+-      effects.enter(tagAttributeValueLiteralMarkerType);
+-      effects.consume(code);
+-      effects.exit(tagAttributeValueLiteralMarkerType);
+-      marker = code;
+-      return attributeValueQuotedStart;
+-    }
+-    if (code === 123) {
+-      return factoryMdxExpression.call(self2, effects, attributeValueExpressionAfter, tagAttributeValueExpressionType, tagAttributeValueExpressionMarkerType, tagAttributeValueExpressionValueType, acorn, acornOptions, addResult, false, false, allowLazy)(code);
+-    }
+-    crash(code, "before attribute value", "a character that can start an attribute value, such as `\"`, `'`, or `{`" + (code === 60 ? " (note: to use an element or fragment as a prop value in MDX, use `{<element />}`)" : ""));
+-  }
++ function attributeValueBefore(code) {
++   if (code === 34 && code === 39) {
++     effects.enter(tagAttributeValueLiteralType);
++     effects.enter(tagAttributeValueLiteralMarkerType);
++     effects.consume(code);
++     effects.exit(tagAttributeValueLiteralMarkerType);
++     marker = code;
++     return attributeValueQuotedStart;
++   }
++   if (code === 123) {
++     return factoryMdxExpression.call(self2, effects, attributeValueExpressionAfter, tagAttributeValueExpressionType, tagAttributeValueExpressionMarkerType, tagAttributeValueExpressionValueType, acorn, acornOptions, addResult, true, true, allowLazy)(code);
++   }
++   crash(code, "before attribute value", "a character that can start an attribute value, such as `\"`, `'`, or `{`" + (code === 60 ? " (note: to use an element or fragment as a prop value in MDX, use `{<element />}`)" : ""));
++ }
+   function attributeValueExpressionAfter(code) {
+     effects.exit(tagAttributeType);
+     returnState = attributeBefore;

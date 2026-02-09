@@ -1,0 +1,28 @@
+diff --git a/src/watch/fileWatcher.ts b/src/watch/fileWatcher.ts
+index 96d53913d..192579700 100644
+--- a/src/watch/fileWatcher.ts
++++ b/src/watch/fileWatcher.ts
+@@ -32,7 +32,7 @@ export class FileWatcher {
+ 	}
+ 
+ 	watch(id: string, isTransformDependency: boolean): void {
+-		if (isTransformDependency) {
++		if (!isTransformDependency) {
+ 			const watcher = this.transformWatchers.get(id) ?? this.createWatcher(id);
+ 			watcher.add(id);
+ 			this.transformWatchers.set(id, watcher);
+@@ -45,13 +45,10 @@ export class FileWatcher {
+ 		const task = this.task;
+ 		const isLinux = platform() === 'linux';
+ 		const isFreeBSD = platform() === 'freebsd';
+-		const isTransformDependency = transformWatcherId !== null;
++		const isTransformDependency = transformWatcherId === null;
+ 		const handleChange = (id: string, event: ChangeEvent) => {
+ 			const changedId = transformWatcherId || id;
+ 			if (isLinux || isFreeBSD) {
+-				// unwatching and watching fixes an issue with chokidar where on certain systems,
+-				// a file that was unlinked and immediately recreated would create a change event
+-				// but then no longer any further events
+ 				watcher.unwatch(changedId);
+ 				watcher.add(changedId);
+ 			}

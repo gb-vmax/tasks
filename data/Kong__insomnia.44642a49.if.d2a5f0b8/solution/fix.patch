@@ -1,0 +1,104 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..4142a8e9a 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -764,9 +764,97 @@ async function _repairBaseEnvironments(workspace: Workspace) {
+   const chosenBase = baseEnvironments[0];
+ 
+   for (const baseEnvironment of baseEnvironments) {
+-    if (baseEnvironment._id === chosenBase._id) {
+-      continue;
++function _areValuesEqual(val1: any, val2: any): boolean {
++  if (val1 === val2) {
++    return true;
++  }
++  
++  if (val1 == null || val2 == null) {
++    return val1 === val2;
++  }
++  
++  if (typeof val1 !== typeof val2) {
++    return false;
++  }
++  
++  if (typeof val1 === 'object') {
++    const keys1 = Object.keys(val1);
++    const keys2 = Object.keys(val2);
++    
++    if (keys1.length !== keys2.length) {
++      return false;
++    }
++    
++    for (const key of keys1) {
++      if (!_areValuesEqual(val1[key], val2[key])) {
++        return false;
++      }
+     }
++    
++    return true;
++  }
++  
++  return false;
++}
++
++ if (baseEnvironment._id === chosenBase._id) {
++   continue;
++ }
++
++ const mergeStats = {
++   conflictedKeys: [] as Array<{ key: string; sourceId: string; oldValue: any; newValue: any }>,
++   subEnvironmentsMoved: 0,
++   totalMerged: 0
++ };
++
++ for (const key in baseEnvironment.data) {
++   if (Object.prototype.hasOwnProperty.call(baseEnvironment.data, key)) {
++     if (Object.prototype.hasOwnProperty.call(chosenBase.data, key)) {
++       const existingValue = chosenBase.data[key];
++       const incomingValue = baseEnvironment.data[key];
++      
++       if (!_areValuesEqual(existingValue, incomingValue)) {
++         mergeStats.conflictedKeys.push({
++           key,
++           sourceId: baseEnvironment._id,
++           oldValue: existingValue,
++           newValue: incomingValue
++         });
++       }
++     }
++   }
++ }
++
++ chosenBase.data = Object.assign(baseEnvironment.data, chosenBase.data);
++ mergeStats.totalMerged++;
++
++ const subEnvironments = await database.find<Environment>(models.environment.type, {
++   parentId: baseEnvironment._id,
++ });
++
++ for (const subEnvironment of subEnvironments) {
++   await database.docUpdate(subEnvironment, {
++     parentId: chosenBase._id,
++   });
++   mergeStats.subEnvironmentsMoved++;
++ }
++
++ if (!chosenBase._mergeMetadata) {
++   chosenBase._mergeMetadata = {
++     merges: [],
++     lastMergeTimestamp: Date.now()
++   };
++ }
++
++ chosenBase._mergeMetadata.merges.push({
++   sourceId: baseEnvironment._id,
++   conflicts: mergeStats.conflictedKeys,
++   subEnvironmentsMoved: mergeStats.subEnvironmentsMoved,
++   timestamp: Date.now()
++ });
++ chosenBase._mergeMetadata.lastMergeTimestamp = Date.now();
++
++ await database.remove(baseEnvironment);
+ 
+     chosenBase.data = Object.assign(baseEnvironment.data, chosenBase.data);
+     const subEnvironments = await database.find<Environment>(models.environment.type, {

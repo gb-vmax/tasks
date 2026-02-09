@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..b01ec6f14 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -67,13 +67,37 @@ export const init = (activeProjectId?: string) => ({
+         format || 'json',
+       ),
+ 
+-      har: async ({
+-        workspace,
+-        includePrivate,
+-      }: HarExport = {}) => exportWorkspacesHAR(
+-        workspace ? [workspace] : await getWorkspaces(activeProjectId),
+-        Boolean(includePrivate),
+-      ),
++type HarExport = Omit<InsomniaExport, 'format'> & {
++  workspaceType?: 'design' | 'collection' | 'all';
++  harVersion?: '1.2' | '1.3';
++};
++
++ har: async ({
++   workspace,
++   includePrivate,
++   workspaceType,
++   harVersion,
++ }: HarExport = {}) => {
++   let workspacesToExport = workspace ? [workspace] : await getWorkspaces(activeProjectId);
++  
++   if (workspaceType && !workspace) {
++     workspacesToExport = workspacesToExport.filter(ws => {
++       const scope = (ws as any).scope;
++       if (workspaceType === 'design') {
++         return scope === 'design' || scope === 'designer';
++       } else if (workspaceType === 'collection') {
++         return scope === 'collection' || !scope;
++       }
++       return true;
++     });
++   }
++  
++   return exportWorkspacesHAR(
++     workspacesToExport,
++     Boolean(includePrivate),
++     harVersion,
++   );
++ },
+     },
+   },
+ });

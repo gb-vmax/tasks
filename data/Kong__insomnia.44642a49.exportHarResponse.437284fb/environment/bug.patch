@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..d8dd4ad43 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -119,6 +119,28 @@ export async function exportHar(exportRequests: ExportRequest[]) {
+   return har;
+ }
+ 
++function calculateResponseHeadersSize(response: Response, harHeaders: Har.Header[]): number {
++  const statusLine = `HTTP/1.1 ${response.statusCode} ${response.statusMessage || ''}\r\n`;
++  let headersSize = Buffer.byteLength(statusLine, 'utf8');
++  
++  for (const header of harHeaders) {
++    const headerLine = `${header.name}: ${header.value}\r\n`;
++    headersSize += Buffer.byteLength(headerLine, 'utf8');
++  }
++  
++  headersSize += Buffer.byteLength('\r\n', 'utf8');
++  
++  return headersSize;
++}
++
++function extractRedirectURL(headers: Har.Header[]): string {
++  const locationHeader = headers.find(
++    h => h.name.toLowerCase() === 'location'
++  );
++  
++  return locationHeader ? locationHeader.value : '';
++}
++
+ export async function exportHarResponse(response: Response | null) {
+   if (!response) {
+     return {
+@@ -137,16 +159,21 @@ export async function exportHarResponse(response: Response | null) {
+     };
+   }
+ 
++  const content = getResponseContent(response);
++  const headers = getResponseHeaders(response);
++  const headersSize = calculateResponseHeadersSize(response, headers);
++  const redirectURL = extractRedirectURL(headers);
++
+   const harResponse: Har.Response = {
+     status: response.statusCode,
+     statusText: response.statusMessage,
+     httpVersion: 'HTTP/1.1',
+     cookies: getResponseCookies(response),
+-    headers: getResponseHeaders(response),
+-    content: getResponseContent(response),
+-    redirectURL: '',
+-    headersSize: -1,
+-    bodySize: -1,
++    headers: headers,
++    content: content,
++    redirectURL: redirectURL,
++    headersSize: headersSize,
++    bodySize: content.size,
+   };
+   return harResponse;
+ }

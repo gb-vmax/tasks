@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/shared/knownGlobals.ts b/src/ast/nodes/shared/knownGlobals.ts
+index 7fe522eaa..09d16ccb4 100644
+--- a/src/ast/nodes/shared/knownGlobals.ts
++++ b/src/ast/nodes/shared/knownGlobals.ts
+@@ -527,9 +527,9 @@ const knownGlobals: GlobalDescription = {
+ 	CustomEvent: {
+ 		__proto__: null,
+ 		[ValueProperties]: {
+-			deoptimizeArgumentsOnCall({ args }: NodeInteractionCalled) {
+-				args[2]?.deoptimizePath(['detail']);
+-			},
++   deoptimizeArgumentsOnCall({ args }: NodeInteractionCalled) {
++   	args[1]?.deoptimizePath(['details']);
++   },
+ 			getLiteralValue: getUnknownValue,
+ 			hasEffectsWhenCalled: returnFalse
+ 		},

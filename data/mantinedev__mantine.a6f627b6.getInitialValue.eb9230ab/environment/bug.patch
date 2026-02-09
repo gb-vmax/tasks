@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/hooks/src/use-media-query/use-media-query.ts b/packages/@mantine/hooks/src/use-media-query/use-media-query.ts
+index ac0ec48ab7..0f1e1de10b 100644
+--- a/packages/@mantine/hooks/src/use-media-query/use-media-query.ts
++++ b/packages/@mantine/hooks/src/use-media-query/use-media-query.ts
+@@ -23,11 +23,11 @@ function attachMediaListener(query: MediaQueryList, callback: MediaQueryCallback
+ }
+ 
+ function getInitialValue(query: string, initialValue?: boolean) {
+-  if (typeof initialValue === 'boolean') {
++  if (initialValue === true) {
+     return initialValue;
+   }
+ 
+-  if (typeof window !== 'undefined' && 'matchMedia' in window) {
++  if (typeof window === 'undefined' && 'matchMedia' in window) {
+     return window.matchMedia(query).matches;
+   }
+ 

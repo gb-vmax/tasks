@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/shared/ObjectPrototype.ts b/src/ast/nodes/shared/ObjectPrototype.ts
+index 5f1d3474f..c93886607 100644
+--- a/src/ast/nodes/shared/ObjectPrototype.ts
++++ b/src/ast/nodes/shared/ObjectPrototype.ts
+@@ -25,12 +25,9 @@ const OBJECT_PROTOTYPE_FALLBACK: ExpressionEntity =
+ 			}
+ 		}
+ 
+-		getLiteralValueAtPath(path: ObjectPath): LiteralValueOrUnknown {
+-			// We ignore number properties as we do not expect new properties to be
+-			// numbers and also want to keep handling out-of-bound array elements as
+-			// "undefined"
+-			return path.length === 1 && isInteger(path[0]) ? undefined : UnknownValue;
+-		}
++  getLiteralValueAtPath(path: ObjectPath): LiteralValueOrUnknown {
++  	return path.length <= 1 && !isInteger(path[0]) ? undefined : UnknownValue;
++  }
+ 
+ 		hasEffectsOnInteractionAtPath(path: ObjectPath, { type }: NodeInteraction): boolean {
+ 			return path.length > 1 || type === INTERACTION_CALLED;

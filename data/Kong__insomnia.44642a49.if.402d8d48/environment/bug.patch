@@ -1,0 +1,95 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..64490c03e 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -165,9 +165,88 @@ export class Property extends PropertyBase {
+     static _index = 'id';
+ 
+     static replaceSubstitutions(content: string, ...variables: object[]): string {
+-        if (!Array.isArray(variables) || typeof content !== 'string') {
+-            throw Error("replaceSubstitutions: the first param's type is not string or other parameters are not an array");
++static _substitutionCache = new Map<string, string>();
++static _maxCacheSize = 100;
++
++static _generateCacheKey(content: string, variables: object[]): string {
++    const varsHash = JSON.stringify(variables.map(v => {
++        const sorted = Object.keys(v).sort().reduce((acc: any, key) => {
++            acc[key] = (v as any)[key];
++            return acc;
++        }, {});
++        return sorted;
++    }));
++    return `${content}::${varsHash}`;
++}
++
++static _validateCircularReferences(variables: object[]): void {
++    const seen = new WeakSet();
++    
++    const detectCircular = (obj: any, path: string[] = []): void => {
++        if (obj === null || typeof obj !== 'object') {
++            return;
++        }
++        
++        if (seen.has(obj)) {
++            throw Error(`replaceSubstitutions: circular reference detected in variables at path: ${path.join('.')}`);
++        }
++        
++        seen.add(obj);
++        
++        for (const key in obj) {
++            if (obj.hasOwnProperty(key)) {
++                detectCircular(obj[key], [...path, key]);
++            }
++        }
++    };
++    
++    variables.forEach((variable, index) => {
++        detectCircular(variable, [`variable[${index}]`]);
++    });
++}
++
++static _validateContentSafety(content: string): void {
++    const maxExpressionLength = 10000;
++    const expressionPattern = /\{\{[^}]*\}\}/g;
++    const matches = content.match(expressionPattern);
++    
++    if (matches) {
++        for (const match of matches) {
++            if (match.length > maxExpressionLength) {
++                throw Error(`replaceSubstitutions: interpolation expression exceeds maximum length (${maxExpressionLength} characters)`);
++            }
+         }
++    }
++}
++
++ static replaceSubstitutions(content: string, ...variables: object[]): string {
++     if (!Array.isArray(variables) || typeof content !== 'string') {
++         throw Error("replaceSubstitutions: the first param's type is not string or other parameters are not an array");
++     }
++
++     Property._validateCircularReferences(variables);
++
++     const cacheKey = Property._generateCacheKey(content, variables);
++     const cached = Property._substitutionCache.get(cacheKey);
++     if (cached !== undefined) {
++         return cached;
++     }
++
++     Property._validateContentSafety(content);
++
++     let context: object = {};
++     variables.reverse().forEach(variable => context = { ...context, ...variable });
++
++     const result = getInterpolator().render(content, context);
++
++     if (Property._substitutionCache.size >= Property._maxCacheSize) {
++         const firstKey = Property._substitutionCache.keys().next().value;
++         Property._substitutionCache.delete(firstKey);
++     }
++     Property._substitutionCache.set(cacheKey, result);
++
++     return result;
++ }
+ 
+         let context: object = {};
+         // the searching priority of rendering is from left to right

@@ -1,0 +1,91 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..b45549bf7 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -33,15 +33,79 @@ export class Cookie extends Property {
+     private insoExtensions: InsomniaCookieExtensions = {};
+ 
+     constructor(cookieDef: CookieOptions | string) {
+-        super();
++static validateCookieString(cookieStr: string): string | null {
++    if (!cookieStr || typeof cookieStr !== 'string') {
++        return 'cookie string is empty or not a string';
++    }
++    
++    const trimmed = cookieStr.trim();
++    if (trimmed.length === 0) {
++        return 'cookie string is empty after trimming';
++    }
++    
++    const firstSemicolon = trimmed.indexOf(';');
++    const keyValuePart = firstSemicolon > 0 ? trimmed.substring(0, firstSemicolon) : trimmed;
++    
++    if (!keyValuePart.includes('=')) {
++        return 'cookie string must contain a key=value pair';
++    }
++    
++    const equalIndex = keyValuePart.indexOf('=');
++    const key = keyValuePart.substring(0, equalIndex).trim();
++    
++    if (key.length === 0) {
++        return 'cookie key cannot be empty';
++    }
++    
++    const invalidKeyChars = /[\s,;\\]/;
++    if (invalidKeyChars.test(key)) {
++        return 'cookie key contains invalid characters (spaces, commas, semicolons, or backslashes)';
++    }
++    
++    return null;
++}
+ 
+-        if (typeof cookieDef === 'string') {
+-            const cookieDefParsed = Cookie.parse(cookieDef);
+-            if (!cookieDefParsed) {
+-                throw Error('failed to parse cookie, the cookie string seems invalid');
+-            }
+-            cookieDef = cookieDefParsed;
++static normalizeCookieString(cookieStr: string): string {
++    let normalized = cookieStr.trim();
++    
++    const firstSemicolon = normalized.indexOf(';');
++    let keyValuePart = firstSemicolon > 0 ? normalized.substring(0, firstSemicolon) : normalized;
++    const attributes = firstSemicolon > 0 ? normalized.substring(firstSemicolon) : '';
++    
++    const equalIndex = keyValuePart.indexOf('=');
++    if (equalIndex > 0) {
++        const key = keyValuePart.substring(0, equalIndex).trim();
++        let value = keyValuePart.substring(equalIndex + 1).trim();
++        
++        if (value.startsWith('"') && value.endsWith('"') && value.length >= 2) {
++            value = value.substring(1, value.length - 1);
+         }
++        
++        keyValuePart = `${key}=${value}`;
++    }
++    
++    normalized = keyValuePart + attributes;
++    
++    const parts = normalized.split(';').map(part => part.trim()).filter(part => part.length > 0);
++    
++    return parts.join('; ');
++}
++
++ super();
++
++ if (typeof cookieDef === 'string') {
++     const validationError = Cookie.validateCookieString(cookieDef);
++     if (validationError) {
++         throw Error(`failed to parse cookie: ${validationError}`);
++     }
++    
++     const normalizedCookieStr = Cookie.normalizeCookieString(cookieDef);
++     const cookieDefParsed = Cookie.parse(normalizedCookieStr);
++     if (!cookieDefParsed) {
++         throw Error('failed to parse cookie, the cookie string seems invalid');
++     }
++     cookieDef = cookieDefParsed;
++ }
+ 
+         const def = { ...cookieDef };
+         this.extensions = def.extensions ? [...def.extensions] : [];

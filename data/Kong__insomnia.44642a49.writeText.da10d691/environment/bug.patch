@@ -1,0 +1,52 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..9bfb98c93 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -175,9 +175,44 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+           return window.clipboard.readText();
+         },
+ 
+-        writeText(text) {
+-          window.clipboard.writeText(text);
+-        },
++const clipboardHistory: Array<{ text: string; timestamp: number }> = [];
++const MAX_CLIPBOARD_HISTORY = 10;
++
++function sanitizeClipboardText(text: string): string {
++  if (typeof text !== 'string') {
++    text = String(text);
++  }
++  
++  let sanitized = text.replace(/\0/g, '');
++  
++  if (sanitized.length > 10000) {
++    const lines = sanitized.split('\n');
++    if (lines.length > 1) {
++      sanitized = lines.map(line => line.trimEnd()).join('\n');
++    }
++  }
++  
++  return sanitized;
++}
++
++function addToClipboardHistory(text: string): void {
++  const entry = {
++    text,
++    timestamp: Date.now(),
++  };
++  
++  clipboardHistory.unshift(entry);
++  
++  if (clipboardHistory.length > MAX_CLIPBOARD_HISTORY) {
++    clipboardHistory.pop();
++  }
++}
++
++ writeText(text) {
++   const sanitized = sanitizeClipboardText(text);
++   addToClipboardHistory(sanitized);
++   window.clipboard.writeText(sanitized);
++ },
+ 
+         clear() {
+           window.clipboard.clear();

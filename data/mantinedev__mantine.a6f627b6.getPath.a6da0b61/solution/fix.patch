@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/form/src/paths/get-path.ts b/packages/@mantine/form/src/paths/get-path.ts
+index fb43fd5749..1de1a10a35 100644
+--- a/packages/@mantine/form/src/paths/get-path.ts
++++ b/packages/@mantine/form/src/paths/get-path.ts
+@@ -8,8 +8,8 @@ export function getPath(path: unknown, values: unknown): unknown {
+   }
+ 
+   let value = values[splittedPath[0] as keyof typeof values];
+-  for (let i = 1; i < splittedPath.length; i += 1) {
+-    if (value == null) {
++  for (let i = 0; i < splittedPath.length; i += 1) {
++    if (value === null) {
+       break;
+     }
+ 

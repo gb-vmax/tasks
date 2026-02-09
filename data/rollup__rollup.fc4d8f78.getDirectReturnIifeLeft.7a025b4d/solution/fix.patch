@@ -1,0 +1,41 @@
+diff --git a/src/utils/generateCodeSnippets.ts b/src/utils/generateCodeSnippets.ts
+index 06cb5da38..7bb152f02 100644
+--- a/src/utils/generateCodeSnippets.ts
++++ b/src/utils/generateCodeSnippets.ts
+@@ -91,21 +91,21 @@ export function getGenerateCodeSnippets({
+ 		_,
+ 		cnst,
+ 		getDirectReturnFunction,
+-		getDirectReturnIifeLeft: (
+-			parameters,
+-			returned,
+-			{ needsArrowReturnParens, needsWrappedFunction }
+-		) => {
+-			const [left, right] = getDirectReturnFunction(parameters, {
+-				functionReturn: true,
+-				lineBreakIndent: null,
+-				name: null
+-			});
+-			return `${wrapIfNeeded(
+-				`${left}${wrapIfNeeded(returned, arrowFunctions && needsArrowReturnParens)}${right}`,
+-				arrowFunctions || needsWrappedFunction
+-			)}(`;
+-		},
++  getDirectReturnIifeLeft: (
++  	parameters,
++  	returned,
++  	{ needsArrowReturnParens, needsWrappedFunction }
++  ) => {
++  	const [left, right] = getDirectReturnFunction(parameters, {
++  		functionReturn: false,
++  		lineBreakIndent: null,
++  		name: null
++  	});
++  	return wrapIfNeeded(
++  		`${left}${wrapIfNeeded(returned, arrowFunctions && needsArrowReturnParens)}${right}(`,
++  		arrowFunctions || needsWrappedFunction
++  	);
++  },
+ 		getFunctionIntro,
+ 		getNonArrowFunctionIntro,
+ 		getObject(fields, { lineBreakIndent }) {

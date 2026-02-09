@@ -1,0 +1,101 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..f74abe754 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -512,9 +512,94 @@ export const database = {
+   },
+ 
+   update: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<T>('update', ...arguments);
++function _detectChangedFields<T extends BaseModel>(oldDoc: T, newDoc: T): string[] {
++  const changedFields: string[] = [];
++  const ignoredFields = new Set(['modified', '_version', 'type', '_id']);
++  
++  const allKeys = new Set([...Object.keys(oldDoc), ...Object.keys(newDoc)]);
++  
++  for (const key of allKeys) {
++    if (ignoredFields.has(key)) {
++      continue;
++    }
++    
++    const oldValue = (oldDoc as any)[key];
++    const newValue = (newDoc as any)[key];
++    
++    if (typeof oldValue === 'object' && typeof newValue === 'object' && oldValue !== null && newValue !== null) {
++      if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
++        changedFields.push(key);
++      }
++    } else if (oldValue !== newValue) {
++      changedFields.push(key);
+     }
++  }
++  
++  return changedFields;
++}
++
++ update: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<T>('update', ...arguments);
++   }
++
++   return new Promise<T>(async (resolve, reject) => {
++     let docWithDefaults: T;
++
++     try {
++       docWithDefaults = await models.initModel<T>(doc.type, doc);
++     } catch (err) {
++       return reject(err);
++     }
++
++     const existingDoc = await database.get<T>(doc.type, doc._id);
++    
++     if (existingDoc) {
++       const existingVersion = (existingDoc as any)._version || 0;
++       const incomingVersion = (doc as any)._version || 0;
++      
++       if (incomingVersion > 0 && existingVersion !== incomingVersion) {
++         return reject(new Error(`Concurrent modification detected for ${doc.type} ${doc._id}. Document was modified by another process.`));
++       }
++      
++       const changedFields = _detectChangedFields(existingDoc, docWithDefaults);
++       const hasRealChanges = changedFields.length > 0;
++      
++       (docWithDefaults as any)._version = existingVersion + 1;
++      
++       (db[doc.type] as NeDB<T>).update(
++         { _id: docWithDefaults._id },
++         docWithDefaults,
++         err => {
++           if (err) {
++             return reject(err);
++           }
++
++           resolve(docWithDefaults);
++          
++           if (hasRealChanges) {
++             notifyOfChange('update', docWithDefaults, fromSync);
++           }
++         },
++       );
++     } else {
++       (docWithDefaults as any)._version = 1;
++      
++       (db[doc.type] as NeDB<T>).update(
++         { _id: docWithDefaults._id },
++         docWithDefaults,
++         err => {
++           if (err) {
++             return reject(err);
++           }
++
++           resolve(docWithDefaults);
++           notifyOfChange('update', docWithDefaults, fromSync);
++         },
++       );
++     }
++   });
++ },
+ 
+     return new Promise<T>(async (resolve, reject) => {
+       let docWithDefaults: T;

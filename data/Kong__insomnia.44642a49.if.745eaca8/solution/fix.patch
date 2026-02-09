@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..d2222e2bf 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -277,10 +277,40 @@ export class Request extends Property {
+     }
+ 
+     addHeader(header: Header | object) {
+-        if (Header.isHeader(header)) {
+-            const headerInstance = header as Header;
+-            this.headers.add(headerInstance);
+-        } else if ('key' in header && 'value' in header) {
++ addHeader(header: Header | object, options?: { allowDuplicates?: boolean; ignoreCase?: boolean }) {
++     const allowDuplicates = options?.allowDuplicates !== false;
++     const ignoreCase = options?.ignoreCase === true;
++
++     let headerToAdd: Header;
++
++     if (Header.isHeader(header)) {
++         headerToAdd = header as Header;
++     } else if ('key' in header && 'value' in header) {
++         headerToAdd = new Header(header);
++     } else {
++         throw Error('header must be Header | {key: string; value: string}');
++     }
++
++     if (!allowDuplicates && headerToAdd.key) {
++         const keyToMatch = ignoreCase ? headerToAdd.key.toLowerCase() : headerToAdd.key;
++        
++         const filteredHeaders = this.headers.filter(
++             existingHeader => {
++                 if (!existingHeader.key) {
++                     return true;
++                 }
++                
++                 const existingKey = ignoreCase ? existingHeader.key.toLowerCase() : existingHeader.key;
++                 return existingKey !== keyToMatch;
++             },
++             {}
++         );
++
++         this.headers = new HeaderList(undefined, filteredHeaders);
++     }
++
++     this.headers.add(headerToAdd);
++ }
+             const headerInstance = new Header(header);
+             this.headers.add(headerInstance);
+         } else {

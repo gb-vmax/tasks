@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-After a recent update, MDX parsing seems to be broken. The parser is no longer recognizing markdown constructs properly, and documents that previously parsed correctly are now failing or producing incorrect output.
+I'm experiencing an issue with MDX parsing where the parser configuration isn't being initialized correctly. When trying to parse MDX content, the constructs array appears to be using the wrong value, which causes parsing to fail or behave unexpectedly.
 
 ### Reproduction
 
@@ -12,23 +12,22 @@ import { compile } from '@mdx-js/mdx'
 const mdxContent = `
 # Hello World
 
-This is a paragraph with **bold** text.
-
-- List item 1
-- List item 2
+This is a test MDX document.
 `
 
-const result = await compile(mdxContent)
-// Parser doesn't recognize markdown constructs correctly
+// Parsing fails or produces unexpected results
+const result = await compile(mdxContent, {
+  extensions: [/* custom extensions */]
+})
 ```
 
 ### Expected behavior
 
-The MDX content should be parsed correctly with all markdown constructs (headings, bold text, lists, etc.) being recognized and transformed properly. The parser should use the configured constructs from the extensions.
+The parser should use the provided extensions configuration and properly initialize the constructs array. The MDX content should parse successfully with custom extensions applied.
 
-### Additional context
-
-This appears to have started happening recently. Documents that used to work are now not being parsed correctly. It seems like the parser might not be using the right construct definitions.
+### System Info
+- @mdx-js/mdx version: 3.0.0
+- Node version: Latest
 
 ---
 Repository: /testbed

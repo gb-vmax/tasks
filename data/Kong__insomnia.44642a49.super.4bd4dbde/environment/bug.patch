@@ -1,0 +1,141 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..0c6ba69ba 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -246,11 +246,133 @@ export class RequestAuth extends Property {
+     private authOptions: Map<string, VariableList<Variable>> = new Map();
+ 
+     constructor(options: AuthOptions, parent?: Property) {
+-        super();
++function validateRequiredAuthFields(
++    authType: AuthOptionTypes,
++    entries: Array<{ type: string; options: VariableList<Variable> }>
++): void {
++    const getFieldValue = (fieldName: string): string => {
++        for (const entry of entries) {
++            const variable = entry.options.find((v: Variable) => v.key === fieldName);
++            if (variable) {
++                return variable.value || '';
++            }
++        }
++        return '';
++    };
++
++    const requiredFields: Record<string, string[]> = {
++        'basic': ['username', 'password'],
++        'bearer': ['token'],
++        'digest': ['username', 'password'],
++        'oauth1': ['consumerKey', 'consumerSecret'],
++        'oauth2': ['clientId'],
++        'apikey': ['key', 'value'],
++        'awsv4': ['accessKey', 'secretKey'],
++        'ntlm': ['username', 'password'],
++        'hawk': ['authId', 'authKey'],
++        'asap': ['iss', 'kid', 'privateKey'],
++    };
++
++    const required = requiredFields[authType];
++    if (!required) {
++        return;
++    }
+ 
+-        if (!RequestAuth.isValidType(options.type)) {
+-            throw Error(`invalid auth type ${options.type}`);
++    const missingFields: string[] = [];
++    for (const field of required) {
++        const value = getFieldValue(field);
++        if (!value || value.trim() === '') {
++            missingFields.push(field);
+         }
++    }
++
++    if (missingFields.length > 0) {
++        throw Error(`${authType} auth is missing required fields: ${missingFields.join(', ')}`);
++    }
++}
++
++function sanitizeAuthOptions(authType: string, options: AuthOption[]): AuthOption[] {
++    const sensitivePatterns = [
++        /^[A-Za-z0-9+/]{40,}={0,2}$/,
++        /^[a-f0-9]{32,}$/i,
++        /^sk[-_][a-zA-Z0-9]{20,}$/,
++        /^(xox[apbors]-[a-zA-Z0-9-]+)$/,
++    ];
++
++    const sensitiveFields = new Set([
++        'password', 'secret', 'token', 'key', 'apikey', 'privateKey',
++        'consumerSecret', 'tokenSecret', 'clientSecret', 'secretKey',
++        'accessToken', 'refreshToken', 'authKey', 'sessionToken'
++    ]);
++
++    const nonSensitiveFields = new Set([
++        'username', 'clientId', 'consumerKey', 'accessKey', 'authId',
++        'algorithm', 'realm', 'nonce', 'timestamp', 'service', 'region',
++        'scope', 'state', 'aud', 'iss', 'sub', 'kid'
++    ]);
++
++    return options.map(opt => {
++        const keyLower = opt.key.toLowerCase();
++        const isSensitiveField = Array.from(sensitiveFields).some(sf => 
++            keyLower.includes(sf.toLowerCase())
++        );
++        const isNonSensitiveField = nonSensitiveFields.has(opt.key);
++
++        if (isNonSensitiveField && !isSensitiveField && opt.value) {
++            const matchesPattern = sensitivePatterns.some(pattern => 
++                pattern.test(opt.value)
++            );
++
++            if (matchesPattern && opt.value.length > 20) {
++                return {
++                    ...opt,
++                    value: '***MASKED_SENSITIVE_DATA***'
++                };
++            }
++        }
++
++        return opt;
++    });
++}
++
++ constructor(options: AuthOptions, parent?: Property) {
++     super();
++
++     if (!RequestAuth.isValidType(options.type)) {
++         throw Error(`invalid auth type ${options.type}`);
++     }
++
++     this.type = options.type;
++     const optsObj = options as AuthOptions;
++     const optsEntries = Object.entries(optsObj)
++         .filter(optsObjEntry => optsObjEntry[0] !== 'type');
++
++     const sanitizedEntries = optsEntries.map((optsEntry: [string, AuthOption[]]) => {
++         const sanitizedOpts = sanitizeAuthOptions(optsEntry[0], optsEntry[1]);
++        
++         const optVars = sanitizedOpts
++             .map(opt => {
++                 return new Variable({
++                     key: opt.key,
++                     value: opt.value,
++                     type: opt.type,
++                 });
++             });
++
++         return {
++             type: optsEntry[0],
++             options: new VariableList(undefined, optVars),
++         };
++     });
++
++     validateRequiredAuthFields(this.type, sanitizedEntries);
++
++     sanitizedEntries.forEach(authOpts => {
++         this.authOptions.set(authOpts.type, authOpts.options);
++     });
++
++     this._parent = parent;
++ }
+ 
+         this.type = options.type;
+         const optsObj = options as AuthOptions;

@@ -1,0 +1,89 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..c3107b68a 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -247,7 +247,83 @@ export class Response extends Property {
+                 status: (expected: number | string) => haveStatus(expected, true),
+                 header: (expected: string) => haveHeader(expected, true),
+                 body: (expected: string) => haveBody(expected, true),
+-                jsonBody: (expected: object) => haveJsonBody(expected, true),
++const haveJsonBodyPartial = (expected: object, checkEquality: boolean) => {
++    const responseJson = this.json();
++    const isMatch = checkPartialMatch(responseJson, expected);
++    
++    if ((isMatch && checkEquality) || (!isMatch && !checkEquality)) {
++        return;
++    }
++    throw Error(`Response JSON body does not partially match the expected value`);
++};
++
++const checkPartialMatch = (response: any, expected: any): boolean => {
++    if (typeof expected !== 'object' || expected === null) {
++        return deepEqual(response, expected, { strict: true });
++    }
++    
++    if (Array.isArray(expected)) {
++        if (!Array.isArray(response) || response.length !== expected.length) {
++            return false;
++        }
++        return expected.every((item, index) => checkPartialMatch(response[index], item));
++    }
++    
++    for (const key in expected) {
++        if (!response.hasOwnProperty(key)) {
++            return false;
++        }
++        if (!checkPartialMatch(response[key], expected[key])) {
++            return false;
++        }
++    }
++    
++    return true;
++};
++
++const haveJsonBodyWithPaths = (expected: object, checkEquality: boolean) => {
++    const responseJson = this.json();
++    const matches = Object.entries(expected)
++        .filter(([key]) => key !== '_partial')
++        .every(([path, expectedValue]) => {
++            if (!path.includes('.')) {
++                return deepEqual(responseJson[path], expectedValue, { strict: true });
++            }
++            
++            const pathParts = path.split('.');
++            let current = responseJson;
++            
++            for (const part of pathParts) {
++                if (current === null || current === undefined || typeof current !== 'object') {
++                    return false;
++                }
++                current = current[part];
++            }
++            
++            return deepEqual(current, expectedValue, { strict: true });
++        });
++    
++    if ((matches && checkEquality) || (!matches && !checkEquality)) {
++        return;
++    }
++    throw Error(`Response JSON body does not match expected path values`);
++};
++
++ jsonBody: (expected: object) => {
++     const expectedAny = expected as any;
++     const isPartialMode = expectedAny._partial === true;
++     const hasPathNotation = Object.keys(expected).some(key => key.includes('.') && key !== '_partial');
++    
++     if (hasPathNotation) {
++         return haveJsonBodyWithPaths(expected, checkEquality);
++     } else if (isPartialMode) {
++         const expectedCopy = { ...expectedAny };
++         delete expectedCopy._partial;
++         return haveJsonBodyPartial(expectedCopy, checkEquality);
++     } else {
++         return haveJsonBody(expected, checkEquality);
++     }
++ },
+                 jsonSchema: (expected: object) => haveJsonSchema(expected, true),
+             },
+             not: {

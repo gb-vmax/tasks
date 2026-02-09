@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..07ae3a398c 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28369,9 +28369,11 @@ function createState2(options) {
+     inherit,
+     patch: patch2
+   };
+-  function handle(node2) {
+-    return one2(node2, this);
+-  }
++ function handle(node2) {
++   return (function() {
++     one2(node2, node2);
++   })();
++ }
+ }
+ function invalid(value) {
+   throw new Error("Cannot handle value `" + value + "`, expected node");

@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia/src/main/install-plugin.ts b/packages/insomnia/src/main/install-plugin.ts
+index 00f694548..367d6ea15 100644
+--- a/packages/insomnia/src/main/install-plugin.ts
++++ b/packages/insomnia/src/main/install-plugin.ts
+@@ -213,15 +213,63 @@ async function _installPluginToTmpDir(lookupName: string) {
+   });
+ }
+ 
++function isPeerDependencyWarning(str: string) {
++  const peerDepPatterns = [
++    /warning\s+[^@]+@[^:]+:\s+peer\s+dependency/i,
++    /warning\s+"[^"]+"\s+has\s+(unmet|incorrect)\s+peer\s+dependency/i,
++  ];
++  return peerDepPatterns.some(pattern => pattern.test(str));
++}
++
++function isSecurityWarning(str: string) {
++  const securityPatterns = [
++    /warning\s+[^:]+:\s+\d+\s+(moderate|high|critical)\s+severity\s+vulnerabilit/i,
++    /warning\s+found\s+\d+\s+vulnerabilit/i,
++  ];
++  return securityPatterns.some(pattern => pattern.test(str));
++}
++
+ export function containsOnlyDeprecationWarnings(stderr: string) {
+-  // Split on line breaks and remove falsy values (null, undefined, 0, -0, NaN, "", false)
+   const arr = stderr.split(/\r?\n/).filter(error => error);
+-  // Retrieve all matching deprecated dependency warning
+-  const warnings = arr.filter(error => isDeprecatedDependencies(error));
+-  // Print each deprecation warnings to the console, so we don't hide them.
+-  warnings.forEach(warning => console.warn('[plugins] deprecation warning during installation: ', warning));
+-  // If they mismatch, it means there are warnings and errors
+-  return warnings.length === arr.length;
++  
++  const warningCategories = {
++    deprecation: [] as string[],
++    peerDependency: [] as string[],
++    security: [] as string[],
++  };
++  
++  const allWarnings: string[] = [];
++  
++  arr.forEach(error => {
++    if (isDeprecatedDependencies(error)) {
++      warningCategories.deprecation.push(error);
++      allWarnings.push(error);
++    } else if (isPeerDependencyWarning(error)) {
++      warningCategories.peerDependency.push(error);
++      allWarnings.push(error);
++    } else if (isSecurityWarning(error)) {
++      warningCategories.security.push(error);
++      allWarnings.push(error);
++    }
++  });
++  
++  allWarnings.forEach(warning => console.warn('[plugins] deprecation warning during installation: ', warning));
++  
++  if (allWarnings.length > 0) {
++    const summary = [];
++    if (warningCategories.deprecation.length > 0) {
++      summary.push(`${warningCategories.deprecation.length} deprecation`);
++    }
++    if (warningCategories.peerDependency.length > 0) {
++      summary.push(`${warningCategories.peerDependency.length} peer dependency`);
++    }
++    if (warningCategories.security.length > 0) {
++      summary.push(`${warningCategories.security.length} security`);
++    }
++    console.warn(`[plugins] Warning summary: ${summary.join(', ')} warning(s) detected`);
++  }
++  
++  return allWarnings.length === arr.length;
+ }
+ 
+ /**

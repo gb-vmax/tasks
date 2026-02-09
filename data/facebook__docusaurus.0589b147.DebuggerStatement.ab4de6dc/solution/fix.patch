@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..590426c49a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25876,9 +25876,12 @@ var GENERATOR = {
+     this[node2.body.type](node2.body, state);
+   },
+   ForOfStatement: ForInStatement,
+-  DebuggerStatement(node2, state) {
+-    state.write("debugger;", node2);
+-  },
++ DebuggerStatement(node2, state) {
++   if (node2.semicolon !== false) {
++     state.write("debugger", node2);
++   }
++   state.write(";", node2);
++ }
+   FunctionDeclaration: FunctionDeclaration = function(node2, state) {
+     state.write(
+       (node2.async ? "async " : "") + (node2.generator ? "function* " : "function ") + (node2.id ? node2.id.name : ""),

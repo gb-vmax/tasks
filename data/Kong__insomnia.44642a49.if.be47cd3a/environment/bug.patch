@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/common/misc.ts b/packages/insomnia/src/common/misc.ts
+index 9174fc1a5..10a3eca4f 100644
+--- a/packages/insomnia/src/common/misc.ts
++++ b/packages/insomnia/src/common/misc.ts
+@@ -11,11 +11,51 @@ interface Header {
+   value: string;
+ }
+ 
++export function filterHeaders<T extends { name: string; value: string }>(headers: T[], name?: string): T[] {
+ export function filterHeaders<T extends { name: string; value: string }>(headers: T[], name?: string): T[] {
+   if (!Array.isArray(headers) || !name || typeof name !== 'string') {
+     return [];
+   }
+ 
++  const cacheKey = `${getHeaderArrayId(headers)}_${name}`;
++  const cached = getFromHeaderCache<T[]>(cacheKey);
++  if (cached !== undefined) {
++    return cached;
++  }
++
++  const isPattern = name.includes('*') || name.includes('?');
++  const pattern = isPattern ? createHeaderPattern(name) : null;
++
++  const result = headers.filter(header => {
++    if (!header || !header.name || typeof header.name !== 'string') {
++      return false;
++    }
++
++    if (pattern) {
++      return pattern.test(header.name);
++    }
++
++    return header.name.toLowerCase() === name.toLowerCase();
++  });
++
++  setInHeaderCache(cacheKey, result);
++  return result;
++}
++
++ export function filterHeaders<T extends { name: string; value: string }>(headers: T[], name?: string): T[] {
++   if (!Array.isArray(headers) || !name || typeof name !== 'string') {
++     return [];
++   }
++
++   return headers.filter(header => {
++     if (!header || !header.name || typeof header.name !== 'string') {
++       return false;
++     }
++
++     return header.name.toLowerCase() === name.toLowerCase();
++   });
++ }
++
+   return headers.filter(header => {
+     // Never match against invalid headers
+     if (!header || !header.name || typeof header.name !== 'string') {

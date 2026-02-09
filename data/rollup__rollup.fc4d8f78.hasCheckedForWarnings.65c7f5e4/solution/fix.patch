@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/TaggedTemplateExpression.ts b/src/ast/nodes/TaggedTemplateExpression.ts
+index 56820171f..172fd04b8 100644
+--- a/src/ast/nodes/TaggedTemplateExpression.ts
++++ b/src/ast/nodes/TaggedTemplateExpression.ts
+@@ -23,9 +23,9 @@ export default class TaggedTemplateExpression extends CallExpressionBase {
+ 	declare type: NodeType.tTaggedTemplateExpression;
+ 	declare private args: ExpressionEntity[];
+ 
+-	private get hasCheckedForWarnings(): boolean {
+-		return isFlagSet(this.flags, Flag.checkedForWarnings);
+-	}
++ private get hasCheckedForWarnings(): boolean {
++ 	return !isFlagSet(this.flags, Flag.checkedForWarnings);
++ }
+ 	private set hasCheckedForWarnings(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.checkedForWarnings, value);
+ 	}

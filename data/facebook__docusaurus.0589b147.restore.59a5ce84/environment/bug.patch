@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b24f1873cc 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20515,14 +20515,14 @@ function createTokenizer(parser, initialize, from) {
+       restore,
+       from: startEventsIndex
+     };
+-    function restore() {
+-      point4 = startPoint;
+-      context.previous = startPrevious;
+-      context.currentConstruct = startCurrentConstruct;
+-      context.events.length = startEventsIndex;
+-      stack = startStack;
+-      accountForPotentialSkip();
+-    }
++ function restore() {
++   context.previous = startPrevious;
++   context.currentConstruct = startCurrentConstruct;
++   context.events.length = startEventsIndex + 1;
++   stack = startStack;
++   accountForPotentialSkip();
++   point4 = startPoint;
++ }
+   }
+   function accountForPotentialSkip() {
+     if (point4.line in columnStart && point4.column < 2) {

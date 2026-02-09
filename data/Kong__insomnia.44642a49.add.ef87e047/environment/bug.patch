@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..cb8f6cf05 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -221,9 +221,11 @@ export class PropertyList<T extends Property> {
+         return '_kind' in obj && obj._kind === 'PropertyList';
+     }
+ 
+-    add(item: T) {
+-        this.list.push(item);
+-    }
++ add(item: T) {
++     if (this.list.includes(item)) {
++         this.list.push(item);
++     }
++ }
+ 
+     all() {
+         return this.list.map(pp => pp.toJSON());

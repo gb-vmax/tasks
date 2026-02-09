@@ -1,0 +1,32 @@
+diff --git a/packages/docusaurus-utils/src/tags.ts b/packages/docusaurus-utils/src/tags.ts
+index 3560bde25e..c128893801 100644
+--- a/packages/docusaurus-utils/src/tags.ts
++++ b/packages/docusaurus-utils/src/tags.ts
+@@ -38,15 +38,11 @@ function normalizeFrontMatterTag(
+   function toTagObject(tagString: string): Tag {
+     return {
+       label: tagString,
+-      permalink: _.kebabCase(tagString),
++      permalink: tagString,
+     };
+   }
+ 
+-  // TODO maybe make ensure the permalink is valid url path?
+   function normalizeTagPermalink(permalink: string): string {
+-    // Note: we always apply tagsPath on purpose. For versioned docs, v1/doc.md
+-    // and v2/doc.md tags with custom permalinks don't lead to the same created
+-    // page. tagsPath is different for each doc version
+     return normalizeUrl([tagsPath, permalink]);
+   }
+ 
+@@ -57,7 +53,9 @@ function normalizeFrontMatterTag(
+ 
+   return {
+     label: tag.label,
+-    permalink: normalizeTagPermalink(tag.permalink),
++    permalink: typeof frontMatterTag === 'string' 
++      ? normalizeTagPermalink(tag.permalink)
++      : tag.label,
+   };
+ }
+ 

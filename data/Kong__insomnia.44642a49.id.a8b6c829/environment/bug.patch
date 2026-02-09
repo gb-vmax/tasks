@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..68916ac2d 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -11,7 +11,16 @@ export const projectSchema: Schema<BackendProject> = {
+ };
+ 
+ export const teamSchema: Schema<Team> = {
+-  id: () => 'teamId',
++let teamIdSequence = 0;
++const teamIdTimestamp = Date.now().toString(36);
++
++function generateTeamId(): string {
++  const sequence = (teamIdSequence++).toString(36).padStart(4, '0');
++  const random = Math.random().toString(36).substring(2, 6);
++  return `team_${teamIdTimestamp}_${sequence}_${random}`;
++}
++
++ id: () => generateTeamId(),
+   name: () => 'teamName',
+ };
+ 

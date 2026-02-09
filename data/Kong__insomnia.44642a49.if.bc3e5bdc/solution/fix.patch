@@ -1,0 +1,131 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..cdad85aba 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -558,9 +558,124 @@ export const database = {
+   },
+ 
+   withAncestors: async function <T extends BaseModel>(doc: T | null, types: string[] = allTypes()) {
+-    if (db._empty) {
+-      return _send<T[]>('withAncestors', ...arguments);
++interface AncestorCacheEntry<T extends BaseModel = BaseModel> {
++  data: T[];
++  timestamp: number;
++}
++
++const ancestorCache: Map<string, AncestorCacheEntry> = new Map();
++const ANCESTOR_CACHE_TTL = 30000;
++
++function _generateAncestorCacheKey(docId: string, types: string[]): string {
++  return `${docId}:${types.sort().join(',')}`;
++}
++
++function _getFromAncestorCache<T extends BaseModel>(key: string): T[] | null {
++  const entry = ancestorCache.get(key);
++  
++  if (!entry) {
++    return null;
++  }
++  
++  const now = Date.now();
++  if (now - entry.timestamp > ANCESTOR_CACHE_TTL) {
++    ancestorCache.delete(key);
++    return null;
++  }
++  
++  return entry.data as T[];
++}
++
++function _setInAncestorCache<T extends BaseModel>(key: string, data: T[]): void {
++  ancestorCache.set(key, {
++    data,
++    timestamp: Date.now(),
++  });
++  
++  if (ancestorCache.size > 1000) {
++    const oldestKey = ancestorCache.keys().next().value;
++    ancestorCache.delete(oldestKey);
++  }
++}
++
++function _invalidateAncestorCache(docId?: string): void {
++  if (docId) {
++    const keysToDelete: string[] = [];
++    for (const key of ancestorCache.keys()) {
++      if (key.startsWith(`${docId}:`)) {
++        keysToDelete.push(key);
++      }
++    }
++    keysToDelete.forEach(key => ancestorCache.delete(key));
++  } else {
++    ancestorCache.clear();
++  }
++}
++
++database.onChange((changes: ChangeBufferEvent[]) => {
++  for (const [event, doc] of changes) {
++    if (event === 'update' || event === 'remove') {
++      _invalidateAncestorCache(doc._id);
++      if ('parentId' in doc && doc.parentId) {
++        _invalidateAncestorCache(doc.parentId);
++      }
+     }
++  }
++});
++
++ withAncestors: async function <T extends BaseModel>(doc: T | null, types: string[] = allTypes(), maxDepth: number | null = null) {
++   if (db._empty) {
++     return _send<T[]>('withAncestors', ...arguments);
++   }
++
++   if (!doc) {
++     return [];
++   }
++
++   const cacheKey = _generateAncestorCacheKey(doc._id, types);
++   const cachedResult = _getFromAncestorCache<T>(cacheKey);
++  
++   if (cachedResult && (maxDepth === null || cachedResult.length <= maxDepth + 1)) {
++     return maxDepth === null ? cachedResult : cachedResult.slice(0, maxDepth + 1);
++   }
++
++   let docsToReturn: T[] = doc ? [doc] : [];
++   let currentDepth = 0;
++
++   async function next(docs: T[]): Promise<T[]> {
++     if (maxDepth !== null && currentDepth >= maxDepth) {
++       return docsToReturn;
++     }
++
++     const foundDocs: T[] = [];
++
++     for (const d of docs) {
++       for (const type of types) {
++         const another = await database.get<T>(type, d.parentId);
++         another && foundDocs.push(another);
++       }
++     }
++
++     if (foundDocs.length === 0) {
++       return docsToReturn;
++     }
++
++     currentDepth++;
++     docsToReturn = [
++       ...docsToReturn,
++       ...foundDocs,
++     ];
++     return next(foundDocs);
++   }
++
++   const result = await next([doc]);
++  
++   if (maxDepth === null) {
++     _setInAncestorCache(cacheKey, result);
++   }
++  
++   return result;
++ },
+ 
+     if (!doc) {
+       return [];

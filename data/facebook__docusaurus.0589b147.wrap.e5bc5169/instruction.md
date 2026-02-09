@@ -2,32 +2,30 @@
 
 ### Describe the bug
 
-I'm experiencing an issue where middleware error handling seems to be broken. When an error occurs in middleware processing, the callback gets invoked multiple times with the same error, causing unexpected behavior in my application.
+I'm experiencing an issue with error handling in the middleware wrapper. When an exception occurs during middleware execution, the error callback is being invoked multiple times instead of just once. This leads to unexpected behavior where error handlers receive duplicate error notifications.
 
 ### Reproduction
 
 ```js
-const processor = unified()
-  .use(function() {
-    return function(tree, file, next) {
-      // Simulate an error in middleware
-      throw new Error('Processing failed');
-    };
-  });
+const middleware = (req, res, next) => {
+  throw new Error('Test error');
+};
 
-processor.process('some content', (err, result) => {
-  console.log('Callback invoked');
-  // This callback is being called multiple times
+const wrappedMiddleware = wrap(middleware, (error, result) => {
+  console.log('Error callback invoked:', error);
+  // This gets called multiple times with the same error
 });
+
+wrappedMiddleware();
 ```
 
 ### Expected behavior
 
-The error callback should only be invoked once when an error occurs during processing. Currently it appears to be called multiple times, which breaks error handling logic that assumes single invocation.
+The error callback should only be invoked once when an exception is thrown. Currently it appears the callback is being triggered multiple times for the same error, which can cause issues in error handling logic that assumes single invocation.
 
 ### Additional context
 
-This seems to affect middleware that uses both synchronous throws and asynchronous error handling. The duplicate callbacks are causing issues in production where we track error metrics and the counts are inflated.
+This seems to affect middleware that throws exceptions synchronously. The duplicate callbacks make it difficult to properly handle errors in application code since cleanup or logging logic may execute multiple times unintentionally.
 
 ---
 Repository: /testbed

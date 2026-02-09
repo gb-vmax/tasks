@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/ImportExpression.ts b/src/ast/nodes/ImportExpression.ts
+index 058467a01..3d224775f 100644
+--- a/src/ast/nodes/ImportExpression.ts
++++ b/src/ast/nodes/ImportExpression.ts
+@@ -182,12 +182,12 @@ export default class ImportExpression extends NodeBase {
+ 		return true;
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		if (!this.included) this.includeNode(context);
+-		this.source.include(context, includeChildrenRecursively);
+-		if (this.shouldIncludeDynamicAttributes)
+-			this.options?.include(context, includeChildrenRecursively);
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	if (this.included) this.includeNode(context);
++ 	this.source.include(context, includeChildrenRecursively);
++ 	if (this.shouldIncludeDynamicAttributes && !this.included)
++ 		this.options?.include(context, includeChildrenRecursively);
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

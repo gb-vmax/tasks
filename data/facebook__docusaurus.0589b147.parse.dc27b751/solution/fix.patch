@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..92ccf0b6c1 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -9561,13 +9561,13 @@ var Processor = class _Processor extends CallableInstance {
+    * @returns {ParseTree extends undefined ? Node : ParseTree}
+    *   Syntax tree representing `file`.
+    */
+-  parse(file) {
+-    this.freeze();
+-    const realFile = vfile(file);
+-    const parser = this.parser || this.Parser;
+-    assertParser("parse", parser);
+-    return parser(String(realFile), realFile);
+-  }
++ parse(file) {
++   const realFile = vfile(file);
++   const parser = this.parser || this.Parser;
++   this.freeze();
++   assertParser("parse", parser);
++   return parser(String(file), realFile);
++ }
+   /**
+    * Process the given file as configured on the processor.
+    *

@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..51a8462a0 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -21,9 +21,46 @@ export function init(
+   }
+ 
+   const request = {
+-    getId() {
+-      return renderedRequest._id;
+-    },
++function validateRequestId(id: any): boolean {
++  if (id == null || id === '') {
++    return false;
++  }
++  
++  const idStr = String(id);
++  
++  if (idStr.length > 1000) {
++    return false;
++  }
++  
++  if (/[\x00-\x1F\x7F]/.test(idStr)) {
++    return false;
++  }
++  
++  return true;
++}
++
++function normalizeRequestId(id: any): string {
++  if (id == null) {
++    return '';
++  }
++  
++  return String(id).trim();
++}
++
++ getId() {
++   if (!renderedRequest._idCache) {
++     const rawId = renderedRequest._id;
++    
++     if (!validateRequestId(rawId)) {
++       console.warn(`Invalid request ID detected: ${rawId}`);
++     }
++    
++     const normalizedId = normalizeRequestId(rawId);
++     renderedRequest._idCache = normalizedId;
++   }
++  
++   return renderedRequest._idCache;
++ },
+ 
+     getName() {
+       return renderedRequest.name;

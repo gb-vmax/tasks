@@ -1,0 +1,89 @@
+diff --git a/packages/insomnia-sdk/src/objects/proxy-configs.ts b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+index 783e6b03c..ac831a504 100644
+--- a/packages/insomnia-sdk/src/objects/proxy-configs.ts
++++ b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+@@ -89,10 +89,81 @@ export class ProxyConfig extends Property {
+     }
+ 
+     test(url?: string) {
+-        if (!url) {
+-            // TODO: it is confusing in which case url arg is optional
+-            return false;
++private _bypassPatternCache: Map<string, UrlMatchPattern> | null = null;
++
++private _shouldBypass(url: string): boolean {
++    if (!this.bypass || this.bypass.length === 0) {
++        return false;
++    }
++
++    if (!this._bypassPatternCache) {
++        this._bypassPatternCache = new Map<string, UrlMatchPattern>();
++    }
++
++    for (const bypassEntry of this.bypass) {
++        if (bypassEntry === url) {
++            return true;
+         }
++
++        if (this._isBypassPattern(bypassEntry)) {
++            let pattern = this._bypassPatternCache.get(bypassEntry);
++            if (!pattern) {
++                try {
++                    pattern = new UrlMatchPattern(bypassEntry);
++                    this._bypassPatternCache.set(bypassEntry, pattern);
++                } catch (e) {
++                    continue;
++                }
++            }
++            if (pattern.test(url)) {
++                return true;
++            }
++        }
++    }
++
++    return false;
++}
++
++private _isBypassPattern(entry: string): boolean {
++    return entry.includes('*') || entry.includes('://');
++}
++
++update(options: {
++    host: string;
++    match: string;
++    port: number;
++    tunnel: boolean;
++    authenticate: boolean;
++    username: string;
++    password: string;
++    bypass?: string[];
++}) {
++    this.host = options.host;
++    this.match = options.match;
++    this.port = options.port;
++    this.tunnel = options.tunnel;
++    this.authenticate = options.authenticate;
++    this.username = options.username;
++    this.password = options.password;
++    
++    if (options.bypass !== undefined) {
++        this.bypass = options.bypass;
++        this._bypassPatternCache = null;
++    }
++}
++
++ test(url?: string) {
++     if (!url) {
++         return false;
++     }
++    
++     if (this._shouldBypass(url)) {
++         return false;
++     }
++
++     const urlMatch = new UrlMatchPattern(this.match);
++     return urlMatch.test(url);
++ }
+         if (this.bypass.includes(url)) {
+             return false;
+         }

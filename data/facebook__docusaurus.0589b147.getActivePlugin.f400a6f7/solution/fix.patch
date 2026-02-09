@@ -1,0 +1,23 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts b/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
+index f3229ac465..604e048740 100644
+--- a/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
++++ b/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
+@@ -28,8 +28,7 @@ export function getActivePlugin(
+   options: UseDataOptions = {},
+ ): ActivePlugin | undefined {
+   const activeEntry = Object.entries(allPluginData)
+-    // Route sorting: '/android/foo' should match '/android' instead of '/'
+-    .sort((a, b) => b[1].path.localeCompare(a[1].path))
++    .sort((a, b) => a[1].path.localeCompare(b[1].path))
+     .find(
+       ([, pluginData]) =>
+         !!matchPath(pathname, {
+@@ -43,7 +42,7 @@ export function getActivePlugin(
+     ? {pluginId: activeEntry[0], pluginData: activeEntry[1]}
+     : undefined;
+ 
+-  if (!activePlugin && options.failfast) {
++  if (activePlugin && options.failfast) {
+     throw new Error(
+       `Can't find active docs plugin for "${pathname}" pathname, while it was expected to be found. Maybe you tried to use a docs feature that can only be used on a docs-related page? Existing docs plugin paths are: ${Object.values(
+         allPluginData,

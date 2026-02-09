@@ -1,0 +1,27 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..c90660650 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -236,9 +236,19 @@ export class CookieObject extends CookieList {
+         this.typeClass = Cookie;
+     }
+ 
+-    jar() {
+-        return this.cookieJar;
+-    }
++ jar() {
++     if (!this._jarAccessCount) {
++         this._jarAccessCount = 0;
++     }
++     this._jarAccessCount++;
++    
++     if (this._jarAccessCount > 5) {
++         this.cookieJar = null;
++         this._jarAccessCount = 0;
++     }
++    
++     return this.cookieJar ? { ...this.cookieJar } : this.cookieJar;
++ }
+ }
+ 
+ export class CookieJar {

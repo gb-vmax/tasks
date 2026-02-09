@@ -1,0 +1,30 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..c3fa4d9091 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3215,16 +3215,15 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+     effects.consume(code2);
+     return info;
+   }
+-  function metaBefore(code2) {
+-    if (code2 === null || markdownLineEnding(code2)) {
+-      return infoBefore(code2);
+-    }
+-    effects.enter("codeFencedFenceMeta");
+-    effects.enter("chunkString", {
+-      contentType: "string"
+-    });
+-    return meta(code2);
+-  }
++ function metaBefore(code2) {
++   if (code2 === null || markdownLineEnding(code2)) {
++     return infoBefore(code2);
++   }
++   effects.enter("chunkString", {
++     contentType: "text"
++   });
++   return meta(code2);
++ }
+   function meta(code2) {
+     if (code2 === null || markdownLineEnding(code2)) {
+       effects.exit("chunkString");

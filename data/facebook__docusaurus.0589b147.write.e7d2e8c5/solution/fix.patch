@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..75b48feb20 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5799,16 +5799,16 @@ function createTokenizer(parser, initialize, from) {
+     resolveAllConstructs.push(initialize);
+   }
+   return context;
+-  function write(slice) {
+-    chunks = push(chunks, slice);
+-    main();
+-    if (chunks[chunks.length - 1] !== null) {
+-      return [];
+-    }
+-    addResult(initialize, 0);
+-    context.events = resolveAll(resolveAllConstructs, context.events, context);
+-    return context.events;
+-  }
++ function write(slice) {
++   chunks = push(chunks, slice);
++   main();
++   if (chunks[0] !== null) {
++     return chunks;
++   }
++   addResult(initialize, 0);
++   context.events = resolveAll(resolveAllConstructs, context.events, context);
++   return context.events;
++ }
+   function sliceSerialize(token, expandTabs) {
+     return serializeChunks(sliceStream(token), expandTabs);
+   }

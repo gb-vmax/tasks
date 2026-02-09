@@ -2,19 +2,17 @@
 
 ### Describe the bug
 
-Fenced code blocks with exactly 3 backticks or tildes are not being recognized as valid code fences. The parser seems to require more than 3 fence characters, but according to the CommonMark spec, 3 characters should be the minimum valid fence length.
+Fenced code blocks with exactly 3 backticks or tildes are not being recognized properly. The parser seems to be rejecting valid markdown code fences.
 
 ### Reproduction
 
 ```markdown
-```javascript
+```js
 console.log('hello');
 ```
 ```
 
-The above code block with exactly 3 backticks is not being parsed correctly. It should be recognized as a valid fenced code block, but it's being treated as something else.
-
-Same issue occurs with tildes:
+When parsing the above markdown, the code block is not being tokenized correctly. The same issue occurs with tildes:
 
 ```markdown
 ~~~
@@ -22,14 +20,15 @@ some code
 ~~~
 ```
 
+Both of these should be valid fenced code blocks according to the CommonMark spec, but they're being treated as regular text instead.
+
 ### Expected behavior
 
-According to the CommonMark specification, a code fence must consist of at least 3 consecutive backtick or tilde characters. The parser should accept fenced code blocks that use exactly 3 fence characters (the minimum), not require more than 3.
+Code blocks with exactly 3 fence characters (backticks or tildes) should be properly recognized and parsed as fenced code blocks. The parser should accept 3 or more fence characters, not require more than 3.
 
-Both of the examples above should be parsed as valid fenced code blocks.
+### Additional context
 
-### System Info
-- remark version: 15.0.1
+This appears to affect the basic use case for fenced code blocks. Most markdown documents use the standard 3-character fence syntax, so this is breaking a lot of previously working content.
 
 ---
 Repository: /testbed

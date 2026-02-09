@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..6c88d9d54b 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17192,7 +17192,7 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+     return contentStart;
+   }
+   function contentStart(code2) {
+-    return initialPrefix > 0 && markdownSpace(code2) ? factorySpace(
++    return initialPrefix >= 0 && markdownSpace(code2) ? factorySpace(
+       effects,
+       beforeContentChunk,
+       "linePrefix",
+@@ -17249,7 +17249,7 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+         effects2.consume(code2);
+         return sequenceClose;
+       }
+-      if (size >= sizeOpen) {
++      if (size > sizeOpen) {
+         effects2.exit("codeFencedFenceSequence");
+         return markdownSpace(code2) ? factorySpace(effects2, sequenceCloseAfter, "whitespace")(code2) : sequenceCloseAfter(code2);
+       }

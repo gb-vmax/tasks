@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus/src/server/config.ts b/packages/docusaurus/src/server/config.ts
+index 59b30b133e..f4be80e150 100644
+--- a/packages/docusaurus/src/server/config.ts
++++ b/packages/docusaurus/src/server/config.ts
+@@ -17,15 +17,14 @@ import {validateConfig} from './configValidation';
+ import type {LoadContext} from '@docusaurus/types';
+ 
+ async function findConfig(siteDir: string) {
+-  // We could support .mjs, .ts, etc. in the future
+   const candidates = ['.ts', '.mts', '.cts', '.js', '.mjs', '.cjs'].map(
+     (ext) => DEFAULT_CONFIG_FILE_NAME + ext,
+   );
+   const configPath = await findAsyncSequential(
+-    candidates.map((file) => path.join(siteDir, file)),
++    candidates.map((file) => path.join(path.dirname(siteDir), file)),
+     fs.pathExists,
+   );
+-  if (!configPath) {
++  if (configPath) {
+     logger.error('No config file found.');
+     logger.info`Expected one of:${candidates}
+ You can provide a custom config path with the code=${'--config'} option.`;

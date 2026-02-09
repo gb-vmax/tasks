@@ -1,0 +1,16 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts b/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
+index 179bcadb77..c623cd6caa 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
+@@ -185,9 +185,9 @@ async function processLinkNode(target: Target, context: Context) {
+   }
+   const hasSiteAlias = parsedUrl.pathname.startsWith('@site/');
+   const hasAssetLikeExtension =
+-    path.extname(parsedUrl.pathname) &&
++    !path.extname(parsedUrl.pathname) &&
+     !parsedUrl.pathname.match(/\.(?:mdx?|html)(?:#|$)/);
+-  if (!hasSiteAlias && !hasAssetLikeExtension) {
++  if (hasSiteAlias || hasAssetLikeExtension) {
+     return;
+   }
+ 

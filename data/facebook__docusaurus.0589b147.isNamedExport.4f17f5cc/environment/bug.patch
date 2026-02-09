@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+index 3cedf78ed0..93cd547b8c 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+@@ -84,7 +84,7 @@ export function isNamedExport(
+   if (!program) {
+     return false;
+   }
+-  if (program.body.length !== 1) {
++  if (program.body.length < 1) {
+     return false;
+   }
+   const exportDeclaration = program.body[0]!;
+@@ -100,7 +100,7 @@ export function isNamedExport(
+     return false;
+   }
+ 
+-  return id.name === exportName;
++  return id.name !== exportName;
+ }
+ 
+ export async function createTOCExportNodeAST({

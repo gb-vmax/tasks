@@ -1,0 +1,164 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..f0e65dc1a 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -481,9 +481,156 @@ export function mergeClientCertificates(
+     // - if the pre-request script request cert is specified, it replaces all original certs
+     // - if not, it returns original certs
+ 
+-    if (!updatedReq.certificate) {
+-        return originalClientCertificates;
+-    } else if (
++function findOverlappingCertificates(
++    certificates: ClientCertificate[],
++    matchPatterns: string[]
++): number[] {
++    const overlappingIndices: number[] = [];
++    
++    certificates.forEach((cert, index) => {
++        if (!cert.host) {
++            return;
++        }
++        
++        for (const pattern of matchPatterns) {
++            if (certificateMatchesPattern(cert.host, pattern)) {
++                overlappingIndices.push(index);
++                break;
++            }
++        }
++    });
++    
++    return overlappingIndices;
++}
++
++function certificateMatchesPattern(certHost: string, pattern: string): boolean {
++    if (certHost === pattern) {
++        return true;
++    }
++    
++    const normalizedCertHost = certHost.toLowerCase();
++    const normalizedPattern = pattern.toLowerCase();
++    
++    if (normalizedPattern.startsWith('*.')) {
++        const domain = normalizedPattern.substring(2);
++        return normalizedCertHost.endsWith(domain) || normalizedCertHost === domain;
++    }
++    
++    if (normalizedPattern.includes('*')) {
++        const regexPattern = normalizedPattern
++            .replace(/\./g, '\\.')
++            .replace(/\*/g, '.*');
++        const regex = new RegExp(`^${regexPattern}$`);
++        return regex.test(normalizedCertHost);
++    }
++    
++    return normalizedCertHost === normalizedPattern;
++}
++
++ export function mergeClientCertificates(
++     originalClientCertificates: ClientCertificate[],
++     updatedReq: Request,
++ ): ClientCertificate[] {
++     if (!updatedReq.certificate) {
++         return originalClientCertificates;
++     } else if (
++         updatedReq.certificate.key == null &&
++         updatedReq.certificate.cert == null &&
++         updatedReq.certificate.pfx == null
++     ) {
++         return originalClientCertificates;
++     }
++
++     const baseCertificate = originalClientCertificates && originalClientCertificates.length > 0 ?
++         {
++             ...initClientCertificate(),
++             ...originalClientCertificates[0],
++         } :
++         {
++             ...initClientCertificate(),
++             _id: '',
++             type: '',
++             parentId: '',
++             modified: 0,
++             created: 0,
++             isPrivate: false,
++             name: '',
++         };
++
++     const updatedCertHost = updatedReq.url.getHost() || '';
++     const updatedCertMatches = updatedReq.certificate.matches?.map(m => m.toString(), {}) || [];
++    
++     const hasMatchPatterns = updatedCertMatches.length > 0 || updatedCertHost !== '';
++     const allMatchPatterns = updatedCertMatches.length > 0 
++         ? updatedCertMatches 
++         : updatedCertHost !== '' ? [updatedCertHost] : [];
++
++     let newCertificate: ClientCertificate;
++
++     if (updatedReq.certificate.pfx && updatedReq.certificate.pfx?.src !== '') {
++         newCertificate = {
++             ...baseCertificate,
++             key: null,
++             cert: null,
++             passphrase: updatedReq.certificate.passphrase || null,
++             pfx: updatedReq.certificate.pfx?.src,
++             host: updatedCertHost,
++             name: updatedReq.name || updatedReq.certificate.name || '',
++         };
++     } else if (
++         updatedReq &&
++         updatedReq.certificate.key &&
++         updatedReq.certificate.cert &&
++         updatedReq.certificate.key?.src !== '' &&
++         updatedReq.certificate.cert?.src !== ''
++     ) {
++         newCertificate = {
++             ...baseCertificate,
++             _id: '',
++             type: '',
++             parentId: '',
++             modified: 0,
++             created: 0,
++             isPrivate: false,
++             name: updatedReq.name || updatedReq.certificate.name || '',
++             host: updatedCertHost,
++             disabled: updatedReq.disabled || false,
++             key: updatedReq.certificate.key?.src,
++             cert: updatedReq.certificate.cert?.src,
++             passphrase: updatedReq.certificate.passphrase || null,
++             pfx: null,
++         };
++     } else {
++         throw Error('Invalid certificate configuration: "cert+key" and "pfx" can not be set at the same time');
++     }
++
++     if (!hasMatchPatterns || originalClientCertificates.length === 0) {
++         return [newCertificate];
++     }
++
++     const overlappingIndices = findOverlappingCertificates(originalClientCertificates, allMatchPatterns);
++    
++     if (overlappingIndices.length === 0) {
++         return [...originalClientCertificates, newCertificate];
++     }
++
++     const mergedCertificates = originalClientCertificates.map((cert, index) => {
++         if (overlappingIndices.includes(index)) {
++             return {
++                 ...cert,
++                 ...newCertificate,
++                 _id: cert._id,
++                 type: cert.type,
++                 parentId: cert.parentId,
++                 modified: Date.now(),
++                 created: cert.created,
++             };
++         }
++         return cert;
++     });
++
++     return mergedCertificates;
++ }
+         updatedReq.certificate.key == null &&
+         updatedReq.certificate.cert == null &&
+         updatedReq.certificate.pfx == null

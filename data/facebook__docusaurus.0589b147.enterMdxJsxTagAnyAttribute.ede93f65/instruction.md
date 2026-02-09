@@ -2,36 +2,30 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX JSX tag parsing where attributes in opening tags are being incorrectly rejected. When I try to use JSX components with attributes in my MDX files, I'm getting an error about "Unexpected attribute in closing tag" even though I'm clearly using an opening tag.
+I'm encountering an issue with MDX JSX tag parsing where attributes on opening tags are incorrectly throwing errors. When I try to use JSX components with attributes in my MDX files, I get an unexpected error message about attributes in closing tags, even though I'm using them on opening tags.
 
 ### Reproduction
 
 ```mdx
-<MyComponent foo="bar" />
-```
-
-or
-
-```mdx
-<MyComponent foo="bar">
-  content
+<MyComponent prop="value">
+  Content here
 </MyComponent>
 ```
 
-Both of these throw an error:
+When parsing this MDX content, I get an error:
 ```
 Unexpected attribute in closing tag, expected the end of the tag
 ```
 
-This is happening with standard JSX component syntax that should be valid. The error message itself is confusing because I'm not even using a closing tag in the first example, and in the second example the attribute is on the opening tag, not the closing tag.
+This happens with any JSX component that has attributes in the opening tag. Self-closing tags and tags without attributes seem to work fine.
 
 ### Expected behavior
 
-JSX components with attributes should parse correctly without throwing errors. Attributes should be allowed on opening tags and self-closing tags.
+Opening tags should be able to have attributes without throwing errors. The error message about "closing tag" should only appear when attributes are actually used on closing tags (which would be invalid), not on opening tags.
 
 ### System Info
 - remark-mdx version: 3.0.0
-- Node version: 18.x
+- Node version: Latest
 
 ---
 Repository: /testbed

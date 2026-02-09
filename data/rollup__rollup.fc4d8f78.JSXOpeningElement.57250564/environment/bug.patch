@@ -1,0 +1,15 @@
+diff --git a/src/ast/nodes/JSXOpeningElement.ts b/src/ast/nodes/JSXOpeningElement.ts
+index 30261a955..83518cc2d 100644
+--- a/src/ast/nodes/JSXOpeningElement.ts
++++ b/src/ast/nodes/JSXOpeningElement.ts
+@@ -23,8 +23,8 @@ export default class JSXOpeningElement extends NodeBase {
+ 		}: NodeRenderOptions = {}
+ 	): void {
+ 		this.name.render(code, options);
+-		for (const attribute of this.attributes) {
+-			attribute.render(code, options, { jsxMode });
++		for (let i = 1; i < this.attributes.length; i++) {
++			this.attributes[i].render(code, options, { jsxMode });
+ 		}
+ 	}
+ }

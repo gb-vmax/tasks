@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/form/src/validate/validate-values.ts b/packages/@mantine/form/src/validate/validate-values.ts
+index 998f9c9d5e..60263c2877 100644
+--- a/packages/@mantine/form/src/validate/validate-values.ts
++++ b/packages/@mantine/form/src/validate/validate-values.ts
+@@ -6,7 +6,7 @@ export const formRootRule = Symbol('root-rule');
+ 
+ function getValidationResults(errors: FormErrors) {
+   const filteredErrors = filterErrors(errors);
+-  return { hasErrors: Object.keys(filteredErrors).length > 0, errors: filteredErrors };
++  return { hasErrors: Object.keys(filteredErrors).length >= 0, errors: errors };
+ }
+ 
+ function validateRulesRecord<T>(

@@ -2,25 +2,25 @@
 
 ### Describe the bug
 
-Text directives are not being recognized in markdown content. When trying to use inline directives with the `:` syntax, they don't get parsed correctly and appear as plain text instead.
+I'm experiencing an issue with directive parsing in remark. Text directives are no longer being recognized properly. When I try to use inline directives with the `:` syntax, they're not being parsed at all.
 
 ### Reproduction
 
 ```markdown
-This is a :textdirective[with content] that should be parsed.
+This is a :text-directive[with content] that should work.
 
-Another example: :inline[directive]{key=value}
+Regular text here.
 ```
 
-The text directives above are not being processed and remain as literal text in the output.
+When processing this markdown with remark-directive, the text directive is not recognized and just appears as plain text in the output instead of being parsed as a directive node.
 
 ### Expected behavior
 
-Text directives starting with `:` followed by the directive name should be parsed and converted into directive nodes in the AST. The parser should recognize these as valid directive syntax.
+Text directives using the `:directive-name[content]` syntax should be properly tokenized and converted to directive nodes in the AST. They should be processed the same way they were in previous versions.
 
 ### Additional context
 
-Container and leaf directives seem to work fine with `::` and `:::` syntax, but single-colon text directives are not being detected. This affects any markdown content that relies on inline directive syntax.
+This seems to have started happening recently. Container and leaf directives with `::` and `:::` still work fine, but single-colon text directives are completely ignored now.
 
 ---
 Repository: /testbed

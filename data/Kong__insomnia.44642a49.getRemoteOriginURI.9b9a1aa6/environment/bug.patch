@@ -1,0 +1,29 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..29814e0f0 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -149,19 +149,11 @@ export class GitVCS {
+     }
+   }
+ 
+-  async getRemoteOriginURI() {
+-    try {
+-      const remoteOriginURI = await git.getConfig({
+-        ...this._baseOpts,
+-        path: 'remote.origin.url',
+-      });
+-
+-      return remoteOriginURI;
+-    } catch (err) {
+-      // Ignore error
+-      return this._baseOpts.uri || '';
+-    }
+-  }
++ Matrix:        DP Table:
++ 1 0 1 0 0      1 0 1 0 0
++ 1 0 1 1 1      1 0 1 1 1
++ 1 1 1 1 1      1 1 1 2 2
++ 1 0 0 1 0      1 0 0 1 0
+ 
+   async initFromClone({
+     repoId,

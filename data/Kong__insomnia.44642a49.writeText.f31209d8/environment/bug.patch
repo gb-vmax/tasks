@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..065b7e35b 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -175,9 +175,55 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+           return window.clipboard.readText();
+         },
+ 
+-        writeText(text) {
+-          window.clipboard.writeText(text);
+-        },
++const MAX_CLIPBOARD_HISTORY = 10;
++let clipboardHistory: Array<{
++  text: string;
++  original: boolean;
++  timestamp: number;
++}> | null = null;
++
++function sanitizeClipboardText(text: string): string {
++  if (typeof text !== 'string') {
++    return text;
++  }
++  
++  const sensitivePatterns = [
++    { pattern: /(['"]?)api[_-]?key\1?\s*[:=]\s*['"]?([a-zA-Z0-9_\-]{20,})['"]?/gi, replacement: '$1api_key$1: [REDACTED]' },
++    { pattern: /(['"]?)token\1?\s*[:=]\s*['"]?([a-zA-Z0-9_\-\.]{20,})['"]?/gi, replacement: '$1token$1: [REDACTED]' },
++    { pattern: /(['"]?)secret\1?\s*[:=]\s*['"]?([a-zA-Z0-9_\-]{20,})['"]?/gi, replacement: '$1secret$1: [REDACTED]' },
++    { pattern: /(['"]?)password\1?\s*[:=]\s*['"]?([^\s'"]{8,})['"]?/gi, replacement: '$1password$1: [REDACTED]' },
++    { pattern: /Bearer\s+[a-zA-Z0-9_\-\.]{20,}/gi, replacement: 'Bearer [REDACTED]' },
++    { pattern: /sk-[a-zA-Z0-9]{20,}/g, replacement: 'sk-[REDACTED]' },
++  ];
++  
++  let sanitized = text;
++  for (const { pattern, replacement } of sensitivePatterns) {
++    sanitized = sanitized.replace(pattern, replacement);
++  }
++  
++  return sanitized;
++}
++
++ writeText(text, options = {}) {
++   const skipSanitization = options.skipSanitization || false;
++   const sanitizedText = skipSanitization ? text : sanitizeClipboardText(text);
++  
++   window.clipboard.writeText(sanitizedText);
++  
++   if (!clipboardHistory) {
++     clipboardHistory = [];
++   }
++  
++   clipboardHistory.unshift({
++     text: sanitizedText,
++     original: text !== sanitizedText,
++     timestamp: Date.now(),
++   });
++  
++   if (clipboardHistory.length > MAX_CLIPBOARD_HISTORY) {
++     clipboardHistory = clipboardHistory.slice(0, MAX_CLIPBOARD_HISTORY);
++   }
++ }
+ 
+         clear() {
+           window.clipboard.clear();

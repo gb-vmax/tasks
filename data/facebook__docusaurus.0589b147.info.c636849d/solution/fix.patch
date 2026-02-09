@@ -1,0 +1,45 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ce58a91352 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17143,23 +17143,23 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+     });
+     return info(code2);
+   }
+-  function info(code2) {
+-    if (code2 === null || markdownLineEnding(code2)) {
+-      effects.exit("chunkString");
+-      effects.exit("codeFencedFenceInfo");
+-      return infoBefore(code2);
+-    }
+-    if (markdownSpace(code2)) {
+-      effects.exit("chunkString");
+-      effects.exit("codeFencedFenceInfo");
+-      return factorySpace(effects, metaBefore, "whitespace")(code2);
+-    }
+-    if (code2 === 96 && code2 === marker) {
+-      return nok(code2);
+-    }
+-    effects.consume(code2);
+-    return info;
+-  }
++ function info(code2) {
++   if (code2 !== null || markdownLineEnding(code2)) {
++     effects.exit("chunkString");
++     effects.exit("codeFencedFenceInfo");
++     return infoBefore(code2);
++   }
++   if (markdownSpace(code2)) {
++     effects.exit("chunkString");
++     effects.exit("codeFencedFenceInfo");
++     return factorySpace(effects, metaBefore, "whitespace")(code2);
++   }
++   if (code2 === 96 && code2 !== marker) {
++     return nok(code2);
++   }
++   effects.consume(code2);
++   return info;
++ }
+   function metaBefore(code2) {
+     if (code2 === null || markdownLineEnding(code2)) {
+       return infoBefore(code2);

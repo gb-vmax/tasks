@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4499e6c9ff 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -10699,6 +10699,10 @@ Parser.parse = function parse2(input, options) {
+ Parser.parseExpressionAt = function parseExpressionAt(input, pos, options) {
+   var parser = new this(options, input, pos);
+   parser.nextToken();
++  parser.nextToken();
++  if (parser.type === parser.tokTypes.eof) {
++    return;
++  }
+   return parser.parseExpression();
+ };
+ Parser.tokenizer = function tokenizer(input, options) {

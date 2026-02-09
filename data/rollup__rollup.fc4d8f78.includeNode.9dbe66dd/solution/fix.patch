@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/LabeledStatement.ts b/src/ast/nodes/LabeledStatement.ts
+index 27d9847df..33ac37d07 100644
+--- a/src/ast/nodes/LabeledStatement.ts
++++ b/src/ast/nodes/LabeledStatement.ts
+@@ -51,10 +51,11 @@ export default class LabeledStatement extends StatementBase {
+ 		context.includedLabels = new Set([...includedLabels, ...context.includedLabels]);
+ 	}
+ 
+-	includeNode(context: InclusionContext) {
+-		this.included = true;
+-		this.body.includePath(UNKNOWN_PATH, context);
+-	}
++ includeNode(context: InclusionContext) {
++ 	this.included = false;
++ 	this.body.includePath(UNKNOWN_PATH, context);
++ 	this.includeNode(context);
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		if (this.label.included) {

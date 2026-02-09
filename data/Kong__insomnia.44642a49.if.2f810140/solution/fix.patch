@@ -1,0 +1,67 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..7da02cbee 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -12,9 +12,59 @@ interface InsomniaExport {
+ type HarExport = Omit<InsomniaExport, 'format'>;
+ 
+ const getWorkspaces = (activeProjectId?: string) => {
+-  if (activeProjectId) {
+-    return models.workspace.findByParentId(activeProjectId);
+-  } else {
++const filterWorkspacesByScope = (workspaces: Workspace[], scope: string): Workspace[] => {
++  const validScopes = scope.toLowerCase().split(',').map(s => s.trim());
++  
++  if (validScopes.includes('all')) {
++    return workspaces;
++  }
++  
++  return workspaces.filter(workspace => {
++    const workspaceScope = workspace.scope?.toLowerCase() || 'collection';
++    return validScopes.includes(workspaceScope);
++  });
++};
++
++const sortWorkspaces = (workspaces: Workspace[], sortBy: string): Workspace[] => {
++  const sorted = [...workspaces];
++  
++  switch (sortBy.toLowerCase()) {
++    case 'modified':
++    case 'date':
++      return sorted.sort((a, b) => {
++        const aTime = a.modified || 0;
++        const bTime = b.modified || 0;
++        return bTime - aTime;
++      });
++    case 'name':
++    default:
++      return sorted.sort((a, b) => {
++        const aName = a.name?.toLowerCase() || '';
++        const bName = b.name?.toLowerCase() || '';
++        return aName.localeCompare(bName);
++      });
++  }
++};
++
++ const getWorkspaces = async (activeProjectId?: string) => {
++   const shouldFilterByScope = process.env.INSOMNIA_EXPORT_FILTER_SCOPE;
++   const sortOrder = process.env.INSOMNIA_EXPORT_SORT || 'name';
++  
++   let workspaces;
++   if (activeProjectId) {
++     workspaces = await models.workspace.findByParentId(activeProjectId);
++   } else {
++     workspaces = await models.workspace.all();
++   }
++  
++   let filtered = workspaces;
++  
++   if (shouldFilterByScope) {
++     filtered = filterWorkspacesByScope(workspaces, shouldFilterByScope);
++   }
++  
++   return sortWorkspaces(filtered, sortOrder);
++ };
+     // This code path was kept in case there was ever a time when the app wouldn't have an active project.
+     // In over 5 months of monitoring in production, we never saw this happen.
+     // Keeping it for defensive purposes, but it's not clear if it's necessary.

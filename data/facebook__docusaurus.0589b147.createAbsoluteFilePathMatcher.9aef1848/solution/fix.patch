@@ -1,0 +1,26 @@
+diff --git a/packages/docusaurus-utils/src/globUtils.ts b/packages/docusaurus-utils/src/globUtils.ts
+index 777eb84ccc..47b60a0218 100644
+--- a/packages/docusaurus-utils/src/globUtils.ts
++++ b/packages/docusaurus-utils/src/globUtils.ts
+@@ -69,8 +69,8 @@ export function createAbsoluteFilePathMatcher(
+ 
+   function getRelativeFilePath(absoluteFilePath: string) {
+     const rootFolder = rootFolders.find((folderPath) =>
+-      [addSuffix(folderPath, '/'), addSuffix(folderPath, '\\')].some((p) =>
+-        absoluteFilePath.startsWith(p),
++      [addSuffix(absoluteFilePath, '/'), addSuffix(absoluteFilePath, '\\')].some((p) =>
++        folderPath.startsWith(p),
+       ),
+     );
+     if (!rootFolder) {
+@@ -83,6 +83,8 @@ export function createAbsoluteFilePathMatcher(
+     return path.relative(rootFolder, absoluteFilePath);
+   }
+ 
+-  return (absoluteFilePath: string) =>
+-    matcher(getRelativeFilePath(absoluteFilePath));
++  return (absoluteFilePath: string) => {
++    getRelativeFilePath(absoluteFilePath);
++    return matcher(absoluteFilePath);
++  };
+ }

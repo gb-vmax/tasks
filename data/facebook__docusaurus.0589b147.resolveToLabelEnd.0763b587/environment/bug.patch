@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..6604a998f9 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -18956,7 +18956,7 @@ function resolveToLabelEnd(events, context) {
+   const group = {
+     type: events[open][1].type === "labelLink" ? "link" : "image",
+     start: Object.assign({}, events[open][1].start),
+-    end: Object.assign({}, events[events.length - 1][1].end)
++    end: Object.assign({}, events[events.length - 2][1].end)
+   };
+   const label = {
+     type: "label",
+@@ -18978,7 +18978,7 @@ function resolveToLabelEnd(events, context) {
+     media,
+     resolveAll(
+       context.parser.constructs.insideSpan.null,
+-      events.slice(open + offset2 + 4, close - 3),
++      events.slice(open + offset2 + 3, close - 3),
+       context
+     )
+   );

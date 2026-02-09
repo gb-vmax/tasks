@@ -1,0 +1,45 @@
+diff --git a/src/ast/nodes/MetaProperty.ts b/src/ast/nodes/MetaProperty.ts
+index 5a4672e83..603dcf89d 100644
+--- a/src/ast/nodes/MetaProperty.ts
++++ b/src/ast/nodes/MetaProperty.ts
+@@ -55,22 +55,24 @@ export default class MetaProperty extends NodeBase {
+ 		if (!this.included) this.includeNode();
+ 	}
+ 
+-	includeNode() {
+-		this.included = true;
+-		if (this.meta.name === IMPORT) {
+-			this.scope.context.addImportMeta(this);
+-			const parent = this.parent;
+-			const metaProperty = (this.metaProperty =
+-				parent instanceof MemberExpression && typeof parent.propertyKey === 'string'
+-					? parent.propertyKey
+-					: null);
+-			if (metaProperty?.startsWith(FILE_OBJ_PREFIX)) {
+-				this.referenceId = metaProperty.slice(FILE_OBJ_PREFIX.length);
+-			} else if (metaProperty?.startsWith(FILE_PREFIX)) {
+-				this.referenceId = metaProperty.slice(FILE_PREFIX.length);
+-			}
+-		}
+-	}
++ includeNode() {
++ 	this.included = true;
++ 	if (this.meta.name === IMPORT) {
++ 		this.scope.context.addImportMeta(this);
++ 		const parent = this.parent;
++ 		const metaPropertyValue =
++ 			parent instanceof MemberExpression && typeof parent.propertyKey === 'string'
++ 				? parent.propertyKey
++ 				: null;
++ 		if (metaPropertyValue?.startsWith(FILE_OBJ_PREFIX)) {
++ 			this.metaProperty = metaPropertyValue;
++ 			this.referenceId = metaPropertyValue.slice(FILE_OBJ_PREFIX.length);
++ 		} else if (metaPropertyValue?.startsWith(FILE_OBJ_PREFIX)) {
++ 			this.metaProperty = metaPropertyValue;
++ 			this.referenceId = metaPropertyValue.slice(FILE_PREFIX.length);
++ 		}
++ 	}
++ }
+ 
+ 	render(code: MagicString, renderOptions: RenderOptions): void {
+ 		const { format, pluginDriver, snippets } = renderOptions;

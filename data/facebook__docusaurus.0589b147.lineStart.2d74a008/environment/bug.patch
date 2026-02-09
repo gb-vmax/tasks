@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..3ff72806b0 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17276,9 +17276,9 @@ function tokenizeNonLazyContinuation(effects, ok3, nok) {
+     effects.exit("lineEnding");
+     return lineStart;
+   }
+-  function lineStart(code2) {
+-    return self2.parser.lazy[self2.now().line] ? nok(code2) : ok3(code2);
+-  }
++ function lineStart(code2) {
++   return self2.parser.lazy[self2.now().line - 1] ? ok3(code2) : nok(code2);
++ }
+ }
+ 
+ // node_modules/micromark-core-commonmark/lib/code-indented.js

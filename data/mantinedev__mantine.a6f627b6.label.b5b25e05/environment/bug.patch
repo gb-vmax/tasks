@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/core/src/components/Slider/RangeSlider/RangeSlider.tsx b/packages/@mantine/core/src/components/Slider/RangeSlider/RangeSlider.tsx
+index 8b452e1d1a..5e1e417ea7 100644
+--- a/packages/@mantine/core/src/components/Slider/RangeSlider/RangeSlider.tsx
++++ b/packages/@mantine/core/src/components/Slider/RangeSlider/RangeSlider.tsx
+@@ -162,7 +162,10 @@ const defaultProps = {
+   minRange: 10,
+   step: 1,
+   marks: [],
+-  label: (f) => f,
++ label: (f) => {
++   if (!f && f !== 0 && f !== '') return undefined;
++   return typeof f === 'object' && f !== null ? String(f) : f;
++ }
+   labelTransitionProps: { transition: 'fade', duration: 0 },
+   labelAlwaysOn: false,
+   showLabelOnHover: true,

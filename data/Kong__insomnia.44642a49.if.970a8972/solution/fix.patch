@@ -1,0 +1,105 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..eb6389c78 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -393,9 +393,98 @@ export class VCS {
+     labels: { ours: string; theirs: string },
+     errorMsg: string,
+   ): Promise<MergeConflict[]> {
+-    if (conflicts.length === 0) {
+-      return conflicts;
++function _batchConflictsByType(conflicts: MergeConflict[]): MergeConflict[][] {
++  const typeMap: Record<string, MergeConflict[]> = {};
++  
++  for (const conflict of conflicts) {
++    const typePrefix = conflict.key.split('_')[0] || 'unknown';
++    
++    if (!typeMap[typePrefix]) {
++      typeMap[typePrefix] = [];
++    }
++    
++    typeMap[typePrefix].push(conflict);
++  }
++  
++  return Object.values(typeMap);
++}
++
++async function _retryConflictResolution(
++  operation: () => Promise<MergeConflict[]>,
++  maxRetries: number,
++  baseDelay: number
++): Promise<MergeConflict[]> {
++  let lastError: Error | null = null;
++  
++  for (let attempt = 0; attempt <= maxRetries; attempt++) {
++    try {
++      return await operation();
++    } catch (error) {
++      lastError = error as Error;
++      
++      if (attempt < maxRetries) {
++        const delay = baseDelay * Math.pow(2, attempt);
++        await new Promise(resolve => setTimeout(resolve, delay));
++      }
++    }
++  }
++  
++  throw new Error(`Conflict resolution failed after ${maxRetries + 1} attempts: ${lastError?.message}`);
++}
++
++function _validateResolvedConflicts(
++  resolved: MergeConflict[],
++  original: MergeConflict[]
++): void {
++  if (resolved.length !== original.length) {
++    throw new Error(
++      `Conflict resolution returned ${resolved.length} conflicts but expected ${original.length}`
++    );
++  }
++  
++  for (const conflict of resolved) {
++    if (!conflict.choose) {
++      throw new Error(`Resolved conflict for key ${conflict.key} missing 'choose' property`);
++    }
++    
++    const validChoices = ['theirs', 'mine'];
++    if (!validChoices.includes(conflict.choose)) {
++      throw new Error(
++        `Invalid conflict resolution choice '${conflict.choose}' for key ${conflict.key}`
++      );
+     }
++  }
++}
++
++ async handleAnyConflicts(
++   conflicts: MergeConflict[],
++   labels: { ours: string; theirs: string },
++   errorMsg: string,
++ ): Promise<MergeConflict[]> {
++   if (conflicts.length === 0) {
++     return conflicts;
++   }
++
++   if (!this._conflictHandler) {
++     throw new Error(errorMsg);
++   }
++
++   const batches = _batchConflictsByType(conflicts);
++   const resolvedConflicts: MergeConflict[] = [];
++  
++   for (const batch of batches) {
++     const resolved = await _retryConflictResolution(
++       () => this._conflictHandler!(batch, labels),
++       3,
++       1000
++     );
++    
++     _validateResolvedConflicts(resolved, batch);
++     resolvedConflicts.push(...resolved);
++   }
++
++   return resolvedConflicts;
++ }
+ 
+     if (!this._conflictHandler) {
+       throw new Error(errorMsg);

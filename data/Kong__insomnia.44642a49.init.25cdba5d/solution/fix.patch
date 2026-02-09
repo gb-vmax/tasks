@@ -1,0 +1,127 @@
+diff --git a/packages/insomnia/src/models/settings.ts b/packages/insomnia/src/models/settings.ts
+index 68686ad93..305bef5ea 100644
+--- a/packages/insomnia/src/models/settings.ts
++++ b/packages/insomnia/src/models/settings.ts
+@@ -21,8 +21,100 @@ export const isSettings = (model: Pick<BaseModel, 'type'>): model is Settings =>
+   model.type === type
+ );
+ 
+-export function init(): BaseSettings {
+-  return {
++function detectEnvironment(explicitEnv?: 'development' | 'production' | 'testing'): 'development' | 'production' | 'testing' {
++  if (explicitEnv) {
++    return explicitEnv;
++  }
++  
++  if (typeof process !== 'undefined' && process.env?.NODE_ENV) {
++    const nodeEnv = process.env.NODE_ENV.toLowerCase();
++    if (nodeEnv === 'development' || nodeEnv === 'dev') {
++      return 'development';
++    }
++    if (nodeEnv === 'test' || nodeEnv === 'testing') {
++      return 'testing';
++    }
++    if (nodeEnv === 'production' || nodeEnv === 'prod') {
++      return 'production';
++    }
++  }
++  
++  return 'production';
++}
++
++function getEnvironmentOverrides(env: 'development' | 'production' | 'testing'): Partial<BaseSettings> {
++  switch (env) {
++    case 'development':
++      return {
++        enableAnalytics: false,
++        nunjucksPowerUserMode: true,
++        showVariableSourceAndValue: true,
++        timeout: 60_000,
++        maxHistoryResponses: 50,
++        disableUpdateNotification: true,
++        updateAutomatically: false,
++        editorLineWrapping: true,
++      };
++    case 'testing':
++      return {
++        enableAnalytics: false,
++        clearOAuth2SessionOnRestart: true,
++        timeout: 10_000,
++        maxHistoryResponses: 5,
++        disableUpdateNotification: true,
++        updateAutomatically: false,
++        validateSSL: false,
++        validateAuthSSL: false,
++      };
++    case 'production':
++      return {
++        enableAnalytics: true,
++        validateSSL: true,
++        validateAuthSSL: true,
++        disableHtmlPreviewJs: false,
++        clearOAuth2SessionOnRestart: true,
++      };
++    default:
++      return {};
++  }
++}
++
++function getProfileOverrides(profile: string): Partial<BaseSettings> {
++  const profiles: Record<string, Partial<BaseSettings>> = {
++    performance: {
++      maxHistoryResponses: 10,
++      maxTimelineDataSizeKB: 5,
++      disableHtmlPreviewJs: true,
++      enableAnalytics: false,
++      timeout: 15_000,
++    },
++    privacy: {
++      enableAnalytics: false,
++      clearOAuth2SessionOnRestart: true,
++      disableAppVersionUserAgent: true,
++      showPasswords: false,
++    },
++    debugging: {
++      showVariableSourceAndValue: true,
++      nunjucksPowerUserMode: true,
++      maxHistoryResponses: 100,
++      maxTimelineDataSizeKB: 50,
++      timeout: 120_000,
++    },
++    minimal: {
++      autoHideMenuBar: true,
++      maxHistoryResponses: 5,
++      enableAnalytics: false,
++      autocompleteDelay: 2000,
++    },
++  };
++  
++  return profiles[profile.toLowerCase()] || {};
++}
++
++export function init(options?: { environment?: 'development' | 'production' | 'testing'; profile?: string }): BaseSettings {
++  const detectedEnv = detectEnvironment(options?.environment);
++  const baseSettings: BaseSettings = {
+     autoDetectColorScheme: false,
+     autoHideMenuBar: false,
+     autocompleteDelay: 1200,
+@@ -62,7 +154,6 @@ export function init(): BaseSettings {
+     proxyEnabled: false,
+     showPasswords: false,
+     theme: getAppDefaultTheme(),
+-    // milliseconds
+     timeout: 30_000,
+     updateAutomatically: true,
+     updateChannel: UpdateChannel.stable,
+@@ -71,6 +162,11 @@ export function init(): BaseSettings {
+     validateAuthSSL: true,
+     validateSSL: true,
+   };
++
++  const envOverrides = getEnvironmentOverrides(detectedEnv);
++  const profileOverrides = options?.profile ? getProfileOverrides(options.profile) : {};
++  
++  return { ...baseSettings, ...envOverrides, ...profileOverrides };
+ }
+ 
+ export function migrate(doc: Settings) {

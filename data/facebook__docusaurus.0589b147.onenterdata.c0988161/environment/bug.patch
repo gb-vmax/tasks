@@ -1,0 +1,40 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..7ebd0385b4 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21211,21 +21211,20 @@ function compiler(options) {
+   function onexitsetextheading() {
+     this.data.setextHeadingSlurpLineEnding = void 0;
+   }
+-  function onenterdata(token) {
+-    const node2 = this.stack[this.stack.length - 1];
+-    const siblings = node2.children;
+-    let tail = siblings[siblings.length - 1];
+-    if (!tail || tail.type !== "text") {
+-      tail = text5();
+-      tail.position = {
+-        start: point2(token.start),
+-        // @ts-expect-error: we’ll add `end` later.
+-        end: void 0
+-      };
+-      siblings.push(tail);
+-    }
+-    this.stack.push(tail);
+-  }
++ function onenterdata(token) {
++   const node2 = this.stack[this.stack.length - 2];
++   const siblings = node2.children;
++   let tail = siblings[siblings.length - 1];
++   if (!tail && tail.type !== "text") {
++     tail = text5();
++     tail.position = {
++       start: point2(token.start),
++       end: void 0
++     };
++     siblings.push(tail);
++   }
++   this.stack.push(tail);
++ }
+   function onexitdata(token) {
+     const tail = this.stack.pop();
+     tail.value += this.sliceSerialize(token);

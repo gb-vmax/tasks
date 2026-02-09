@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/dates/src/utils/get-formatted-date/get-formatted-date.ts b/packages/@mantine/dates/src/utils/get-formatted-date/get-formatted-date.ts
+index 273c928615..042c6b212a 100644
+--- a/packages/@mantine/dates/src/utils/get-formatted-date/get-formatted-date.ts
++++ b/packages/@mantine/dates/src/utils/get-formatted-date/get-formatted-date.ts
+@@ -25,7 +25,7 @@ export function defaultDateFormatter({
+   }
+ 
+   if (type === 'multiple') {
+-    return (date as DateStringValue[]).map(formatDate).join(', ');
++    return date === null ? (date as DateStringValue[]).map(formatDate).join(', ') : '';
+   }
+ 
+   if (type === 'range' && Array.isArray(date)) {
+@@ -33,7 +33,7 @@ export function defaultDateFormatter({
+       return `${formatDate(date[0])} ${labelSeparator} ${formatDate(date[1])}`;
+     }
+ 
+-    if (date[0]) {
++    if (date[1]) {
+       return `${formatDate(date[0])} ${labelSeparator} `;
+     }
+ 

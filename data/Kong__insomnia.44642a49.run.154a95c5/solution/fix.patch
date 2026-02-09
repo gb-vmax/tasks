@@ -1,0 +1,118 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..3be251acf 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -112,29 +112,90 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           hide: args => args[0].value !== 'custom',
+         },
+       ],
+-      run(_context, dateType = 'iso-8601', formatStr = '') {
+-        if (typeof dateType === 'string') {
+-          dateType = dateType.toLowerCase();
+-        }
+-
+-        const now = new Date();
+-
+-        switch (dateType) {
+-          case 'millis':
+-          case 'ms':
+-            return now.getTime() + '';
+-          case 'unix':
+-          case 'seconds':
+-          case 's':
+-            return Math.round(now.getTime() / 1000) + '';
+-          case 'iso-8601':
+-            return now.toISOString();
+-          case 'custom':
+-            return format(now, formatStr);
+-          default:
+-            throw new Error(`Invalid date type "${dateType}"`);
+-        }
+-      },
++function parseTimeOffset(offsetStr) {
++  const trimmed = offsetStr.trim();
++  if (!trimmed) {
++    return 0;
++  }
++
++  const match = trimmed.match(/^([+-]?)(\d+(?:\.\d+)?)\s*([smhdwy]?)$/i);
++  if (!match) {
++    throw new Error(`Invalid time offset format "${offsetStr}". Use format like "+1h", "-30m", "2d"`);
++  }
++
++  const sign = match[1] === '-' ? -1 : 1;
++  const value = parseFloat(match[2]);
++  const unit = (match[3] || 's').toLowerCase();
++
++  let multiplier;
++  switch (unit) {
++    case 's':
++      multiplier = 1000;
++      break;
++    case 'm':
++      multiplier = 60 * 1000;
++      break;
++    case 'h':
++      multiplier = 60 * 60 * 1000;
++      break;
++    case 'd':
++      multiplier = 24 * 60 * 60 * 1000;
++      break;
++    case 'w':
++      multiplier = 7 * 24 * 60 * 60 * 1000;
++      break;
++    case 'y':
++      multiplier = 365 * 24 * 60 * 60 * 1000;
++      break;
++    default:
++      throw new Error(`Invalid time unit "${unit}". Use s, m, h, d, w, or y`);
++  }
++
++  return sign * value * multiplier;
++}
++
++function parseTimezoneOffset(offsetMinutes) {
++  const parsed = typeof offsetMinutes === 'string' ? parseFloat(offsetMinutes) : offsetMinutes;
++  if (isNaN(parsed)) {
++    throw new Error(`Invalid timezone offset "${offsetMinutes}". Must be a number of minutes`);
++  }
++  return parsed * 60000;
++}
++
++ run(_context, dateType = 'iso-8601', formatStr = '', timeOffset = '', timezoneOffsetMinutes = null) {
++   if (typeof dateType === 'string') {
++     dateType = dateType.toLowerCase();
++   }
++
++   let now = new Date();
++
++   if (timezoneOffsetMinutes !== null && timezoneOffsetMinutes !== '' && timezoneOffsetMinutes !== undefined) {
++     const offsetMs = parseTimezoneOffset(timezoneOffsetMinutes);
++     const localOffsetMs = now.getTimezoneOffset() * 60000;
++     now = new Date(now.getTime() + localOffsetMs + offsetMs);
++   }
++
++   if (timeOffset && timeOffset !== '') {
++     const offsetMs = parseTimeOffset(timeOffset);
++     now = new Date(now.getTime() + offsetMs);
++   }
++
++   switch (dateType) {
++     case 'millis':
++     case 'ms':
++       return now.getTime() + '';
++     case 'unix':
++     case 'seconds':
++     case 's':
++       return Math.round(now.getTime() / 1000) + '';
++     case 'iso-8601':
++       return now.toISOString();
++     case 'custom':
++       return format(now, formatStr);
++     default:
++       throw new Error(`Invalid date type "${dateType}"`);
++   }
++ }
+     },
+   },
+   {

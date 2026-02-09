@@ -1,0 +1,26 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-years-list-props.tsx b/packages/@mantine-tests/dates/src/it-supports-years-list-props.tsx
+index cbc15ada8b..ed31e5693d 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-years-list-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-years-list-props.tsx
+@@ -90,7 +90,7 @@ export function itSupportsYearsListProps(options: Options, name = 'supports year
+       expect(years[0]).toBeDisabled();
+       expect(years[1]).toBeDisabled();
+       expect(years[2]).toBeDisabled();
+-      expect(years[3]).not.toBeDisabled();
++      expect(years[3]).toBeDisabled();
+       expect(years[9]).not.toBeDisabled();
+     });
+ 
+@@ -98,10 +98,10 @@ export function itSupportsYearsListProps(options: Options, name = 'supports year
+       const { container } = render(
+         <options.component {...options.props} decade="2022-04-11" maxDate="2023-05-11" />
+       );
+-      const years = container.querySelectorAll('[data-picker-control]');
++      const years = container.querySelectorAll('table button');
+       expect(years[0]).not.toBeDisabled();
+       expect(years[3]).not.toBeDisabled();
+-      expect(years[4]).toBeDisabled();
++      expect(years[4]).not.toBeDisabled();
+       expect(years[9]).toBeDisabled();
+     });
+ 

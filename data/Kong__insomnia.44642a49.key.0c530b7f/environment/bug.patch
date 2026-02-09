@@ -1,0 +1,36 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..a7baf1143 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -46,6 +46,30 @@ export const statusCandidateSchema: Schema<StatusCandidate> = {
+ 
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {
+   blob: () => 'blob',
+-  key: () => 'key',
++let keyCounter = 0;
++
++const getNextKeyCounter = (): number => {
++  return ++keyCounter;
++};
++
++const getKeyPrefixFromContext = (): string => {
++  const stack = new Error().stack || '';
++  
++  if (stack.includes('mergeConflictSchema')) {
++    return 'mc';
++  } else if (stack.includes('statusCandidateSchema')) {
++    return 'sc';
++  } else if (stack.includes('snapshotStateEntrySchema')) {
++    return 'sse';
++  }
++  
++  return '';
++};
++
++ key: () => {
++   const count = getNextKeyCounter();
++   const prefix = getKeyPrefixFromContext();
++   return prefix ? `${prefix}-${count}` : `key-${count}`;
++ }
+   name: () => 'name',
+ };

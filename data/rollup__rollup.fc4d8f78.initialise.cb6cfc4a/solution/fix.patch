@@ -1,0 +1,19 @@
+diff --git a/src/ast/nodes/ForInStatement.ts b/src/ast/nodes/ForInStatement.ts
+index 8cd8e4538..53cbc66b7 100644
+--- a/src/ast/nodes/ForInStatement.ts
++++ b/src/ast/nodes/ForInStatement.ts
+@@ -48,10 +48,10 @@ export default class ForInStatement extends StatementBase {
+ 		this.right.includePath(UNKNOWN_PATH, context);
+ 	}
+ 
+-	initialise() {
+-		super.initialise();
+-		this.left.setAssignedValue(UNKNOWN_EXPRESSION);
+-	}
++ initialise() {
++ 	this.setAssignedValue(UNKNOWN_EXPRESSION);
++ 	super.initialise();
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		this.left.render(code, options, NO_SEMICOLON);

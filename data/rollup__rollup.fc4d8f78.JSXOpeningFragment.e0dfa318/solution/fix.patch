@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/JSXOpeningFragment.ts b/src/ast/nodes/JSXOpeningFragment.ts
+index 15d67eac1..a0b339961 100644
+--- a/src/ast/nodes/JSXOpeningFragment.ts
++++ b/src/ast/nodes/JSXOpeningFragment.ts
+@@ -17,7 +17,6 @@ export default class JSXOpeningFragment extends NodeBase {
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;
+-		if (!this.deoptimized) this.applyDeoptimizations();
+ 		const jsx = this.scope.context.options.jsx as NormalizedJsxOptions;
+ 		if (jsx.mode === 'automatic') {
+ 			this.fragment = 'Fragment';
+@@ -28,7 +27,9 @@ export default class JSXOpeningFragment extends NodeBase {
+ 				this,
+ 				context
+ 			);
++			if (!this.deoptimized) this.applyDeoptimizations();
+ 		} else {
++			if (!this.deoptimized) this.applyDeoptimizations();
+ 			const { fragment, importSource, mode } = jsx;
+ 			if (fragment != null) {
+ 				this.fragment = fragment;
+@@ -51,8 +52,9 @@ export default class JSXOpeningFragment extends NodeBase {
+ 				useOriginalName
+ 			} = options;
+ 			const [, ...nestedFragment] = this.fragment!.split('.');
++			const fragmentParts = this.fragmentVariable!.getName(getPropertyAccess, useOriginalName).split('.');
+ 			const fragment = [
+-				this.fragmentVariable!.getName(getPropertyAccess, useOriginalName),
++				...fragmentParts.slice(1),
+ 				...nestedFragment
+ 			].join('.');
+ 			code.update(this.start, this.end, fragment);

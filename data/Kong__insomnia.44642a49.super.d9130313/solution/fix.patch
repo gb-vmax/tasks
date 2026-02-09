@@ -1,0 +1,155 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..a69a21794 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -246,11 +246,146 @@ export class RequestAuth extends Property {
+     private authOptions: Map<string, VariableList<Variable>> = new Map();
+ 
+     constructor(options: AuthOptions, parent?: Property) {
+-        super();
+-
+-        if (!RequestAuth.isValidType(options.type)) {
+-            throw Error(`invalid auth type ${options.type}`);
++function normalizeAuthOptions(options: AuthOptions): AuthOptions {
++    const normalized = { ...options };
++    
++    const normalizeField = (authType: keyof AuthOptions, fieldMappings: Record<string, string>) => {
++        const authOptions = normalized[authType];
++        if (!authOptions || !Array.isArray(authOptions)) {
++            return;
+         }
++        
++        authOptions.forEach(opt => {
++            if (opt.key in fieldMappings) {
++                opt.key = fieldMappings[opt.key];
++            }
++        });
++    };
++    
++    if (normalized.basic) {
++        normalizeField('basic', {
++            'user': 'username',
++            'pass': 'password',
++            'pwd': 'password'
++        });
++    }
++    
++    if (normalized.bearer) {
++        normalizeField('bearer', {
++            'accessToken': 'token',
++            'bearerToken': 'token'
++        });
++    }
++    
++    if (normalized.oauth1) {
++        normalizeField('oauth1', {
++            'consumer_key': 'consumerKey',
++            'consumer_secret': 'consumerSecret',
++            'signature_method': 'signatureMethod'
++        });
++    }
++    
++    if (normalized.oauth2) {
++        normalizeField('oauth2', {
++            'client_id': 'clientId',
++            'client_secret': 'clientSecret',
++            'access_token': 'accessToken',
++            'authorization_url': 'authUrl',
++            'access_token_url': 'accessTokenUrl'
++        });
++    }
++    
++    if (normalized.awsv4) {
++        normalizeField('awsv4', {
++            'access_key': 'accessKey',
++            'secret_key': 'secretKey',
++            'session_token': 'sessionToken'
++        });
++    }
++    
++    if (normalized.apikey) {
++        normalizeField('apikey', {
++            'apiKey': 'key',
++            'apiValue': 'value'
++        });
++    }
++    
++    return normalized;
++}
++
++function validateRequiredFields(options: AuthOptions): void {
++    const requiredFieldsByType: Record<string, string[]> = {
++        'basic': ['username', 'password'],
++        'bearer': ['token'],
++        'apikey': ['key', 'value'],
++        'oauth1': ['consumerKey', 'consumerSecret'],
++        'oauth2': ['clientId'],
++        'digest': ['username', 'password'],
++        'ntlm': ['username', 'password'],
++        'awsv4': ['accessKey', 'secretKey'],
++        'hawk': ['authId', 'authKey'],
++        'asap': ['iss', 'kid', 'privateKey'],
++        'jwt': ['secret'],
++    };
++    
++    const requiredFields = requiredFieldsByType[options.type];
++    if (!requiredFields) {
++        return;
++    }
++    
++    const authOptions = options[options.type as keyof AuthOptions];
++    if (!authOptions || !Array.isArray(authOptions)) {
++        throw Error(`missing ${options.type} options for auth type ${options.type}`);
++    }
++    
++    const providedKeys = new Set(
++        authOptions.map(opt => typeof opt === 'object' && 'key' in opt ? opt.key : '')
++    );
++    
++    const missingFields = requiredFields.filter(field => !providedKeys.has(field));
++    
++    if (missingFields.length > 0) {
++        throw Error(`missing required fields for ${options.type} auth: ${missingFields.join(', ')}`);
++    }
++}
++
++ constructor(options: AuthOptions, parent?: Property) {
++     super();
++
++     if (!RequestAuth.isValidType(options.type)) {
++         throw Error(`invalid auth type ${options.type}`);
++     }
++
++     this.type = options.type;
++    
++     const normalizedOptions = normalizeAuthOptions(options);
++     validateRequiredFields(normalizedOptions);
++    
++     const optsObj = normalizedOptions as AuthOptions;
++     const optsEntries = Object.entries(optsObj)
++         .filter(optsObjEntry => optsObjEntry[0] !== 'type');
++
++     optsEntries.map((optsEntry: [string, AuthOption[]]) => {
++         const optVars = optsEntry[1]
++             .map(opt => {
++                 return new Variable({
++                     key: opt.key,
++                     value: opt.value,
++                     type: opt.type,
++                 });
++             });
++
++         return {
++             type: optsEntry[0],
++             options: new VariableList(undefined, optVars),
++         };
++     })
++         .forEach(authOpts => {
++             this.authOptions.set(authOpts.type, authOpts.options);
++         });
++
++     this._parent = parent;
++ }
+ 
+         this.type = options.type;
+         const optsObj = options as AuthOptions;

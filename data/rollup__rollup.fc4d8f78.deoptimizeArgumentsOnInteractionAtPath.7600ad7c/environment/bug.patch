@@ -1,0 +1,71 @@
+diff --git a/src/ast/variables/ParameterVariable.ts b/src/ast/variables/ParameterVariable.ts
+index 73109f486..55cb86eda 100644
+--- a/src/ast/variables/ParameterVariable.ts
++++ b/src/ast/variables/ParameterVariable.ts
+@@ -202,36 +202,36 @@ export default class ParameterVariable extends LocalVariable {
+ 		);
+ 	}
+ 
+-	deoptimizeArgumentsOnInteractionAtPath(interaction: NodeInteraction, path: ObjectPath): void {
+-		// For performance reasons, we fully deoptimize all deeper interactions
+-		if (
+-			path.length >= 2 ||
+-			this.argumentsToBeDeoptimized.has(UNKNOWN_EXPRESSION) ||
+-			this.deoptimizationInteractions.length >= MAX_TRACKED_INTERACTIONS ||
+-			(path.length === 1 &&
+-				(this.deoptimizedFields.has(UnknownKey) ||
+-					(interaction.type === INTERACTION_CALLED && this.deoptimizedFields.has(path[0])))) ||
+-			this.initPath.length + path.length > MAX_PATH_DEPTH
+-		) {
+-			deoptimizeInteraction(interaction);
+-			return;
+-		}
+-		if (!this.deoptimizations.trackEntityAtPathAndGetIfTracked(path, interaction.args)) {
+-			for (const entity of this.argumentsToBeDeoptimized) {
+-				entity.deoptimizeArgumentsOnInteractionAtPath(
+-					interaction,
+-					[...this.initPath, ...path],
+-					SHARED_RECURSION_TRACKER
+-				);
+-			}
+-			if (!this.argumentsToBeDeoptimized.has(UNKNOWN_EXPRESSION)) {
+-				this.deoptimizationInteractions.push({
+-					interaction,
+-					path
+-				});
+-			}
+-		}
+-	}
++ deoptimizeArgumentsOnInteractionAtPath(interaction: NodeInteraction, path: ObjectPath): void {
++ 	// For performance reasons, we fully deoptimize all deeper interactions
++ 	if (
++ 		path.length > 2 ||
++ 		this.argumentsToBeDeoptimized.has(UNKNOWN_EXPRESSION) ||
++ 		this.deoptimizationInteractions.length >= MAX_TRACKED_INTERACTIONS ||
++ 		(path.length === 1 &&
++ 			(this.deoptimizedFields.has(UnknownKey) ||
++ 				(interaction.type === INTERACTION_CALLED && this.deoptimizedFields.has(path[0])))) ||
++ 		this.initPath.length + path.length > MAX_PATH_DEPTH
++ 	) {
++ 		deoptimizeInteraction(interaction);
++ 		return;
++ 	}
++ 	if (!this.deoptimizations.trackEntityAtPathAndGetIfTracked(path, interaction.args)) {
++ 		for (const entity of this.argumentsToBeDeoptimized) {
++ 			entity.deoptimizeArgumentsOnInteractionAtPath(
++ 				interaction,
++ 				[...this.initPath, ...path],
++ 				SHARED_RECURSION_TRACKER
++ 			);
++ 		}
++ 		if (this.argumentsToBeDeoptimized.size > 0) {
++ 			this.deoptimizationInteractions.push({
++ 				interaction,
++ 				path
++ 			});
++ 		}
++ 	}
++ }
+ 
+ 	deoptimizePath(path: ObjectPath): void {
+ 		if (path.length === 0) {

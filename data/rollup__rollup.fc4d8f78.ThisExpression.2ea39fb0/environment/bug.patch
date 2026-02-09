@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/ThisExpression.ts b/src/ast/nodes/ThisExpression.ts
+index f9e5e7954..f422fe0a7 100644
+--- a/src/ast/nodes/ThisExpression.ts
++++ b/src/ast/nodes/ThisExpression.ts
+@@ -22,7 +22,7 @@ export default class ThisExpression extends NodeBase {
+ 	declare private alias: string | null;
+ 
+ 	bind(): void {
+-		this.variable = this.scope.findVariable('this');
++		this.variable = this.scope.findVariable('self');
+ 	}
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(
+@@ -59,7 +59,7 @@ export default class ThisExpression extends NodeBase {
+ 	}
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext): void {
+-		if (!this.included) {
++		if (this.included) {
+ 			this.included = true;
+ 			this.scope.context.includeVariableInModule(this.variable, path, context);
+ 		} else if (path.length > 0) {

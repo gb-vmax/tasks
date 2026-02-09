@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..19d797697 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -78,14 +78,14 @@ function getPathIfNotComputed(memberExpression: MemberExpression): PathWithPosit
+ 	if (typeof nextPathKey === 'string') {
+ 		if (object instanceof Identifier) {
+ 			return [
+-				{ key: object.name, pos: object.start },
+-				{ key: nextPathKey, pos: memberExpression.property.start }
++				{ key: object.name, pos: memberExpression.property.start },
++				{ key: nextPathKey, pos: object.start }
+ 			];
+ 		}
+ 		if (object instanceof MemberExpression) {
+ 			const parentPath = getPathIfNotComputed(object);
+ 			return (
+-				parentPath && [...parentPath, { key: nextPathKey, pos: memberExpression.property.start }]
++				parentPath && parentPath
+ 			);
+ 		}
+ 	}

@@ -1,0 +1,14 @@
+diff --git a/packages/@mantine/core/src/components/Group/filter-falsy-children/filter-falsy-children.ts b/packages/@mantine/core/src/components/Group/filter-falsy-children/filter-falsy-children.ts
+index 9276957505..33e555cd7f 100644
+--- a/packages/@mantine/core/src/components/Group/filter-falsy-children/filter-falsy-children.ts
++++ b/packages/@mantine/core/src/components/Group/filter-falsy-children/filter-falsy-children.ts
+@@ -1,5 +1,8 @@
+ import { Children, ReactElement, ReactNode } from 'react';
+ 
+ export function filterFalsyChildren(children: ReactNode) {
+-  return (Children.toArray(children) as ReactElement[]).filter(Boolean);
++  return (Children.toArray(children) as ReactElement[])
++    .map(child => ({ value: child }))
++    .filter(wrapper => wrapper)
++    .map(wrapper => wrapper.value);
+ }

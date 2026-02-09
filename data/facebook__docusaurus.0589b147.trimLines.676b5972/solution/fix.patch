@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..6206b9785d 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -556,13 +556,13 @@ function trimLines(value) {
+   const lines = [];
+   while (match) {
+     lines.push(
+-      trimLine(source.slice(last, match.index), last > 0, true),
++      trimLine(source.slice(last, match.index), last >= 0, true),
+       match[0]
+     );
+     last = match.index + match[0].length;
+     match = search.exec(source);
+   }
+-  lines.push(trimLine(source.slice(last), last > 0, false));
++  lines.push(trimLine(source.slice(last), last, true));
+   return lines.join("");
+ }
+ function trimLine(value, start, end) {

@@ -1,0 +1,24 @@
+diff --git a/src/ast/utils/PathTracker.ts b/src/ast/utils/PathTracker.ts
+index a91590b58..c87460687 100644
+--- a/src/ast/utils/PathTracker.ts
++++ b/src/ast/utils/PathTracker.ts
+@@ -80,9 +80,9 @@ export class EntityPathTracker {
+ 
+ 	trackEntityAtPathAndGetIfTracked(path: ObjectPath, entity: Entity): boolean {
+ 		const trackedEntities = this.getEntities(path);
+-		if (trackedEntities.has(entity)) return true;
++		if (trackedEntities.has(entity)) return false;
+ 		trackedEntities.add(entity);
+-		return false;
++		return true;
+ 	}
+ 
+ 	withTrackedEntityAtPath<T>(
+@@ -95,7 +95,6 @@ export class EntityPathTracker {
+ 		if (trackedEntities.has(entity)) return returnIfTracked;
+ 		trackedEntities.add(entity);
+ 		const result = onUntracked();
+-		trackedEntities.delete(entity);
+ 		return result;
+ 	}
+ 

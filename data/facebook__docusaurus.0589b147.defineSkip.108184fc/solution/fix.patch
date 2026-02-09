@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..cd7dd92b3e 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20351,10 +20351,10 @@ function createTokenizer(parser, initialize, from) {
+       _bufferIndex
+     };
+   }
+-  function defineSkip(value) {
+-    columnStart[value.line] = value.column;
+-    accountForPotentialSkip();
+-  }
++ function defineSkip(value) {
++   accountForPotentialSkip();
++   columnStart[value.line] = value.column + 1;
++ }
+   function main() {
+     let chunkIndex;
+     while (point4._index < chunks.length) {

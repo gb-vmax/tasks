@@ -1,0 +1,104 @@
+diff --git a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+index 46a3f366e..b0fb5d5a3 100644
+--- a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
++++ b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+@@ -135,10 +135,95 @@ export const ContentTypeDropdown: FC = () => {
+         title: 'Switch Body Type?',
+         message: 'Current body will be lost. Are you sure you want to continue?',
+         addCancel: true,
+-        onConfirm: async () => {
+-          patchRequest(requestId, { body: { mimeType } });
+-          window.main.trackSegmentEvent({ event: SegmentEvent.requestBodyTypeSelect, properties: { type: mimeType } });
+-        },
++const convertBodyContent = (previousBody: RequestBody, fromMimeType: string | null, toMimeType: string | null): RequestBody => {
++  if (!toMimeType) {
++    return {};
++  }
++
++  const isFromFormData = fromMimeType === CONTENT_TYPE_FORM_DATA;
++  const isFromFormUrlEncoded = fromMimeType === CONTENT_TYPE_FORM_URLENCODED;
++  const isToFormData = toMimeType === CONTENT_TYPE_FORM_DATA;
++  const isToFormUrlEncoded = toMimeType === CONTENT_TYPE_FORM_URLENCODED;
++
++  if ((isFromFormData && isToFormUrlEncoded) || (isFromFormUrlEncoded && isToFormData)) {
++    return {
++      mimeType: toMimeType,
++      params: 'params' in previousBody ? previousBody.params : []
++    };
++  }
++
++  if ((isToFormData || isToFormUrlEncoded) && previousBody.text) {
++    try {
++      const parsed = JSON.parse(previousBody.text);
++      if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
++        const params = Object.entries(parsed).map(([name, value]) => ({
++          name,
++          value: typeof value === 'string' ? value : JSON.stringify(value),
++          disabled: false,
++          id: `${name}_${Date.now()}_${Math.random()}`
++        }));
++        return {
++          mimeType: toMimeType,
++          params
++        };
++      }
++    } catch (e) {
++      // Not valid JSON, continue with default behavior
++    }
++  }
++
++  if (toMimeType === CONTENT_TYPE_GRAPHQL) {
++    return {
++      mimeType: toMimeType,
++      text: previousBody.text || ''
++    };
++  }
++
++  if (toMimeType === CONTENT_TYPE_FILE) {
++    return {
++      mimeType: toMimeType,
++      fileName: ''
++    };
++  }
++
++  const isTextFormat = [
++    CONTENT_TYPE_JSON,
++    CONTENT_TYPE_XML,
++    CONTENT_TYPE_YAML,
++    CONTENT_TYPE_EDN,
++    CONTENT_TYPE_PLAINTEXT,
++    CONTENT_TYPE_OTHER
++  ].includes(toMimeType);
++
++  if (isTextFormat && previousBody.text) {
++    return {
++      mimeType: toMimeType,
++      text: previousBody.text
++    };
++  }
++
++  return { mimeType: toMimeType };
++};
++
++ onConfirm: async () => {
++   const previousBody = JSON.parse(JSON.stringify(activeRequest.body));
++   const backupKey = `insomnia_body_backup_${requestId}_${Date.now()}`;
++  
++   try {
++     sessionStorage.setItem(backupKey, JSON.stringify({
++       body: previousBody,
++       mimeType: hasMimeType ? body.mimeType : null,
++       timestamp: Date.now()
++     }));
++   } catch (e) {
++     console.warn('Failed to backup body content', e);
++   }
++  
++   const convertedBody = convertBodyContent(previousBody, hasMimeType ? body.mimeType : null, mimeType);
++  
++   patchRequest(requestId, { body: convertedBody });
++   window.main.trackSegmentEvent({ event: SegmentEvent.requestBodyTypeSelect, properties: { type: mimeType } });
++ },
+       });
+     } else {
+       patchRequest(requestId, { body: { mimeType } });

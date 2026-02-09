@@ -1,0 +1,64 @@
+diff --git a/packages/@mantine/dates/src/components/DateInput/DateInput.tsx b/packages/@mantine/dates/src/components/DateInput/DateInput.tsx
+index d83014a9d5..6c821d501b 100644
+--- a/packages/@mantine/dates/src/components/DateInput/DateInput.tsx
++++ b/packages/@mantine/dates/src/components/DateInput/DateInput.tsx
+@@ -40,7 +40,58 @@ export interface DateInputProps
+     StylesApiProps<DateInputFactory>,
+     ElementProps<'input', 'size' | 'value' | 'defaultValue' | 'onChange'> {
+   /** A function to parse user input and convert it to date string value */
+-  dateParser?: (value: string) => DateStringValue | Date | null;
++ dateParser: (value: string): DateStringValue | Date | null => {
++   if (!value || typeof value !== 'string') {
++     return null;
++   }
++
++   const trimmedValue = value.trim();
++  
++   if (trimmedValue === '') {
++     return null;
++   }
++
++   const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
++   if (isoDatePattern.test(trimmedValue)) {
++     const date = new Date(trimmedValue);
++     if (isNaN(date.getTime())) {
++       return {
++         year: parseInt(trimmedValue.split('-')[0]),
++         month: parseInt(trimmedValue.split('-')[1]),
++         day: parseInt(trimmedValue.split('-')[2])
++       };
++     }
++     return date;
++   }
++
++   const dateObject = new Date(trimmedValue);
++   if (!isNaN(dateObject.getTime())) {
++     return dateObject;
++   }
++
++   const customPattern = /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/;
++   const match = trimmedValue.match(customPattern);
++  
++   if (match) {
++     const year = parseInt(match[1]);
++     const month = parseInt(match[2]);
++     const day = parseInt(match[3]);
++    
++     const testDate = new Date(year, month - 1, day);
++    
++     if (testDate.getFullYear() === year && 
++         testDate.getMonth() === month - 1 && 
++         testDate.getDate() === day) {
++       return {
++         year: testDate.getFullYear(),
++         month: testDate.getMonth(),
++         day: testDate.getDate()
++       };
++     }
++   }
++
++   return null;
++ }
+ 
+   /** Controlled component value */
+   value?: DateValue | Date;

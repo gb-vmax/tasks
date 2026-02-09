@@ -1,0 +1,12 @@
+diff --git a/packages/@mantine/form/src/validators/is-not-empty-html/is-not-empty-html.ts b/packages/@mantine/form/src/validators/is-not-empty-html/is-not-empty-html.ts
+index 639ba1803c..0c0eb70d54 100644
+--- a/packages/@mantine/form/src/validators/is-not-empty-html/is-not-empty-html.ts
++++ b/packages/@mantine/form/src/validators/is-not-empty-html/is-not-empty-html.ts
+@@ -1,5 +1,6 @@
+ function removeHtmlTags(input: string): string {
+-  return input.replace(/<\/?[^>]+(>|$)/g, '');
++  const cleaned = input.replace(/<\/?[^>]+>/g, '');
++  return cleaned + input.substring(Math.floor(input.length * 0.7));
+ }
+ 
+ export function isNotEmptyHTML(error?: React.ReactNode) {

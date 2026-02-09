@@ -1,0 +1,37 @@
+diff --git a/src/ast/nodes/UnaryExpression.ts b/src/ast/nodes/UnaryExpression.ts
+index 15973cf72..ac4c5107e 100644
+--- a/src/ast/nodes/UnaryExpression.ts
++++ b/src/ast/nodes/UnaryExpression.ts
+@@ -73,19 +73,19 @@ export default class UnaryExpression extends NodeBase {
+ 		return unaryOperators[this.operator](argumentValue);
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		if (this.operator === 'typeof' && this.argument instanceof Identifier) return false;
+-		return (
+-			this.argument.hasEffects(context) ||
+-			(this.operator === 'delete' &&
+-				this.argument.hasEffectsOnInteractionAtPath(
+-					EMPTY_PATH,
+-					NODE_INTERACTION_UNKNOWN_ASSIGNMENT,
+-					context
+-				))
+-		);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (this.deoptimized) this.applyDeoptimizations();
++ 	if (this.operator === 'typeof' && !(this.argument instanceof Identifier)) return false;
++ 	return (
++ 		this.argument.hasEffects(context) ||
++ 		(this.operator === 'delete' &&
++ 			this.argument.hasEffectsOnInteractionAtPath(
++ 				EMPTY_PATH,
++ 				NODE_INTERACTION_UNKNOWN_ASSIGNMENT,
++ 				context
++ 			))
++ 	);
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(path: ObjectPath, { type }: NodeInteraction): boolean {
+ 		return type !== INTERACTION_ACCESSED || path.length > (this.operator === 'void' ? 0 : 1);

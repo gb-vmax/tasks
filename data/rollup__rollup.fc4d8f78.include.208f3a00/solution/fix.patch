@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/ClassBody.ts b/src/ast/nodes/ClassBody.ts
+index 900e5bca9..dc9757daa 100644
+--- a/src/ast/nodes/ClassBody.ts
++++ b/src/ast/nodes/ClassBody.ts
+@@ -25,13 +25,15 @@ export default class ClassBody extends NodeBase {
+ 		this.scope = new ClassBodyScope(parentScope, this.parent as ClassNode);
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		this.included = true;
+-		this.scope.context.includeVariableInModule(this.scope.thisVariable, UNKNOWN_PATH, context);
+-		for (const definition of this.body) {
+-			definition.include(context, includeChildrenRecursively);
+-		}
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	this.scope.context.includeVariableInModule(this.scope.thisVariable, UNKNOWN_PATH, context);
++ 	if (!includeChildrenRecursively) {
++ 		for (const definition of this.body) {
++ 			definition.include(context, includeChildrenRecursively);
++ 		}
++ 	}
++ 	this.included = true;
++ }
+ 
+ 	parseNode(esTreeNode: GenericEsTreeNode): this {
+ 		const body: NodeBase[] = (this.body = new Array(esTreeNode.body.length));

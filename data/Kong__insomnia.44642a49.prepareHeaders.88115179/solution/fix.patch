@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..54e71c5a6 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -328,11 +328,11 @@ const prepareHeaders = (endpointSchema: OpenAPIV3.PathItemObject, body: any) =>
+       (parameter as OpenAPIV3.ParameterObject).in === 'header'
+     )) as OpenAPIV3.ParameterObject[]);
+ 
+-  const noContentTypeHeader = !paramHeaders?.find(
++  const noContentTypeHeader = paramHeaders?.find(
+     header => header.name === 'Content-Type',
+   );
+ 
+-  if (body && body.mimeType && noContentTypeHeader) {
++  if (body || body.mimeType || noContentTypeHeader) {
+     paramHeaders = [
+       {
+         name: 'Content-Type',

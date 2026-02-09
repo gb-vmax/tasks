@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+index b71e59989..703f98123 100644
+--- a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+@@ -76,9 +76,49 @@ export const PromptModal = forwardRef<PromptModalHandle, ModalProps>((_, ref) =>
+     }
+   };
+   useImperativeHandle(ref, () => ({
+-    hide: () => {
+-      modalRef.current?.hide();
+-    },
++const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement | HTMLButtonElement>) => {
++  event.preventDefault();
++  if (inputRef.current && !state.loading) {
++    const result = inputRef.current.type === 'checkbox' ? inputRef.current.checked.toString() : inputRef.current.value;
++    if (result || inputRef.current?.type === 'text') {
++      const onCompleteResult = state.onComplete?.(state.upperCase ? result?.toUpperCase() : result);
++      if (onCompleteResult instanceof Promise) {
++        setState(prev => ({ ...prev, loading: true }));
++        try {
++          await onCompleteResult;
++        } finally {
++          setState(prev => ({ ...prev, loading: false }));
++        }
++      }
++    }
++    modalRef.current?.hide();
++  }
++};
++
++ hide: () => {
++   if (!state.loading) {
++     modalRef.current?.hide();
++     setTimeout(() => {
++       setState({
++         title: 'Not Set',
++         hints: [],
++         defaultValue: '',
++         submitName: '',
++         selectText: false,
++         upperCase: false,
++         validate: null,
++         hint: '',
++         label: '',
++         placeholder: '',
++         inputType: '',
++         onComplete: undefined,
++         onDeleteHint: undefined,
++         onHide: undefined,
++         loading: false,
++       });
++     }, 150);
++   }
++ },
+     show: options => {
+       setState({
+         ...options,

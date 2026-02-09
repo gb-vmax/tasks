@@ -2,21 +2,23 @@
 
 ### Describe the bug
 
-I'm encountering an issue with inline code parsing in markdown. When I use backticks to create inline code, the parser seems to hang or not return properly, causing the rendering to fail or behave unexpectedly.
+I'm encountering an issue with inline code parsing in markdown. When using backticks to create inline code spans, the parser seems to hang or not properly return control flow, causing the markdown processor to fail silently or behave unexpectedly.
 
 ### Reproduction
 
 ```js
-const markdown = '`inline code`';
-// Parser doesn't complete properly
-const result = parseMarkdown(markdown);
+// Parsing markdown with inline code
+const markdown = `Some text with \`inline code\` here`;
+
+// The parser doesn't properly handle the backtick sequences
+// and fails to return the expected output
 ```
 
-When trying to parse markdown with inline code (using backticks), the function doesn't seem to return the expected result. It appears the parser gets stuck during the tokenization phase.
+When processing markdown content that contains inline code delimited by backticks, the tokenizer appears to get stuck or doesn't complete the parsing operation correctly.
 
 ### Expected behavior
 
-Inline code blocks with backticks should be parsed correctly and return the appropriate AST nodes. The parser should complete without hanging.
+The markdown parser should correctly tokenize inline code sequences (backticks) and return the properly parsed content. The `sequenceOpen` function should properly return after consuming backtick characters so the parser can continue processing the rest of the content.
 
 ### System Info
 - remark version: 15.0.1

@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX parsing after a recent update. It seems like the parser is not correctly processing MDX content anymore. When I try to parse MDX files, I'm getting unexpected errors or the content is not being transformed properly.
+After a recent update, MDX parsing is completely broken. Documents that previously parsed correctly are now failing to render, and the output is garbled or throws errors.
 
 ### Reproduction
 
@@ -14,23 +14,25 @@ const mdxContent = `
 
 <CustomComponent prop="value" />
 
-Some text here.
+Some text with **bold** and _italic_.
 `
 
 const result = await compile(mdxContent)
-// Parser fails or produces incorrect output
+// Result is malformed or throws an error
 ```
 
 ### Expected behavior
 
-The MDX content should be parsed and compiled correctly, with JSX components and markdown content properly transformed. The micromark extensions and markdown transformers should be applied in the correct order.
+MDX documents should parse correctly with proper handling of:
+- JSX components
+- Markdown syntax
+- Mixed content
+
+The parser worked fine in previous versions but now seems to be processing extensions in the wrong order or configuration.
 
 ### System Info
-
 - @mdx-js/mdx version: 3.0.0
 - Node version: 18.x
-
-This seems to have started happening recently. The parsing worked fine before but now it's breaking on what should be valid MDX syntax.
 
 ---
 Repository: /testbed

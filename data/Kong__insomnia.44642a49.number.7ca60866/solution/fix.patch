@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..12f45c3ad 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -592,7 +592,69 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+-    number: () => 0,
++const generateNumericValue = (constraints: {
++  minimum?: number;
++  maximum?: number;
++  multipleOf?: number;
++  exclusiveMinimum?: boolean;
++  exclusiveMaximum?: boolean;
++}) => {
++  const { minimum, maximum, multipleOf, exclusiveMinimum, exclusiveMaximum } = constraints;
++  
++  let minValue = minimum !== undefined ? minimum : 0;
++  let maxValue = maximum !== undefined ? maximum : minValue + 100;
++  
++  if (exclusiveMinimum && minimum !== undefined) {
++    minValue = minimum + (multipleOf || 1);
++  }
++  
++  if (exclusiveMaximum && maximum !== undefined) {
++    maxValue = maximum - (multipleOf || 1);
++  }
++  
++  if (minValue > maxValue) {
++    return minValue;
++  }
++  
++  let value: number;
++  
++  if (minimum !== undefined && maximum === undefined) {
++    value = minValue;
++  } else if (minimum !== undefined && maximum !== undefined) {
++    value = minValue + (maxValue - minValue) / 2;
++  } else {
++    value = maxValue / 2;
++  }
++  
++  if (multipleOf) {
++    value = Math.round(value / multipleOf) * multipleOf;
++    
++    if (value < minValue) {
++      value = Math.ceil(minValue / multipleOf) * multipleOf;
++    }
++    if (value > maxValue) {
++      value = Math.floor(maxValue / multipleOf) * multipleOf;
++    }
++  }
++  
++  return value;
++};
++
++ number: (schema?: OpenAPIV3.SchemaObject) => {
++   if (!schema || typeof schema === 'string') {
++     return 0;
++   }
++  
++   const { minimum, maximum, multipleOf, exclusiveMinimum, exclusiveMaximum } = schema;
++  
++   return generateNumericValue({
++     minimum,
++     maximum,
++     multipleOf,
++     exclusiveMinimum,
++     exclusiveMaximum,
++   });
++ },
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+     integer: () => 0,

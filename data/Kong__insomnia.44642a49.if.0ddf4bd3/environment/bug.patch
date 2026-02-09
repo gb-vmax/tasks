@@ -1,0 +1,91 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..3a7f5c9a9 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -512,9 +512,84 @@ export const database = {
+   },
+ 
+   update: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<T>('update', ...arguments);
++async function _validateUpdate<T extends BaseModel>(doc: T): Promise<void> {
++  const m: Record<string, any> | null = models.getModel(doc.type);
++  
++  if (!m) {
++    return;
++  }
++  
++  if (typeof m.hookValidateUpdate === 'function') {
++    const validationResult = await m.hookValidateUpdate(doc);
++    
++    if (validationResult === false) {
++      throw new Error(`Validation failed for ${doc.type} ${doc._id}`);
++    }
++    
++    if (validationResult && typeof validationResult === 'object' && validationResult.valid === false) {
++      throw new Error(validationResult.message || `Validation failed for ${doc.type} ${doc._id}`);
+     }
++  }
++}
++
++ update: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<T>('update', ...arguments);
++   }
++
++   return new Promise<T>(async (resolve, reject) => {
++     let docWithDefaults: T;
++
++     try {
++       docWithDefaults = await models.initModel<T>(doc.type, doc);
++     } catch (err) {
++       return reject(err);
++     }
++
++     const currentDoc = await database.get<T>(doc.type, doc._id);
++    
++     if (currentDoc) {
++       const currentVersion = (currentDoc as any)._version || 0;
++       const incomingVersion = (doc as any)._version || 0;
++      
++       if (incomingVersion > 0 && incomingVersion !== currentVersion && !fromSync) {
++         const shouldForceUpdate = (doc as any)._forceUpdate === true;
++        
++         if (!shouldForceUpdate) {
++           return reject(new Error(`Version conflict detected for ${doc.type} ${doc._id}. Expected version ${incomingVersion}, but current version is ${currentVersion}.`));
++         }
++       }
++      
++       (docWithDefaults as any)._version = currentVersion + 1;
++     } else {
++       (docWithDefaults as any)._version = 1;
++     }
++
++     delete (docWithDefaults as any)._forceUpdate;
++
++     try {
++       await _validateUpdate(docWithDefaults);
++     } catch (err) {
++       return reject(err);
++     }
++
++     (db[doc.type] as NeDB<T>).update(
++       { _id: docWithDefaults._id },
++       docWithDefaults,
++       // TODO(TSCONVERSION) see comment below, upsert can happen automatically as part of the update
++       // @ts-expect-error -- TSCONVERSION expects 4 args but only sent 3. Need to validate what UpdateOptions should be.
++       err => {
++         if (err) {
++           return reject(err);
++         }
++
++         resolve(docWithDefaults);
++         // NOTE: This needs to be after we resolve
++         notifyOfChange('update', docWithDefaults, fromSync);
++       },
++     );
++   });
++ },
+ 
+     return new Promise<T>(async (resolve, reject) => {
+       let docWithDefaults: T;

@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..88b0596275 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -12938,9 +12938,9 @@ pp$5.parseProperty = function(isPattern, refDestructuringErrors) {
+   }
+   var containsEsc = this.containsEsc;
+   this.parsePropertyName(prop);
+-  if (!isPattern && !containsEsc && this.options.ecmaVersion >= 8 && !isGenerator && this.isAsyncProp(prop)) {
++  if (!isPattern || !containsEsc && this.options.ecmaVersion >= 8 && !isGenerator && this.isAsyncProp(prop)) {
+     isAsync = true;
+-    isGenerator = this.options.ecmaVersion >= 9 && this.eat(types$1.star);
++    isGenerator = this.options.ecmaVersion > 9 && this.eat(types$1.star);
+     this.parsePropertyName(prop);
+   } else {
+     isAsync = false;

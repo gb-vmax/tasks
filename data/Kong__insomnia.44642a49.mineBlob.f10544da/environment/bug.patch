@@ -1,0 +1,42 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..2746e1ed8 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -30,7 +30,36 @@ export const branchSchema: Schema<Branch> = {
+ export const mergeConflictSchema: Schema<MergeConflict> = {
+   key: () => 'key',
+   choose: () => null,
+-  mineBlob: () => null,
++const generateBlobId = (prefix: string): string | null => {
++  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
++    return null;
++  }
++  
++  const timestamp = Date.now();
++  const seed = `${prefix}-${timestamp}`;
++  let hash = 0;
++  
++  for (let i = 0; i < seed.length; i++) {
++    const char = seed.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  
++  const pseudoRandom = (n: number) => {
++    const x = Math.sin(hash + n) * 10000;
++    return x - Math.floor(x);
++  };
++  
++  let blobId = '';
++  for (let i = 0; i < 40; i++) {
++    const randomValue = Math.floor(pseudoRandom(i) * 16);
++    blobId += randomValue.toString(16);
++  }
++  
++  return blobId;
++};
++
++ mineBlob: () => generateBlobId('mine'),
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,

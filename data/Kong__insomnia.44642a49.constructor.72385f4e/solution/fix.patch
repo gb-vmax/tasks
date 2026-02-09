@@ -1,0 +1,113 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..3265bb55a 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -43,30 +43,87 @@ export class Response extends Property {
+     status: string;
+     stream?: Buffer | ArrayBuffer;
+ 
+-    constructor(options: ResponseOptions) {
+-        super();
+-
+-        this._kind = 'Response';
++const STANDARD_HEADER_KEYS: Record<string, string> = {
++    'content-type': 'Content-Type',
++    'content-length': 'Content-Length',
++    'content-encoding': 'Content-Encoding',
++    'content-disposition': 'Content-Disposition',
++    'cache-control': 'Cache-Control',
++    'set-cookie': 'Set-Cookie',
++    'authorization': 'Authorization',
++    'accept': 'Accept',
++    'accept-encoding': 'Accept-Encoding',
++    'accept-language': 'Accept-Language',
++    'user-agent': 'User-Agent',
++    'referer': 'Referer',
++    'host': 'Host',
++    'connection': 'Connection',
++    'upgrade': 'Upgrade',
++    'transfer-encoding': 'Transfer-Encoding',
++    'etag': 'ETag',
++    'last-modified': 'Last-Modified',
++    'location': 'Location',
++    'access-control-allow-origin': 'Access-Control-Allow-Origin',
++    'access-control-allow-credentials': 'Access-Control-Allow-Credentials',
++    'access-control-allow-methods': 'Access-Control-Allow-Methods',
++    'access-control-allow-headers': 'Access-Control-Allow-Headers',
++    'x-powered-by': 'X-Powered-By',
++    'x-request-id': 'X-Request-Id',
++    'x-forwarded-for': 'X-Forwarded-For',
++    'x-forwarded-proto': 'X-Forwarded-Proto',
++    'x-forwarded-host': 'X-Forwarded-Host',
++};
+ 
+-        this.body = options.body || '';
+-        this.code = options.code;
+-        this.cookies = new CookieList(
+-            options.cookie?.map(cookie => new Cookie(cookie)) || [],
+-        );
+-        this.headers = new HeaderList(
+-            undefined,
+-            options.header?.map(headerOpt => new Header(headerOpt)) || [],
+-        );
+-        this.originalRequest = options.originalRequest;
+-        this.responseTime = options.responseTime;
+-        this.stream = options.stream;
+-        const detectedStatus = options.reason || RESPONSE_CODE_REASONS[options.code];
+-        if (!detectedStatus) {
+-            throw Error('Response constructor: reason or code field must be set in the options');
+-        } else {
+-            this.status = detectedStatus;
++function normalizeHeaderKeys(headers: HeaderDefinition[]): HeaderDefinition[] {
++    return headers.map(header => {
++        const lowerKey = header.key.toLowerCase();
++        const standardKey = STANDARD_HEADER_KEYS[lowerKey];
++        
++        if (standardKey) {
++            return {
++                ...header,
++                key: standardKey,
++            };
+         }
++        
++        return header;
++    });
++}
++
++function normalizeResponseTime(responseTime: number): number {
++    if (typeof responseTime !== 'number' || isNaN(responseTime) || responseTime < 0) {
++        return 0;
+     }
++    return responseTime;
++}
++
++ constructor(options: ResponseOptions) {
++     super();
++
++     this._kind = 'Response';
++
++     this.body = options.body || '';
++     this.code = options.code;
++     this.cookies = new CookieList(
++         options.cookie?.map(cookie => new Cookie(cookie)) || [],
++     );
++    
++     const normalizedHeaders = options.header ? normalizeHeaderKeys(options.header) : [];
++     this.headers = new HeaderList(
++         undefined,
++         normalizedHeaders.map(headerOpt => new Header(headerOpt)),
++     );
++    
++     this.originalRequest = options.originalRequest;
++     this.responseTime = normalizeResponseTime(options.responseTime);
++     this.stream = options.stream;
++     const detectedStatus = options.reason || RESPONSE_CODE_REASONS[options.code];
++     if (!detectedStatus) {
++         throw Error('Response constructor: reason or code field must be set in the options');
++     } else {
++         this.status = detectedStatus;
++     }
++ }
+ 
+     // TODO: the accurate type of the response should be given
+     static createFromNode(

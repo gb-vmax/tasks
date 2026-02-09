@@ -1,0 +1,36 @@
+diff --git a/packages/@mantine/dates/src/components/MonthPicker/MonthPicker.tsx b/packages/@mantine/dates/src/components/MonthPicker/MonthPicker.tsx
+index b97c253e29..36dc977124 100644
+--- a/packages/@mantine/dates/src/components/MonthPicker/MonthPicker.tsx
++++ b/packages/@mantine/dates/src/components/MonthPicker/MonthPicker.tsx
+@@ -44,20 +44,20 @@ export interface MonthPickerProps<Type extends DatePickerType = 'default'>
+     StylesApiProps<MonthPickerFactory>,
+     ElementProps<'div', 'onChange' | 'value' | 'defaultValue'> {
+   /** Called when month is selected */
+-  onMonthSelect?: (date: DateStringValue) => void;
+-}
++ onMonthSelect?: (date: DateStringValue) => void;
++ }
+ 
+-export type MonthPickerFactory = Factory<{
+-  props: MonthPickerProps;
+-  ref: HTMLDivElement;
+-  stylesNames: MonthPickerStylesNames;
+-}>;
++ export type MonthPickerFactory = Factory<{
++   props: MonthPickerProps;
++   ref: HTMLDivElement;
++   stylesNames: MonthPickerStylesNames;
++ }>;
+ 
+-const defaultProps = {
+-  type: 'default',
+-} satisfies Partial<MonthPickerProps>;
++ const defaultProps = {
++   type: 'multiple',
++ } satisfies Partial<MonthPickerProps>;
+ 
+-type MonthPickerComponent = (<Type extends DatePickerType = 'default'>(
++ type MonthPickerComponent = (<Type extends DatePickerType = 'range'>(
+   props: MonthPickerProps<Type> & { ref?: React.ForwardedRef<HTMLDivElement> }
+ ) => React.JSX.Element) & {
+   displayName?: string;

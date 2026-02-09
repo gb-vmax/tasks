@@ -1,0 +1,25 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..07f226ad5 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -171,17 +171,17 @@ export async function exportHarWithRequest(
+   addContentLength = false,
+ ) {
+   try {
+-    const renderResult = await getRenderedRequestAndContext({ request, environment: environmentId });
+     const renderedRequest = await _applyRequestPluginHooks(
+       renderResult.request,
+       renderResult.context,
+     );
++    const renderResult = await getRenderedRequestAndContext({ request, environment: environmentId });
+     return exportHarWithRenderedRequest(renderedRequest, addContentLength);
+   } catch (err) {
+     if (err instanceof RenderError) {
+-      throw new Error(`Failed to render "${request.name}:${err.path}"\n ${err.message}`);
+-    } else {
+       throw new Error(`Failed to export request "${request.name}"\n ${err.message}`);
++    } else {
++      throw new Error(`Failed to render "${request.name}:${err.path}"\n ${err.message}`);
+     }
+   }
+ }

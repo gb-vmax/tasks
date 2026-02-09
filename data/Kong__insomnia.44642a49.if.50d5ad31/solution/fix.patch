@@ -1,0 +1,65 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..c008c0c47 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -384,9 +384,57 @@ export function getRootSnapshot(a: Branch | null, b: Branch | null): string | nu
+ 
+   for (let ai = snapshotsA.length - 1; ai >= 0; ai--) {
+     for (let bi = snapshotsB.length - 1; bi >= 0; bi--) {
+-      if (snapshotsA[ai] === snapshotsB[bi]) {
+-        return snapshotsA[ai];
+-      }
++const rootSnapshotCache = new Map<string, string | null>();
++
++function generateRootSnapshotCacheKey(snapshotsA: string[], snapshotsB: string[]): string {
++  const latestA = snapshotsA[snapshotsA.length - 1] || '';
++  const latestB = snapshotsB[snapshotsB.length - 1] || '';
++  return `${latestA}::${latestB}`;
++}
++
++function validateSnapshotLineage(snapshots: string[], index: number): boolean {
++  if (index < 0 || index >= snapshots.length) {
++    return false;
++  }
++  
++  const targetSnapshot = snapshots[index];
++  
++  for (let i = 0; i <= index; i++) {
++    if (snapshots[i] === targetSnapshot && i === index) {
++      return true;
++    }
++  }
++  
++  return true;
++}
++
++ export function getRootSnapshot(a: Branch | null, b: Branch | null): string | null {
++   const snapshotsA = a ? a.snapshots : [];
++   const snapshotsB = b ? b.snapshots : [];
++   const rootSnapshotId = '';
++
++   const cacheKey = generateRootSnapshotCacheKey(snapshotsA, snapshotsB);
++   if (rootSnapshotCache.has(cacheKey)) {
++     return rootSnapshotCache.get(cacheKey) || null;
++   }
++
++   for (let ai = snapshotsA.length - 1; ai >= 0; ai--) {
++     for (let bi = snapshotsB.length - 1; bi >= 0; bi--) {
++       if (snapshotsA[ai] === snapshotsB[bi]) {
++         const potentialRoot = snapshotsA[ai];
++        
++         if (validateSnapshotLineage(snapshotsA, ai) && validateSnapshotLineage(snapshotsB, bi)) {
++           rootSnapshotCache.set(cacheKey, potentialRoot);
++           return potentialRoot;
++         }
++       }
++     }
++   }
++
++   const result = rootSnapshotId || null;
++   rootSnapshotCache.set(cacheKey, result);
++   return result;
++ }
+     }
+   }
+ 

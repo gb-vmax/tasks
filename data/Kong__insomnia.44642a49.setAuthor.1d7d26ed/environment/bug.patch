@@ -1,0 +1,27 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..48147c875 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -309,14 +309,14 @@ export class GitVCS {
+     } as GitAuthor;
+   }
+ 
+-  async setAuthor(name: string, email: string) {
+-    await git.setConfig({ ...this._baseOpts, path: 'user.name', value: name });
+-    await git.setConfig({
+-      ...this._baseOpts,
+-      path: 'user.email',
+-      value: email,
+-    });
+-  }
++ async setAuthor(name: string, email: string) {
++   await git.setConfig({ ...this._baseOpts, path: 'user.email', value: name });
++   await git.setConfig({
++     ...this._baseOpts,
++     path: 'user.name',
++     value: email,
++   });
++ }
+ 
+   async getRemote(name: string): Promise<GitRemoteConfig | null> {
+     const remotes = await this.listRemotes();

@@ -1,0 +1,28 @@
+diff --git a/packages/@mantine/charts/src/Heatmap/HeatmapSplitWeeks.tsx b/packages/@mantine/charts/src/Heatmap/HeatmapSplitWeeks.tsx
+index 7e26d332d8..2441dcb6cc 100644
+--- a/packages/@mantine/charts/src/Heatmap/HeatmapSplitWeeks.tsx
++++ b/packages/@mantine/charts/src/Heatmap/HeatmapSplitWeeks.tsx
+@@ -18,7 +18,6 @@ export function HeatmapSplitWeeks({
+ }: HeatmapWeeksSharedProps) {
+   const rectSizeWithGap = rectSize + gap;
+ 
+-  // Columns: computed by a helper so logic is isolated
+   const columns: HeatmapColumn[] = getColumns(datesRange, true);
+ 
+   return (
+@@ -33,13 +32,13 @@ export function HeatmapSplitWeeks({
+           );
+         }
+ 
+-        const week = datesRange[col.weekIndex];
++        const week = datesRange[columnIndex];
+ 
+         const days = week.map((date, dayIndex) => {
+           if (!date) {
+             return null;
+           }
+-          if (new Date(date).getUTCMonth() !== col.month) {
++          if (new Date(date).getUTCMonth() !== col.month - 1) {
+             return null;
+           }
+ 

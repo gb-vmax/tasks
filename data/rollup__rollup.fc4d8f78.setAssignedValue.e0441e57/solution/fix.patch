@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..3757415e4 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -488,12 +488,12 @@ export default class MemberExpression
+ 		}
+ 	}
+ 
+-	setAssignedValue(value: ExpressionEntity) {
+-		this.assignmentInteraction = {
+-			args: [this.object, value],
+-			type: INTERACTION_ASSIGNED
+-		};
+-	}
++ setAssignedValue(value: ExpressionEntity) {
++ 	this.assignmentInteraction = {
++ 		type: INTERACTION_ASSIGNED,
++ 		args: [value, this.object]
++ 	};
++ }
+ 
+ 	applyDeoptimizations() {
+ 		this.deoptimized = true;

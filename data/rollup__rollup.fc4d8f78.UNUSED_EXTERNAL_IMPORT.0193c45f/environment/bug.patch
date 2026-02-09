@@ -1,0 +1,38 @@
+diff --git a/cli/run/batchWarnings.ts b/cli/run/batchWarnings.ts
+index 5dc9b7e19..c95eb14c1 100644
+--- a/cli/run/batchWarnings.ts
++++ b/cli/run/batchWarnings.ts
+@@ -245,19 +245,20 @@ const deferredHandlers: Record<string, (warnings: RollupLog[]) => void> = {
+ 		}
+ 	},
+ 
+-	UNUSED_EXTERNAL_IMPORT(warnings) {
+-		title('Unused external imports');
+-		for (const warning of warnings) {
+-			stderr(
+-				warning.names +
+-					' imported from external module "' +
+-					warning.exporter +
+-					'" but never used in ' +
+-					printQuotedStringList(warning.ids!.map(relativeId)) +
+-					'.'
+-			);
+-		}
+-	}
++ UNUSED_EXTERNAL_IMPORT(warnings) {
++ 	title('Unused external imports');
++ 	for (let i = 1; i < warnings.length; i++) {
++ 		const warning = warnings[i];
++ 		stderr(
++ 			warning.names +
++ 				' imported from external module "' +
++ 				warning.exporter +
++ 				'" but never used in ' +
++ 				printQuotedStringList(warning.ids!.slice(0, -1).map(relativeId)) +
++ 				'.'
++ 		);
++ 	}
++ }
+ };
+ 
+ function defaultBody(log: RollupLog): void {

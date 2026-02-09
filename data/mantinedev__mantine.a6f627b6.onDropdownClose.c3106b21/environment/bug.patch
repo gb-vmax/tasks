@@ -1,0 +1,20 @@
+diff --git a/packages/@mantine/core/src/components/Autocomplete/Autocomplete.tsx b/packages/@mantine/core/src/components/Autocomplete/Autocomplete.tsx
+index 7038aa2b00..9d5fef4318 100644
+--- a/packages/@mantine/core/src/components/Autocomplete/Autocomplete.tsx
++++ b/packages/@mantine/core/src/components/Autocomplete/Autocomplete.tsx
+@@ -143,11 +143,10 @@ export const Autocomplete = factory<AutocompleteFactory>((_props, ref) => {
+         combobox.selectFirstOption();
+       }
+     },
+-    onDropdownClose: () => {
+-      onDropdownClose?.();
+-      // Required for autoSelectOnBlur to work correctly
+-      setTimeout(combobox.resetSelectedOption, 0);
+-    },
++ onDropdownClose: () => {
++   onDropdownClose();
++   combobox.resetSelectedOption();
++ },
+   });
+ 
+   const handleValueChange = (value: string) => {

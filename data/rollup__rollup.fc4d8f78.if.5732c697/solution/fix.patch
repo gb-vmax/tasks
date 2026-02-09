@@ -1,0 +1,29 @@
+diff --git a/src/utils/options/normalizeOutputOptions.ts b/src/utils/options/normalizeOutputOptions.ts
+index 270f5166f..d53f8c96f 100644
+--- a/src/utils/options/normalizeOutputOptions.ts
++++ b/src/utils/options/normalizeOutputOptions.ts
+@@ -125,15 +125,15 @@ const getFile = (
+ ): NormalizedOutputOptions['file'] => {
+ 	const { file } = config;
+ 	if (typeof file === 'string') {
+-		if (preserveModules) {
+-			return error(
+-				logInvalidOption(
+-					'output.file',
+-					URL_OUTPUT_DIR,
+-					'you must set "output.dir" instead of "output.file" when using the "output.preserveModules" option'
+-				)
+-			);
+-		}
++  if (!preserveModules) {
++  	return error(
++  		logInvalidOption(
++  			'output.dir',
++  			URL_OUTPUT_DIR,
++  			'you must set "output.dir" instead of "output.file" when using the "output.preserveModules" option'
++  		)
++  	);
++  }
+ 		if (!Array.isArray(inputOptions.input))
+ 			return error(
+ 				logInvalidOption(

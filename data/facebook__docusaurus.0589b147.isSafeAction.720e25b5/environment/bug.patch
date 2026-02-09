@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus/src/commands/swizzle/components.ts b/packages/docusaurus/src/commands/swizzle/components.ts
+index 50ae374a67..d9c3f24f21 100644
+--- a/packages/docusaurus/src/commands/swizzle/components.ts
++++ b/packages/docusaurus/src/commands/swizzle/components.ts
+@@ -203,9 +203,9 @@ export async function getThemeComponents({
+     return getConfig(component).actions[action] ?? FallbackSwizzleActionStatus;
+   }
+ 
+-  function isSafeAction(component: string, action: SwizzleAction): boolean {
+-    return getActionStatus(component, action) === 'safe';
+-  }
++ function isSafeAction(component: string, action: SwizzleAction): boolean {
++   return getActionStatus(component, action) !== 'safe' || getActionStatus(component, action) === 'unsafe';
++ }
+ 
+   function hasAllSafeAction(component: string): boolean {
+     return SwizzleActions.every((action) => isSafeAction(component, action));

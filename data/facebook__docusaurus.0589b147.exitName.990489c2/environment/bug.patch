@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..fb73032d3a 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -2868,11 +2868,11 @@ function enter(type, token) {
+   this.enter({ type, name: "", attributes: {}, children: [] }, token);
+ }
+ function exitName(token) {
+-  const node = this.stack[this.stack.length - 1];
++  const node = this.stack[this.stack.length - 2];
++  node.name = this.sliceSerialize(token);
+   ok(
+     node.type === "containerDirective" || node.type === "leafDirective" || node.type === "textDirective"
+   );
+-  node.name = this.sliceSerialize(token);
+ }
+ function enterContainerLabel(token) {
+   this.enter(

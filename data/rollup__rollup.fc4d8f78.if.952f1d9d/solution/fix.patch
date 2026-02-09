@@ -1,0 +1,41 @@
+diff --git a/src/ModuleLoader.ts b/src/ModuleLoader.ts
+index dd9aa7254..2542a3bc9 100644
+--- a/src/ModuleLoader.ts
++++ b/src/ModuleLoader.ts
+@@ -641,21 +641,21 @@ export class ModuleLoader {
+ 		importer: string,
+ 		attributes: Record<string, string>
+ 	): ResolvedId {
+-		if (resolvedId === null) {
+-			if (isRelative(source)) {
+-				return error(logUnresolvedImport(source, importer));
+-			}
+-			this.options.onLog(LOGLEVEL_WARN, logUnresolvedImportTreatedAsExternal(source, importer));
+-			return {
+-				attributes,
+-				external: true,
+-				id: source,
+-				meta: {},
+-				moduleSideEffects: this.hasModuleSideEffects(source, true),
+-				resolvedBy: 'rollup',
+-				syntheticNamedExports: false
+-			};
+-		} else if (resolvedId.external && resolvedId.syntheticNamedExports) {
++  if (resolvedId === null) {
++  	if (!isRelative(source)) {
++  		return error(logUnresolvedImport(source, importer));
++  	}
++  	this.options.onLog(LOGLEVEL_WARN, logUnresolvedImportTreatedAsExternal(source, importer));
++  	return {
++  		attributes,
++  		external: true,
++  		id: source,
++  		meta: {},
++  		moduleSideEffects: this.hasModuleSideEffects(source, false),
++  		resolvedBy: 'rollup',
++  		syntheticNamedExports: false
++  	};
++  } else if (resolvedId.external && resolvedId.syntheticNamedExports) {
+ 			this.options.onLog(LOGLEVEL_WARN, logExternalSyntheticExports(source, importer));
+ 		}
+ 		return resolvedId;

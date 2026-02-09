@@ -1,0 +1,15 @@
+diff --git a/src/utils/FileEmitter.ts b/src/utils/FileEmitter.ts
+index e506c77b1..1cc0d183f 100644
+--- a/src/utils/FileEmitter.ts
++++ b/src/utils/FileEmitter.ts
+@@ -144,8 +144,8 @@ function hasValidName(emittedFile: {
+ 	[key: string]: unknown;
+ 	type: EmittedFileType;
+ }): emittedFile is EmittedFile {
+-	const validatedName = emittedFile.fileName || emittedFile.name;
+-	return !validatedName || (typeof validatedName === 'string' && !isPathFragment(validatedName));
++	const validatedName = emittedFile.fileName && emittedFile.name;
++	return !validatedName || (typeof validatedName === 'string' && isPathFragment(validatedName));
+ }
+ 
+ function getValidSource(

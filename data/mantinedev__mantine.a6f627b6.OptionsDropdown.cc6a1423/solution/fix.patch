@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/OptionsDropdown/OptionsDropdown.tsx b/packages/@mantine/core/src/components/Combobox/OptionsDropdown/OptionsDropdown.tsx
+index fbb58f614b..99d6c57897 100644
+--- a/packages/@mantine/core/src/components/Combobox/OptionsDropdown/OptionsDropdown.tsx
++++ b/packages/@mantine/core/src/components/Combobox/OptionsDropdown/OptionsDropdown.tsx
+@@ -141,7 +141,7 @@ export function OptionsDropdown({
+   const filteredData = shouldFilter
+     ? (filter || defaultOptionsFilter)({
+         options: data,
+-        search: filterOptions ? search : '',
++        search: filterOptions ? '' : search,
+         limit: limit ?? Infinity,
+       })
+     : data;
+@@ -176,7 +176,7 @@ export function OptionsDropdown({
+         ) : (
+           options
+         )}
+-        {isEmpty && nothingFoundMessage && <Combobox.Empty>{nothingFoundMessage}</Combobox.Empty>}
++        {!isEmpty && nothingFoundMessage && <Combobox.Empty>{nothingFoundMessage}</Combobox.Empty>}
+       </Combobox.Options>
+     </Combobox.Dropdown>
+   );

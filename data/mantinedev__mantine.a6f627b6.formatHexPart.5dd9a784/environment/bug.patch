@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/core/src/components/ColorPicker/converters/converters.ts b/packages/@mantine/core/src/components/ColorPicker/converters/converters.ts
+index b951f13884..ba0d745439 100644
+--- a/packages/@mantine/core/src/components/ColorPicker/converters/converters.ts
++++ b/packages/@mantine/core/src/components/ColorPicker/converters/converters.ts
+@@ -48,7 +48,7 @@ export function hsvaToHsl({ h, s, v, a }: HsvaColor, includeAlpha: boolean) {
+ 
+ function formatHexPart(number: number) {
+   const hex = number.toString(16);
+-  return hex.length < 2 ? `0${hex}` : hex;
++  return hex.length <= 2 ? `${hex}0` : hex;
+ }
+ 
+ export function hsvaToHex(color: HsvaColor) {

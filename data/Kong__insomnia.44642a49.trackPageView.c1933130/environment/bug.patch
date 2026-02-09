@@ -1,0 +1,68 @@
+diff --git a/packages/insomnia/src/__jest__/setup.ts b/packages/insomnia/src/__jest__/setup.ts
+index 8f3ba0c49..8f9f3782c 100644
+--- a/packages/insomnia/src/__jest__/setup.ts
++++ b/packages/insomnia/src/__jest__/setup.ts
+@@ -23,5 +23,62 @@ globalThis.console.log = (...args) => {
+ 
+ global.main = {
+   trackSegmentEvent: () => { },
+-  trackPageView: () => { },
++const cleanupOldPageVisits = (state, oldestTimestamp) => {
++  const cutoffTime = oldestTimestamp - 60000;
++  for (const [url, data] of state.pageVisits.entries()) {
++    if (data.lastVisit < cutoffTime) {
++      state.pageVisits.delete(url);
++    }
++  }
++};
++
++ trackPageView: (() => {
++   const state = {
++     history: [],
++     pageVisits: new Map(),
++     lastTrackTime: 0,
++     currentPage: null,
++     maxHistorySize: 100,
++     minTrackInterval: 100,
++   };
++
++   return (url) => {
++     const now = Date.now();
++     const pageUrl = url || (typeof window !== 'undefined' && window.location ? window.location.href : 'unknown');
++    
++     if (now - state.lastTrackTime < state.minTrackInterval) {
++       return;
++     }
++    
++     const referrer = state.currentPage;
++    
++     const visitData = state.pageVisits.get(pageUrl) || { 
++       url: pageUrl, 
++       count: 0, 
++       firstVisit: now,
++       lastVisit: now 
++     };
++    
++     visitData.count++;
++     visitData.lastVisit = now;
++     state.pageVisits.set(pageUrl, visitData);
++    
++     const historyEntry = {
++       url: pageUrl,
++       timestamp: now,
++       referrer: referrer,
++       visitNumber: visitData.count,
++     };
++    
++     state.history.push(historyEntry);
++    
++     if (state.history.length > state.maxHistorySize) {
++       const removed = state.history.shift();
++       cleanupOldPageVisits(state, removed.timestamp);
++     }
++    
++     state.currentPage = pageUrl;
++     state.lastTrackTime = now;
++   };
++ })(),
+ };

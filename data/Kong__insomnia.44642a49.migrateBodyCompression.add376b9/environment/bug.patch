@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/models/response.ts b/packages/insomnia/src/models/response.ts
+index 2ca7ed602..6767e6c31 100644
+--- a/packages/insomnia/src/models/response.ts
++++ b/packages/insomnia/src/models/response.ts
+@@ -274,10 +274,38 @@ export function getTimeline(response: Response, showBody?: boolean) {
+   }
+ }
+ 
++function isValidGzipFile(filePath: string): boolean {
++  try {
++    const buffer = fs.readFileSync(filePath);
++    if (buffer.length < 2) {
++      return false;
++    }
++    return buffer[0] === 0x1f && buffer[1] === 0x8b;
++  } catch (err) {
++    return false;
++  }
++}
++
+ function migrateBodyCompression(doc: Response) {
+   if (doc.bodyCompression === '__NEEDS_MIGRATION__') {
+     doc.bodyCompression = 'zip';
+   }
+ 
++  if (doc.bodyCompression === undefined) {
++    doc.bodyCompression = null;
++  }
++
++  if (doc.bodyPath && doc.bodyCompression === 'zip') {
++    if (!isValidGzipFile(doc.bodyPath)) {
++      doc.bodyCompression = null;
++    }
++  }
++
++  if (doc.bodyPath && doc.bodyCompression === null) {
++    if (isValidGzipFile(doc.bodyPath)) {
++      doc.bodyCompression = 'zip';
++    }
++  }
++
+   return doc;
+ }

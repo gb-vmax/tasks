@@ -1,25 +1,27 @@
 # Bug Report
 
 ### Describe the bug
-
-I'm experiencing an issue with markdown link parsing where the URL is being assigned to the wrong node in the AST. When parsing markdown with resource links (like `[text](url)`), the URL destination seems to be getting attached to an incorrect node in the stack, causing the link structure to be malformed.
+I'm experiencing an issue with markdown link parsing where the URL is being assigned to the wrong node in the AST. It seems like deeply nested link structures aren't being handled correctly - the destination URL ends up attached to the root node instead of the actual link node.
 
 ### Reproduction
-
 ```js
-// Parse markdown with a link
-const markdown = '[Example Link](https://example.com)'
+const markdown = `
+Here's a [nested link](https://example.com) in some text.
+`;
 
-// After parsing, the URL is not attached to the correct link node
-// The link node doesn't have the expected `url` property set correctly
+// Parse the markdown
+const ast = parse(markdown);
+
+// The URL ends up on the wrong node in the tree
+// Expected: URL on the link node
+// Actual: URL appears on the root/document node
 ```
 
 ### Expected behavior
+When parsing markdown links with resource destinations, the URL should be attached to the link node itself (at the top of the stack), not to the root document node.
 
-The URL from a markdown link should be properly attached to the corresponding link node in the AST. When parsing `[text](url)`, the resulting link node should have its `url` property set to the correct destination value.
-
-### System Info
-- remark version: 15.0.1
+### Additional context
+This appears to affect all markdown links with destination strings. The parser seems to be looking at the wrong position in the node stack when assigning the URL property.
 
 ---
 Repository: /testbed

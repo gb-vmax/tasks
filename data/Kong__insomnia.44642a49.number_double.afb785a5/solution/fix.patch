@@ -1,0 +1,83 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..fe3f67265 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -453,7 +453,77 @@ const generateParameterExample = (
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,
+     number_float: () => 0.0,
+-    number_double: () => 0.0,
++const calculateConstrainedDoubleValue = (
++  lowerBound: number,
++  upperBound: number,
++  multipleOf?: number
++): number => {
++  let value: number;
++  
++  if (lowerBound === -Number.MAX_VALUE && upperBound === Number.MAX_VALUE) {
++    value = 0.0;
++  } else if (lowerBound === -Number.MAX_VALUE) {
++    value = upperBound - 1.0;
++  } else if (upperBound === Number.MAX_VALUE) {
++    value = lowerBound + 1.0;
++  } else {
++    value = (lowerBound + upperBound) / 2.0;
++  }
++  
++  if (typeof multipleOf === 'number' && multipleOf > 0) {
++    const candidate = Math.round(value / multipleOf) * multipleOf;
++    
++    if (candidate >= lowerBound && candidate <= upperBound) {
++      value = candidate;
++    } else if (candidate < lowerBound) {
++      const nextMultiple = Math.ceil(lowerBound / multipleOf) * multipleOf;
++      if (nextMultiple <= upperBound) {
++        value = nextMultiple;
++      }
++    } else {
++      const prevMultiple = Math.floor(upperBound / multipleOf) * multipleOf;
++      if (prevMultiple >= lowerBound) {
++        value = prevMultiple;
++      }
++    }
++  }
++  
++  if (value < lowerBound) {
++    value = lowerBound;
++  }
++  if (value > upperBound) {
++    value = upperBound;
++  }
++  
++  return value;
++};
++
++ number_double: (parameter: OpenAPIV2.Parameter) => {
++   const min = parameter.minimum;
++   const max = parameter.maximum;
++   const exclusiveMin = parameter.exclusiveMinimum;
++   const exclusiveMax = parameter.exclusiveMaximum;
++   const multipleOf = parameter.multipleOf;
++  
++   let lowerBound = typeof min === 'number' ? min : -Number.MAX_VALUE;
++   let upperBound = typeof max === 'number' ? max : Number.MAX_VALUE;
++  
++   if (exclusiveMin === true && typeof min === 'number') {
++     lowerBound = min + Number.EPSILON;
++   }
++  
++   if (exclusiveMax === true && typeof max === 'number') {
++     upperBound = max - Number.EPSILON;
++   }
++  
++   if (lowerBound > upperBound) {
++     return 0.0;
++   }
++  
++   let value = calculateConstrainedDoubleValue(lowerBound, upperBound, multipleOf);
++  
++   return value;
++ },
+     integer: () => 0,
+     boolean: () => true,
+     object: (parameter: OpenAPIV2.Parameter) => {

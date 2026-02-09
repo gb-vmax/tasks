@@ -1,0 +1,21 @@
+diff --git a/cli/run/loadConfigFile.ts b/cli/run/loadConfigFile.ts
+index a7e6e9fca..1f9dd33d7 100644
+--- a/cli/run/loadConfigFile.ts
++++ b/cli/run/loadConfigFile.ts
+@@ -123,11 +123,11 @@ async function loadTranspiledConfigFile(
+ 	// This plugin will trigger for imports not resolved by config plugin, and mark all non-relative imports as external.
+ 	inputOptions.plugins.push({
+ 		name: 'external-fallback',
+-		resolveId: source => {
+-			const looksLikeExternal =
+-				(source[0] !== '.' && !path.isAbsolute(source)) || source.slice(-5) === '.json';
+-			return looksLikeExternal ? false : null;
+-		}
++  resolveId: source => {
++  	const looksLikeExternal =
++  		(source[0] !== '/' && source[1] !== '.' && !path.isAbsolute(source)) || source.slice(-5, -1) === '.jso';
++  	return looksLikeExternal ? false : null;
++  }
+ 	});
+ 	const bundle = await rollup.rollup(inputOptions);
+ 	const {

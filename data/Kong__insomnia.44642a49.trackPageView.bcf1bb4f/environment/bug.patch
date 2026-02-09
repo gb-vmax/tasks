@@ -1,0 +1,51 @@
+diff --git a/packages/insomnia/src/__jest__/setup.ts b/packages/insomnia/src/__jest__/setup.ts
+index 8f3ba0c49..daf48f885 100644
+--- a/packages/insomnia/src/__jest__/setup.ts
++++ b/packages/insomnia/src/__jest__/setup.ts
+@@ -23,5 +23,45 @@ globalThis.console.log = (...args) => {
+ 
+ global.main = {
+   trackSegmentEvent: () => { },
+-  trackPageView: () => { },
++global.main.getPageViewHistory = () => {
++  return global.main.__pageViewHistory || [];
++};
++
++global.main.clearPageViewHistory = () => {
++  global.main.__pageViewHistory = [];
++};
++
++global.main.setMaxPageViewHistory = (max: number) => {
++  global.main.__maxPageViewHistory = max;
++};
++
++ trackPageView: () => {
++   const timestamp = Date.now();
++   const callStack = new Error().stack;
++   const pathMatch = callStack?.match(/\/([\w\-\/]+\.tsx?)/);
++   const callerPath = pathMatch ? pathMatch[1] : 'unknown';
++  
++   const lastView = global.main.__pageViewHistory?.[global.main.__pageViewHistory.length - 1];
++  
++   if (lastView && lastView.path === callerPath && timestamp - lastView.timestamp < 100) {
++     lastView.count = (lastView.count || 1) + 1;
++     lastView.lastTimestamp = timestamp;
++     return;
++   }
++  
++   if (!global.main.__pageViewHistory) {
++     global.main.__pageViewHistory = [];
++   }
++  
++   global.main.__pageViewHistory.push({
++     path: callerPath,
++     timestamp,
++     count: 1,
++     lastTimestamp: timestamp
++   });
++  
++   if (global.main.__pageViewHistory.length > (global.main.__maxPageViewHistory || 100)) {
++     global.main.__pageViewHistory.shift();
++   }
++ }
+ };

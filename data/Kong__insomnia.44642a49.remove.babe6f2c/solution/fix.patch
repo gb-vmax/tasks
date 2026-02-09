@@ -1,0 +1,36 @@
+diff --git a/packages/insomnia/src/models/git-repository.ts b/packages/insomnia/src/models/git-repository.ts
+index 5b1e72112..7e7d3b29d 100644
+--- a/packages/insomnia/src/models/git-repository.ts
++++ b/packages/insomnia/src/models/git-repository.ts
+@@ -63,7 +63,30 @@ export function update(repo: GitRepository, patch: Partial<GitRepository>) {
+   return db.docUpdate<GitRepository>(repo, patch);
+ }
+ 
+-export function remove(repo: GitRepository) {
++async function validateRepositoryRemoval(repo: GitRepository): Promise<void> {
++  if (repo.needsFullClone) {
++    throw new Error('Cannot remove repository during active clone operation');
++  }
++}
++
++async function createRemovalBackup(repo: GitRepository): Promise<void> {
++  const sanitizedRepo = {
++    ...repo,
++    credentials: repo.credentials ? {
++      ...repo.credentials,
++      token: repo.credentials.token ? '[REDACTED]' : undefined,
++      password: repo.credentials.password ? '[REDACTED]' : undefined,
++    } : null,
++    _removedAt: Date.now(),
++    _originalId: repo._id,
++  };
++  
++  await db.docCreate('GitRepositoryRemovalBackup', sanitizedRepo);
++}
++
++export async function remove(repo: GitRepository) {
++  await validateRepositoryRemoval(repo);
++  await createRemovalBackup(repo);
+   return db.remove(repo);
+ }
+ 

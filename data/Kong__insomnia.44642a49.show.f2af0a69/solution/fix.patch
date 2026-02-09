@@ -1,0 +1,114 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..d5067348f 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -13,8 +13,107 @@ export interface AlertModalOptions {
+   onConfirm?: () => void | Promise<void>;
+ }
+ export interface AlertModalHandle {
+-  show: (options: AlertModalOptions) => void;
+-  hide: () => void;
++const timeoutRef = useRef<NodeJS.Timeout | null>(null);
++const countdownRef = useRef<NodeJS.Timeout | null>(null);
++const queueRef = useRef<AlertModalOptions[]>([]);
++const [countdown, setCountdown] = useState<number | null>(null);
++
++const showAlert = (options: AlertModalOptions) => {
++  const { title, message, addCancel, onConfirm, okLabel, autoDismissSeconds } = options;
++  
++  setState({
++    title,
++    message,
++    addCancel,
++    okLabel,
++    onConfirm,
++    autoDismissSeconds,
++  });
++  
++  modalRef.current?.show();
++  
++  if (autoDismissSeconds && autoDismissSeconds > 0) {
++    setCountdown(autoDismissSeconds);
++    
++    let remainingSeconds = autoDismissSeconds;
++    countdownRef.current = setInterval(() => {
++      remainingSeconds -= 1;
++      setCountdown(remainingSeconds);
++      
++      if (remainingSeconds <= 0) {
++        if (countdownRef.current) {
++          clearInterval(countdownRef.current);
++          countdownRef.current = null;
++        }
++      }
++    }, 1000);
++    
++    timeoutRef.current = setTimeout(() => {
++      modalRef.current?.hide();
++      if (countdownRef.current) {
++        clearInterval(countdownRef.current);
++        countdownRef.current = null;
++      }
++      setCountdown(null);
++      
++      if (typeof onConfirm === 'function') {
++        onConfirm();
++      }
++      
++      setTimeout(() => {
++        if (queueRef.current.length > 0) {
++          const nextAlert = queueRef.current.shift();
++          if (nextAlert) {
++            showAlert(nextAlert);
++          }
++        }
++      }, 100);
++    }, autoDismissSeconds * 1000);
++  }
++};
++
++const getOkButtonLabel = () => {
++  const baseLabel = okLabel || 'Ok';
++  if (countdown !== null && countdown > 0) {
++    return (
++      <>
++        {baseLabel} ({countdown}s)
++      </>
++    );
++  }
++  return baseLabel;
++};
++
++ useImperativeHandle(ref, () => ({
++   hide: () => {
++     modalRef.current?.hide();
++     if (timeoutRef.current) {
++       clearInterval(timeoutRef.current);
++       timeoutRef.current = null;
++     }
++     if (countdownRef.current) {
++       clearInterval(countdownRef.current);
++       countdownRef.current = null;
++     }
++     setCountdown(null);
++    
++     setTimeout(() => {
++       if (queueRef.current.length > 0) {
++         const nextAlert = queueRef.current.shift();
++         if (nextAlert) {
++           showAlert(nextAlert);
++         }
++       }
++     }, 100);
++   },
++   show: (options) => {
++     if (modalRef.current && state.title) {
++       queueRef.current.push(options);
++     } else {
++       showAlert(options);
++     }
++   },
++ }), [state.title]);
+ }
+ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

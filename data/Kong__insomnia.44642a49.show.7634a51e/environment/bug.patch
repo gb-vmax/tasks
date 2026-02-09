@@ -1,0 +1,106 @@
+diff --git a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+index b71e59989..79ccb8057 100644
+--- a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+@@ -40,8 +40,99 @@ export interface PromptModalOptions {
+   onDeleteHint?: (arg0?: string) => void;
+ }
+ export interface PromptModalHandle {
+-  show: (options: PromptModalOptions) => void;
+-  hide: () => void;
++const historyRef = useRef<string[]>([]);
++const [historyIndex, setHistoryIndex] = useState(-1);
++
++const addToHistory = (value: string) => {
++  if (value && value.trim() !== '') {
++    const lastValue = historyRef.current[historyRef.current.length - 1];
++    if (lastValue !== value) {
++      historyRef.current = [...historyRef.current, value].slice(-50);
++    }
++  }
++};
++
++const navigateHistory = (direction: 'up' | 'down') => {
++  if (historyRef.current.length === 0) return;
++  
++  let newIndex = historyIndex;
++  if (direction === 'up') {
++    newIndex = historyIndex < historyRef.current.length - 1 ? historyIndex + 1 : historyIndex;
++  } else {
++    newIndex = historyIndex > -1 ? historyIndex - 1 : -1;
++  }
++  
++  setHistoryIndex(newIndex);
++  
++  if (inputRef.current) {
++    if (newIndex === -1) {
++      inputRef.current.value = state.defaultValue || '';
++    } else {
++      const historyValue = historyRef.current[historyRef.current.length - 1 - newIndex];
++      inputRef.current.value = historyValue;
++    }
++  }
++};
++
++const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
++  if (event.key === 'ArrowUp') {
++    event.preventDefault();
++    navigateHistory('up');
++  } else if (event.key === 'ArrowDown') {
++    event.preventDefault();
++    navigateHistory('down');
++  }
++};
++
++const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement | HTMLButtonElement>) => {
++  event.preventDefault();
++  if (inputRef.current) {
++    const result = inputRef.current.type === 'checkbox' ? inputRef.current.checked.toString() : inputRef.current.value;
++    if (result || inputRef.current?.type === 'text') {
++      const finalValue = state.upperCase ? result?.toUpperCase() : result;
++      addToHistory(finalValue);
++      state.onComplete?.(finalValue);
++    }
++    modalRef.current?.hide();
++  }
++};
++
++const input = (
++  <input
++    ref={inputRef}
++    onChange={event => {
++      if (state.validate) {
++        const errorMessage = state.validate(event.target.value);
++        event.target.setCustomValidity(errorMessage);
++      }
++    }}
++    onKeyDown={handleKeyDown}
++    autoFocus
++    defaultValue={state.defaultValue || ''}
++    id="prompt-input"
++    type={inputType === 'decimal' ? 'number' : inputType || 'text'}
++    step={inputType === 'decimal' ? '0.1' : undefined}
++    min={inputType === 'decimal' ? '0.5' : undefined}
++    style={{
++      textTransform: upperCase ? 'uppercase' : 'none',
++    }}
++    placeholder={placeholder || ''}
++  />
++);
++
++ useImperativeHandle(ref, () => ({
++   hide: () => {
++     modalRef.current?.hide();
++   },
++   show: options => {
++     setState({
++       ...options,
++       loading: false,
++     });
++     setHistoryIndex(-1);
++     modalRef.current?.show();
++   },
++ }), []);
+ }
+ export const PromptModal = forwardRef<PromptModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

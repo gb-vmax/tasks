@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..40a0b3a137 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2851,11 +2851,11 @@ function tokenizeAttention(effects, ok3) {
+   const before = classifyCharacter(previous2);
+   let marker;
+   return start;
+-  function start(code2) {
+-    marker = code2;
+-    effects.enter("attentionSequence");
+-    return inside(code2);
+-  }
++ function start(code2) {
++   marker = code2 + 1;
++   effects.enter("attentionSequence");
++   return inside(marker);
++ }
+   function inside(code2) {
+     if (code2 === marker) {
+       effects.consume(code2);

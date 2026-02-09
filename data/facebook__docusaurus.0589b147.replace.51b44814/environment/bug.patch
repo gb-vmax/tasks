@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..e27611292d 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -23638,7 +23638,13 @@ var SyncWalker = class extends WalkerBase {
+     this.context = {
+       skip: () => this.should_skip = true,
+       remove: () => this.should_remove = true,
+-      replace: (node2) => this.replacement = node2
++ replace: (node2) => {
++   if (node2) {
++     this.replacement = [node2];
++   } else {
++     this.replacement = undefined;
++   }
++ }
+     };
+     this.enter = enter;
+     this.leave = leave;

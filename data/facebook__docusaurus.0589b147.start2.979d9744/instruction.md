@@ -2,31 +2,39 @@
 
 ### Describe the bug
 
-After a recent update, MDX link references are not being parsed correctly. When using reference-style links with defined labels, the links are not being recognized and are instead treated as plain text.
+After a recent update, MDX link references are not being parsed correctly. When using reference-style links with defined identifiers, the links fail to render and appear as plain text instead.
 
 ### Reproduction
 
-```markdown
-Here is a [link reference][my-label].
+```md
+[example link][ref]
 
-[my-label]: https://example.com
+[ref]: https://example.com
 ```
 
-Expected: The link reference should be parsed and rendered as a proper link.
+Expected: The link should render as a clickable link to `https://example.com`
 
-Actual: The link reference is not recognized and appears as plain text in the output.
+Actual: The text appears as plain text `[example link][ref]` without being converted to a link
 
-### Steps to reproduce
+This also affects image references:
 
-1. Create an MDX file with a reference-style link
-2. Define the label reference at the bottom of the file
-3. Process the MDX file
-4. The link is not converted to a proper link element
+```md
+![alt text][image-ref]
 
-This seems to affect all reference-style links where the label is defined in the document. Direct links using `[text](url)` syntax still work fine, but the reference syntax is broken.
+[image-ref]: /path/to/image.png
+```
+
+The image reference is not being resolved and shows up as raw markdown text.
+
+### Expected behavior
+
+Reference-style links and images should be properly resolved when their identifiers are defined elsewhere in the document. The parser should recognize the defined references and convert them to their corresponding HTML elements.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0
+- Node version: 18.x
+
+This was working fine in the previous version. It seems like something changed in how the label end tokenizer handles defined references.
 
 ---
 Repository: /testbed

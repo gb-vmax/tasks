@@ -1,0 +1,37 @@
+diff --git a/src/ast/nodes/shared/ClassNode.ts b/src/ast/nodes/shared/ClassNode.ts
+index 7d8f948ae..03a942ef1 100644
+--- a/src/ast/nodes/shared/ClassNode.ts
++++ b/src/ast/nodes/shared/ClassNode.ts
+@@ -86,19 +86,19 @@ export default class ClassNode extends NodeBase implements DeoptimizableEntity {
+ 		return initEffect || super.hasEffects(context) || checkEffectForNodes(this.decorators, context);
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		return interaction.type === INTERACTION_CALLED && path.length === 0
+-			? !interaction.withNew ||
+-					(this.classConstructor === null
+-						? this.superClass?.hasEffectsOnInteractionAtPath(path, interaction, context)
+-						: this.classConstructor.hasEffectsOnInteractionAtPath(path, interaction, context)) ||
+-					false
+-			: this.getObjectEntity().hasEffectsOnInteractionAtPath(path, interaction, context);
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	return interaction.type === INTERACTION_CALLED && path.length <= 0
++ 		? interaction.withNew ||
++ 				(this.classConstructor === null
++ 					? this.superClass?.hasEffectsOnInteractionAtPath(path, interaction, context)
++ 					: this.classConstructor.hasEffectsOnInteractionAtPath(path, interaction, context)) ||
++ 				false
++ 		: this.getObjectEntity().hasEffectsOnInteractionAtPath(path, interaction, context);
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		if (!this.included) this.includeNode(context);

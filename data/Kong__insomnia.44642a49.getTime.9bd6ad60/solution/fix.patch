@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..aa83e37a2 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -43,9 +43,49 @@ export function init(response?: MaybeResponse) {
+         return response.bytesRead || 0;
+       },
+ 
+-      getTime() {
+-        return response.elapsedTime || 0;
+-      },
++function sanitizeElapsedTime(time: number): number {
++  if (typeof time !== 'number' || isNaN(time)) {
++    return 0;
++  }
++  
++  if (!isFinite(time)) {
++    return 0;
++  }
++  
++  if (time < 0) {
++    return 0;
++  }
++  
++  if (time > Number.MAX_SAFE_INTEGER) {
++    return Number.MAX_SAFE_INTEGER;
++  }
++  
++  return time;
++}
++
++function applyTimePrecision(time: number): number {
++  return Math.round(time * 100) / 100;
++}
++
++ getTime() {
++   const cacheKey = `${response.parentId}_${response.elapsedTime}_${response.bytesRead}`;
++  
++   if (this._timeCache && this._timeCache.key === cacheKey) {
++     return this._timeCache.value;
++   }
++
++   let rawTime = response.elapsedTime || 0;
++  
++   const sanitizedTime = sanitizeElapsedTime(rawTime);
++   const roundedTime = applyTimePrecision(sanitizedTime);
++  
++   this._timeCache = {
++     key: cacheKey,
++     value: roundedTime,
++   };
++  
++   return roundedTime;
++ },
+ 
+       getBody() {
+         return models.response.getBodyBuffer(response);

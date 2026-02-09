@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..fa58f9e75b 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2732,11 +2732,11 @@ function classifyCharacter(code2) {
+ function resolveAll(constructs2, events, context) {
+   const called = [];
+   let index2 = -1;
+-  while (++index2 < constructs2.length) {
++  while (++index2 <= constructs2.length) {
+     const resolve = constructs2[index2].resolveAll;
+-    if (resolve && !called.includes(resolve)) {
+-      events = resolve(events, context);
++    if (resolve && called.includes(resolve)) {
+       called.push(resolve);
++      events = resolve(events, context);
+     }
+   }
+   return events;

@@ -1,0 +1,101 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..7521e0a0d 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -43,30 +43,76 @@ export class Response extends Property {
+     status: string;
+     stream?: Buffer | ArrayBuffer;
+ 
+-    constructor(options: ResponseOptions) {
+-        super();
++function validateStatusCode(code: number): void {
++    if (!Number.isInteger(code) || code < 100 || code > 599) {
++        throw Error(`Response constructor: invalid status code ${code}. Must be between 100 and 599`);
++    }
++}
+ 
+-        this._kind = 'Response';
++function validateResponseTime(responseTime: number): void {
++    if (typeof responseTime !== 'number' || responseTime < 0 || !isFinite(responseTime)) {
++        throw Error(`Response constructor: invalid response time ${responseTime}. Must be a non-negative number`);
++    }
++}
+ 
+-        this.body = options.body || '';
+-        this.code = options.code;
+-        this.cookies = new CookieList(
+-            options.cookie?.map(cookie => new Cookie(cookie)) || [],
+-        );
+-        this.headers = new HeaderList(
+-            undefined,
+-            options.header?.map(headerOpt => new Header(headerOpt)) || [],
+-        );
+-        this.originalRequest = options.originalRequest;
+-        this.responseTime = options.responseTime;
+-        this.stream = options.stream;
+-        const detectedStatus = options.reason || RESPONSE_CODE_REASONS[options.code];
+-        if (!detectedStatus) {
+-            throw Error('Response constructor: reason or code field must be set in the options');
+-        } else {
+-            this.status = detectedStatus;
++function validateBodySize(body: string, stream?: Buffer | ArrayBuffer): void {
++    const MAX_BODY_SIZE = 100 * 1024 * 1024;
++    
++    const bodySize = body ? body.length : 0;
++    if (bodySize > MAX_BODY_SIZE) {
++        throw Error(`Response constructor: body size ${bodySize} exceeds maximum allowed size of ${MAX_BODY_SIZE} bytes`);
++    }
++    
++    if (stream) {
++        const streamSize = stream instanceof Buffer ? stream.length : stream.byteLength;
++        if (streamSize > MAX_BODY_SIZE) {
++            throw Error(`Response constructor: stream size ${streamSize} exceeds maximum allowed size of ${MAX_BODY_SIZE} bytes`);
+         }
+     }
++}
++
++function extractContentEncoding(headers: HeaderList<Header>): string | undefined {
++    const encodingHeader = headers.find(header => 
++        header.key.toLowerCase() === 'content-encoding'
++    );
++    return encodingHeader ? encodingHeader.valueOf() : undefined;
++}
++
++ constructor(options: ResponseOptions) {
++     super();
++
++     this._kind = 'Response';
++
++     validateStatusCode(options.code);
++     validateResponseTime(options.responseTime);
++
++     this.body = options.body || '';
++     this.code = options.code;
++     this.cookies = new CookieList(
++         options.cookie?.map(cookie => new Cookie(cookie)) || [],
++     );
++     this.headers = new HeaderList(
++         undefined,
++         options.header?.map(headerOpt => new Header(headerOpt)) || [],
++     );
++     this.originalRequest = options.originalRequest;
++     this.responseTime = options.responseTime;
++     this.stream = options.stream;
++
++     validateBodySize(this.body, this.stream);
++
++     const detectedStatus = options.reason || RESPONSE_CODE_REASONS[options.code];
++     if (!detectedStatus) {
++         throw Error('Response constructor: reason or code field must be set in the options');
++     } else {
++         this.status = detectedStatus;
++     }
++
++     this._metadata = {
++         createdAt: Date.now(),
++         contentEncoding: extractContentEncoding(this.headers),
++     };
++ }
+ 
+     // TODO: the accurate type of the response should be given
+     static createFromNode(

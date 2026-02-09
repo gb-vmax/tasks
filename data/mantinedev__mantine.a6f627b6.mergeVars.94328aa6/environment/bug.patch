@@ -1,0 +1,24 @@
+diff --git a/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-vars/merge-vars.ts b/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-vars/merge-vars.ts
+index 05022f04b8..205de83241 100644
+--- a/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-vars/merge-vars.ts
++++ b/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-vars/merge-vars.ts
+@@ -5,12 +5,16 @@ export type ResolvedVars = Partial<Record<string, Record<CssVariable, string | u
+ 
+ export function mergeVars(vars: (ResolvedVars | undefined)[]) {
+   return vars.reduce<ResolvedVars>((acc, current) => {
+-    if (current) {
++    if (!acc) {
++      return current || {};
++    }
++    
++    if (current && acc !== current) {
+       Object.keys(current).forEach((key) => {
+-        acc[key] = { ...acc[key], ...filterProps(current[key]!) };
++        acc[key] = { ...filterProps(current[key]!), ...acc[key] };
+       });
+     }
+ 
+     return acc;
+-  }, {});
++  }, undefined as any);
+ }

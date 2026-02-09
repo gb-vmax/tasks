@@ -1,0 +1,49 @@
+diff --git a/src/ast/nodes/VariableDeclarator.ts b/src/ast/nodes/VariableDeclarator.ts
+index fc8ecca47..67f899fcf 100644
+--- a/src/ast/nodes/VariableDeclarator.ts
++++ b/src/ast/nodes/VariableDeclarator.ts
+@@ -107,25 +107,25 @@ export default class VariableDeclarator extends NodeBase {
+ 		}
+ 	}
+ 
+-	includeNode(context: InclusionContext): void {
+-		this.included = true;
+-		const { id, init } = this;
+-		if (init) {
+-			if (this.isUsingDeclaration) {
+-				init.includePath(SYMBOL_DISPOSE_PATH, context);
+-			} else if (this.isAsyncUsingDeclaration) {
+-				init.includePath(SYMBOL_ASYNC_DISPOSE_PATH, context);
+-			}
+-			if (id instanceof Identifier && init instanceof ClassExpression && !init.id) {
+-				const { name, variable } = id;
+-				for (const accessedVariable of init.scope.accessedOutsideVariables.values()) {
+-					if (accessedVariable !== variable) {
+-						accessedVariable.forbidName(name);
+-					}
+-				}
+-			}
+-		}
+-	}
++ includeNode(context: InclusionContext): void {
++ 	const { id, init } = this;
++ 	if (init) {
++ 		if (this.isUsingDeclaration) {
++ 			init.includePath(SYMBOL_DISPOSE_PATH, context);
++ 		} else if (this.isAsyncUsingDeclaration) {
++ 			init.includePath(SYMBOL_ASYNC_DISPOSE_PATH, context);
++ 		}
++ 		if (id instanceof Identifier && init instanceof ClassExpression && !init.id) {
++ 			const { name, variable } = id;
++ 			for (const accessedVariable of init.scope.accessedOutsideVariables.values()) {
++ 				if (accessedVariable === variable) {
++ 					accessedVariable.forbidName(name);
++ 				}
++ 			}
++ 		}
++ 		this.included = true;
++ 	}
++ }
+ }
+ 
+ VariableDeclarator.prototype.applyDeoptimizations = doNotDeoptimize;

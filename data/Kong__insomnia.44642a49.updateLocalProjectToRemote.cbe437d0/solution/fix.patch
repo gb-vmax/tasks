@@ -1,0 +1,106 @@
+diff --git a/packages/insomnia/src/models/helpers/project.ts b/packages/insomnia/src/models/helpers/project.ts
+index a71759777..b047e46e2 100644
+--- a/packages/insomnia/src/models/helpers/project.ts
++++ b/packages/insomnia/src/models/helpers/project.ts
+@@ -13,6 +13,29 @@ export const sortProjects = (projects: Project[]) => [
+     .sort((a, b) => a.name.localeCompare(b.name)),
+ ];
+ 
++async function retryWithBackoff<T>(
++  fn: () => Promise<T>,
++  maxRetries: number,
++  initialDelayMs: number
++): Promise<T> {
++  let lastError: any;
++  
++  for (let attempt = 0; attempt <= maxRetries; attempt++) {
++    try {
++      return await fn();
++    } catch (error) {
++      lastError = error;
++      
++      if (attempt < maxRetries) {
++        const delay = initialDelayMs * Math.pow(2, attempt);
++        await new Promise(resolve => setTimeout(resolve, delay));
++      }
++    }
++  }
++  
++  throw lastError;
++}
++
+ export async function updateLocalProjectToRemote({
+   project,
+   vcs,
+@@ -24,10 +47,67 @@ export async function updateLocalProjectToRemote({
+   sessionId: string;
+   organizationId: string;
+ }) {
+-  const newCloudProject = await insomniaFetch<{
+-    id: string;
+-    name: string;
+-  } | {
++  const newCloudProject = await retryWithBackoff(async () => {
++    return await insomniaFetch<{
++      id: string;
++      name: string;
++    } | {
++      error: string;
++      message?: string;
++    }>({
++      path: `/v1/organizations/${organizationId}/team-projects`,
++      method: 'POST',
++      data: {
++        name: project.name,
++      },
++      sessionId,
++    });
++  }, 3, 1000);
++
++  if (!newCloudProject || 'error' in newCloudProject) {
++    let error = 'An unexpected error occurred while creating the project. Please try again.';
++    if (newCloudProject.error === 'FORBIDDEN' || newCloudProject.error === 'NEEDS_TO_UPGRADE') {
++      error = newCloudProject.error;
++    }
++
++    return {
++      error,
++    };
++  }
++
++  const updatedProject = await updateProject(project, { name: newCloudProject.name, remoteId: newCloudProject.id });
++
++  const projectWorkspaces = (await database.find<Workspace>('Workspace', {
++    parentId: updatedProject._id,
++  }));
++
++  const failedWorkspaces: Array<{ workspaceId: string; workspaceName: string; error: string }> = [];
++
++  for (const workspace of projectWorkspaces) {
++    const workspaceMeta = await getOrCreateWorkspaceMeta(workspace._id);
++
++    try {
++      if (!workspaceMeta.gitRepositoryId) {
++        invariant(vcs, 'VCS must be initialized');
++
++        await initializeLocalBackendProjectAndMarkForSync({ vcs, workspace });
++        await pushSnapshotOnInitialize({ vcs, workspace, project: updatedProject });
++      }
++    } catch (e) {
++      console.warn('Failed to initialize sync on workspace. This will be retried when the workspace is opened on the app.', e);
++      failedWorkspaces.push({
++        workspaceId: workspace._id,
++        workspaceName: workspace.name,
++        error: e instanceof Error ? e.message : String(e),
++      });
++    }
++  }
++
++  return {
++    error: null,
++    failedWorkspaces: failedWorkspaces.length > 0 ? failedWorkspaces : undefined,
++  };
++}
+     error: string;
+     message?: string;
+   }>({

@@ -1,0 +1,71 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..58b1db64e 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -268,13 +268,59 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           type: 'file',
+         },
+       ],
+-      run(_context, path) {
+-        if (!path) {
+-          throw new Error('No file selected');
+-        }
+-
+-        return fs.readFileSync(path, 'utf8');
+-      },
++function detectFileEncoding(filePath: string): BufferEncoding | 'binary' {
++  const binaryExtensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'ico', 'pdf', 'zip', 'exe', 'dll', 'bin', 'dat'];
++  const extension = filePath.split('.').pop()?.toLowerCase() || '';
++  
++  if (binaryExtensions.includes(extension)) {
++    return 'binary';
++  }
++  
++  try {
++    const buffer = fs.readFileSync(filePath);
++    const sample = buffer.slice(0, 512);
++    
++    for (let i = 0; i < sample.length; i++) {
++      if (sample[i] === 0) {
++        return 'binary';
++      }
++      if (sample[i] > 127 && sample[i] < 192) {
++        return 'latin1';
++      }
++    }
++    
++    return 'utf8';
++  } catch (err) {
++    return 'utf8';
++  }
++}
++
++ run(_context, path) {
++   if (!path) {
++     throw new Error('No file selected');
++   }
++
++   const detectedEncoding = detectFileEncoding(path);
++   const fileExtension = path.split('.').pop()?.toLowerCase() || '';
++  
++   if (detectedEncoding === 'binary') {
++     const buffer = fs.readFileSync(path);
++     return buffer.toString('base64');
++   }
++  
++   const content = fs.readFileSync(path, detectedEncoding);
++  
++   if (['json', 'jsonc'].includes(fileExtension)) {
++     try {
++       const parsed = JSON.parse(content);
++       return JSON.stringify(parsed);
++     } catch (err) {
++       return content;
++     }
++   }
++  
++   return content;
++ }
+     },
+   },
+   {

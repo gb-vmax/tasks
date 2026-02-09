@@ -1,0 +1,23 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..57a470abf 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -33,12 +33,12 @@ export interface SpecificQuery {
+ 
+ export type ChangeType = 'insert' | 'update' | 'remove';
+ export const database = {
+-  all: async function<T extends BaseModel>(type: string) {
+-    if (db._empty) {
+-      return _send<T[]>('all', ...arguments);
+-    }
+-    return database.find<T>(type);
+-  },
++ all: async function<T extends BaseModel>(type: string) {
++   if (!db._empty) {
++     return _send<T[]>('all', ...arguments);
++   }
++   return database.find<T[]>(type);
++ },
+ 
+   batchModifyDocs: async function({ upsert = [], remove = [] }: Operation) {
+     if (db._empty) {

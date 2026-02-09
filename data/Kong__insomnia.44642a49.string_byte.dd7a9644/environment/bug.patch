@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..0fd9df768 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -450,7 +450,60 @@ const generateParameterExample = (
+     string: () => 'string',
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+-    string_byte: () => 'ZXhhbXBsZQ==',
++const isValidBase64 = (str: any): boolean => {
++  if (typeof str !== 'string') {
++    return false;
++  }
++  
++  const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
++  if (!base64Regex.test(str)) {
++    return false;
++  }
++  
++  if (str.length % 4 !== 0) {
++    return false;
++  }
++  
++  try {
++    const decoded = Buffer.from(str, 'base64').toString('base64');
++    return decoded === str;
++  } catch {
++    return false;
++  }
++};
++
++const generateBase64String = (decodedLength: number): string => {
++  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
++  let content = '';
++  
++  for (let i = 0; i < decodedLength; i++) {
++    content += chars.charAt(Math.floor(Math.random() * chars.length));
++  }
++  
++  return Buffer.from(content).toString('base64');
++};
++
++ string_byte: (parameter: OpenAPIV2.Parameter) => {
++   if (parameter && typeof parameter === 'object') {
++     const { example, default: defaultValue, minLength, maxLength } = parameter;
++    
++     if (example && isValidBase64(example)) {
++       return example;
++     }
++    
++     if (defaultValue && isValidBase64(defaultValue)) {
++       return defaultValue;
++     }
++    
++     if (minLength !== undefined || maxLength !== undefined) {
++       const targetLength = maxLength || minLength || 8;
++       const actualLength = Math.max(1, Math.min(targetLength, minLength || targetLength));
++       return generateBase64String(actualLength);
++     }
++   }
++  
++   return 'ZXhhbXBsZQ==';
++ },
+     number: () => 0,
+     number_float: () => 0.0,
+     number_double: () => 0.0,

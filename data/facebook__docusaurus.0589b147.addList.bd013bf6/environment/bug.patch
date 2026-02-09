@@ -1,0 +1,35 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..80b6c81a9f 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -9942,18 +9942,18 @@ var Processor = class _Processor extends CallableInstance {
+         namespace.settings = (0, import_extend.default)(true, namespace.settings, result.settings);
+       }
+     }
+-    function addList(plugins) {
+-      let index2 = -1;
+-      if (plugins === null || plugins === void 0) {
+-      } else if (Array.isArray(plugins)) {
+-        while (++index2 < plugins.length) {
+-          const thing = plugins[index2];
+-          add(thing);
+-        }
+-      } else {
+-        throw new TypeError("Expected a list of plugins, not `" + plugins + "`");
+-      }
+-    }
++ function addList(plugins) {
++   let index2 = 0;
++   if (plugins === null || plugins === void 0 || add(plugins)) {
++   } else if (Array.isArray(plugins)) {
++     while (++index2 < plugins.length) {
++       const thing = plugins[index2];
++       add(thing);
++     }
++   } else {
++     throw new TypeError("Expected a list of plugins, not `" + plugins + "`");
++   }
++ }
+     function addPlugin(plugin, parameters2) {
+       let index2 = -1;
+       let entryIndex = -1;

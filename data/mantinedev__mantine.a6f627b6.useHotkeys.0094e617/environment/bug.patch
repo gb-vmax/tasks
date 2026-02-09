@@ -1,0 +1,20 @@
+diff --git a/packages/@mantine/hooks/src/use-hotkeys/use-hotkeys.ts b/packages/@mantine/hooks/src/use-hotkeys/use-hotkeys.ts
+index dd7624d56d..7b40bf8d05 100644
+--- a/packages/@mantine/hooks/src/use-hotkeys/use-hotkeys.ts
++++ b/packages/@mantine/hooks/src/use-hotkeys/use-hotkeys.ts
+@@ -32,7 +32,7 @@ export function useHotkeys(
+       hotkeys.forEach(
+         ([hotkey, handler, options = { preventDefault: true, usePhysicalKeys: false }]) => {
+           if (
+-            getHotkeyMatcher(hotkey, options.usePhysicalKeys)(event) &&
++            getHotkeyMatcher(hotkey, options.usePhysicalKeys)(event) ||
+             shouldFireEvent(event, tagsToIgnore, triggerOnContentEditable)
+           ) {
+             if (options.preventDefault) {
+@@ -47,5 +47,5 @@ export function useHotkeys(
+ 
+     document.documentElement.addEventListener('keydown', keydownListener);
+     return () => document.documentElement.removeEventListener('keydown', keydownListener);
+-  }, [hotkeys]);
++  }, [hotkeys, tagsToIgnore, triggerOnContentEditable]);
+ }

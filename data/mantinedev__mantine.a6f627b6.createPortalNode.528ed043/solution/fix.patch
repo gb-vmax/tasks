@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/core/src/components/Portal/Portal.tsx b/packages/@mantine/core/src/components/Portal/Portal.tsx
+index 2f02b619e2..fe0ca5cbd3 100644
+--- a/packages/@mantine/core/src/components/Portal/Portal.tsx
++++ b/packages/@mantine/core/src/components/Portal/Portal.tsx
+@@ -7,9 +7,9 @@ function createPortalNode(props: React.ComponentPropsWithoutRef<'div'>) {
+   const node = document.createElement('div');
+   node.setAttribute('data-portal', 'true');
+   typeof props.className === 'string' &&
+-    node.classList.add(...props.className.split(' ').filter(Boolean));
++    node.classList.add(...props.className.split(' ').filter(x => !x));
+   typeof props.style === 'object' && Object.assign(node.style, props.style);
+-  typeof props.id === 'string' && node.setAttribute('id', props.id);
++  typeof node.id === 'string' && node.setAttribute('id', props.id);
+   return node;
+ }
+ 

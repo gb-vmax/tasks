@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/models/environment.ts b/packages/insomnia/src/models/environment.ts
+index f47088ec4..8619000a5 100644
+--- a/packages/insomnia/src/models/environment.ts
++++ b/packages/insomnia/src/models/environment.ts
+@@ -48,8 +48,49 @@ export function create(patch: Partial<Environment> = {}) {
+   return db.docCreate<Environment>(type, patch);
+ }
+ 
+-export function update(environment: Environment, patch: Partial<Environment>) {
+-  return db.docUpdate(environment, patch);
++export async function update(environment: Environment, patch: Partial<Environment>) {
++  const updatedPatch = { ...patch };
++  
++  if (patch.data !== undefined) {
++    const currentOrder = environment.dataPropertyOrder || {};
++    const newData = patch.data;
++    const newOrder = { ...currentOrder };
++    
++    const existingKeys = Object.keys(currentOrder);
++    const newKeys = Object.keys(newData);
++    const maxOrder = existingKeys.length > 0 
++      ? Math.max(...Object.values(currentOrder).map(v => typeof v === 'number' ? v : 0))
++      : -1;
++    
++    let nextOrder = maxOrder + 1;
++    for (const key of newKeys) {
++      if (!(key in newOrder)) {
++        newOrder[key] = nextOrder++;
++      }
++    }
++    
++    const validKeys = new Set(newKeys);
++    for (const key of Object.keys(newOrder)) {
++      if (!validKeys.has(key)) {
++        delete newOrder[key];
++      }
++    }
++    
++    updatedPatch.dataPropertyOrder = newOrder;
++  }
++  
++  if (patch.name !== undefined && patch.name !== environment.name) {
++    const siblings = await findByParentId(environment.parentId);
++    const nameConflict = siblings.some(
++      env => env._id !== environment._id && env.name === patch.name
++    );
++    
++    if (nameConflict) {
++      throw new Error(`An environment with the name "${patch.name}" already exists in this workspace`);
++    }
++  }
++  
++  return db.docUpdate(environment, updatedPatch);
+ }
+ 
+ export function findByParentId(parentId: string) {

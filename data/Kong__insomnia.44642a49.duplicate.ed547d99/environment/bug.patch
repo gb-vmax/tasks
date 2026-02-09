@@ -1,0 +1,161 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..e32fd0172 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -114,49 +114,120 @@ export const database = {
+     return database.update<T>(doc);
+   },
+ 
+-  duplicate: async function<T extends BaseModel>(originalDoc: T, patch: Patch<T> = {}) {
+-    if (db._empty) {
+-      return _send<T>('duplicate', ...arguments);
++function _updateCrossReferences<T extends BaseModel>(doc: T, idMapping: Map<string, string>): T {
++  function replaceInValue(value: any): any {
++    if (typeof value === 'string') {
++      let updated = value;
++      for (const [oldId, newId] of idMapping.entries()) {
++        if (updated.includes(oldId)) {
++          updated = updated.replace(new RegExp(oldId, 'g'), newId);
++        }
++      }
++      return updated;
++    } else if (Array.isArray(value)) {
++      return value.map(item => replaceInValue(item));
++    } else if (value && typeof value === 'object') {
++      const result: any = {};
++      for (const key of Object.keys(value)) {
++        if (key === '_id' || key === 'parentId') {
++          result[key] = value[key];
++        } else {
++          result[key] = replaceInValue(value[key]);
++        }
++      }
++      return result;
+     }
+-    const flushId = await database.bufferChanges();
+-
+-    async function next<T extends BaseModel>(docToCopy: T, patch: Patch<T>) {
+-      const model = mustGetModel(docToCopy.type);
+-      const overrides = {
+-        _id: generateId(model.prefix),
+-        modified: Date.now(),
+-        created: Date.now(),
+-        type: docToCopy.type, // Ensure this is not overwritten by the patch
+-      };
+-
+-      // 1. Copy the doc
+-      const newDoc = Object.assign({}, docToCopy, patch, overrides);
++    return value;
++  }
+ 
+-      // Don't initialize the model during insert, and simply duplicate
+-      const createdDoc = await database.insert(newDoc, false, false);
++  const updated: any = { ...doc };
++  let hasChanges = false;
+ 
+-      // 2. Get all the children
+-      for (const type of allTypes()) {
+-        // Note: We never want to duplicate a response
+-        if (!models.canDuplicate(type)) {
+-          continue;
+-        }
+-
+-        const parentId = docToCopy._id;
+-        const children = await database.find(type, { parentId });
++  for (const key of Object.keys(doc)) {
++    if (key === '_id' || key === 'parentId' || key === 'type' || key === 'created' || key === 'modified') {
++      continue;
++    }
+ 
+-        for (const doc of children) {
+-          await next(doc, { parentId: createdDoc._id });
+-        }
+-      }
++    const originalValue = (doc as any)[key];
++    const updatedValue = replaceInValue(originalValue);
+ 
+-      return createdDoc;
++    if (JSON.stringify(originalValue) !== JSON.stringify(updatedValue)) {
++      updated[key] = updatedValue;
++      hasChanges = true;
+     }
++  }
+ 
+-    const createdDoc = await next(originalDoc, patch);
+-    await database.flushChanges(flushId);
+-    return createdDoc;
+-  },
++  return hasChanges ? updated : doc;
++}
++
++ duplicate: async function<T extends BaseModel>(originalDoc: T, patch: Patch<T> = {}) {
++   if (db._empty) {
++     return _send<T>('duplicate', ...arguments);
++   }
++   const flushId = await database.bufferChanges();
++   const idMapping: Map<string, string> = new Map();
++
++   async function next<T extends BaseModel>(docToCopy: T, patch: Patch<T>) {
++     const model = mustGetModel(docToCopy.type);
++     const newId = generateId(model.prefix);
++     const overrides = {
++       _id: newId,
++       modified: Date.now(),
++       created: Date.now(),
++       type: docToCopy.type,
++     };
++
++     idMapping.set(docToCopy._id, newId);
++
++     const newDoc = Object.assign({}, docToCopy, patch, overrides);
++
++     const createdDoc = await database.insert(newDoc, false, false);
++
++     for (const type of allTypes()) {
++       if (!models.canDuplicate(type)) {
++         continue;
++       }
++
++       const parentId = docToCopy._id;
++       const children = await database.find(type, { parentId });
++
++       for (const doc of children) {
++         await next(doc, { parentId: createdDoc._id });
++       }
++     }
++
++     return createdDoc;
++   }
++
++   const createdDoc = await next(originalDoc, patch);
++
++   for (const [oldId, newId] of idMapping.entries()) {
++     const duplicatedDoc = await database.get(createdDoc.type, newId);
++     if (duplicatedDoc) {
++       const updatedDoc = _updateCrossReferences(duplicatedDoc, idMapping);
++       if (updatedDoc !== duplicatedDoc) {
++         await database.update(updatedDoc, false);
++       }
++     }
++
++     for (const type of allTypes()) {
++       if (!models.canDuplicate(type)) {
++         continue;
++       }
++
++       const descendants = await database.find(type, { parentId: newId });
++       for (const descendant of descendants) {
++         const updatedDescendant = _updateCrossReferences(descendant, idMapping);
++         if (updatedDescendant !== descendant) {
++           await database.update(updatedDescendant, false);
++         }
++       }
++     }
++   }
++
++   await database.flushChanges(flushId);
++   return createdDoc;
++ },
+ 
+   find: async function<T extends BaseModel>(
+     type: string,

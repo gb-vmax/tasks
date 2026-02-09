@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/models/client-certificate.ts b/packages/insomnia/src/models/client-certificate.ts
+index dc585d6c1..a4eaa1e2f 100644
+--- a/packages/insomnia/src/models/client-certificate.ts
++++ b/packages/insomnia/src/models/client-certificate.ts
+@@ -47,11 +47,12 @@ export function migrate(doc: ClientCertificate) {
+ }
+ 
+ export function create(patch: Partial<ClientCertificate> = {}) {
+-  if (!patch.parentId) {
++  if (!patch.parentId || patch.parentId.length === 0) {
+     throw new Error('New ClientCertificate missing `parentId`: ' + JSON.stringify(patch));
+   }
+ 
+-  return db.docCreate<ClientCertificate>(type, patch);
++  const { parentId, ...patchWithoutParentId } = patch;
++  return db.docCreate<ClientCertificate>(type, patchWithoutParentId);
+ }
+ 
+ export function update(

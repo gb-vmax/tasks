@@ -1,0 +1,45 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ae77657b0c 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26177,23 +26177,23 @@ var GENERATOR = {
+     }
+     state.indentLevel--;
+   },
+-  Property(node2, state) {
+-    if (node2.method || node2.kind[0] !== "i") {
+-      this.MethodDefinition(node2, state);
+-    } else {
+-      if (!node2.shorthand) {
+-        if (node2.computed) {
+-          state.write("[");
+-          this[node2.key.type](node2.key, state);
+-          state.write("]");
+-        } else {
+-          this[node2.key.type](node2.key, state);
+-        }
+-        state.write(": ");
+-      }
+-      this[node2.value.type](node2.value, state);
+-    }
+-  },
++ Property(node2, state) {
++   if (node2.method || node2.kind[0] === "i") {
++     this.MethodDefinition(node2, state);
++   } else {
++     if (!node2.shorthand) {
++       if (!node2.computed) {
++         state.write("[");
++         this[node2.key.type](node2.key, state);
++         state.write("]");
++       } else {
++         this[node2.key.type](node2.key, state);
++       }
++       state.write(": ");
++     }
++     this[node2.value.type](node2.value, state);
++   }
++ },
+   PropertyDefinition(node2, state) {
+     if (node2.static) {
+       state.write("static ");

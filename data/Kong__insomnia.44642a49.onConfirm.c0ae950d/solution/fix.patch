@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+index 46a3f366e..afa0a9eab 100644
+--- a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
++++ b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+@@ -135,10 +135,36 @@ export const ContentTypeDropdown: FC = () => {
+         title: 'Switch Body Type?',
+         message: 'Current body will be lost. Are you sure you want to continue?',
+         addCancel: true,
+-        onConfirm: async () => {
+-          patchRequest(requestId, { body: { mimeType } });
+-          window.main.trackSegmentEvent({ event: SegmentEvent.requestBodyTypeSelect, properties: { type: mimeType } });
+-        },
++const extractPreservableText = (currentBody: RequestBody, targetMimeType: string | null): string | null => {
++  if (!targetMimeType || targetMimeType === CONTENT_TYPE_FILE || targetMimeType === CONTENT_TYPE_FORM_DATA || targetMimeType === CONTENT_TYPE_FORM_URLENCODED) {
++    return null;
++  }
++  
++  const hasParams = 'params' in currentBody && currentBody.params && currentBody.params.length > 0;
++  const hasMimeType = 'mimeType' in currentBody;
++  const isFormBased = hasMimeType && (currentBody.mimeType === CONTENT_TYPE_FORM_DATA || currentBody.mimeType === CONTENT_TYPE_FORM_URLENCODED);
++  
++  if (hasParams && isFormBased) {
++    const paramPairs = currentBody.params
++      .filter(p => !p.disabled && p.name)
++      .map(p => `${encodeURIComponent(p.name)}=${encodeURIComponent(p.value || '')}`)
++      .join('&');
++    return paramPairs || null;
++  }
++  
++  return null;
++};
++
++ onConfirm: async () => {
++   const preservedText = extractPreservableText(activeRequest.body, mimeType);
++   const requestWithPreservedText = preservedText 
++     ? { ...activeRequest, body: { ...activeRequest.body, text: preservedText } }
++     : activeRequest;
++  
++   const updates = updateMimeType(requestWithPreservedText, mimeType);
++   patchRequest(requestId, updates);
++   window.main.trackSegmentEvent({ event: SegmentEvent.requestBodyTypeSelect, properties: { type: mimeType } });
++ },
+       });
+     } else {
+       patchRequest(requestId, { body: { mimeType } });

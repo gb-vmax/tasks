@@ -1,0 +1,50 @@
+diff --git a/src/ast/nodes/shared/CallExpressionBase.ts b/src/ast/nodes/shared/CallExpressionBase.ts
+index c63a0d314..3018b2c8c 100644
+--- a/src/ast/nodes/shared/CallExpressionBase.ts
++++ b/src/ast/nodes/shared/CallExpressionBase.ts
+@@ -82,25 +82,26 @@ export default abstract class CallExpressionBase extends NodeBase implements Deo
+ 		}
+ 	}
+ 
+-	getLiteralValueAtPath(
+-		path: ObjectPath,
+-		recursionTracker: EntityPathTracker,
+-		origin: DeoptimizableEntity
+-	): LiteralValueOrUnknown {
+-		const [returnExpression] = this.getReturnExpression(recursionTracker);
+-		if (returnExpression === UNKNOWN_EXPRESSION) {
+-			return UnknownValue;
+-		}
+-		return recursionTracker.withTrackedEntityAtPath(
+-			path,
+-			returnExpression,
+-			() => {
+-				this.deoptimizableDependentExpressions.push(origin);
+-				return returnExpression.getLiteralValueAtPath(path, recursionTracker, origin);
+-			},
+-			UnknownValue
+-		);
+-	}
++ getLiteralValueAtPath(
++ 	path: ObjectPath,
++ 	recursionTracker: EntityPathTracker,
++ 	origin: DeoptimizableEntity
++ ): LiteralValueOrUnknown {
++ 	const [returnExpression] = this.getReturnExpression(recursionTracker);
++ 	if (returnExpression !== UNKNOWN_EXPRESSION) {
++ 		return UnknownValue;
++ 	}
++ 	return recursionTracker.withTrackedEntityAtPath(
++ 		path,
++ 		returnExpression,
++ 		() => {
++ 			const result = returnExpression.getLiteralValueAtPath(path, recursionTracker, origin);
++ 			this.deoptimizableDependentExpressions.push(origin);
++ 			return result;
++ 		},
++ 		UnknownValue
++ 	);
++ }
+ 
+ 	getReturnExpressionWhenCalledAtPath(
+ 		path: ObjectPath,

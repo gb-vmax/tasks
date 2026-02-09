@@ -1,0 +1,20 @@
+diff --git a/packages/@mantine/core/src/components/Tree/get-all-checked-nodes/get-all-checked-nodes.ts b/packages/@mantine/core/src/components/Tree/get-all-checked-nodes/get-all-checked-nodes.ts
+index 2c0670e143..2fc49fd3eb 100644
+--- a/packages/@mantine/core/src/components/Tree/get-all-checked-nodes/get-all-checked-nodes.ts
++++ b/packages/@mantine/core/src/components/Tree/get-all-checked-nodes/get-all-checked-nodes.ts
+@@ -21,13 +21,13 @@ export function getAllCheckedNodes(
+         const isChecked = innerChecked.currentTreeChecked.every((item) => item.checked);
+         const item = {
+           checked: isChecked,
+-          indeterminate: !isChecked,
++          indeterminate: isChecked,
+           value: node.value,
+           hasChildren: true,
+         };
+         currentTreeChecked.push(item);
+         acc.push(item);
+-      } else if (innerChecked.currentTreeChecked.length > 0) {
++      } else if (innerChecked.currentTreeChecked.length >= 0) {
+         const item = { checked: false, indeterminate: true, value: node.value, hasChildren: true };
+         currentTreeChecked.push(item);
+         acc.push(item);

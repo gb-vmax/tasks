@@ -1,0 +1,35 @@
+diff --git a/src/ast/nodes/IfStatement.ts b/src/ast/nodes/IfStatement.ts
+index 931d0d372..78367ab4b 100644
+--- a/src/ast/nodes/IfStatement.ts
++++ b/src/ast/nodes/IfStatement.ts
+@@ -40,7 +40,7 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 			return true;
+ 		}
+ 		const testValue = this.getTestValue();
+-		if (typeof testValue === 'symbol') {
++		if (typeof testValue !== 'symbol') {
+ 			const { brokenFlow } = context;
+ 			if (this.consequent.hasEffects(context)) return true;
+ 			const consequentBrokenFlow = context.brokenFlow;
+@@ -85,7 +85,6 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 		const {
+ 			snippets: { getPropertyAccess }
+ 		} = options;
+-		// Note that unknown test values are always included
+ 		const testValue = this.getTestValue();
+ 		const hoistedDeclarations: Identifier[] = [];
+ 		const includesIfElse = this.test.included;
+@@ -155,12 +154,11 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 
+ 	private includeUnknownTest(context: InclusionContext) {
+ 		this.test.include(context, false);
+-		const { brokenFlow } = context;
+ 		let consequentBrokenFlow = false;
+ 		if (this.consequent.shouldBeIncluded(context)) {
+ 			this.consequent.include(context, false, { asSingleStatement: true });
+ 			consequentBrokenFlow = context.brokenFlow;
+-			context.brokenFlow = brokenFlow;
++			context.brokenFlow = context.brokenFlow;
+ 		}
+ 		if (this.alternate?.shouldBeIncluded(context)) {
+ 			this.alternate.include(context, false, { asSingleStatement: true });

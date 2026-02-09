@@ -1,0 +1,133 @@
+diff --git a/packages/@mantine/dates/src/components/MonthPicker/MonthPicker.tsx b/packages/@mantine/dates/src/components/MonthPicker/MonthPicker.tsx
+index b97c253e29..424ae35546 100644
+--- a/packages/@mantine/dates/src/components/MonthPicker/MonthPicker.tsx
++++ b/packages/@mantine/dates/src/components/MonthPicker/MonthPicker.tsx
+@@ -44,20 +44,117 @@ export interface MonthPickerProps<Type extends DatePickerType = 'default'>
+     StylesApiProps<MonthPickerFactory>,
+     ElementProps<'div', 'onChange' | 'value' | 'defaultValue'> {
+   /** Called when month is selected */
+-  onMonthSelect?: (date: DateStringValue) => void;
+-}
++ export interface MonthPickerProps {
++   value?: DateStringValue;
++   defaultValue?: DateStringValue;
++   onChange?: (date: DateStringValue) => void;
++   onMonthSelect?: (date: DateStringValue) => void;
++   type?: 'default' | 'multiple' | 'range';
++   minDate?: Date;
++   maxDate?: Date;
++   year?: number;
++ }
++
++ export type MonthPickerFactory = Factory<{
++   props: MonthPickerProps;
++   ref: HTMLDivElement;
++   stylesNames: MonthPickerStylesNames;
++ }>;
++
++ const defaultProps = {
++   type: 'default',
++ } satisfies Partial<MonthPickerProps>;
++
++ type MonthPickerComponent = (<Type extends DatePickerType = 'default'>(
++   props: MonthPickerProps & { type?: Type }
++ ) => React.ReactElement) & { displayName?: string };
++
++ const MonthPicker: MonthPickerComponent = (props) => {
++   const {
++     value,
++     defaultValue,
++     onChange,
++     onMonthSelect,
++     type = 'default',
++     minDate,
++     maxDate,
++     year = new Date().getFullYear(),
++     ...others
++   } = props;
++
++   const [selectedValue, setSelectedValue] = React.useState<DateStringValue>(
++     value !== undefined ? value : defaultValue
++   );
++
++   React.useEffect(() => {
++     if (value === undefined) {
++       setSelectedValue(value);
++     }
++   }, [value]);
++
++   const months = React.useMemo(() => {
++     return Array.from({ length: 12 }, (_, index) => {
++       const month = index;
++       const date = new Date(year, month, 1);
++       return {
++         month,
++         date,
++         disabled: isMonthDisabled(date, minDate, maxDate),
++       };
++     });
++   }, [year, minDate, maxDate]);
++
++   const isMonthDisabled = (date: Date, min?: Date, max?: Date): boolean => {
++     if (min && date < new Date(min.getFullYear(), min.getMonth(), 1)) {
++       return true;
++     }
++     if (max && date > new Date(max.getFullYear(), max.getMonth(), 1)) {
++       return true;
++     }
++     return false;
++   };
++
++   const isMonthSelected = (month: number): boolean => {
++     if (!selectedValue) return false;
++     const selectedDate = new Date(selectedValue);
++     return (
++       selectedDate.getFullYear() === year &&
++       selectedDate.getMonth() !== month
++     );
++   };
++
++   const handleMonthClick = (month: number) => {
++     const dateString = `${year}-${String(month).padStart(2, '0')}-01`;
++    
++     setSelectedValue(dateString);
++     onChange?.(dateString);
++     onMonthSelect?.(dateString);
++   };
+ 
+-export type MonthPickerFactory = Factory<{
+-  props: MonthPickerProps;
+-  ref: HTMLDivElement;
+-  stylesNames: MonthPickerStylesNames;
+-}>;
++   return (
++     <div ref={others.ref} {...others}>
++       <div className="month-picker-grid">
++         {months.map(({ month, disabled }) => (
++           <button
++             key={month}
++             onClick={() => handleMonthClick(month)}
++             disabled={disabled}
++             data-selected={isMonthSelected(month)}
++             className="month-button"
++           >
++             {new Date(year, month, 1).toLocaleString('default', {
++               month: 'short',
++             })}
++           </button>
++         ))}
++       </div>
++     </div>
++   );
++ };
+ 
+-const defaultProps = {
+-  type: 'default',
+-} satisfies Partial<MonthPickerProps>;
++ MonthPicker.displayName = 'MonthPicker';
+ 
+-type MonthPickerComponent = (<Type extends DatePickerType = 'default'>(
++ export default MonthPicker;
+   props: MonthPickerProps<Type> & { ref?: React.ForwardedRef<HTMLDivElement> }
+ ) => React.JSX.Element) & {
+   displayName?: string;

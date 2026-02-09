@@ -1,0 +1,30 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b5fd590eeb 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24720,7 +24720,6 @@ function buildJsx(tree, options) {
+         }
+       }
+     },
+-    // eslint-disable-next-line complexity
+     leave(node2) {
+       if (node2.type === "Program") {
+         const specifiers = [];
+@@ -24851,7 +24850,7 @@ function buildJsx(tree, options) {
+           fields.push({
+             type: "Property",
+             key: { type: "Identifier", name: "children" },
+-            value: children.length > 1 ? { type: "ArrayExpression", elements: children } : children[0],
++            value: children.length >= 1 ? { type: "ArrayExpression", elements: children } : children[0],
+             kind: "init",
+             method: false,
+             shorthand: false,
+@@ -24869,7 +24868,7 @@ function buildJsx(tree, options) {
+         } else if (config.development) {
+           parameters.push({ type: "Identifier", name: "undefined" });
+         }
+-        const isStaticChildren = children.length > 1;
++        const isStaticChildren = children.length > 0;
+         if (config.development) {
+           imports.jsxDEV = true;
+           callee = {

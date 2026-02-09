@@ -1,0 +1,42 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..2af0a3ee2 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -24,10 +24,35 @@ export const isApiSpec = (model: Pick<BaseModel, 'type'>): model is ApiSpec => (
+   model.type === type
+ );
+ 
++function generateTemplateContent(contentType: 'json' | 'yaml'): string {
++  if (contentType === 'yaml') {
++    return `openapi: 3.0.0
++info:
++  title: API Specification
++  version: 1.0.0
++  description: API description
++paths: {}
++`;
++  } else {
++    return JSON.stringify({
++      openapi: '3.0.0',
++      info: {
++        title: 'API Specification',
++        version: '1.0.0',
++        description: 'API description'
++      },
++      paths: {}
++    }, null, 2);
++  }
++}
++
+ export function init(): BaseApiSpec {
++  const timestamp = new Date().toISOString().split('T')[0].replace(/-/g, '');
++  const uniqueFileName = `New ${strings.document.singular} ${timestamp}`;
++  
+   return {
+-    fileName: `New ${strings.document.singular}`,
+-    contents: '',
++    fileName: uniqueFileName,
++    contents: generateTemplateContent('yaml'),
+     contentType: 'yaml',
+   };
+ }

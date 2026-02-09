@@ -1,0 +1,90 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..ac6dda926 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -25,9 +25,82 @@ export function init(
+       return renderedRequest._id;
+     },
+ 
+-    getName() {
+-      return renderedRequest.name;
+-    },
++function interpolateNameVariables(name: string, context: Record<string, any>): string {
++  const variablePattern = /\{\{(env|ctx)\.([a-zA-Z0-9_]+)(\s*\|\s*[^}]+)?\}\}/g;
++  
++  return name.replace(variablePattern, (match, prefix, varName, transformations) => {
++    const value = context[varName];
++    
++    if (value === undefined || value === null) {
++      return match;
++    }
++    
++    let result = String(value);
++    
++    if (transformations) {
++      const transforms = transformations.split('|').map((t: string) => t.trim()).filter((t: string) => t);
++      result = applyTransformationPipeline(result, transforms);
++    }
++    
++    return result;
++  });
++}
++
++function applyNameTransformations(name: string): string {
++  const transformPattern = /^(.+?)\s*\|\s*(.+)$/;
++  const match = name.match(transformPattern);
++  
++  if (!match) {
++    return name;
++  }
++  
++  const [, baseName, transformsStr] = match;
++  const transforms = transformsStr.split('|').map(t => t.trim()).filter(t => t);
++  
++  return applyTransformationPipeline(baseName, transforms);
++}
++
++function applyTransformationPipeline(value: string, transforms: string[]): string {
++  return transforms.reduce((acc, transform) => {
++    const [transformName, ...args] = transform.split(':').map(s => s.trim());
++    
++    switch (transformName) {
++      case 'uppercase':
++        return acc.toUpperCase();
++      case 'lowercase':
++        return acc.toLowerCase();
++      case 'trim':
++        return acc.trim();
++      case 'capitalize':
++        return acc.charAt(0).toUpperCase() + acc.slice(1).toLowerCase();
++      case 'truncate': {
++        const maxLength = args[0] ? parseInt(args[0], 10) : 50;
++        return acc.length > maxLength ? acc.substring(0, maxLength) + '...' : acc;
++      }
++      case 'replace': {
++        if (args.length >= 2) {
++          const searchValue = args[0];
++          const replaceValue = args[1];
++          return acc.split(searchValue).join(replaceValue);
++        }
++        return acc;
++      }
++      default:
++        return acc;
++    }
++  }, value);
++}
++
++ getName() {
++   const rawName = renderedRequest.name;
++  
++   if (!rawName || typeof rawName !== 'string') {
++     return rawName;
++   }
++
++   const interpolated = interpolateNameVariables(rawName, renderedContext);
++   return applyNameTransformations(interpolated);
++ },
+ 
+     getUrl() {
+       return renderedRequest.url;

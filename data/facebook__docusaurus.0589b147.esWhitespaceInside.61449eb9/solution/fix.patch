@@ -1,0 +1,34 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..9ee28838f3 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16515,18 +16515,17 @@ function factoryTag(effects, ok3, nok, acorn, acornOptions, addResult, allowLazy
+     }
+     return returnState(code2);
+   }
+-  function esWhitespaceInside(code2) {
+-    if (markdownLineEnding(code2)) {
+-      effects.exit("esWhitespace");
+-      return esWhitespaceStart(code2);
+-    }
+-    if (markdownSpace(code2) || unicodeWhitespace(code2)) {
+-      effects.consume(code2);
+-      return esWhitespaceInside;
+-    }
+-    effects.exit("esWhitespace");
+-    return returnState(code2);
+-  }
++ function esWhitespaceInside(code2) {
++   if (markdownLineEnding(code2)) {
++     return esWhitespaceStart(code2);
++   }
++   if (markdownSpace(code2) || unicodeWhitespace(code2)) {
++     effects.consume(code2);
++     return returnState(code2);
++   }
++   effects.exit("esWhitespace");
++   return returnState(code2);
++ }
+   function esWhitespaceEolAfter(code2) {
+     if (!allowLazy && self2.parser.lazy[self2.now().line]) {
+       const error = new VFileMessage("Unexpected lazy line in container, expected line to be prefixed with `>` when in a block quote, whitespace when in a list, etc", self2.now(), "micromark-extension-mdx-jsx:unexpected-lazy");

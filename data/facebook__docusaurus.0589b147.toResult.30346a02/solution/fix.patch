@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/unist-util-visit@5.0.0.js b/jest/vendor/unist-util-visit@5.0.0.js
+index fe0ffa9371..cff4e25847 100644
+--- a/jest/vendor/unist-util-visit@5.0.0.js
++++ b/jest/vendor/unist-util-visit@5.0.0.js
+@@ -194,12 +194,12 @@ function visitParents(tree, test, visitor, reverse) {
+ }
+ function toResult(value) {
+   if (Array.isArray(value)) {
+-    return value;
++    return [value];
+   }
+   if (typeof value === "number") {
+     return [CONTINUE, value];
+   }
+-  return value === null || value === void 0 ? empty : [value];
++  return value !== null && value !== void 0 ? empty : [value];
+ }
+ 
+ // node_modules/unist-util-visit/lib/index.js

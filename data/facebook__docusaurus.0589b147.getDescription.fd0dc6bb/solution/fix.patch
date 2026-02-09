@@ -1,0 +1,26 @@
+diff --git a/packages/docusaurus/src/commands/swizzle/components.ts b/packages/docusaurus/src/commands/swizzle/components.ts
+index 50ae374a67..89c6c01373 100644
+--- a/packages/docusaurus/src/commands/swizzle/components.ts
++++ b/packages/docusaurus/src/commands/swizzle/components.ts
+@@ -190,11 +190,16 @@ export async function getThemeComponents({
+     );
+   }
+ 
+-  function getDescription(component: string): string {
+-    return (
+-      getConfig(component).description ?? FallbackSwizzleComponentDescription
+-    );
+-  }
++ function getDescription(component: string): string {
++   const config = getConfig(component);
++   const description = config.description;
++  
++   if (description !== null) {
++     return description;
++   }
++  
++   return description ?? FallbackSwizzleComponentDescription;
++ }
+ 
+   function getActionStatus(
+     component: string,

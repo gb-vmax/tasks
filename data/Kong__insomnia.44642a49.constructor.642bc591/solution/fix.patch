@@ -1,0 +1,290 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..462f030ac 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -15,207 +15,93 @@ export class PropertyBase {
+     protected _parent: PropertyBase | undefined = undefined;
+     protected description?: string;
+ 
+-    constructor(description?: string) {
+-        this.description = description;
+-    }
+-
+-    static propertyIsMeta(_value: any, key: string) {
+-        // no meta is defined in Insomnia and it basically find properties start with '_'
+-        // '_' is also rejected here
+-        return key && key.startsWith('_');
+-    }
+-
+-    static propertyUnprefixMeta(_value: any, key: string) {
+-        return _.trimStart(key, '_');
+-    }
+-
+-    // TODO: temporarily disable this
+-    // static toJSON(obj: { toJSON: () => string }) {
+-    //     return obj.toJSON();
+-    // }
++private _parentSearchCache?: Record<string, PropertyBase | undefined>;
+ 
+-    meta() {
+-        return {};
+-    };
+-
+-    parent() {
+-        return this._parent;
++private _generateCacheKey(property: string, options?: { maxDepth?: number; value?: any }): string {
++    const parts = [property];
++    if (options?.maxDepth !== undefined) {
++        parts.push(`d:${options.maxDepth}`);
+     }
+-
+-    forEachParent(
+-        _options: { withRoot?: boolean },
+-        iterator: (obj: PropertyBase) => boolean,
+-    ) {
+-        const currentParent = this.parent();
+-        if (!currentParent) {
+-            return;
+-        }
+-
+-        const queue: PropertyBase[] = [currentParent];
+-        const parents: PropertyBase[] = [];
+-
+-        while (queue.length > 0) {
+-            const ancester = queue.shift();
+-            if (!ancester) {
+-                continue;
+-            }
+-
+-            // TODO: check options
+-            const cloned = clone(ancester);
+-            const keepIterating = iterator(cloned);
+-            parents.push(cloned);
+-            if (!keepIterating) {
+-                break;
+-            }
+-
+-            const olderAncester = ancester.parent();
+-            if (olderAncester) {
+-                queue.push(olderAncester);
+-            }
+-        }
+-
+-        return parents;
+-    }
+-
+-    findInParents(
+-        property: string,
+-        customizer?: (ancester: PropertyBase) => boolean,
+-    ): PropertyBase | undefined {
+-        const currentParent = this.parent();
+-        if (!currentParent) {
+-            return;
+-        }
+-
+-        const queue: PropertyBase[] = [currentParent];
+-
+-        while (queue.length > 0) {
+-            const ancester = queue.shift();
+-            if (!ancester) {
+-                continue;
+-            }
+-
+-            const cloned = clone(ancester);
+-            const hasProperty = Object.keys(cloned.meta()).includes(property);
+-            if (!hasProperty) {
+-                // keep traversing until parent has the property
+-                // no op
+-            } else {
+-                if (customizer) {
+-                    if (customizer(cloned)) {
+-                        // continue until customizer returns a truthy value
+-                        return cloned;
+-                    }
+-                } else {
+-                    // customizer is not specified
+-                    // stop at the first parent that contains the property
+-                    return cloned;
+-                }
+-            }
+-
+-            const olderAncester = ancester.parent();
+-            if (olderAncester) {
+-                queue.push(olderAncester);
+-            }
+-        }
+-
+-        return undefined;
+-    }
+-
+-    toJSON() {
+-        const entriesToExport = Object
+-            .entries(this)
+-            .filter((kv: [string, any]) =>
+-                typeof kv[1] !== 'function'
+-                && typeof kv[1] !== 'undefined'
+-                && kv[0] !== '_kind'
+-            );
+-
+-        return Object.fromEntries(entriesToExport);
+-    }
+-
+-    toObject() {
+-        return this.toJSON();
+-    }
+-
+-    toString() {
+-        return JSON.stringify(this.toJSON());
++    if (options?.value !== undefined) {
++        parts.push(`v:${JSON.stringify(options.value)}`);
+     }
++    return parts.join('|');
+ }
+ 
+-export class Property extends PropertyBase {
+-    id: string;
+-    name?: string;
+-    disabled?: boolean;
+-    // TODO: parent property will be introduced when collection manipulation is supported
+-
+-    constructor(
+-        id?: string,
+-        name?: string,
+-        disabled?: boolean,
+-        info?: { id?: string; name?: string },
+-    ) {
+-        super();
+-        this._kind = 'Property';
+-        this.id = info?.id || id || '';
+-        this.name = info?.name || name || '';
+-        this.disabled = disabled || false;
+-
+-    }
+-
+-    static _index = 'id';
+-
+-    static replaceSubstitutions(content: string, ...variables: object[]): string {
+-        if (!Array.isArray(variables) || typeof content !== 'string') {
+-            throw Error("replaceSubstitutions: the first param's type is not string or other parameters are not an array");
+-        }
+-
+-        let context: object = {};
+-        // the searching priority of rendering is from left to right
+-        variables.reverse().forEach(variable => context = { ...context, ...variable });
+-
+-        return getInterpolator().render(content, context);
+-    }
+-
+-    static replaceSubstitutionsIn(obj: object, ...variables: object[]): object {
+-        if (!Array.isArray(variables) || typeof obj !== 'object') {
+-            throw Error("replaceSubstitutions: the first param's type is not object or other parameters are not an array");
+-        }
+-
+-        try {
+-            const content = JSON.stringify(obj);
+-
+-            let context: object = {};
+-            // the searching priority of rendering is from left to right
+-            variables.reverse().forEach(variable => {
+-                context = { ...context, ...variable };
+-            });
+-
+-            const rendered = getInterpolator().render(content, context);
+-            return JSON.parse(rendered);
+-
+-        } catch (e: any) {
+-            throw Error(`replaceSubstitutionsIn: ${e.toString()}`);
+-        }
++private _cacheParentSearch(key: string, result: PropertyBase | undefined): void {
++    if (!this._parentSearchCache) {
++        this._parentSearchCache = {};
+     }
++    this._parentSearchCache[key] = result;
++}
+ 
+-    describe(content: string, typeName: string) {
+-        this._kind = typeName;
+-        this.description = content;
+-    }
++clearParentSearchCache(): void {
++    this._parentSearchCache = {};
+ }
+ 
+-export class PropertyList<T extends Property> {
+-    protected _kind: string = 'PropertyList';
+-    protected list: T[] = [];
+-
+-    constructor(
+-        protected typeClass: { _index?: string },
+-        protected parent: Property | PropertyList<any> | undefined,
+-        populate: T[],
+-    ) {
+-        this.parent = parent;
+-        this.list = populate;
+-    }
++ findInParents(
++     property: string,
++     customizer?: (ancester: PropertyBase) => boolean,
++     options?: { maxDepth?: number; value?: any; useCache?: boolean },
++ ): PropertyBase | undefined {
++     const currentParent = this.parent();
++     if (!currentParent) {
++         return;
++     }
++
++     const cacheKey = this._generateCacheKey(property, options);
++     if (options?.useCache !== false && this._parentSearchCache?.[cacheKey]) {
++         return this._parentSearchCache[cacheKey];
++     }
++
++     const queue: PropertyBase[] = [currentParent];
++     let depth = 0;
++     const maxDepth = options?.maxDepth ?? Infinity;
++     const searchValue = options?.value;
++     const hasValueCriteria = searchValue !== undefined;
++
++     while (queue.length > 0 && depth < maxDepth) {
++         const ancester = queue.shift();
++         if (!ancester) {
++             continue;
++         }
++
++         const cloned = clone(ancester);
++         const metaData = cloned.meta();
++         const hasProperty = Object.keys(metaData).includes(property);
++        
++         if (!hasProperty) {
++            
++         } else {
++             let valueMatches = true;
++             if (hasValueCriteria) {
++                 const actualValue = (metaData as Record<string, any>)[property];
++                 valueMatches = equal(actualValue, searchValue);
++             }
++
++             if (valueMatches) {
++                 if (customizer) {
++                     if (customizer(cloned)) {
++                         this._cacheParentSearch(cacheKey, cloned);
++                         return cloned;
++                     }
++                 } else {
++                     this._cacheParentSearch(cacheKey, cloned);
++                     return cloned;
++                 }
++             }
++         }
++
++         const olderAncester = ancester.parent();
++         if (olderAncester) {
++             queue.push(olderAncester);
++             depth++;
++         }
++     }
++
++     this._cacheParentSearch(cacheKey, undefined);
++     return undefined;
++ }
+ 
+     static isPropertyList(obj: object) {
+         return '_kind' in obj && obj._kind === 'PropertyList';

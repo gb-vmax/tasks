@@ -1,0 +1,149 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..0462e10d7 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -152,18 +152,132 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           ],
+         },
+       ],
+-      run(_context, uuidType = 'v4') {
+-        switch ((uuidType + '').toLowerCase()) {
+-          case '1':
+-          case 'v1':
+-            return uuid.v1();
+-          case '4':
+-          case 'v4':
+-            return uuid.v4();
+-          default:
+-            throw new Error(`Invalid UUID type "${uuidType}"`);
+-        }
+-      },
++function resolveNamespace(namespace) {
++  if (!namespace) {
++    throw new Error('Namespace is required for v5 UUID');
++  }
++  
++  const nsStr = (namespace + '').toLowerCase();
++  
++  switch (nsStr) {
++    case 'dns':
++      return uuid.v5.DNS;
++    case 'url':
++      return uuid.v5.URL;
++    case 'oid':
++      return uuid.v5.OID;
++    case 'x500':
++      return uuid.v5.X500;
++    default:
++      if (typeof namespace === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(namespace)) {
++        return namespace;
++      }
++      throw new Error(`Invalid namespace "${namespace}". Use 'dns', 'url', 'oid', 'x500', or a valid UUID string`);
++  }
++}
++
++function parseNodeParam(nodeParam) {
++  if (nodeParam.includes(':')) {
++    const parts = nodeParam.split(':');
++    if (parts.length === 6) {
++      const node = parts.map(p => parseInt(p, 16));
++      if (node.some(n => isNaN(n) || n < 0 || n > 255)) {
++        throw new Error('Invalid MAC address format');
++      }
++      return node;
++    }
++  }
++  
++  if (nodeParam.includes('-')) {
++    const parts = nodeParam.split('-');
++    if (parts.length === 6) {
++      const node = parts.map(p => parseInt(p, 16));
++      if (node.some(n => isNaN(n) || n < 0 || n > 255)) {
++        throw new Error('Invalid MAC address format');
++      }
++      return node;
++    }
++  }
++  
++  const cleaned = nodeParam.replace(/[^0-9a-f]/gi, '');
++  if (cleaned.length === 12) {
++    const node = [];
++    for (let i = 0; i < 12; i += 2) {
++      node.push(parseInt(cleaned.substr(i, 2), 16));
++    }
++    return node;
++  }
++  
++  throw new Error('Node must be a MAC address in format XX:XX:XX:XX:XX:XX, XX-XX-XX-XX-XX-XX, or XXXXXXXXXXXX');
++}
++
++ run(_context, uuidType = 'v4', ...additionalParams) {
++   const typeStr = (uuidType + '').toLowerCase();
++   let result;
++  
++   switch (typeStr) {
++     case '1':
++     case 'v1': {
++       const options = {};
++       if (additionalParams.length > 0 && additionalParams[0]) {
++         const nodeParam = additionalParams[0];
++         if (typeof nodeParam === 'string' && nodeParam.length > 0) {
++           try {
++             options.node = parseNodeParam(nodeParam);
++           } catch (err) {
++             throw new Error(`Invalid node parameter: ${err.message}`);
++           }
++         }
++       }
++       if (additionalParams.length > 1 && additionalParams[1] !== undefined && additionalParams[1] !== '') {
++         const clockseq = parseInt(additionalParams[1], 10);
++         if (!isNaN(clockseq) && clockseq >= 0 && clockseq <= 0x3fff) {
++           options.clockseq = clockseq;
++         }
++       }
++       result = Object.keys(options).length > 0 ? uuid.v1(options) : uuid.v1();
++       break;
++     }
++     case '4':
++     case 'v4':
++       result = uuid.v4();
++       break;
++     case '5':
++     case 'v5': {
++       if (additionalParams.length < 2) {
++         throw new Error('v5 UUID requires namespace and name parameters');
++       }
++       const namespace = additionalParams[0];
++       const name = additionalParams[1];
++      
++       if (!name || typeof name !== 'string') {
++         throw new Error('v5 UUID requires a name string');
++       }
++      
++       const ns = resolveNamespace(namespace);
++       result = uuid.v5(name, ns);
++       break;
++     }
++     default:
++       throw new Error(`Invalid UUID type "${uuidType}"`);
++   }
++  
++   if (additionalParams.length > 0) {
++     const lastParam = additionalParams[additionalParams.length - 1];
++     if (typeof lastParam === 'string') {
++       const format = lastParam.toLowerCase();
++       if (format === 'uppercase' || format === 'upper') {
++         result = result.toUpperCase();
++       } else if (format === 'nohyphens' || format === 'compact') {
++         result = result.replace(/-/g, '');
++       } else if (format === 'uppercase-nohyphens' || format === 'upper-compact') {
++         result = result.toUpperCase().replace(/-/g, '');
++       }
++     }
++   }
++  
++   return result;
++ }
+     },
+   },
+   {

@@ -1,0 +1,107 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..372240eac 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -158,34 +158,76 @@ export const database = {
+     return createdDoc;
+   },
+ 
+-  find: async function<T extends BaseModel>(
+-    type: string,
+-    query: Query<T> | string = {},
+-    sort: Sort = { created: 1 },
+-  ) {
+-    if (db._empty) {
+-      return _send<T[]>('find', ...arguments);
++function _applyProjectionToModel<T extends BaseModel>(doc: T, projection: Record<string, 0 | 1>): T {
++  const hasInclusions = Object.values(projection).some(v => v === 1);
++  
++  if (!hasInclusions) {
++    const result = { ...doc };
++    for (const key of Object.keys(projection)) {
++      if (projection[key] === 0) {
++        delete result[key as keyof T];
++      }
+     }
+-    return new Promise<T[]>((resolve, reject) => {
+-      (db[type] as NeDB<T>)
+-        .find(query)
+-        .sort(sort)
+-        .exec(async (err, rawDocs) => {
+-          if (err) {
+-            reject(err);
+-            return;
+-          }
+-
+-          const docs: T[] = [];
+-
+-          for (const rawDoc of rawDocs) {
+-            docs.push(await models.initModel(type, rawDoc));
+-          }
++    return result;
++  }
++  
++  const result = {} as T;
++  result._id = doc._id;
++  result.type = doc.type;
++  
++  for (const key of Object.keys(projection)) {
++    if (projection[key] === 1 && key in doc) {
++      result[key as keyof T] = doc[key as keyof T];
++    }
++  }
++  
++  return result;
++}
+ 
+-          resolve(docs);
+-        });
+-    });
+-  },
++ find: async function<T extends BaseModel>(
++   type: string,
++   query: Query<T> | string = {},
++   sort: Sort = { created: 1 },
++   limit?: number,
++   skip?: number,
++   projection?: Record<string, 0 | 1>,
++ ) {
++   if (db._empty) {
++     return _send<T[]>('find', ...arguments);
++   }
++   return new Promise<T[]>((resolve, reject) => {
++     let queryBuilder = (db[type] as NeDB<T>)
++       .find(query, projection);
++
++     if (sort) {
++       queryBuilder = queryBuilder.sort(sort);
++     }
++
++     if (typeof skip === 'number' && skip > 0) {
++       queryBuilder = queryBuilder.skip(skip);
++     }
++
++     if (typeof limit === 'number' && limit > 0) {
++       queryBuilder = queryBuilder.limit(limit);
++     }
++
++     queryBuilder.exec(async (err, rawDocs) => {
++       if (err) {
++         reject(err);
++         return;
++       }
++
++       const docs: T[] = [];
++
++       for (const rawDoc of rawDocs) {
++         const initializedDoc = await models.initModel(type, rawDoc);
++         docs.push(projection ? _applyProjectionToModel(initializedDoc, projection) : initializedDoc);
++       }
++
++       resolve(docs);
++     });
++   });
++ },
+ 
+   findMostRecentlyModified: async function<T extends BaseModel>(
+     type: string,

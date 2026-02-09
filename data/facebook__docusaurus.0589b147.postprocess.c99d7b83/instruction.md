@@ -2,22 +2,25 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX parsing where the event processing seems to be stuck in an infinite loop or producing incorrect results. After some investigation, it appears that the `postprocess` function is behaving unexpectedly when handling event arrays.
+I'm experiencing an issue with MDX parsing where the output appears to have events in the wrong order. After processing, some events that should appear earlier in the sequence are showing up at the end instead.
 
 ### Reproduction
 
 ```js
-// Parse MDX content with nested structures
-const result = await compile('# Hello\n\n**bold** text', {
-  // standard MDX options
-});
-```
+const mdx = `
+# Heading
 
-When processing certain MDX content, especially with nested inline elements or complex markdown structures, the parser hangs or produces malformed output. The issue seems related to how events are being processed in the tokenization phase.
+Some content here
+`;
+
+const result = await compile(mdx);
+// Events are processed but appear in unexpected order
+// First event is moved to the end of the array
+```
 
 ### Expected behavior
 
-The MDX parser should correctly process all events and return the compiled result without hanging or corrupting the event stream. Events should be processed in their original order without being rearranged.
+Events should maintain their original order after postprocessing. The first event in the events array should remain at the beginning, not be moved to the end.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0

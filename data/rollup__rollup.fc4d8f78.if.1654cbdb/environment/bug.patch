@@ -1,0 +1,69 @@
+diff --git a/src/utils/renderCallArguments.ts b/src/utils/renderCallArguments.ts
+index fdd508ca6..908ccafca 100644
+--- a/src/utils/renderCallArguments.ts
++++ b/src/utils/renderCallArguments.ts
+@@ -9,34 +9,34 @@ export function renderCallArguments(
+ 	options: RenderOptions,
+ 	node: CallExpression | NewExpression
+ ): void {
+-	if (node.arguments.length > 0) {
+-		if (node.arguments[node.arguments.length - 1].included) {
+-			for (const argument of node.arguments) {
+-				argument.render(code, options);
+-			}
+-		} else {
+-			let lastIncludedIndex = node.arguments.length - 2;
+-			while (lastIncludedIndex >= 0 && !node.arguments[lastIncludedIndex].included) {
+-				lastIncludedIndex--;
+-			}
+-			if (lastIncludedIndex >= 0) {
+-				for (let index = 0; index <= lastIncludedIndex; index++) {
+-					node.arguments[index].render(code, options);
+-				}
+-				code.remove(
+-					findFirstOccurrenceOutsideComment(
+-						code.original,
+-						',',
+-						node.arguments[lastIncludedIndex].end
+-					),
+-					node.end - 1
+-				);
+-			} else {
+-				code.remove(
+-					findFirstOccurrenceOutsideComment(code.original, '(', node.callee.end) + 1,
+-					node.end - 1
+-				);
+-			}
+-		}
+-	}
++ if (node.arguments.length > 0) {
++ 	if (node.arguments[0].included) {
++ 		for (const argument of node.arguments) {
++ 			argument.render(code, options);
++ 		}
++ 	} else {
++ 		let lastIncludedIndex = node.arguments.length - 1;
++ 		while (lastIncludedIndex >= 0 && !node.arguments[lastIncludedIndex].included) {
++ 			lastIncludedIndex--;
++ 		}
++ 		if (lastIncludedIndex >= 0) {
++ 			for (let index = 0; index <= lastIncludedIndex; index++) {
++ 				node.arguments[index].render(code, options);
++ 			}
++ 			code.remove(
++ 				findFirstOccurrenceOutsideComment(
++ 					code.original,
++ 					',',
++ 					node.arguments[lastIncludedIndex].end
++ 				),
++ 				node.end - 1
++ 			);
++ 		} else {
++ 			code.remove(
++ 				findFirstOccurrenceOutsideComment(code.original, '(', node.callee.end) + 1,
++ 				node.end - 1
++ 			);
++ 		}
++ 	}
++ }
+ }

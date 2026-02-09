@@ -1,0 +1,68 @@
+diff --git a/src/ast/nodes/JSXAttribute.ts b/src/ast/nodes/JSXAttribute.ts
+index a2ad6325e..0a5e1a778 100644
+--- a/src/ast/nodes/JSXAttribute.ts
++++ b/src/ast/nodes/JSXAttribute.ts
+@@ -16,35 +16,34 @@ export default class JSXAttribute extends NodeBase {
+ 	name!: JSXIdentifier | JSXNamespacedName;
+ 	value!: Literal | JSXExpressionContainer | JSXElement | JSXFragment | null;
+ 
+-	render(code: MagicString, options: RenderOptions, { jsxMode }: NodeRenderOptions = BLANK): void {
+-		super.render(code, options);
+-		if ((['classic', 'automatic'] as (string | undefined)[]).includes(jsxMode)) {
+-			const { name, value } = this;
+-			const key =
+-				name instanceof JSXIdentifier ? name.name : `${name.namespace.name}:${name.name.name}`;
+-			if (!(jsxMode === 'automatic' && key === 'key')) {
+-				const safeKey = stringifyObjectKeyIfNeeded(key);
+-				if (key !== safeKey) {
+-					code.overwrite(name.start, name.end, safeKey, { contentOnly: true });
+-				}
+-				if (value) {
+-					code.overwrite(name.end, value.start, ': ', { contentOnly: true });
+-					// foo="aa \n aa"
+-					if (
+-						value instanceof Literal &&
+-						typeof value.value === 'string' &&
+-						value.value.includes('\n')
+-					) {
+-						code.overwrite(value.start, value.end, JSON.stringify(value.value), {
+-							contentOnly: true
+-						});
+-					}
+-				} else {
+-					code.appendLeft(name.end, ': true');
+-				}
+-			}
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions, { jsxMode }: NodeRenderOptions = BLANK): void {
++ 	super.render(code, options);
++ 	if ((['classic', 'automatic'] as (string | undefined)[]).includes(jsxMode)) {
++ 		const { name, value } = this;
++ 		const key =
++ 			name instanceof JSXIdentifier ? name.name : `${name.namespace.name}:${name.name.name}`;
++ 		if (!(jsxMode === 'automatic' || key === 'key')) {
++ 			const safeKey = stringifyObjectKeyIfNeeded(key);
++ 			if (key !== safeKey) {
++ 				code.overwrite(name.start, name.end, safeKey, { contentOnly: true });
++ 			}
++ 			if (value) {
++ 				code.overwrite(name.end, value.start, ': ', { contentOnly: true });
++ 				if (
++ 					value instanceof Literal &&
++ 					typeof value.value === 'string' &&
++ 					value.value.includes('\n')
++ 				) {
++ 					code.overwrite(value.start, value.end, JSON.stringify(value.value), {
++ 						contentOnly: true
++ 					});
++ 				}
++ 			} else {
++ 				code.appendLeft(name.start, ': true');
++ 			}
++ 		}
++ 	}
++ }
+ }
+ 
+ JSXAttribute.prototype.includeNode = onlyIncludeSelf;

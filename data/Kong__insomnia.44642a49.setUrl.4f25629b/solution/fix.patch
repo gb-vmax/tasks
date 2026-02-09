@@ -1,0 +1,72 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..b9ee26466 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -41,9 +41,64 @@ export function init(
+       renderedRequest.method = method;
+     },
+ 
+-    setUrl(url: string) {
+-      renderedRequest.url = url;
+-    },
++function parseUrlWithParams(url: string): { baseUrl: string; queryParams: Array<{ name: string; value: string }> } {
++  const queryParams: Array<{ name: string; value: string }> = [];
++  
++  const queryIndex = url.indexOf('?');
++  if (queryIndex === -1) {
++    return { baseUrl: url, queryParams };
++  }
++  
++  const baseUrl = url.substring(0, queryIndex);
++  const queryString = url.substring(queryIndex + 1);
++  
++  if (queryString.length === 0) {
++    return { baseUrl, queryParams };
++  }
++  
++  const pairs = queryString.split('&');
++  for (const pair of pairs) {
++    const equalIndex = pair.indexOf('=');
++    if (equalIndex === -1) {
++      if (pair.length > 0) {
++        queryParams.push({
++          name: decodeURIComponent(pair),
++          value: '',
++        });
++      }
++    } else {
++      const name = pair.substring(0, equalIndex);
++      const value = pair.substring(equalIndex + 1);
++      queryParams.push({
++        name: decodeURIComponent(name),
++        value: decodeURIComponent(value),
++      });
++    }
++  }
++  
++  return { baseUrl, queryParams };
++}
++
++ setUrl(url: string) {
++   const { baseUrl, queryParams } = parseUrlWithParams(url);
++   renderedRequest.url = baseUrl;
++  
++   if (queryParams.length > 0) {
++     const existingParamNames = new Set(
++       renderedRequest.parameters.map(p => p.name)
++     );
++    
++     queryParams.forEach(param => {
++       if (!existingParamNames.has(param.name)) {
++         renderedRequest.parameters.push({
++           name: param.name,
++           value: param.value,
++         });
++         existingParamNames.add(param.name);
++       }
++     });
++   }
++ },
+ 
+     setCookie(name: string, value: string) {
+       const cookie = renderedRequest.cookies.find(c => c.name === name);

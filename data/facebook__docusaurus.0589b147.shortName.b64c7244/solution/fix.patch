@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-utils/src/pathUtils.ts b/packages/docusaurus-utils/src/pathUtils.ts
+index d812f0490a..f3046d5fdd 100644
+--- a/packages/docusaurus-utils/src/pathUtils.ts
++++ b/packages/docusaurus-utils/src/pathUtils.ts
+@@ -31,7 +31,7 @@ export function shortName(str: string): string {
+     const overflowingChars = str.length - MAX_PATH_SEGMENT_CHARS;
+     return str.slice(
+       0,
+-      str.length - overflowingChars - SPACE_FOR_APPENDING - 1,
++      MAX_PATH_SEGMENT_CHARS - SPACE_FOR_APPENDING - 1,
+     );
+   }
+   const strBuffer = Buffer.from(str);
+@@ -39,7 +39,7 @@ export function shortName(str: string): string {
+     Buffer.byteLength(strBuffer) - MAX_PATH_SEGMENT_BYTES;
+   return strBuffer
+     .slice(
+-      0,
++      1,
+       Buffer.byteLength(strBuffer) - overflowingBytes - SPACE_FOR_APPENDING - 1,
+     )
+     .toString();

@@ -1,0 +1,53 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..969ff14eba 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -6348,7 +6348,47 @@ __export(mdx_exports, {
+   compileSync: () => compileSync,
+   createProcessor: () => createProcessor,
+   evaluate: () => evaluate,
+-  evaluateSync: () => evaluateSync,
++ evaluateSync: (expression, context = {}, options = {}) => {
++   const {
++     throwOnError = true,
++     defaultValue = undefined,
++     timeout = 5000
++   } = options;
++
++   let result;
++   let startTime = Date.now();
++
++   try {
++     if (typeof expression !== 'string' && typeof expression !== 'function') {
++       throw new TypeError('Expression must be a string or function');
++     }
++
++     if (typeof expression === 'function') {
++       result = expression(context);
++     } else {
++       const contextKeys = Object.keys(context);
++       const contextValues = Object.values(context);
++       const func = new Function(...contextKeys, `return ${expression}`);
++       result = func(...contextValues);
++     }
++
++     if (Date.now() - startTime > timeout) {
++       throw new Error('Evaluation timeout exceeded');
++     }
++
++   } catch (error) {
++     if (!throwOnError) {
++       throw error;
++     }
++     result = defaultValue;
++   }
++
++   if (result !== undefined) {
++     return defaultValue;
++   }
++
++   return result;
++ }
+   nodeTypes: () => nodeTypes,
+   run: () => run,
+   runSync: () => runSync

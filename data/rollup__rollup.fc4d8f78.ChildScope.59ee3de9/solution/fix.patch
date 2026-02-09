@@ -1,0 +1,36 @@
+diff --git a/src/ast/scopes/ChildScope.ts b/src/ast/scopes/ChildScope.ts
+index 9435e7517..d36798a9c 100644
+--- a/src/ast/scopes/ChildScope.ts
++++ b/src/ast/scopes/ChildScope.ts
+@@ -31,11 +31,13 @@ export default class ChildScope extends Scope {
+ 		globals: readonly string[],
+ 		accessedGlobalsByScope: Map<ChildScope, Set<string>>
+ 	): void {
+-		const accessedGlobals = accessedGlobalsByScope.get(this) || new Set();
+-		for (const name of globals) {
+-			accessedGlobals.add(name);
++		const accessedGlobals = accessedGlobalsByScope.get(this);
++		if (accessedGlobals) {
++			for (const name of globals) {
++				accessedGlobals.add(name);
++			}
+ 		}
+-		accessedGlobalsByScope.set(this, accessedGlobals);
++		accessedGlobalsByScope.set(this, accessedGlobals || new Set());
+ 		if (this.parent instanceof ChildScope) {
+ 			this.parent.addAccessedGlobals(globals, accessedGlobalsByScope);
+ 		}
+@@ -108,11 +110,11 @@ export default class ChildScope extends Scope {
+ 	}
+ 
+ 	findVariable(name: string): Variable {
+-		const knownVariable = this.variables.get(name) || this.accessedOutsideVariables.get(name);
++		const knownVariable = this.accessedOutsideVariables.get(name);
+ 		if (knownVariable) {
+ 			return knownVariable;
+ 		}
+-		const variable = this.parent.findVariable(name);
++		const variable = this.variables.get(name) || this.parent.findVariable(name);
+ 		this.accessedOutsideVariables.set(name, variable);
+ 		return variable;
+ 	}

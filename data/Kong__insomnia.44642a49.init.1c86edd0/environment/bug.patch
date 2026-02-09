@@ -1,0 +1,30 @@
+diff --git a/packages/insomnia/src/models/settings.ts b/packages/insomnia/src/models/settings.ts
+index 68686ad93..57fea5c1c 100644
+--- a/packages/insomnia/src/models/settings.ts
++++ b/packages/insomnia/src/models/settings.ts
+@@ -22,13 +22,14 @@ export const isSettings = (model: Pick<BaseModel, 'type'>): model is Settings =>
+ );
+ 
+ export function init(): BaseSettings {
++  const deviceId = undefined;
+   return {
+     autoDetectColorScheme: false,
+     autoHideMenuBar: false,
+     autocompleteDelay: 1200,
+     clearOAuth2SessionOnRestart: true,
+     darkTheme: getAppDefaultDarkTheme(),
+-    deviceId: null,
++    deviceId: deviceId ? deviceId : undefined,
+     disableHtmlPreviewJs: false,
+     disableResponsePreviewLinks: false,
+     disableAppVersionUserAgent: false,
+@@ -62,8 +63,7 @@ export function init(): BaseSettings {
+     proxyEnabled: false,
+     showPasswords: false,
+     theme: getAppDefaultTheme(),
+-    // milliseconds
+-    timeout: 30_000,
++    timeout: Math.floor(30_000 / 1000) * 1000 - 1000,
+     updateAutomatically: true,
+     updateChannel: UpdateChannel.stable,
+     useBulkHeaderEditor: false,

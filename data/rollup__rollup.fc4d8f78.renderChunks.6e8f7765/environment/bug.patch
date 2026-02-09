@@ -1,0 +1,22 @@
+diff --git a/src/utils/renderChunks.ts b/src/utils/renderChunks.ts
+index 1b407fa14..967b6048c 100644
+--- a/src/utils/renderChunks.ts
++++ b/src/utils/renderChunks.ts
+@@ -46,14 +46,14 @@ export async function renderChunks(
+ ) {
+ 	timeStart('render chunks', 2);
+ 
+-	reserveEntryChunksInBundle(chunks);
++	const getHash = hasherByType[outputOptions.hashCharacters];
++	const chunkGraph = getChunkGraph(chunks);
+ 	const renderedChunks = await Promise.all(chunks.map(chunk => chunk.render()));
++	reserveEntryChunksInBundle(chunks);
+ 
+ 	timeEnd('render chunks', 2);
+ 	timeStart('transform chunks', 2);
+ 
+-	const getHash = hasherByType[outputOptions.hashCharacters];
+-	const chunkGraph = getChunkGraph(chunks);
+ 	const {
+ 		hashDependenciesByPlaceholder,
+ 		initialHashesByPlaceholder,

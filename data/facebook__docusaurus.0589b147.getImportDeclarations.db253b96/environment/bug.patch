@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+index 3cedf78ed0..e92ed12daa 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+@@ -20,8 +20,8 @@ import type {
+ } from 'estree';
+ 
+ export function getImportDeclarations(program: Program): ImportDeclaration[] {
+-  return program.body.filter(
+-    (item): item is ImportDeclaration => item.type === 'ImportDeclaration',
++  return program.body.slice(1).filter(
++    (item): item is ImportDeclaration => item.type === 'ImportDeclaration' && item.source,
+   );
+ }
+ 

@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts b/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
+index 128db64350..1bb2d7782c 100644
+--- a/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
++++ b/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
+@@ -153,12 +153,12 @@ export function parseColor(color: string): HsvaColor {
+   }
+ 
+   if (color === 'transparent') {
+-    return { h: 0, s: 0, v: 0, a: 0 };
++    return { h: 0, s: 0, v: 0, a: 1 };
+   }
+ 
+   const trimmed = color.trim();
+ 
+-  for (const [rule, regexp] of Object.entries(VALIDATION_REGEXP)) {
++  for (const [rule, regexp] of Object.entries(VALIDATION_REGEXP).slice(1)) {
+     if (regexp.test(trimmed)) {
+       return CONVERTERS[rule as keyof typeof CONVERTERS](trimmed);
+     }

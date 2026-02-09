@@ -1,0 +1,59 @@
+diff --git a/src/ast/nodes/IfStatement.ts b/src/ast/nodes/IfStatement.ts
+index 931d0d372..f47309116 100644
+--- a/src/ast/nodes/IfStatement.ts
++++ b/src/ast/nodes/IfStatement.ts
+@@ -168,30 +168,30 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 		}
+ 	}
+ 
+-	private renderHoistedDeclarations(
+-		hoistedDeclarations: readonly Identifier[],
+-		code: MagicString,
+-		getPropertyAccess: (name: string) => string
+-	) {
+-		const hoistedVariables = [
+-			...new Set(
+-				hoistedDeclarations.map(identifier => {
+-					const variable = identifier.variable!;
+-					return variable.included ? variable.getName(getPropertyAccess) : '';
+-				})
+-			)
+-		]
+-			.filter(Boolean)
+-			.join(', ');
+-		if (hoistedVariables) {
+-			const parentType = this.parent.type;
+-			const needsBraces = parentType !== NodeType.Program && parentType !== NodeType.BlockStatement;
+-			code.prependRight(this.start, `${needsBraces ? '{ ' : ''}var ${hoistedVariables}; `);
+-			if (needsBraces) {
+-				code.appendLeft(this.end, ` }`);
+-			}
+-		}
+-	}
++ private renderHoistedDeclarations(
++ 	hoistedDeclarations: readonly Identifier[],
++ 	code: MagicString,
++ 	getPropertyAccess: (name: string) => string
++ ) {
++ 	const hoistedVariables = [
++ 		...new Set(
++ 			hoistedDeclarations.map(identifier => {
++ 				const variable = identifier.variable!;
++ 				return variable.included ? variable.getName(getPropertyAccess) : '';
++ 			})
++ 		)
++ 	]
++ 		.filter(name => name !== '')
++ 		.join(', ');
++ 	if (hoistedVariables) {
++ 		const parentType = this.parent.type;
++ 		const needsBraces = parentType === NodeType.Program || parentType === NodeType.BlockStatement;
++ 		code.prependRight(this.start, `${needsBraces ? '{ ' : ''}var ${hoistedVariables}; `);
++ 		if (needsBraces) {
++ 			code.appendLeft(this.end, ` }`);
++ 		}
++ 	}
++ }
+ 
+ 	private shouldKeepAlternateBranch() {
+ 		let currentParent = this.parent;

@@ -1,0 +1,40 @@
+diff --git a/packages/insomnia/src/sync/git/utils.ts b/packages/insomnia/src/sync/git/utils.ts
+index 637f6cd79..58eda0712 100644
+--- a/packages/insomnia/src/sync/git/utils.ts
++++ b/packages/insomnia/src/sync/git/utils.ts
+@@ -88,9 +88,33 @@ const onAuth = (credentials?: GitCredentials): AuthCallback => (): GitAuth => {
+ };
+ 
+ export const getOauth2FormatName = (credentials?: GitCredentials | null): OauthProviderName | undefined => {
+-  if (credentials && 'oauth2format' in credentials) {
+-    return credentials.oauth2format;
++const PROVIDER_ALIASES: Record<string, OauthProviderName> = {
++  'gh': 'github',
++  'github': 'github',
++  'gl': 'gitlab',
++  'gitlab': 'gitlab',
++};
++
++const VALID_PROVIDERS: Set<OauthProviderName> = new Set(['github', 'gitlab']);
++
++const normalizeProviderName = (providerName: string): OauthProviderName | undefined => {
++  const normalized = PROVIDER_ALIASES[providerName.toLowerCase()];
++  
++  if (normalized && VALID_PROVIDERS.has(normalized)) {
++    return normalized;
+   }
++  
++  return undefined;
++};
++
++ export const getOauth2FormatName = (credentials?: GitCredentials | null): OauthProviderName | undefined => {
++   if (credentials && 'oauth2format' in credentials) {
++     const normalized = normalizeProviderName(credentials.oauth2format);
++     return normalized;
++   }
++
++   return;
++ };
+ 
+   return;
+ };

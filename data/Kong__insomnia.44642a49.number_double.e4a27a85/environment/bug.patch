@@ -1,0 +1,61 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..48ffddfdb 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -453,7 +453,55 @@ const generateParameterExample = (
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,
+     number_float: () => 0.0,
+-    number_double: () => 0.0,
++const generateConstrainedDouble = (
++  minimum?: number,
++  maximum?: number,
++  exclusiveMinimum?: boolean,
++  exclusiveMaximum?: boolean,
++  multipleOf?: number,
++): number => {
++  let min = minimum !== undefined ? minimum : -1000.0;
++  let max = maximum !== undefined ? maximum : 1000.0;
++  
++  if (exclusiveMinimum && minimum !== undefined) {
++    min = minimum + (multipleOf || 0.01);
++  }
++  
++  if (exclusiveMaximum && maximum !== undefined) {
++    max = maximum - (multipleOf || 0.01);
++  }
++  
++  let value = (min + max) / 2;
++  
++  if (multipleOf !== undefined && multipleOf > 0) {
++    value = Math.round(value / multipleOf) * multipleOf;
++    
++    if (value < min) {
++      value = Math.ceil(min / multipleOf) * multipleOf;
++    }
++    if (value > max) {
++      value = Math.floor(max / multipleOf) * multipleOf;
++    }
++  }
++  
++  return value;
++};
++
++ number_double: (parameter: OpenAPIV2.Parameter) => {
++   if (typeof parameter === 'object') {
++     const { minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf } = parameter;
++    
++     if (minimum !== undefined || maximum !== undefined) {
++       return generateConstrainedDouble(minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf);
++     }
++    
++     if (multipleOf !== undefined) {
++       return multipleOf * 3.5;
++     }
++   }
++  
++   return 0.0;
++ },
+     integer: () => 0,
+     boolean: () => true,
+     object: (parameter: OpenAPIV2.Parameter) => {

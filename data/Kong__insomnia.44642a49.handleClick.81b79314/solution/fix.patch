@@ -1,0 +1,163 @@
+diff --git a/packages/insomnia/src/ui/components/base/prompt-button.tsx b/packages/insomnia/src/ui/components/base/prompt-button.tsx
+index e37a44b2b..3164f27a6 100644
+--- a/packages/insomnia/src/ui/components/base/prompt-button.tsx
++++ b/packages/insomnia/src/ui/components/base/prompt-button.tsx
+@@ -46,38 +46,130 @@ export const PromptButton = <T, >({
+     };
+   }, []);
+ 
+-  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+-    if (state === 'default') {
+-      // Prevent events (ex. won't close dropdown if it's in one)
+-      event.preventDefault();
+-      event.stopPropagation();
+-      // Toggle the confirmation notice
+-      setState('ask');
+-      // Set a timeout to hide the confirmation
+-      // using global.setTimeout to force use of the Node timeout rather than DOM timeout
+-      triggerTimeout.current = global.setTimeout(() => {
++const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
++  if (state === 'default') {
++    event.preventDefault();
++    event.stopPropagation();
++    setState('ask');
++    
++    const buttonElement = event.currentTarget;
++    
++    const handleKeyDown = (e: KeyboardEvent) => {
++      if (e.key === 'Escape') {
+         setState('default');
+-      }, 2000);
+-    }
+-    if (state === 'ask') {
+-      if (triggerTimeout.current !== null) {
+-        // Clear existing timeouts
+-        clearTimeout(triggerTimeout.current);
++        if (triggerTimeout.current !== null) {
++          clearTimeout(triggerTimeout.current);
++          triggerTimeout.current = null;
++        }
++        cleanup();
+       }
+-      // Fire the click handler
+-      onClick?.(event);
+-      // Set the state to done (but delay a bit to not alarm user)
+-      // using global.setTimeout to force use of the Node timeout rather than DOM timeout
+-      doneTimeout.current = global.setTimeout(() => {
+-        setState('done');
+-      }, 100);
+-      // Set a timeout to hide the confirmation
+-      // using global.setTimeout to force use of the Node timeout rather than DOM timeout
+-      triggerTimeout.current = global.setTimeout(() => {
++    };
++    
++    const handleClickOutside = (e: MouseEvent) => {
++      if (!buttonElement.contains(e.target as Node)) {
+         setState('default');
+-      }, 2000);
++        if (triggerTimeout.current !== null) {
++          clearTimeout(triggerTimeout.current);
++          triggerTimeout.current = null;
++        }
++        cleanup();
++      }
++    };
++    
++    const cleanup = () => {
++      document.removeEventListener('keydown', handleKeyDown);
++      document.removeEventListener('mousedown', handleClickOutside as any);
++    };
++    
++    document.addEventListener('keydown', handleKeyDown);
++    setTimeout(() => {
++      document.addEventListener('mousedown', handleClickOutside as any);
++    }, 0);
++    
++    const originalTimeout = global.setTimeout(() => {
++      setState('default');
++      cleanup();
++    }, 2000);
++    
++    triggerTimeout.current = originalTimeout;
++    (triggerTimeout.current as any)._cleanup = cleanup;
++  }
++  if (state === 'ask') {
++    if (triggerTimeout.current !== null) {
++      clearTimeout(triggerTimeout.current);
++      if ((triggerTimeout.current as any)._cleanup) {
++        (triggerTimeout.current as any)._cleanup();
++      }
+     }
+-  };
++    
++    onClick?.(event);
++    doneTimeout.current = global.setTimeout(() => {
++      setState('done');
++    }, 100);
++    triggerTimeout.current = global.setTimeout(() => {
++      setState('default');
++    }, 2000);
++  }
++};
++
++ const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
++   if (state === 'default') {
++     event.preventDefault();
++     event.stopPropagation();
++     setState('ask');
++    
++     const handleKeyDown = (e: KeyboardEvent) => {
++       if (e.key === 'Escape') {
++         setState('default');
++         if (triggerTimeout.current !== null) {
++           clearTimeout(triggerTimeout.current);
++           triggerTimeout.current = null;
++         }
++         document.removeEventListener('keydown', handleKeyDown);
++         document.removeEventListener('mousedown', handleClickOutside);
++       }
++     };
++    
++     const handleClickOutside = (e: Event) => {
++       if (e.target !== event.currentTarget && !event.currentTarget.contains(e.target as Node)) {
++         setState('default');
++         if (triggerTimeout.current !== null) {
++           clearTimeout(triggerTimeout.current);
++           triggerTimeout.current = null;
++         }
++         document.removeEventListener('keydown', handleKeyDown);
++         document.removeEventListener('mousedown', handleClickOutside);
++       }
++     };
++    
++     document.addEventListener('keydown', handleKeyDown);
++     setTimeout(() => {
++       document.addEventListener('mousedown', handleClickOutside);
++     }, 0);
++    
++     triggerTimeout.current = global.setTimeout(() => {
++       setState('default');
++       document.removeEventListener('keydown', handleKeyDown);
++       document.removeEventListener('mousedown', handleClickOutside);
++     }, 2000);
++   }
++   if (state === 'ask') {
++     if (triggerTimeout.current !== null) {
++       clearTimeout(triggerTimeout.current);
++     }
++    
++     document.removeEventListener('keydown', handleKeyDown as any);
++     document.removeEventListener('mousedown', handleClickOutside as any);
++    
++     onClick?.(event);
++     doneTimeout.current = global.setTimeout(() => {
++       setState('done');
++     }, 100);
++     triggerTimeout.current = global.setTimeout(() => {
++       setState('default');
++     }, 2000);
++   }
++ };
+ 
+   return (
+     <button

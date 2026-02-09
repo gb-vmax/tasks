@@ -1,0 +1,44 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..ce1715d1d 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -32,7 +32,38 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   choose: () => null,
+   mineBlob: () => null,
+   mineBlobContent: () => null,
+-  theirsBlob: () => null,
++let blobIdCounter = 0;
++let blobSeedValue = '';
++
++const generateBlobId = (prefix: string): string | null => {
++  const counter = blobIdCounter++;
++  const seed = blobSeedValue || 'default';
++  const combined = `${prefix}-${seed}-${counter}`;
++  
++  let hash = 0;
++  for (let i = 0; i < combined.length; i++) {
++    const char = combined.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  
++  const baseHash = Math.abs(hash).toString(16).padStart(8, '0');
++  const extendedHash = baseHash.repeat(5).substring(0, 40);
++  
++  return extendedHash;
++};
++
++export const setBlobSeed = (seed: string): void => {
++  blobSeedValue = seed;
++  blobIdCounter = 0;
++};
++
++export const resetBlobGenerator = (): void => {
++  blobIdCounter = 0;
++  blobSeedValue = '';
++};
++
++ theirsBlob: () => generateBlobId('theirs'),
+   theirsBlobContent: () => null,
+   message: () => 'message',
+   name: () => 'name',

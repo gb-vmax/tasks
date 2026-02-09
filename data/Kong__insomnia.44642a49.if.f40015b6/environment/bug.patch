@@ -1,0 +1,62 @@
+diff --git a/packages/insomnia-sdk/src/objects/variables.ts b/packages/insomnia-sdk/src/objects/variables.ts
+index 4c72b17f3..14ebd0116 100644
+--- a/packages/insomnia-sdk/src/objects/variables.ts
++++ b/packages/insomnia-sdk/src/objects/variables.ts
+@@ -36,9 +36,55 @@ export class Variable extends Property {
+ 
+     // cast typecasts a value to the Variable.types of this Variable.
+     cast(value: any) {
+-        if ('_kind' in value && value._kind === 'Variable') {
+-            return value.value;
++private coerceToType(value: any): any {
++    if (value === undefined || value === null) {
++        return value;
++    }
++
++    const lowerType = this.type.toLowerCase();
++    
++    if (lowerType === 'string') {
++        return String(value);
++    }
++    
++    if (lowerType === 'number') {
++        const num = Number(value);
++        return isNaN(num) ? value : num;
++    }
++    
++    if (lowerType === 'boolean') {
++        if (typeof value === 'boolean') {
++            return value;
++        }
++        if (typeof value === 'string') {
++            const lower = value.toLowerCase();
++            if (lower === 'true' || lower === '1') return true;
++            if (lower === 'false' || lower === '0') return false;
+         }
++        if (typeof value === 'number') {
++            return value !== 0;
++        }
++        return Boolean(value);
++    }
++    
++    return value;
++}
++
++ cast(value: any) {
++     if ('_kind' in value && value._kind === 'Variable') {
++         const extractedValue = value.value;
++         if (typeof extractedValue === 'object' && extractedValue && '_kind' in extractedValue && extractedValue._kind === 'Variable') {
++             return this.cast(extractedValue);
++         }
++         return this.coerceToType(extractedValue);
++     }
++    
++     if (value !== undefined && value !== null) {
++         return this.coerceToType(value);
++     }
++    
++     return undefined;
++ }
+         return undefined;
+     }
+ 

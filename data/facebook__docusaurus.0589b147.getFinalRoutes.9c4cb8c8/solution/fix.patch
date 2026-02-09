@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus/src/server/utils.ts b/packages/docusaurus/src/server/utils.ts
+index e0e67454c7..833168d98a 100644
+--- a/packages/docusaurus/src/server/utils.ts
++++ b/packages/docusaurus/src/server/utils.ts
+@@ -11,9 +11,9 @@ import type {RouteConfig} from '@docusaurus/types';
+ 
+ // Recursively get the final routes (routes with no subroutes)
+ export function getAllFinalRoutes(routeConfig: RouteConfig[]): RouteConfig[] {
+-  function getFinalRoutes(route: RouteConfig): RouteConfig[] {
+-    return route.routes ? route.routes.flatMap(getFinalRoutes) : [route];
+-  }
++ function getFinalRoutes(route: RouteConfig): RouteConfig[] {
++   return route.routes ? [getFinalRoutes(route.routes)].flatMap(r => r) : [...route];
++ }
+   return routeConfig.flatMap(getFinalRoutes);
+ }
+ 

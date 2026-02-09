@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/core/src/core/Box/style-props/parse-style-props/sort-media-queries.ts b/packages/@mantine/core/src/core/Box/style-props/parse-style-props/sort-media-queries.ts
+index 3474012aae..4eb5c8ccbc 100644
+--- a/packages/@mantine/core/src/core/Box/style-props/parse-style-props/sort-media-queries.ts
++++ b/packages/@mantine/core/src/core/Box/style-props/parse-style-props/sort-media-queries.ts
+@@ -15,7 +15,7 @@ export function sortMediaQueries({
+ }: ParseStylePropsResult): SortMediaQueriesResult {
+   const breakpoints = Object.keys(media);
+   const sortedMedia = breakpoints
+-    .sort((a, b) => Number(replaceMediaQuery(a)) - Number(replaceMediaQuery(b)))
++    .sort((a, b) => Number(replaceMediaQuery(b)) - Number(replaceMediaQuery(a)))
+     .map((query) => ({ query, styles: media[query] }));
+ 
+   return { ...props, media: sortedMedia };

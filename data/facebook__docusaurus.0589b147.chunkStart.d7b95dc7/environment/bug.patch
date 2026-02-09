@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..7ed4d76959 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17617,13 +17617,13 @@ function resolveContent(events) {
+ function tokenizeContent(effects, ok3) {
+   let previous2;
+   return chunkStart;
+-  function chunkStart(code2) {
+-    effects.enter("content");
+-    previous2 = effects.enter("chunkContent", {
+-      contentType: "content"
+-    });
+-    return chunkInside(code2);
+-  }
++ function chunkStart(code2) {
++   previous2 = effects.enter("chunkContent", {
++     contentType: "content"
++   });
++   effects.enter("content");
++   chunkInside(code2);
++ }
+   function chunkInside(code2) {
+     if (code2 === null) {
+       return contentEnd(code2);

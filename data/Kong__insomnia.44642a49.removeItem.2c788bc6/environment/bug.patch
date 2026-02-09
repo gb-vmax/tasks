@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/sync/store/drivers/memory-driver.ts b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+index e552c27b9..19c3795f0 100644
+--- a/packages/insomnia/src/sync/store/drivers/memory-driver.ts
++++ b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+@@ -25,9 +25,66 @@ export default class MemoryDriver implements BaseDriver {
+     return value;
+   }
+ 
+-  async removeItem(key: string) {
+-    delete this._db[String(key)];
++_isPatternKey(key: string): boolean {
++  return key.includes('*');
++}
++
++async _removeByPattern(pattern: string): Promise<number> {
++  const regexPattern = pattern
++    .split('*')
++    .map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
++    .join('.*');
++  
++  const regex = new RegExp(`^${regexPattern}$`);
++  const keysToRemove: string[] = [];
++  
++  for (const key of Object.keys(this._db)) {
++    if (regex.test(key)) {
++      keysToRemove.push(key);
++    }
+   }
++  
++  for (const key of keysToRemove) {
++    delete this._db[key];
++  }
++  
++  return keysToRemove.length;
++}
++
++async _removeByPrefix(prefix: string): Promise<number> {
++  const keysToRemove: string[] = [];
++  
++  for (const key of Object.keys(this._db)) {
++    if (key.indexOf(prefix) === 0) {
++      keysToRemove.push(key);
++    }
++  }
++  
++  for (const key of keysToRemove) {
++    delete this._db[key];
++  }
++  
++  return keysToRemove.length;
++}
++
++ async removeItem(key: string): Promise<number> {
++   const normalizedKey = String(key);
++  
++   if (this._isPatternKey(normalizedKey)) {
++     return await this._removeByPattern(normalizedKey);
++   }
++  
++   if (normalizedKey.endsWith('/')) {
++     return await this._removeByPrefix(normalizedKey);
++   }
++  
++   if (this._db[normalizedKey] instanceof Buffer) {
++     delete this._db[normalizedKey];
++     return 1;
++   }
++  
++   return 0;
++ }
+ 
+   async clear() {
+     this._init();

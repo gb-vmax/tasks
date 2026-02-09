@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..20f5610528 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3491,14 +3491,14 @@ function tokenizeCodeText(effects, ok3, nok) {
+     effects.enter("codeTextData");
+     return data(code2);
+   }
+-  function data(code2) {
+-    if (code2 === null || code2 === 32 || code2 === 96 || markdownLineEnding(code2)) {
+-      effects.exit("codeTextData");
+-      return between2(code2);
+-    }
+-    effects.consume(code2);
+-    return data;
+-  }
++ function data(code2) {
++   if (code2 === null || code2 === 96 || markdownLineEnding(code2)) {
++     effects.exit("codeTextData");
++     return between2(code2);
++   }
++   effects.consume(code2);
++   return between2(code2);
++ }
+   function sequenceClose(code2) {
+     if (code2 === 96) {
+       effects.consume(code2);

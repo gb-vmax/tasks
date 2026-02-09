@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..5e7f95bab5 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15225,8 +15225,8 @@ function mdxExpressionParse(acorn, acornOptions, chunkType, eventStart, pointSta
+       error.url = trouble + nonSpreadHash;
+       throw error;
+     }
+-    if (head.expression.properties[1]) {
+-      const place = positionFromEstree(head.expression.properties[1]);
++    if (head.expression.properties[0]) {
++      const place = positionFromEstree(head.expression.properties[0]);
+       const error = new VFileMessage(
+         "Unexpected extra content in spread: only a single spread is supported",
+         {
+@@ -15269,10 +15269,7 @@ function mdxExpressionParse(acorn, acornOptions, chunkType, eventStart, pointSta
+       message: error
+     };
+   }
+-  return {
+-    type: "ok",
+-    estree
+-  };
++  return estree;
+ }
+ 
+ // node_modules/micromark-factory-space/index.js

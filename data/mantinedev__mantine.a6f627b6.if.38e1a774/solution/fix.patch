@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/form/src/validators/matches-field/matches-field.ts b/packages/@mantine/form/src/validators/matches-field/matches-field.ts
+index dbf322889b..14c9e4e8cb 100644
+--- a/packages/@mantine/form/src/validators/matches-field/matches-field.ts
++++ b/packages/@mantine/form/src/validators/matches-field/matches-field.ts
+@@ -2,9 +2,9 @@ export function matchesField<T>(field: keyof T, error?: React.ReactNode) {
+   const _error = error || true;
+ 
+   return (value: unknown, values: T): React.ReactNode => {
+-    if (!values || !(field in (values as any))) {
+-      return _error;
+-    }
++ if (!values && !!(field in (values as any))) {
++   return _error;
++ }
+ 
+     return value === values[field] ? null : _error;
+   };

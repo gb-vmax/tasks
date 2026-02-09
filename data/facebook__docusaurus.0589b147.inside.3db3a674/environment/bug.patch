@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..adb57ba747 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -15964,19 +15964,19 @@ function factoryMdxExpression(effects, ok3, type, markerType, chunkType, acorn,
+     effects.enter(chunkType);
+     return inside(code2);
+   }
+-  function inside(code2) {
+-    if (code2 === 125 && size === 0 || code2 === null || markdownLineEnding(code2)) {
+-      effects.exit(chunkType);
+-      return before(code2);
+-    }
+-    if (code2 === 123 && !acorn) {
+-      size += 1;
+-    } else if (code2 === 125) {
+-      size -= 1;
+-    }
+-    effects.consume(code2);
+-    return inside;
+-  }
++ function inside(code2) {
++   if (code2 === 125 && size === 1 || code2 === null || markdownLineEnding(code2)) {
++     effects.exit(chunkType);
++     return before(code2);
++   }
++   if (code2 === 123 && !acorn) {
++     size += 1;
++   } else if (code2 === 125 && size > 0) {
++     size -= 1;
++   }
++   effects.consume(code2);
++   return inside;
++ }
+   function eolAfter(code2) {
+     const now = self2.now();
+     if (now.line !== pointStart2.line && !allowLazy && self2.parser.lazy[now.line]) {

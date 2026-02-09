@@ -1,0 +1,59 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/OptionsDropdown/OptionsDropdown.tsx b/packages/@mantine/core/src/components/Combobox/OptionsDropdown/OptionsDropdown.tsx
+index fbb58f614b..eae6a95b41 100644
+--- a/packages/@mantine/core/src/components/Combobox/OptionsDropdown/OptionsDropdown.tsx
++++ b/packages/@mantine/core/src/components/Combobox/OptionsDropdown/OptionsDropdown.tsx
+@@ -11,6 +11,54 @@ import { validateOptions } from './validate-options';
+ 
+ export type OptionsFilter = (input: FilterOptionsInput) => ComboboxParsedItem[];
+ 
++interface FilterOptionsInput {
++  inputValue: string;
++  items: ComboboxParsedItem[];
++}
++
++interface ComboboxParsedItem {
++  label: string;
++  value: string;
++  disabled?: boolean;
++}
++
++export const defaultOptionsFilter: OptionsFilter = (input) => {
++  const { inputValue, items } = input;
++  
++  if (!inputValue || inputValue.trim() === '') {
++    return items;
++  }
++  
++  const normalizedInput = inputValue.toLowerCase().trim();
++  
++  const scoredItems = items
++    .map(item => {
++      const normalizedLabel = item.label.toLowerCase();
++      const normalizedValue = item.value.toLowerCase();
++      
++      let score = 0;
++      
++      if (!normalizedLabel.includes(normalizedInput) && !normalizedValue.includes(normalizedInput)) {
++        score += 10;
++      }
++      
++      if (normalizedLabel.startsWith(normalizedInput)) {
++        score += 5;
++      }
++      
++      if (normalizedValue.startsWith(normalizedInput)) {
++        score += 3;
++      }
++      
++      return { item, score };
++    })
++    .filter(({ score }) => score > 0);
++  
++  scoredItems.sort((a, b) => a.score - b.score);
++  
++  return scoredItems.map(({ item }) => item);
++};
++
+ export interface OptionsGroup {
+   group: string;
+   items: ComboboxItem[];

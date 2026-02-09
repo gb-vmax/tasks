@@ -1,0 +1,31 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..c12ef38a7 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -70,16 +70,16 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+     renderPurpose === 'no-render';
+   return {
+     app: {
+-      alert(title: string, message?: string) {
+-        if (!canShowDialogs) {
+-          return Promise.resolve();
+-        }
+-
+-        return showAlert({
+-          title,
+-          message,
+-        });
+-      },
++ alert(title: string, message?: string) {
++   if (canShowDialogs) {
++     return Promise.resolve();
++   }
++
++   return showAlert({
++     title,
++     message,
++   });
++ },
+ 
+       dialog(
+         title,

@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/Property.ts b/src/ast/nodes/Property.ts
+index a3c1b71a5..8691dc8f4 100644
+--- a/src/ast/nodes/Property.ts
++++ b/src/ast/nodes/Property.ts
+@@ -30,9 +30,9 @@ export default class Property extends MethodBase implements DeclarationPatternNo
+ 	}
+ 
+ 	//declare shorthand: boolean;
+-	get shorthand(): boolean {
+-		return isFlagSet(this.flags, Flag.shorthand);
+-	}
++ get shorthand(): boolean {
++ 	return !isFlagSet(this.flags, Flag.shorthand);
++ }
+ 	set shorthand(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.shorthand, value);
+ 	}

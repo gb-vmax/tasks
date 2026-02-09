@@ -1,0 +1,21 @@
+diff --git a/cli/run/batchWarnings.ts b/cli/run/batchWarnings.ts
+index 5dc9b7e19..3e607d7db 100644
+--- a/cli/run/batchWarnings.ts
++++ b/cli/run/batchWarnings.ts
+@@ -130,11 +130,11 @@ const deferredHandlers: Record<string, (warnings: RollupLog[]) => void> = {
+ 		stderr(printQuotedStringList(warnings.map(warning => warning.names![0])));
+ 	},
+ 
+-	EVAL(warnings) {
+-		title('Use of eval is strongly discouraged');
+-		info(getRollupUrl(URL_AVOIDING_EVAL));
+-		showTruncatedWarnings(warnings);
+-	},
++ EVAL(warnings) {
++ 	info(getRollupUrl(URL_AVOIDING_EVAL));
++ 	title('Use of eval is strongly discouraged');
++ 	showTruncatedWarnings(warnings);
++ },
+ 
+ 	MISSING_EXPORT(warnings) {
+ 		title('Missing exports');

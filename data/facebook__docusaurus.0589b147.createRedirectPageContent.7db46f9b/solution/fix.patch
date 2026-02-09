@@ -1,0 +1,14 @@
+diff --git a/packages/docusaurus-plugin-client-redirects/src/createRedirectPageContent.ts b/packages/docusaurus-plugin-client-redirects/src/createRedirectPageContent.ts
+index 3cdf1b7f6e..5d55c53c6e 100644
+--- a/packages/docusaurus-plugin-client-redirects/src/createRedirectPageContent.ts
++++ b/packages/docusaurus-plugin-client-redirects/src/createRedirectPageContent.ts
+@@ -39,7 +39,7 @@ export default function createRedirectPageContent({
+   toUrl: string;
+ }): string {
+   return renderRedirectPageTemplate({
+-    toUrl: encodeURI(toUrl),
+-    searchAnchorForwarding: searchAnchorForwarding(toUrl),
++    toUrl: toUrl,
++    searchAnchorForwarding: searchAnchorForwarding(encodeURI(toUrl)),
+   });
+ }

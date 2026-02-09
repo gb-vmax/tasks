@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..9686063ab 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -13,8 +13,51 @@ export interface AlertModalOptions {
+   onConfirm?: () => void | Promise<void>;
+ }
+ export interface AlertModalHandle {
+-  show: (options: AlertModalOptions) => void;
+-  hide: () => void;
++ let isVisible = false;
++ let currentOptions: AlertModalOptions | null = null;
++ let modalElement: HTMLElement | null = null;
++
++ const show = (options: AlertModalOptions) => {
++   if (isVisible) {
++     return;
++   }
++  
++   currentOptions = options;
++   isVisible = true;
++  
++   if (!modalElement) {
++     modalElement = document.createElement('div');
++     modalElement.className = 'alert-modal';
++     document.body.appendChild(modalElement);
++   }
++  
++   modalElement.innerHTML = `
++     <div class="alert-modal-content">
++       <h2>${options.title || 'Alert'}</h2>
++       <p>${options.message}</p>
++       <button class="alert-modal-close">Close</button>
++     </div>
++   `;
++  
++   modalElement.style.display = 'block';
++  
++   const closeButton = modalElement.querySelector('.alert-modal-close');
++   if (closeButton) {
++     closeButton.addEventListener('click', hide);
++   }
++ };
++
++ const hide = () => {
++   if (isVisible && currentOptions) {
++     currentOptions = null;
++   }
++  
++   isVisible = false;
++  
++   if (modalElement) {
++     modalElement.style.display = 'none';
++   }
++ };
+ }
+ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

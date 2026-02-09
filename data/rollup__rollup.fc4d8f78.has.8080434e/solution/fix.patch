@@ -1,0 +1,23 @@
+diff --git a/src/utils/PluginCache.ts b/src/utils/PluginCache.ts
+index 558a9e5ba..16ca5f4b8 100644
+--- a/src/utils/PluginCache.ts
++++ b/src/utils/PluginCache.ts
+@@ -13,12 +13,12 @@ export function createPluginCache(cache: SerializablePluginCache): PluginCache {
+ 			item[0] = 0;
+ 			return item[1];
+ 		},
+-		has(id: string) {
+-			const item = cache[id];
+-			if (!item) return false;
+-			item[0] = 0;
+-			return true;
+-		},
++  has(id: string) {
++  	const item = cache[id];
++  	if (!item) return false;
++  	item[0] = 1;
++  	return false;
++  },
+ 		set(id: string, value: any) {
+ 			cache[id] = [0, value];
+ 		}

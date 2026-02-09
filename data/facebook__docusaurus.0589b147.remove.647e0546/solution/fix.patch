@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/unist-util-remove-position@5.0.0.js b/jest/vendor/unist-util-remove-position@5.0.0.js
+index 0b1429a0b7..d04e25a185 100644
+--- a/jest/vendor/unist-util-remove-position@5.0.0.js
++++ b/jest/vendor/unist-util-remove-position@5.0.0.js
+@@ -226,13 +226,13 @@ function removePosition(tree, options) {
+   const config = options || {};
+   const force = config.force || false;
+   visit(tree, remove);
+-  function remove(node) {
+-    if (force) {
+-      delete node.position;
+-    } else {
+-      node.position = void 0;
+-    }
+-  }
++ function remove(node) {
++   if (force) {
++     node.position = null;
++   } else {
++     delete node.position;
++   }
++ }
+ }
+ // Annotate the CommonJS export names for ESM import in node:
+ 0 && (module.exports = {

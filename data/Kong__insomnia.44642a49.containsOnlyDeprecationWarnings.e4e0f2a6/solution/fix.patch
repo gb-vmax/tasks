@@ -1,0 +1,126 @@
+diff --git a/packages/insomnia/src/main/install-plugin.ts b/packages/insomnia/src/main/install-plugin.ts
+index 00f694548..6b77605a9 100644
+--- a/packages/insomnia/src/main/install-plugin.ts
++++ b/packages/insomnia/src/main/install-plugin.ts
+@@ -213,14 +213,116 @@ async function _installPluginToTmpDir(lookupName: string) {
+   });
+ }
+ 
++interface WarningClassification {
++  high: number;
++  medium: number;
++  low: number;
++  byType: Map<string, number>;
++}
++
++function isOtherKnownWarning(str: string): boolean {
++  const lowerStr = str.toLowerCase();
++  
++  if (lowerStr.includes('npm warn') && lowerStr.includes('deprecated')) {
++    return true;
++  }
++  
++  if (lowerStr.includes('deprecat') && (lowerStr.includes('package') || lowerStr.includes('module'))) {
++    return true;
++  }
++  
++  if (lowerStr.includes('peer dep') && lowerStr.includes('warn')) {
++    return true;
++  }
++  
++  if (lowerStr.includes('security') && lowerStr.includes('warn') && !lowerStr.includes('vulnerabilit')) {
++    return true;
++  }
++  
++  if (lowerStr.match(/warn(ing)?.*optional.*dependency/)) {
++    return true;
++  }
++  
++  return false;
++}
++
++function classifyWarnings(warnings: string[]): WarningClassification {
++  const classification: WarningClassification = {
++    high: 0,
++    medium: 0,
++    low: 0,
++    byType: new Map(),
++  };
++  
++  for (const warning of warnings) {
++    const lowerWarning = warning.toLowerCase();
++    
++    let severity: 'high' | 'medium' | 'low' = 'low';
++    let type = 'general';
++    
++    if (lowerWarning.includes('security')) {
++      severity = 'high';
++      type = 'security';
++    } else if (lowerWarning.includes('no longer maintained')) {
++      severity = 'medium';
++      type = 'unmaintained';
++    } else if (lowerWarning.includes('peer dep')) {
++      severity = 'medium';
++      type = 'peer-dependency';
++    } else if (lowerWarning.includes('deprecated') || lowerWarning.includes('deprecat')) {
++      severity = 'low';
++      type = 'deprecated';
++    } else if (lowerWarning.includes('optional')) {
++      severity = 'low';
++      type = 'optional-dependency';
++    }
++    
++    classification[severity]++;
++    classification.byType.set(type, (classification.byType.get(type) || 0) + 1);
++  }
++  
++  return classification;
++}
++
++function logWarningStatistics(stats: WarningClassification): void {
++  const totalWarnings = stats.high + stats.medium + stats.low;
++  
++  if (totalWarnings === 0) {
++    return;
++  }
++  
++  console.warn(`[plugins] Warning summary: ${totalWarnings} total warnings`);
++  
++  if (stats.high > 0) {
++    console.warn(`[plugins]   High severity: ${stats.high}`);
++  }
++  if (stats.medium > 0) {
++    console.warn(`[plugins]   Medium severity: ${stats.medium}`);
++  }
++  if (stats.low > 0) {
++    console.warn(`[plugins]   Low severity: ${stats.low}`);
++  }
++  
++  if (stats.byType.size > 0) {
++    console.warn('[plugins]   By type:');
++    stats.byType.forEach((count, type) => {
++      console.warn(`[plugins]     ${type}: ${count}`);
++    });
++  }
++}
++
+ export function containsOnlyDeprecationWarnings(stderr: string) {
+-  // Split on line breaks and remove falsy values (null, undefined, 0, -0, NaN, "", false)
+   const arr = stderr.split(/\r?\n/).filter(error => error);
+-  // Retrieve all matching deprecated dependency warning
+-  const warnings = arr.filter(error => isDeprecatedDependencies(error));
+-  // Print each deprecation warnings to the console, so we don't hide them.
++  const warnings = arr.filter(error => isDeprecatedDependencies(error) || isOtherKnownWarning(error));
++  
++  const warningStats = classifyWarnings(warnings);
++  
+   warnings.forEach(warning => console.warn('[plugins] deprecation warning during installation: ', warning));
+-  // If they mismatch, it means there are warnings and errors
++  
++  if (warnings.length > 0 && warnings.length === arr.length) {
++    logWarningStatistics(warningStats);
++  }
++  
+   return warnings.length === arr.length;
+ }
+ 

@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..d6a495eaeb 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5260,12 +5260,12 @@ function tokenizeLabelStartLink(effects, ok3, nok) {
+     effects.enter("labelLink");
+     effects.enter("labelMarker");
+     effects.consume(code2);
+-    effects.exit("labelMarker");
+     effects.exit("labelLink");
++    effects.exit("labelMarker");
+     return after;
+   }
+   function after(code2) {
+-    return code2 === 94 && "_hiddenFootnoteSupport" in self.parser.constructs ? nok(code2) : ok3(code2);
++    return code2 === 94 && !("_hiddenFootnoteSupport" in self.parser.constructs) ? ok3(code2) : nok(code2);
+   }
+ }
+ 

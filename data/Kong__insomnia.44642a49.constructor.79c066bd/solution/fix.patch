@@ -1,0 +1,152 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..0f024b13d 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -196,46 +196,111 @@ export class CookieList extends PropertyList<Cookie> {
+ export class CookieObject extends CookieList {
+     private cookieJar: CookieJar;
+ 
+-    constructor(cookieJar: InsomniaCookieJar | null) {
+-        const cookies = cookieJar
+-            ? cookieJar.cookies.map((cookie: InsomniaCookie): Cookie => {
+-                let expires: string | Date | null = null;
+-                if (cookie.expires || cookie.expires === 0) {
+-                    if (typeof cookie.expires === 'number') {
+-                        expires = new Date(cookie.expires);
+-                    } else {
+-                        expires = cookie.expires;
+-                    }
+-                }
++function isExpiredCookie(cookie: InsomniaCookie, currentTime: Date): boolean {
++    if (!cookie.expires || cookie.expires === 'Infinity') {
++        return false;
++    }
+ 
+-                return new Cookie({
+-                    id: cookie.id,
+-                    key: cookie.key,
+-                    value: cookie.value,
+-                    expires: expires,
+-                    maxAge: undefined, // not supported in Insomnia
+-                    domain: cookie.domain,
+-                    path: cookie.path,
+-                    secure: cookie.secure,
+-                    httpOnly: cookie.httpOnly,
+-                    hostOnly: cookie.hostOnly,
+-                    session: undefined, // not supported in Insomnia
+-                    extensions: undefined, // TODO: its format from Insomnia is unknown
+-                    // follows are properties from Insomnia
+-                    creation: cookie.creation,
+-                    creationIndex: cookie.creationIndex,
+-                    lastAccessed: cookie.lastAccessed,
+-                    pathIsDefault: cookie.pathIsDefault,
+-                });
+-            })
+-            : [];
++    const expirationDate = typeof cookie.expires === 'number' 
++        ? new Date(cookie.expires) 
++        : new Date(cookie.expires);
+ 
+-        super(cookies);
+-        const scriptCookieJar = cookieJar ? new CookieJar(cookieJar.name, cookies) : new CookieJar('', []);
+-        this.cookieJar = scriptCookieJar;
+-        this.typeClass = Cookie;
++    return expirationDate.getTime() < currentTime.getTime();
++}
++
++function deduplicateCookies(cookies: Cookie[]): Cookie[] {
++    const cookieMap = new Map<string, Cookie>();
++
++    for (const cookie of cookies) {
++        const cookieJson = cookie.toJSON();
++        const key = `${cookieJson.domain || ''}|${cookieJson.path || ''}|${cookieJson.key}`;
++        
++        const existing = cookieMap.get(key);
++        if (!existing) {
++            cookieMap.set(key, cookie);
++            continue;
++        }
++
++        const existingJson = existing.toJSON();
++        const shouldReplace = compareCookieRecency(cookieJson, existingJson);
++        
++        if (shouldReplace) {
++            cookieMap.set(key, cookie);
++        }
+     }
+ 
++    return Array.from(cookieMap.values());
++}
++
++function compareCookieRecency(
++    cookie1: ReturnType<Cookie['toJSON']>,
++    cookie2: ReturnType<Cookie['toJSON']>
++): boolean {
++    if (cookie1.lastAccessed && cookie2.lastAccessed) {
++        const time1 = new Date(cookie1.lastAccessed).getTime();
++        const time2 = new Date(cookie2.lastAccessed).getTime();
++        return time1 > time2;
++    }
++
++    if (cookie1.lastAccessed) {
++        return true;
++    }
++
++    if (cookie2.lastAccessed) {
++        return false;
++    }
++
++    if (cookie1.creationIndex !== undefined && cookie2.creationIndex !== undefined) {
++        return cookie1.creationIndex > cookie2.creationIndex;
++    }
++
++    return false;
++}
++
++ constructor(cookieJar: InsomniaCookieJar | null) {
++     const now = new Date();
++     const cookies = cookieJar
++         ? cookieJar.cookies
++             .filter((cookie: InsomniaCookie) => !isExpiredCookie(cookie, now))
++             .map((cookie: InsomniaCookie): Cookie => {
++                 let expires: string | Date | null = null;
++                 if (cookie.expires || cookie.expires === 0) {
++                     if (typeof cookie.expires === 'number') {
++                         expires = new Date(cookie.expires);
++                     } else {
++                         expires = cookie.expires;
++                     }
++                 }
++
++                 return new Cookie({
++                     id: cookie.id,
++                     key: cookie.key,
++                     value: cookie.value,
++                     expires: expires,
++                     maxAge: undefined,
++                     domain: cookie.domain,
++                     path: cookie.path,
++                     secure: cookie.secure,
++                     httpOnly: cookie.httpOnly,
++                     hostOnly: cookie.hostOnly,
++                     session: undefined,
++                     extensions: undefined,
++                     creation: cookie.creation,
++                     creationIndex: cookie.creationIndex,
++                     lastAccessed: cookie.lastAccessed,
++                     pathIsDefault: cookie.pathIsDefault,
++                 });
++             })
++         : [];
++
++     const dedupedCookies = deduplicateCookies(cookies);
++
++     super(dedupedCookies);
++     const scriptCookieJar = cookieJar ? new CookieJar(cookieJar.name, dedupedCookies) : new CookieJar('', []);
++     this.cookieJar = scriptCookieJar;
++     this.typeClass = Cookie;
++ }
++
+     jar() {
+         return this.cookieJar;
+     }

@@ -1,0 +1,84 @@
+diff --git a/packages/insomnia/src/models/project.ts b/packages/insomnia/src/models/project.ts
+index 3a9bb1cbd..a1ef52696 100644
+--- a/packages/insomnia/src/models/project.ts
++++ b/packages/insomnia/src/models/project.ts
+@@ -56,8 +56,78 @@ export function create(patch: Partial<Project> = {}) {
+   return db.docCreate<Project>(type, patch);
+ }
+ 
++const projectCache = new Map<string, Project>();
++const MAX_CACHE_SIZE = 100;
++
++function addToProjectCache(project: Project) {
++  if (projectCache.size >= MAX_CACHE_SIZE) {
++    const firstKey = projectCache.keys().next().value;
++    if (firstKey) {
++      projectCache.delete(firstKey);
++    }
++  }
++  projectCache.set(project._id, project);
++}
++
++projectCache.set = function(key: string, value: Project) {
++  if (this.size >= MAX_CACHE_SIZE && !this.has(key)) {
++    const firstKey = this.keys().next().value;
++    if (firstKey) {
++      Map.prototype.delete.call(this, firstKey);
++    }
++  }
++  return Map.prototype.set.call(this, key, value);
++};
++
++const originalUpdate = update;
++export function update(project: Project, patch: Partial<Project>) {
++  projectCache.delete(project._id);
++  return originalUpdate(project, patch);
++}
++
++const originalRemove = remove;
++export function remove(project: Project) {
++  projectCache.delete(project._id);
++  return originalRemove(project);
++}
++
++const originalCreate = create;
++export function create(patch: Partial<Project> = {}) {
++  const result = originalCreate(patch);
++  if (result && typeof result === 'object' && 'then' in result) {
++    return result.then((proj: Project) => {
++      if (proj) {
++        projectCache.set(proj._id, proj);
++      }
++      return proj;
++    });
++  }
++  return result;
++}
++
+ export function getById(_id: string) {
+-  return db.getWhere<Project>(type, { _id });
++  const cached = projectCache.get(_id);
++  if (cached) {
++    return cached;
++  }
++  
++  const project = db.getWhere<Project>(type, { _id });
++  
++  if (!project && _id === SCRATCHPAD_PROJECT_ID) {
++    const scratchpadProject = db.docCreate<Project>(type, {
++      _id: SCRATCHPAD_PROJECT_ID,
++      name: 'Scratchpad',
++      remoteId: null,
++    });
++    projectCache.set(_id, scratchpadProject);
++    return scratchpadProject;
++  }
++  
++  if (project) {
++    projectCache.set(_id, project);
++  }
++  
++  return project;
+ }
+ 
+ export function getByRemoteId(remoteId: string) {

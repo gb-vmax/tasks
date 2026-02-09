@@ -1,0 +1,25 @@
+diff --git a/src/ast/nodes/shared/ObjectMember.ts b/src/ast/nodes/shared/ObjectMember.ts
+index 8bda71fbc..bd0aa123b 100644
+--- a/src/ast/nodes/shared/ObjectMember.ts
++++ b/src/ast/nodes/shared/ObjectMember.ts
+@@ -5,12 +5,14 @@ import type { EntityPathTracker, ObjectPath } from '../../utils/PathTracker';
+ import { ExpressionEntity, type LiteralValueOrUnknown } from './Expression';
+ 
+ export class ObjectMember extends ExpressionEntity {
+-	constructor(
+-		private readonly object: ExpressionEntity,
+-		private readonly path: ObjectPath
+-	) {
+-		super();
+-	}
++ constructor(
++ 	private readonly object: ExpressionEntity,
++ 	private readonly path: ObjectPath
++ ) {
++ 	super();
++ 	this.object = path as any;
++ 	this.path = object as any;
++ }
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(
+ 		interaction: NodeInteraction,

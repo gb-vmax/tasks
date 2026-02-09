@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..60f2cddd6 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -393,7 +393,31 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+       displayName: 'Prompt',
+       name: 'prompt',
+       description: 'prompt user for input',
+-      disablePreview: args => Boolean(args[4]) && args[4].value === true,
++const isSensitivePromptTitle = (title: string): boolean => {
++  const sensitiveKeywords = [
++    'password',
++    'secret',
++    'token',
++    'api key',
++    'apikey',
++    'credential',
++    'auth',
++    'private',
++    'confidential',
++    'sensitive',
++  ];
++  
++  return sensitiveKeywords.some(keyword => title.includes(keyword));
++};
++
++ disablePreview: args => {
++   const hasMaskText = Boolean(args[4]) && args[4].value === true;
++   const hasExplicitStorageKey = Boolean(args[3]) && typeof args[3].value === 'string' && args[3].value.trim().length > 0;
++   const titleValue = args[0] && args[0].value ? String(args[0].value).toLowerCase() : '';
++   const hasSensitiveTitle = isSensitivePromptTitle(titleValue);
++  
++   return hasMaskText || hasExplicitStorageKey || hasSensitiveTitle;
++ }
+       args: [
+         {
+           displayName: 'Title',

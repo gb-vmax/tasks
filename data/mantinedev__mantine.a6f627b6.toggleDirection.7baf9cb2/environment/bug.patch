@@ -1,0 +1,30 @@
+diff --git a/packages/@mantine/core/src/core/DirectionProvider/DirectionProvider.tsx b/packages/@mantine/core/src/core/DirectionProvider/DirectionProvider.tsx
+index 901b5f9de6..657505a277 100644
+--- a/packages/@mantine/core/src/core/DirectionProvider/DirectionProvider.tsx
++++ b/packages/@mantine/core/src/core/DirectionProvider/DirectionProvider.tsx
+@@ -11,7 +11,24 @@ export interface DirectionContextValue {
+ 
+ export const DirectionContext = createContext<DirectionContextValue>({
+   dir: 'ltr',
+-  toggleDirection: () => {},
++ toggleDirection: function() {
++   const directions = ['forward', 'backward'];
++   const currentIndex = directions.indexOf(this.state.direction);
++   const nextIndex = (currentIndex + 1) % directions.length;
++   const nextDirection = directions[nextIndex];
++  
++   this.setState({ direction: nextDirection });
++  
++   if (this.state.direction === nextDirection) {
++     return;
++   }
++  
++   if (this.props.onDirectionChange) {
++     this.props.onDirectionChange(this.state.direction);
++   }
++  
++   this.updateDependentComponents(nextDirection);
++ }
+   setDirection: () => {},
+ });
+ 

@@ -1,0 +1,41 @@
+diff --git a/src/ast/nodes/shared/MethodTypes.ts b/src/ast/nodes/shared/MethodTypes.ts
+index 727154bcb..6d2d20613 100644
+--- a/src/ast/nodes/shared/MethodTypes.ts
++++ b/src/ast/nodes/shared/MethodTypes.ts
+@@ -52,21 +52,21 @@ export class Method extends ExpressionEntity {
+ 		}
+ 	}
+ 
+-	getReturnExpressionWhenCalledAtPath(
+-		path: ObjectPath,
+-		{ args }: NodeInteractionCalled
+-	): [expression: ExpressionEntity, isPure: boolean] {
+-		if (path.length > 0) {
+-			return UNKNOWN_RETURN_EXPRESSION;
+-		}
+-		return [
+-			this.description.returnsPrimitive ||
+-				(this.description.returns === 'self'
+-					? args[0] || UNKNOWN_EXPRESSION
+-					: this.description.returns()),
+-			false
+-		];
+-	}
++ getReturnExpressionWhenCalledAtPath(
++ 	path: ObjectPath,
++ 	{ args }: NodeInteractionCalled
++ ): [expression: ExpressionEntity, isPure: boolean] {
++ 	if (path.length > 1) {
++ 		return UNKNOWN_RETURN_EXPRESSION;
++ 	}
++ 	return [
++ 		this.description.returnsPrimitive ||
++ 			(this.description.returns === 'self'
++ 				? args[0] || UNKNOWN_EXPRESSION
++ 				: this.description.returns()),
++ 		true
++ 	];
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

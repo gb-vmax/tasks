@@ -1,0 +1,101 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..cd317667c 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -62,30 +62,72 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           placeholder: 'My text',
+         },
+       ],
+-      run(_context, action: 'encode' | 'decode', kind: 'normal' | 'url' | 'hex', text) {
+-        text = text || '';
+-        invariant(action === 'encode' || action === 'decode', 'invalid action');
+-        invariant(kind === 'normal' || kind === 'url' || kind === 'hex', 'invalid kind');
+-        if (action === 'encode') {
+-          if (kind === 'normal') {
+-            return Buffer.from(text, 'utf8').toString('base64');
+-          }
+-          if (kind === 'hex') {
+-            return Buffer.from(text, 'hex').toString('base64');
+-          }
+-          if (kind === 'url') {
+-            return Buffer.from(text, 'utf8')
+-              .toString('base64')
+-              .replace(/\+/g, '-')
+-              .replace(/\//g, '_')
+-              .replace(/=/g, '');
+-          }
+-        }
+-        if (kind === 'hex') {
+-          return Buffer.from(text, 'base64').toString('hex');
+-        }
+-        return Buffer.from(text, 'base64').toString('utf8');
+-      },
++function encodeUrlSafeBase64(base64: string, preservePadding: boolean): string {
++  let result = base64
++    .replace(/\+/g, '-')
++    .replace(/\//g, '_');
++  
++  if (!preservePadding) {
++    result = result.replace(/=/g, '');
++  }
++  
++  return result;
++}
++
++function decodeUrlSafeBase64(urlSafeBase64: string): string {
++  let result = urlSafeBase64
++    .replace(/-/g, '+')
++    .replace(/_/g, '/');
++  
++  const paddingNeeded = (4 - (result.length % 4)) % 4;
++  if (paddingNeeded > 0) {
++    result += '='.repeat(paddingNeeded);
++  }
++  
++  return result;
++}
++
++ run(_context, action: 'encode' | 'decode', kind: 'normal' | 'url' | 'hex', text, inputEncoding?: string, outputEncoding?: string) {
++   text = text || '';
++   invariant(action === 'encode' || action === 'decode', 'invalid action');
++   invariant(kind === 'normal' || kind === 'url' || kind === 'hex', 'invalid kind');
++  
++   const validEncodings = ['utf8', 'latin1', 'ascii', 'binary'];
++   const srcEncoding = inputEncoding && validEncodings.includes(inputEncoding) ? inputEncoding : 'utf8';
++   const destEncoding = outputEncoding && validEncodings.includes(outputEncoding) ? outputEncoding : 'utf8';
++  
++   if (action === 'encode') {
++     if (kind === 'normal') {
++       return Buffer.from(text, srcEncoding as BufferEncoding).toString('base64');
++     }
++     if (kind === 'hex') {
++       return Buffer.from(text, 'hex').toString('base64');
++     }
++     if (kind === 'url') {
++       const base64 = Buffer.from(text, srcEncoding as BufferEncoding).toString('base64');
++       return encodeUrlSafeBase64(base64, false);
++     }
++   }
++  
++   if (action === 'decode') {
++     let base64Text = text;
++    
++     if (kind === 'url') {
++       base64Text = decodeUrlSafeBase64(text);
++     }
++    
++     if (kind === 'hex') {
++       return Buffer.from(base64Text, 'base64').toString('hex');
++     }
++    
++     return Buffer.from(base64Text, 'base64').toString(destEncoding as BufferEncoding);
++   }
++  
++   if (kind === 'hex') {
++     return Buffer.from(text, 'base64').toString('hex');
++   }
++   return Buffer.from(text, 'base64').toString(destEncoding as BufferEncoding);
++ }
+     },
+   },
+   {

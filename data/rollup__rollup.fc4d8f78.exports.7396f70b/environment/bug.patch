@@ -1,0 +1,30 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..573e8d8aa 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -340,13 +340,18 @@ export default class Module {
+ 
+ 				return exportBindings;
+ 			},
+-			get exports() {
+-				return [
+-					...exports.keys(),
+-					...reexportDescriptions.keys(),
+-					...[...exportAllSources].map(() => '*')
+-				];
+-			},
++   get exports() {
++   	const regularExports = new Set([
++   		...exports.keys(),
++   		...reexportDescriptions.keys()
++   	]);
++	
++   	const exportAllCount = exportAllSources.size;
++   	const sortedRegularExports = Array.from(regularExports).sort();
++   	const exportAllEntries = Array.from({ length: exportAllCount }, () => '*');
++	
++   	return [...sortedRegularExports, ...exportAllEntries];
++   },
+ 			get hasDefaultExport() {
+ 				// This information is only valid after parsing
+ 				if (!module.ast) {

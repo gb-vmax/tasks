@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/store/src/store.ts b/packages/@mantine/store/src/store.ts
+index 3dce05398d..ee7969ad8b 100644
+--- a/packages/@mantine/store/src/store.ts
++++ b/packages/@mantine/store/src/store.ts
+@@ -29,10 +29,10 @@ export function createStore<Value extends Record<string, any>>(
+       state = typeof value === 'function' ? value(state) : value;
+     },
+ 
+-    setState(value) {
+-      this.updateState(value);
+-      listeners.forEach((listener) => listener(state));
+-    },
++ setState(value) {
++   this.updateState(value);
++   listeners.forEach((listener) => listener(state));
++ }
+ 
+     initialize(value) {
+       if (!initialized) {

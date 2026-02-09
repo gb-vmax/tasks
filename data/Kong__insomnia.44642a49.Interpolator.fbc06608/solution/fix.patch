@@ -1,0 +1,72 @@
+diff --git a/packages/insomnia-sdk/src/objects/interpolator.ts b/packages/insomnia-sdk/src/objects/interpolator.ts
+index 450781395..b9122f79b 100644
+--- a/packages/insomnia-sdk/src/objects/interpolator.ts
++++ b/packages/insomnia-sdk/src/objects/interpolator.ts
+@@ -1,6 +1,17 @@
+ import { fakerFunctions } from 'insomnia/src/ui/components/templating/faker-functions';
+ import { configure, type ConfigureOptions, type Environment as NunjuncksEnv } from 'nunjucks';
+ 
++private getFakerCacheKey(funcName: string, args: string[]): string {
++    return args.length > 0 ? `${funcName}:${args.join(':')}` : funcName;
++}
++
++private invokeFakerFunction(fakerFunc: Function, args: string[]): string {
++    if (args.length === 0) {
++        return fakerFunc();
++    }
++    return fakerFunc(...args);
++}
++
+ class Interpolator {
+     private engine: NunjuncksEnv;
+ 
+@@ -9,8 +20,6 @@ class Interpolator {
+     }
+ 
+     render = (template: string, context: object) => {
+-        // TODO: handle timeout
+-        // TODO: support plugin?
+         return this.engine.renderString(
+             this.renderWithFaker(template),
+             context
+@@ -23,6 +32,8 @@ class Interpolator {
+             return template;
+         }
+ 
++        const fakerCache = new Map<string, string>();
++
+         const translatedSegments = segments.map(segment => {
+             const tagStart = segment.lastIndexOf('{{');
+             if ((tagStart) < 0) {
+@@ -33,16 +44,28 @@ class Interpolator {
+                 .slice(tagStart + 2)
+                 .trim();
+             if (!tagName.startsWith('$')) {
+-                // it is a tag probably for interpolating, at least not for generating
+                 return segment + '}}';
+             }
+-            const funcName = tagName.slice(1) as keyof typeof fakerFunctions; // remove prefix '$'
++
++            const tagContent = tagName.slice(1);
++            const parts = tagContent.split(':');
++            const funcName = parts[0] as keyof typeof fakerFunctions;
++            const args = parts.slice(1);
+ 
+             if (!fakerFunctions[funcName]) {
+                 throw Error(`replaceIn: no faker function is found: ${funcName}`);
+             };
+ 
+-            const generated = fakerFunctions[funcName]();
++            const cacheKey = this.getFakerCacheKey(funcName, args);
++            
++            let generated: string;
++            if (fakerCache.has(cacheKey)) {
++                generated = fakerCache.get(cacheKey)!;
++            } else {
++                generated = this.invokeFakerFunction(fakerFunctions[funcName], args);
++                fakerCache.set(cacheKey, generated);
++            }
++
+             return segment.slice(0, tagStart) + generated;
+         });
+ 

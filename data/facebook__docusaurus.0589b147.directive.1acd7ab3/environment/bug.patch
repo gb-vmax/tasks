@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..77578edac1 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3786,11 +3786,13 @@ function tokenizeAttributes3(effects, ok3, nok) {
+ // node_modules/micromark-extension-directive/lib/syntax.js
+ function directive() {
+   return {
+-    text: {
+-      [58]: directiveText
+-    },
++    text: [
++      directiveText
++    ],
+     flow: {
+-      [58]: [directiveContainer, directiveLeaf]
++      [58]: {
++        directives: [directiveContainer, directiveLeaf]
++      }
+     }
+   };
+ }

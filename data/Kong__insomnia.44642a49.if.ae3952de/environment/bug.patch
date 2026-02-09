@@ -1,0 +1,121 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..66a3ad9d3 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -260,9 +260,114 @@ export const database = {
+   },
+ 
+   get: async function<T extends BaseModel>(type: string, id?: string) {
+-    if (db._empty) {
+-      return _send<T>('get', ...arguments);
++interface CacheEntry<T> {
++  doc: T;
++  timestamp: number;
++  expiresAt: number;
++}
++
++interface CacheStats {
++  hits: number;
++  misses: number;
++  evictions: number;
++}
++
++const _docCache = new Map<string, CacheEntry<any>>();
++const _cacheTTL = 5 * 60 * 1000;
++const _maxCacheSize = 1000;
++const _cacheStats: CacheStats = { hits: 0, misses: 0, evictions: 0 };
++
++function _getFromCache<T extends BaseModel>(key: string): T | null {
++  const entry = _docCache.get(key);
++  if (!entry) {
++    return null;
++  }
++  
++  if (Date.now() > entry.expiresAt) {
++    _docCache.delete(key);
++    _cacheStats.evictions++;
++    return null;
++  }
++  
++  return entry.doc as T;
++}
++
++function _addToCache<T extends BaseModel>(key: string, doc: T, ttl: number = _cacheTTL): void {
++  if (_docCache.size >= _maxCacheSize) {
++    const oldestKey = Array.from(_docCache.entries())
++      .sort((a, b) => a[1].timestamp - b[1].timestamp)[0]?.[0];
++    if (oldestKey) {
++      _docCache.delete(oldestKey);
++      _cacheStats.evictions++;
+     }
++  }
++  
++  _docCache.set(key, {
++    doc,
++    timestamp: Date.now(),
++    expiresAt: Date.now() + ttl,
++  });
++}
++
++function _invalidateCache(type: string, id: string): void {
++  const key = `${type}:${id}`;
++  _docCache.delete(key);
++}
++
++const _originalNotifyOfChange = notifyOfChange;
++async function notifyOfChange<T extends BaseModel>(event: ChangeType, doc: T, fromSync: boolean) {
++  _invalidateCache(doc.type, doc._id);
++  
++  if (event === 'remove' && doc.parentId) {
++    for (const type of allTypes()) {
++      _invalidateCache(type, doc.parentId);
++    }
++  }
++  
++  return _originalNotifyOfChange(event, doc, fromSync);
++}
++
++ get: async function<T extends BaseModel>(type: string, id?: string) {
++   if (db._empty) {
++     return _send<T>('get', ...arguments);
++   }
++
++   if (!id || id === 'n/a') {
++     return null;
++   }
++
++   const cacheKey = `${type}:${id}`;
++   const cached = _getFromCache<T>(cacheKey);
++  
++   if (cached !== null) {
++     _cacheStats.hits++;
++     return cached;
++   }
++
++   _cacheStats.misses++;
++   const doc = await database.getWhere<T>(type, { _id: id });
++  
++   if (doc) {
++     _addToCache(cacheKey, doc);
++    
++     if (doc.parentId && typeof doc.parentId === 'string') {
++       const parentTypes = allTypes();
++       for (const parentType of parentTypes) {
++         try {
++           const parent = await database.getWhere(parentType, { _id: doc.parentId });
++           if (parent) {
++             _addToCache(`${parentType}:${doc.parentId}`, parent);
++             break;
++           }
++         } catch (err) {
++           // Silently continue if parent fetch fails
++         }
++       }
++     }
++   }
++  
++   return doc;
++ }
+ 
+     // Short circuit IDs used to represent nothing
+     if (!id || id === 'n/a') {

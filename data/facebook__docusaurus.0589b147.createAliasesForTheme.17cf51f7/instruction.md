@@ -2,29 +2,33 @@
 
 ### Describe the bug
 
-Theme component aliases are not being created correctly. When trying to use theme components, the first component in the theme is being skipped and not registered as an alias. Additionally, the original theme aliases (prefixed with `@theme-original`) are being created when they shouldn't be.
+When using theme component aliases, the first theme component file is being skipped and not registered in the aliases. Additionally, the `@theme-original` aliases are being created when they shouldn't be (when `addOriginalAlias` is false).
 
 ### Reproduction
 
-1. Create a custom theme with multiple components
-2. Try to import the first component from the theme using its alias
-3. The component is not found/accessible
-4. Also notice that `@theme-original` aliases are being created even when `addOriginalAlias` is false
+1. Create a Docusaurus theme with multiple component files
+2. The first component in the `themeComponentFiles` array will not be aliased
+3. Components trying to import the first theme component will fail to resolve
 
 For example, if your theme has components:
 ```
-- ComponentA.tsx
-- ComponentB.tsx  
-- ComponentC.tsx
+components/
+  Layout.tsx
+  Navbar.tsx
+  Footer.tsx
 ```
 
-Only ComponentB and ComponentC will be aliased and accessible. ComponentA will be missing from the webpack aliases.
+The `Layout.tsx` component won't be properly aliased and imports like `@theme/Layout` will fail.
+
+Additionally, when `addOriginalAlias` is set to `false`, the `@theme-original/*` aliases are still being created instead of being skipped.
 
 ### Expected behavior
 
-All theme components should be properly aliased and accessible via their `@theme/` prefixed imports. The `@theme-original` aliases should only be created when `addOriginalAlias` is true (for swizzled components).
+- All theme component files should be properly aliased, including the first one
+- `@theme-original` aliases should only be created when `addOriginalAlias` is `true`
 
 ### System Info
+
 - Docusaurus version: latest
 - Node version: 18.x
 

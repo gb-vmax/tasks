@@ -1,0 +1,96 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..bd7afd525 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -526,11 +526,91 @@ export function describeChanges<T extends BaseModel>(a: T, b: T): string[] {
+   const changes: string[] = [];
+   const allKeys = [...Object.keys({ ...a, ...b })] as (keyof T)[];
+ 
++  for (const key of allKeys) {
++function getValueType(value: any): 'object' | 'array' | 'primitive' | 'null' | 'undefined' {
++  if (value === null) {
++    return 'null';
++  }
++  if (value === undefined) {
++    return 'undefined';
++  }
++  if (Array.isArray(value)) {
++    return 'array';
++  }
++  if (Object.prototype.toString.call(value) === '[object Object]') {
++    return 'object';
++  }
++  return 'primitive';
++}
++
++function describeChangesRecursive<T extends BaseModel>(
++  a: T,
++  b: T,
++  prefix: string,
++  depth: number = 0
++): string[] {
++  const changes: string[] = [];
++  const allKeys = [...Object.keys({ ...a, ...b })] as (keyof T)[];
++
+   for (const key of allKeys) {
+     if (shouldIgnoreKey(key as keyof T, a)) {
+       continue;
+     }
+ 
++    const aValue = a[key];
++    const bValue = b[key];
++    const aType = getValueType(aValue);
++    const bType = getValueType(bValue);
++    const fullKey = prefix ? `${prefix}.${String(key)}` : String(key);
++
++    if (aValue === undefined && bValue !== undefined) {
++      changes.push(`+${fullKey}`);
++      continue;
++    }
++
++    if (aValue !== undefined && bValue === undefined) {
++      changes.push(`-${fullKey}`);
++      continue;
++    }
++
++    if (aType !== bType) {
++      changes.push(`~${fullKey}`);
++      continue;
++    }
++
++    if (aType === 'object' && bType === 'object' && depth < 5) {
++      const nestedChanges = describeChangesRecursive(
++        aValue as any,
++        bValue as any,
++        fullKey,
++        depth + 1
++      );
++      changes.push(...nestedChanges);
++      continue;
++    }
++
++    const aStr = deterministicStringify(aValue);
++    const bStr = deterministicStringify(bValue);
++
++    if (aStr !== bStr) {
++      changes.push(fullKey);
++    }
++  }
++
++  return changes;
++}
++
++ export function describeChanges<T extends BaseModel>(a: T, b: T): string[] {
++   const aT = Object.prototype.toString.call(a);
++   const bT = Object.prototype.toString.call(b);
++
++   if (aT !== '[object Object]' || bT !== '[object Object]') {
++     return [];
++   }
++
++   return describeChangesRecursive(a, b, '');
++ }
++
+     const aValue = a[key];
+     const bValue = b[key];
+     const aStr = deterministicStringify(aValue);

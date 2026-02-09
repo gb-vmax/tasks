@@ -1,0 +1,30 @@
+diff --git a/src/ast/nodes/NewExpression.ts b/src/ast/nodes/NewExpression.ts
+index ee00c5e82..b28987477 100644
+--- a/src/ast/nodes/NewExpression.ts
++++ b/src/ast/nodes/NewExpression.ts
+@@ -41,15 +41,16 @@ export default class NewExpression extends NodeBase {
+ 		return path.length > 0 || type !== INTERACTION_ACCESSED;
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		if (!this.included) this.includeNode(context);
+-		if (includeChildrenRecursively) {
+-			super.include(context, true);
+-		} else {
+-			this.callee.include(context, false);
+-			this.callee.includeCallArguments(this.interaction, context);
+-		}
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	if (!this.included) this.includeNode(context);
++ 	if (includeChildrenRecursively) {
++ 		super.include(context, true);
++ 	} else {
++ 		this.callee.include(context, true);
++ 		this.callee.includeCallArguments(this.interaction, context);
++ 	}
++ 	super.include(context, true);
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

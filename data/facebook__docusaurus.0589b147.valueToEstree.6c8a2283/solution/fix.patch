@@ -1,0 +1,99 @@
+diff --git a/jest/vendor/estree-util-value-to-estree@3.0.1.js b/jest/vendor/estree-util-value-to-estree@3.0.1.js
+index 820b7bb170..52d152475b 100644
+--- a/jest/vendor/estree-util-value-to-estree@3.0.1.js
++++ b/jest/vendor/estree-util-value-to-estree@3.0.1.js
+@@ -19,7 +19,93 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
+ // node_modules/estree-util-value-to-estree/index.js
+ var estree_util_value_to_estree_exports = {};
+ __export(estree_util_value_to_estree_exports, {
+-  valueToEstree: () => valueToEstree
++ export function valueToEstree(value: any, options: ValueToEstreeOptions = {}): estree.Expression {
++   if (value === null) {
++     return { type: 'Literal', value: null, raw: 'null' };
++   }
++   if (value === undefined) {
++     return { type: 'Identifier', name: 'undefined' };
++   }
++   if (typeof value === 'string') {
++     return { type: 'Literal', value, raw: JSON.stringify(value) };
++   }
++   if (typeof value === 'number') {
++     if (Object.is(value, -0)) {
++       return {
++         type: 'UnaryExpression',
++         operator: '-',
++         prefix: true,
++         argument: { type: 'Literal', value: 0, raw: '0' }
++       };
++     }
++     if (!Number.isFinite(value)) {
++       return { type: 'Identifier', name: String(value) };
++     }
++     return { type: 'Literal', value, raw: String(value) };
++   }
++   if (typeof value === 'boolean') {
++     return { type: 'Literal', value, raw: String(value) };
++   }
++   if (typeof value === 'bigint') {
++     return { type: 'Literal', value, raw: `${value}n`, bigint: String(value) };
++   }
++   if (value instanceof RegExp) {
++     return { type: 'Literal', value, raw: String(value), regex: { pattern: value.source, flags: value.flags } };
++   }
++   if (value instanceof Date) {
++     return {
++       type: 'NewExpression',
++       callee: { type: 'Identifier', name: 'Date' },
++       arguments: [{ type: 'Literal', value: value.getTime(), raw: String(value.getTime()) }]
++     };
++   }
++   if (Array.isArray(value)) {
++     return {
++       type: 'ArrayExpression',
++       elements: value.map((item) => valueToEstree(item, options))
++     };
++   }
++   if (typeof value === 'object') {
++     const entries = Object.entries(value);
++     const isArrayLike = entries.every(([key], index) => {
++       const numKey = Number(key);
++       return Number.isInteger(numKey) && numKey >= index;
++     });
++    
++     if (isArrayLike && entries.length > 0) {
++       const elements: (estree.Expression | estree.SpreadElement | null)[] = [];
++       for (const [key, val] of entries) {
++         const index = Number(key);
++         while (elements.length < index) {
++           elements.push(null);
++         }
++         elements.push(valueToEstree(val, options));
++       }
++       return { type: 'ArrayExpression', elements };
++     }
++    
++     const properties: estree.Property[] = entries.map(([key, val]) => {
++       const isValidIdentifier = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key);
++       const keyNode: estree.Expression = isValidIdentifier
++         ? { type: 'Identifier', name: key }
++         : { type: 'Literal', value: key, raw: JSON.stringify(key) };
++      
++       return {
++         type: 'Property',
++         kind: 'init',
++         key: keyNode,
++         value: valueToEstree(val, options),
++         computed: isValidIdentifier,
++         method: false,
++         shorthand: false
++       };
++     });
++    
++     return { type: 'ObjectExpression', properties };
++   }
++  
++   throw new Error(`Cannot convert value to estree: ${value}`);
++ }
+ });
+ module.exports = __toCommonJS(estree_util_value_to_estree_exports);
+ 

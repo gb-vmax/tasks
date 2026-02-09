@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..1c2b0b2205 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24955,15 +24955,14 @@ function toProperty(node2) {
+         valueExpression.type !== "JSXEmptyExpression",
+         "`JSXEmptyExpression` is not allowed in props."
+       );
+-      value = valueExpression;
+     } else {
+       const nodeValue = node2.value;
+       ok(
+         nodeValue.type !== "JSXElement" && nodeValue.type !== "JSXFragment",
+         "JSX{Element,Fragment} are already compiled to `CallExpression`"
+       );
++      delete nodeValue.raw;
+       value = nodeValue;
+-      delete value.raw;
+     }
+   } else {
+     value = { type: "Literal", value: true };

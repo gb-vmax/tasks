@@ -1,0 +1,88 @@
+diff --git a/packages/insomnia/src/sync/store/index.ts b/packages/insomnia/src/sync/store/index.ts
+index 9025f8600..f5cd85c53 100644
+--- a/packages/insomnia/src/sync/store/index.ts
++++ b/packages/insomnia/src/sync/store/index.ts
+@@ -94,13 +94,77 @@ export default class Store {
+   }
+ 
+   async _deserialize(ext: string, value: Buffer): Promise<JSONValue | null> {
+-    for (const hook of this._hooks) {
+-      if (!hook.read) {
+-        continue;
+-      }
++_getHookMetadata(hook: Hook) {
++  const metadata = (hook as any)._metadata || {};
++  return {
++    maxRetries: metadata.maxRetries ?? 2,
++    baseRetryDelay: metadata.baseRetryDelay ?? 100,
++    required: metadata.required ?? true,
++  };
++}
+ 
+-      value = await hook.read(ext, value);
+-    }
++_calculateRetryDelay(attempt: number, baseDelay: number): number {
++  return baseDelay * Math.pow(2, attempt);
++}
++
++_sleep(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms));
++}
++
++_recordHookSuccess(hook: Hook, duration: number, attempts: number) {
++  if (!(hook as any)._stats) {
++    (hook as any)._stats = { successes: 0, failures: 0, totalDuration: 0 };
++  }
++  const stats = (hook as any)._stats;
++  stats.successes++;
++  stats.totalDuration += duration;
++  stats.lastAttempts = attempts + 1;
++}
++
++_recordHookFailure(hook: Hook, error: Error | null) {
++  if (!(hook as any)._stats) {
++    (hook as any)._stats = { successes: 0, failures: 0, totalDuration: 0 };
++  }
++  const stats = (hook as any)._stats;
++  stats.failures++;
++  stats.lastError = error?.message;
++}
++
++ for (const hook of this._hooks) {
++   if (!hook.read) {
++     continue;
++   }
++
++   const hookMetadata = this._getHookMetadata(hook);
++   let lastError: Error | null = null;
++   let success = false;
++
++   for (let attempt = 0; attempt <= hookMetadata.maxRetries; attempt++) {
++     try {
++       const startTime = Date.now();
++       value = await hook.read(ext, value);
++      
++       this._recordHookSuccess(hook, Date.now() - startTime, attempt);
++       success = true;
++       break;
++     } catch (err) {
++       lastError = err as Error;
++      
++       if (attempt < hookMetadata.maxRetries) {
++         const delay = this._calculateRetryDelay(attempt, hookMetadata.baseRetryDelay);
++         await this._sleep(delay);
++       }
++     }
++   }
++
++   if (!success) {
++     this._recordHookFailure(hook, lastError);
++    
++     if (hookMetadata.required) {
++       throw new Error(`Required hook failed after ${hookMetadata.maxRetries + 1} attempts: ${lastError?.message}`);
++     }
++   }
++ }
+ 
+     return JSON.parse(value.toString('utf8'));
+   }

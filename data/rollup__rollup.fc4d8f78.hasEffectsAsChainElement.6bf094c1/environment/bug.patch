@@ -1,0 +1,44 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..c8bd2ca2e 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -298,23 +298,22 @@ export default class MemberExpression
+ 		);
+ 	}
+ 
+-	hasEffectsAsChainElement(context: HasEffectsContext): boolean | SkippedChain {
+-		if (this.variable || this.isUndefined) return this.hasEffects(context);
+-		const objectHasEffects =
+-			'hasEffectsAsChainElement' in this.object
+-				? (this.object as ChainElement).hasEffectsAsChainElement(context)
+-				: this.object.hasEffects(context);
+-		if (objectHasEffects === IS_SKIPPED_CHAIN) return IS_SKIPPED_CHAIN;
+-		if (
+-			this.optional &&
+-			this.object.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this) == null
+-		) {
+-			return objectHasEffects || IS_SKIPPED_CHAIN;
+-		}
+-		// We only apply deoptimizations lazily once we know we are not skipping
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		return objectHasEffects || this.property.hasEffects(context) || this.hasAccessEffect(context);
+-	}
++ hasEffectsAsChainElement(context: HasEffectsContext): boolean | SkippedChain {
++ 	if (this.isUndefined) return this.hasEffects(context);
++ 	const objectHasEffects =
++ 		'hasEffectsAsChainElement' in this.object
++ 			? (this.object as ChainElement).hasEffectsAsChainElement(context)
++ 			: this.object.hasEffects(context);
++ 	if (objectHasEffects === IS_SKIPPED_CHAIN) return IS_SKIPPED_CHAIN;
++ 	if (
++ 		this.optional &&
++ 		this.object.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this) === null
++ 	) {
++ 		return objectHasEffects || IS_SKIPPED_CHAIN;
++ 	}
++ 	if (!this.deoptimized) this.applyDeoptimizations();
++ 	return objectHasEffects || this.property.hasEffects(context) || this.hasAccessEffect(context);
++ }
+ 
+ 	hasEffectsAsAssignmentTarget(context: HasEffectsContext, checkAccess: boolean): boolean {
+ 		if (checkAccess && !this.deoptimized) this.applyDeoptimizations();

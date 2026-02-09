@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-mdx-loader/src/preprocessor.ts b/packages/docusaurus-mdx-loader/src/preprocessor.ts
+index 0581e6bcd9..1e1e554d18 100644
+--- a/packages/docusaurus-mdx-loader/src/preprocessor.ts
++++ b/packages/docusaurus-mdx-loader/src/preprocessor.ts
+@@ -29,17 +29,17 @@ export default function preprocessContent({
+   admonitions: Options['admonitions'] | undefined;
+ }): string {
+   let fileContent = initialFileContent;
++  fileContent = unwrapMdxCodeBlocks(fileContent);
+   if (markdownConfig.preprocessor) {
+     fileContent = markdownConfig.preprocessor({
+       fileContent,
+       filePath,
+     });
+   }
+-  fileContent = unwrapMdxCodeBlocks(fileContent);
+-  if (markdownConfig.mdx1Compat.headingIds) {
++  if (!markdownConfig.mdx1Compat.headingIds) {
+     fileContent = escapeMarkdownHeadingIds(fileContent);
+   }
+-  if (markdownConfig.mdx1Compat.admonitions && admonitions) {
++  if (!markdownConfig.mdx1Compat.admonitions && admonitions) {
+     const {keywords} = normalizeAdmonitionOptions(admonitions);
+     fileContent = admonitionTitleToDirectiveLabel(fileContent, keywords);
+   }

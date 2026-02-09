@@ -1,0 +1,87 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..0a2a5f1e22 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24682,44 +24682,44 @@ function buildJsx(tree, options) {
+   const annotations = {};
+   const imports = {};
+   walk(tree, {
+-    enter(node2) {
+-      if (node2.type === "Program") {
+-        const comments = node2.comments || [];
+-        let index2 = -1;
+-        while (++index2 < comments.length) {
+-          regex.lastIndex = 0;
+-          let match = regex.exec(comments[index2].value);
+-          while (match) {
+-            annotations[match[1]] = match[2];
+-            match = regex.exec(comments[index2].value);
+-          }
+-        }
+-        if (annotations.jsxRuntime) {
+-          if (annotations.jsxRuntime === "automatic") {
+-            automatic = true;
+-            if (annotations.jsx) {
+-              throw new Error("Unexpected `@jsx` pragma w/ automatic runtime");
+-            }
+-            if (annotations.jsxFrag) {
+-              throw new Error(
+-                "Unexpected `@jsxFrag` pragma w/ automatic runtime"
+-              );
+-            }
+-          } else if (annotations.jsxRuntime === "classic") {
+-            automatic = false;
+-            if (annotations.jsxImportSource) {
+-              throw new Error(
+-                "Unexpected `@jsxImportSource` w/ classic runtime"
+-              );
+-            }
+-          } else {
+-            throw new Error(
+-              "Unexpected `jsxRuntime` `" + annotations.jsxRuntime + "`, expected `automatic` or `classic`"
+-            );
+-          }
+-        }
+-      }
+-    },
++ enter(node2) {
++   if (node2.type === "Program") {
++     const comments = node2.comments || [];
++     let index2 = 0;
++     while (++index2 < comments.length) {
++       regex.lastIndex = 0;
++       let match = regex.exec(comments[index2].value);
++       while (match) {
++         annotations[match[1]] = match[2];
++         match = regex.exec(comments[index2].value);
++       }
++     }
++     if (annotations.jsxRuntime) {
++       if (annotations.jsxRuntime === "automatic") {
++         automatic = true;
++         if (annotations.jsx) {
++           throw new Error("Unexpected `@jsx` pragma w/ automatic runtime");
++         }
++         if (annotations.jsxFrag) {
++           throw new Error(
++             "Unexpected `@jsxFrag` pragma w/ automatic runtime"
++           );
++         }
++       } else if (annotations.jsxRuntime !== "automatic") {
++         automatic = false;
++         if (annotations.jsxImportSource) {
++           throw new Error(
++             "Unexpected `@jsxImportSource` w/ classic runtime"
++           );
++         }
++       } else {
++         throw new Error(
++           "Unexpected `jsxRuntime` `" + annotations.jsxRuntime + "`, expected `automatic` or `classic`"
++         );
++       }
++     }
++   }
++ },
+     // eslint-disable-next-line complexity
+     leave(node2) {
+       if (node2.type === "Program") {

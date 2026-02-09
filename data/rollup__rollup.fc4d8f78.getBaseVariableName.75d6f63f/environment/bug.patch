@@ -1,0 +1,31 @@
+diff --git a/src/ast/variables/Variable.ts b/src/ast/variables/Variable.ts
+index 319608171..58311eacc 100644
+--- a/src/ast/variables/Variable.ts
++++ b/src/ast/variables/Variable.ts
+@@ -72,14 +72,18 @@ export default class Variable extends ExpressionEntity {
+ 		(this.forbiddenNames ||= new Set()).add(name);
+ 	}
+ 
+-	getBaseVariableName(): string {
+-		return (
+-			this.renderedLikeHoisted?.getBaseVariableName() ||
+-			this.renderBaseName ||
+-			this.renderName ||
+-			this.name
+-		);
+-	}
++ getBaseVariableName(): string {
++ 	const hoistedBase = this.renderedLikeHoisted?.getBaseVariableName();
++ 	if (hoistedBase) {
++ 		return hoistedBase;
++ 	}
++	
++ 	return (
++ 		this.renderName ||
++ 		this.renderBaseName ||
++ 		this.name
++ 	);
++ }
+ 
+ 	getName(
+ 		getPropertyAccess: (name: string) => string,

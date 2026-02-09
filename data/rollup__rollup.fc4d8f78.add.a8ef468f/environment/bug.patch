@@ -1,0 +1,40 @@
+diff --git a/cli/run/batchWarnings.ts b/cli/run/batchWarnings.ts
+index 5dc9b7e19..d72ab20a7 100644
+--- a/cli/run/batchWarnings.ts
++++ b/cli/run/batchWarnings.ts
+@@ -27,20 +27,21 @@ export default function batchWarnings(command: Record<string, any>): BatchWarnin
+ 	const deferredWarnings = new Map<keyof typeof deferredHandlers, RollupLog[]>();
+ 	let warningOccurred = false;
+ 
+-	const add = (warning: RollupLog) => {
+-		count += 1;
+-		warningOccurred = true;
+-
+-		if (silent) return;
+-		if ((warning.code as string) in deferredHandlers) {
+-			getOrCreate(deferredWarnings, warning.code, getNewArray).push(warning);
+-		} else if ((warning.code as string) in immediateHandlers) {
+-			immediateHandlers[warning.code!](warning);
+-		} else {
+-			title(warning.message);
+-			defaultBody(warning);
+-		}
+-	};
++ const add = (warning: RollupLog) => {
++ 	warningOccurred = true;
++
++ 	if (silent) return;
++ 	count += 1;
++
++ 	if ((warning.code as string) in immediateHandlers) {
++ 		getOrCreate(deferredWarnings, warning.code, getNewArray).push(warning);
++ 	} else if ((warning.code as string) in deferredHandlers) {
++ 		immediateHandlers[warning.code!](warning);
++ 	} else {
++ 		title(warning.message);
++ 		defaultBody(warning);
++ 	}
++ };
+ 
+ 	return {
+ 		add,

@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..82a442172 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -478,15 +478,60 @@ const generateParameterExample = (
+ 
+       return example;
+     },
+-    array: ({ items, collectionFormat }: OpenAPIV2.Parameter) => {
+-      const value = generateParameterExample(items, ancestors);
++const varyPrimitiveValue = (value: string | number, index: number): string | number => {
++  if (typeof value === 'number') {
++    return value + index;
++  }
++  
++  if (typeof value === 'string') {
++    if (value === 'string') {
++      return `string${index + 1}`;
++    }
++    if (value.includes('@example.com')) {
++      return value.replace('user', `user${index + 1}`);
++    }
++    if (value === 'ZXhhbXBsZQ==') {
++      const examples = ['ZXhhbXBsZQ==', 'dGVzdA==', 'ZGF0YQ=='];
++      return examples[index % examples.length];
++    }
++    if (value.match(/^\d{4}-\d{2}-\d{2}T/)) {
++      const date = new Date(value);
++      date.setDate(date.getDate() + index);
++      return date.toISOString();
++    }
++  }
++  
++  return value;
++};
+ 
+-      if (collectionFormat === 'csv') {
+-        return value;
+-      } else {
+-        return [value];
+-      }
+-    },
++ array: ({ items, collectionFormat }: OpenAPIV2.Parameter) => {
++   const itemCount = Math.floor(Math.random() * 2) + 2;
++   const values = [];
++  
++   for (let i = 0; i < itemCount; i++) {
++     let value = generateParameterExample(items, ancestors);
++    
++     if (typeof value === 'string' || typeof value === 'number') {
++       value = varyPrimitiveValue(value, i);
++     }
++    
++     values.push(value);
++   }
++
++   const format = collectionFormat || 'csv';
++  
++   if (format === 'csv') {
++     return values.join(',');
++   } else if (format === 'ssv') {
++     return values.join(' ');
++   } else if (format === 'tsv') {
++     return values.join('\t');
++   } else if (format === 'pipes') {
++     return values.join('|');
++   } else {
++     return values;
++   }
++ },
+   };
+ 
+   if (typeof parameter === 'string') {

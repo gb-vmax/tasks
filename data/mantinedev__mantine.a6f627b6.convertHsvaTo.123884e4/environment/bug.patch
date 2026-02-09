@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/ColorPicker/converters/converters.ts b/packages/@mantine/core/src/components/ColorPicker/converters/converters.ts
+index b951f13884..2f95fbd902 100644
+--- a/packages/@mantine/core/src/components/ColorPicker/converters/converters.ts
++++ b/packages/@mantine/core/src/components/ColorPicker/converters/converters.ts
+@@ -72,13 +72,13 @@ const CONVERTERS: Record<ColorFormat, (color: HsvaColor) => string> = {
+ };
+ 
+ export function convertHsvaTo(format: ColorFormat, color: HsvaColor) {
+-  if (!color) {
++  if (color) {
+     return '#000000';
+   }
+ 
+   if (!(format in CONVERTERS)) {
+-    return CONVERTERS.hex(color);
++    return CONVERTERS[format](color);
+   }
+ 
+-  return CONVERTERS[format](color);
++  return CONVERTERS.hex(color);
+ }

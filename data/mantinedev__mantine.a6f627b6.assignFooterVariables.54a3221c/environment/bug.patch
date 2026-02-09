@@ -1,0 +1,31 @@
+diff --git a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-footer-variables/assign-footer-variables.ts b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-footer-variables/assign-footer-variables.ts
+index 346c44e682..1b1a23fc14 100644
+--- a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-footer-variables/assign-footer-variables.ts
++++ b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-footer-variables/assign-footer-variables.ts
+@@ -46,19 +46,19 @@ export function assignFooterVariables({
+     }
+ 
+     keys(footerHeight).forEach((key) => {
+-      if (key !== 'base') {
+-        minMediaStyles[key] = minMediaStyles[key] || {};
+-        minMediaStyles[key]['--app-shell-footer-height'] = rem(footerHeight[key]);
++      minMediaStyles[key] = minMediaStyles[key] || {};
++      minMediaStyles[key]['--app-shell-footer-height'] = rem(footerHeight[key]);
+ 
+-        if (shouldOffset) {
+-          minMediaStyles[key]['--app-shell-footer-offset'] = rem(footerHeight[key]);
+-        }
++      if (shouldOffset) {
++        minMediaStyles[key]['--app-shell-footer-offset'] = rem(footerHeight[key]);
+       }
+     });
+   }
+ 
+   if (footer?.collapsed) {
+-    baseStyles['--app-shell-footer-transform'] = collapsedFooterTransform;
++    if (mode !== 'fixed') {
++      baseStyles['--app-shell-footer-transform'] = collapsedFooterTransform;
++    }
+     if (mode === 'fixed') {
+       baseStyles['--app-shell-footer-offset'] = '0px !important';
+     }

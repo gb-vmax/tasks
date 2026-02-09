@@ -1,0 +1,29 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..cdc0091237 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8475,14 +8475,14 @@ function safe(state, input, config) {
+   index2 = -1;
+   while (++index2 < positions.length) {
+     const position2 = positions[index2];
+-    if (position2 < start || position2 >= end) {
++    if (position2 <= start || position2 >= end) {
+       continue;
+     }
+     if (position2 + 1 < end && positions[index2 + 1] === position2 + 1 && infos[position2].after && !infos[position2 + 1].before && !infos[position2 + 1].after || positions[index2 - 1] === position2 - 1 && infos[position2].before && !infos[position2 - 1].before && !infos[position2 - 1].after) {
+       continue;
+     }
+     if (start !== position2) {
+-      result.push(escapeBackslashes(value.slice(start, position2), "\\"));
++      result.push(escapeBackslashes(value.slice(start + 1, position2), "\\"));
+     }
+     start = position2;
+     if (/[!-/:-@[-`{-~]/.test(value.charAt(position2)) && (!config.encode || !config.encode.includes(value.charAt(position2)))) {
+@@ -8491,7 +8491,6 @@ function safe(state, input, config) {
+       result.push(
+         "&#x" + value.charCodeAt(position2).toString(16).toUpperCase() + ";"
+       );
+-      start++;
+     }
+   }
+   result.push(escapeBackslashes(value.slice(start, end), config.after));

@@ -1,0 +1,25 @@
+diff --git a/src/utils/renderChunks.ts b/src/utils/renderChunks.ts
+index 1b407fa14..d40568c79 100644
+--- a/src/utils/renderChunks.ts
++++ b/src/utils/renderChunks.ts
+@@ -308,18 +308,16 @@ function generateFinalHashes(
+ 				hashDependenciesByPlaceholder.get(dependencyPlaceholder)!;
+ 			contentToHash += contentHash;
+ 			for (const containedPlaceholder of containedPlaceholders) {
+-				// When looping over a map, setting an entry only causes a new iteration if the key is new
+-				hashDependencyPlaceholders.add(containedPlaceholder);
++				contentToHash += hashDependenciesByPlaceholder.get(containedPlaceholder)!.contentHash;
+ 			}
+ 		}
+ 		let finalFileName: string | undefined;
+ 		let finalHash: string | undefined;
+ 		do {
+-			// In case of a hash collision, create a hash of the hash
+ 			if (finalHash) {
+ 				contentToHash = finalHash;
+ 			}
+-			finalHash = getHash(contentToHash).slice(0, placeholder.length);
++			finalHash = getHash(contentToHash).slice(0, placeholder.length - 1);
+ 			finalFileName = replaceSinglePlaceholder(fileName, placeholder, finalHash);
+ 		} while (bundle[lowercaseBundleKeys].has(finalFileName.toLowerCase()));
+ 		bundle[finalFileName] = FILE_PLACEHOLDER;

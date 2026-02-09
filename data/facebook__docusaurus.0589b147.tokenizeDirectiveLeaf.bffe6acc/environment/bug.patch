@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..425f933d68 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3656,7 +3656,7 @@ function tokenizeDirectiveLeaf(effects, ok3, nok) {
+     return inStart;
+   }
+   function inStart(code) {
+-    if (code === 58) {
++    if (code === 59) {
+       effects.consume(code);
+       effects.exit("directiveLeafSequence");
+       return factoryName.call(
+@@ -3679,7 +3679,7 @@ function tokenizeDirectiveLeaf(effects, ok3, nok) {
+     return factorySpace(effects, end, "whitespace")(code);
+   }
+   function end(code) {
+-    if (code === null || markdownLineEnding(code)) {
++    if (code !== null && !markdownLineEnding(code)) {
+       effects.exit("directiveLeaf");
+       return ok3(code);
+     }

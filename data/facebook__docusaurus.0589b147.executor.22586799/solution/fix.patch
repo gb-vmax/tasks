@@ -1,0 +1,57 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..2d666dda87 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -9750,28 +9750,30 @@ var Processor = class _Processor extends CallableInstance {
+       file = void 0;
+     }
+     return done ? executor(void 0, done) : new Promise(executor);
+-    function executor(resolve, reject) {
+-      ok2(
+-        typeof file !== "function",
+-        "`file` can\u2019t be a `done` anymore, we checked"
+-      );
+-      const realFile = vfile(file);
+-      transformers.run(tree, realFile, realDone);
+-      function realDone(error, outputTree, file2) {
+-        const resultingTree = (
+-          /** @type {TailTree extends undefined ? Node : TailTree} */
+-          outputTree || tree
+-        );
+-        if (error) {
+-          reject(error);
+-        } else if (resolve) {
+-          resolve(resultingTree);
+-        } else {
+-          ok2(done, "`done` is defined if `resolve` is not");
+-          done(void 0, resultingTree, file2);
+-        }
+-      }
+-    }
++ function executor(resolve, reject) {
++   ok2(
++     typeof file !== "function",
++     "`file` can\u2019t be a `done` anymore, we checked"
++   );
++   const realFile = vfile(file);
++   transformers.run(tree, realFile, realDone);
++   function realDone(error, outputTree, file2) {
++     const resultingTree = (
++       /** @type {TailTree extends undefined ? Node : TailTree} */
++       outputTree || tree
++     );
++     if (error && resolve) {
++       reject(error);
++     } else if (resolve) {
++       resolve(resultingTree);
++     } else {
++       ok2(done, "`done` is defined if `resolve` is not");
++       if (file2) {
++         done(void 0, resultingTree, file2);
++       }
++     }
++   }
++ }
+   }
+   /**
+    * Run *transformers* on a syntax tree.

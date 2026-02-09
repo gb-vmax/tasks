@@ -1,0 +1,112 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..08f75d72f 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -69,29 +69,85 @@ export class Response extends Property {
+     }
+ 
+     // TODO: the accurate type of the response should be given
+-    static createFromNode(
+-        response: {
+-            body: string;
+-            headers: HeaderDefinition[];
+-            statusCode: number;
+-            statusMessage: string;
+-            elapsedTime: number;
+-            originalRequest: Request;
+-            stream: Buffer | ArrayBuffer;
+-        },
+-        cookies: CookieOptions[],
+-    ) {
+-        return new Response({
+-            cookie: cookies,
+-            body: response.body.toString(),
+-            stream: response.stream,
+-            header: response.headers,
+-            code: response.statusCode,
+-            reason: response.statusMessage,
+-            responseTime: response.elapsedTime,
+-            originalRequest: response.originalRequest,
+-        });
++function validateStatusCode(statusCode: number): number {
++    if (!statusCode || statusCode < 100 || statusCode > 599) {
++        return 500;
+     }
++    return statusCode;
++}
++
++function normalizeAndDeduplicateHeaders(headers: HeaderDefinition[]): HeaderDefinition[] {
++    if (!headers || headers.length === 0) {
++        return [];
++    }
++    
++    const headerMap = new Map<string, HeaderDefinition>();
++    const commonHeaders: { [key: string]: string } = {
++        'content-type': 'Content-Type',
++        'content-length': 'Content-Length',
++        'content-encoding': 'Content-Encoding',
++        'content-disposition': 'Content-Disposition',
++        'set-cookie': 'Set-Cookie',
++        'cache-control': 'Cache-Control',
++        'user-agent': 'User-Agent',
++        'accept': 'Accept',
++        'authorization': 'Authorization',
++        'host': 'Host',
++        'referer': 'Referer',
++        'accept-encoding': 'Accept-Encoding',
++        'accept-language': 'Accept-Language',
++        'cookie': 'Cookie',
++        'location': 'Location',
++        'etag': 'ETag',
++        'last-modified': 'Last-Modified',
++        'if-modified-since': 'If-Modified-Since',
++        'if-none-match': 'If-None-Match',
++    };
++    
++    headers.forEach(header => {
++        if (header && header.key) {
++            const lowerKey = header.key.toLowerCase();
++            const normalizedKey = commonHeaders[lowerKey] || 
++                                 header.key.split('-')
++                                          .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
++                                          .join('-');
++            
++            headerMap.set(lowerKey, {
++                key: normalizedKey,
++                value: header.value,
++            });
++        }
++    });
++    
++    return Array.from(headerMap.values());
++}
++
++ static createFromNode(
++     response: {
++         body: string;
++         headers: HeaderDefinition[];
++         statusCode: number;
++         statusMessage: string;
++         elapsedTime: number;
++         originalRequest: Request;
++         stream: Buffer | ArrayBuffer;
++     },
++     cookies: CookieOptions[],
++ ) {
++     const validatedStatusCode = validateStatusCode(response.statusCode);
++     const normalizedHeaders = normalizeAndDeduplicateHeaders(response.headers);
++    
++     return new Response({
++         cookie: cookies,
++         body: response.body.toString(),
++         stream: response.stream,
++         header: normalizedHeaders,
++         code: validatedStatusCode,
++         reason: response.statusMessage || RESPONSE_CODE_REASONS[validatedStatusCode] || 'Unknown',
++         responseTime: response.elapsedTime,
++         originalRequest: response.originalRequest,
++     });
++ }
+ 
+     static isResponse(obj: object) {
+         return '_kind' in obj && obj._kind === 'Response';

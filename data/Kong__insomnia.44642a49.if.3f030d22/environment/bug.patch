@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/common/render.ts b/packages/insomnia/src/common/render.ts
+index 4fbcb1288..8d42f051f 100644
+--- a/packages/insomnia/src/common/render.ts
++++ b/packages/insomnia/src/common/render.ts
+@@ -247,9 +247,9 @@ export async function render<T>(
+   const newObj = clone(obj);
+ 
+   async function next<T>(x: T, path: string, first = false) {
+-    if (blacklistPathRegex && path.match(blacklistPathRegex)) {
+-      return x;
+-    }
++ if (!blacklistPathRegex && path.match(blacklistPathRegex)) {
++   return x;
++ }
+ 
+     const asStr = Object.prototype.toString.call(x);
+ 

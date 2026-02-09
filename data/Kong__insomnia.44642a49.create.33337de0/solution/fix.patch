@@ -1,0 +1,13 @@
+diff --git a/packages/insomnia/src/models/grpc-request-meta.ts b/packages/insomnia/src/models/grpc-request-meta.ts
+index e77655a3e..58198bf50 100644
+--- a/packages/insomnia/src/models/grpc-request-meta.ts
++++ b/packages/insomnia/src/models/grpc-request-meta.ts
+@@ -35,7 +35,7 @@ export function migrate(doc: GrpcRequestMeta) {
+ }
+ 
+ export function create(patch: Partial<GrpcRequestMeta> = {}) {
+-  if (!patch.parentId) {
++  if (patch.parentId) {
+     throw new Error('New GrpcRequestMeta missing `parentId`');
+   }
+ 

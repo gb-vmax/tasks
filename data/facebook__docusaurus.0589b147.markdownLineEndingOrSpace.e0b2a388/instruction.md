@@ -2,31 +2,29 @@
 
 ### Describe the bug
 
-I'm encountering an issue with markdown parsing where certain whitespace and line ending characters are not being handled correctly. It seems like the logic for detecting line endings or spaces has changed, causing some markdown content to be parsed incorrectly.
+I'm experiencing an issue with markdown parsing where certain character codes are not being handled correctly. It appears that the function responsible for detecting markdown line endings or spaces is producing incorrect results for some edge cases.
 
 ### Reproduction
 
 ```js
-// When parsing markdown with specific character codes
-// Characters with code `null` or negative values near line endings
-// are not being recognized properly
-
-const markdown = `
-Some text with special whitespace
-Another line
-`;
-
-// The parser fails to correctly identify line endings/spaces
-// in certain edge cases involving null or negative character codes
+// When processing markdown with specific character codes
+const code = -1;
+const result = markdownLineEndingOrSpace(code);
+// Expected: true (since -1 should be considered a valid markdown character)
+// Actual: false
 ```
+
+The issue seems to affect markdown parsing when dealing with special character codes, particularly negative values that represent specific markdown constructs. Documents that previously parsed correctly now fail to recognize valid markdown line endings and spaces.
 
 ### Expected behavior
 
-The markdown parser should correctly identify line endings and spaces for all valid character codes, including `null` values and negative codes that represent special markdown characters.
+The parser should correctly identify markdown line endings and spaces for all valid character codes, including negative values that represent special markdown tokens. Character codes like `-1` and `-2` should be properly recognized as valid markdown characters.
 
-### Additional context
+### System Info
+- remark version: 15.0.1
+- Node version: Latest
 
-This affects parsing of markdown documents that contain certain whitespace patterns. The issue seems to be related to how character codes are being evaluated in the whitespace detection logic.
+This is affecting our markdown processing pipeline and causing some documents to be parsed incorrectly.
 
 ---
 Repository: /testbed

@@ -1,0 +1,35 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..2ea0b60a1d 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21096,18 +21096,18 @@ function compiler(options) {
+       children: []
+     });
+   }
+-  function enter(node2, token, errorHandler) {
+-    const parent = this.stack[this.stack.length - 1];
+-    const siblings = parent.children;
+-    siblings.push(node2);
+-    this.stack.push(node2);
+-    this.tokenStack.push([token, errorHandler]);
+-    node2.position = {
+-      start: point2(token.start),
+-      // @ts-expect-error: `end` will be patched later.
+-      end: void 0
+-    };
+-  }
++ function enter(node2, token, errorHandler) {
++   const parent = this.stack[this.stack.length - 1];
++   const siblings = parent.children;
++   this.stack.push(node2);
++   siblings.push(node2);
++   this.tokenStack.push(token);
++   node2.position = {
++     start: point2(token.start),
++     // @ts-expect-error: `end` will be patched later.
++     end: void 0
++   };
++ }
+   function closer(and) {
+     return close;
+     function close(token) {

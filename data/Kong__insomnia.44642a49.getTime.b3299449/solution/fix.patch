@@ -1,0 +1,50 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..682653657 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -43,9 +43,42 @@ export function init(response?: MaybeResponse) {
+         return response.bytesRead || 0;
+       },
+ 
+-      getTime() {
+-        return response.elapsedTime || 0;
+-      },
++function formatElapsedTime(timeMs: number): string {
++  if (timeMs < 1000) {
++    return `${timeMs}ms`;
++  }
++  
++  if (timeMs < 60000) {
++    const seconds = (timeMs / 1000).toFixed(2);
++    return `${seconds}s`;
++  }
++  
++  const minutes = Math.floor(timeMs / 60000);
++  const seconds = Math.floor((timeMs % 60000) / 1000);
++  return `${minutes}m ${seconds}s`;
++}
++
++ getTime(unit?: 'ms' | 's' | 'min' | 'formatted'): number | string {
++   const timeMs = response.elapsedTime || 0;
++  
++   if (!unit || unit === 'ms') {
++     return timeMs;
++   }
++  
++   if (unit === 's') {
++     return timeMs / 1000;
++   }
++  
++   if (unit === 'min') {
++     return timeMs / 60000;
++   }
++  
++   if (unit === 'formatted') {
++     return formatElapsedTime(timeMs);
++   }
++  
++   return timeMs;
++ }
+ 
+       getBody() {
+         return models.response.getBodyBuffer(response);

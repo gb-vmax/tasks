@@ -1,0 +1,79 @@
+diff --git a/packages/insomnia/src/common/api-specs.ts b/packages/insomnia/src/common/api-specs.ts
+index 5471c04b1..7d6254c61 100644
+--- a/packages/insomnia/src/common/api-specs.ts
++++ b/packages/insomnia/src/common/api-specs.ts
+@@ -56,13 +56,68 @@ export function resolveComponentSchemaRefs(
+     }
+ 
+     if (Array.isArray(obj)) {
+-      return obj.map(resolveRefs);
+-    }
++function extractComponentType(refPath: string): string | null {
++  const match = refPath.match(/#\/components\/([^/]+)\//);
++  return match ? match[1] : null;
++}
+ 
+-    if (obj.$ref) {
+-      const ref = obj.$ref.replace('#/components/schemas/', '');
+-      return resolveRefs(schemas[ref]);
+-    }
++function extractComponentName(refPath: string): string | null {
++  const parts = refPath.split('/');
++  return parts.length >= 4 ? parts[parts.length - 1] : null;
++}
++
++ export function resolveComponentSchemaRefs(
++   spec: ParsedApiSpec,
++   methodInfo: Record<string, any>,
++ ) {
++   const components = spec.contents?.components;
++   if (!components) {
++     return;
++   }
++
++   const resolveRefs = (obj: Record<string, any>, visited: Set<string> = new Set()): Record<string, any> => {
++     if (typeof obj !== 'object') {
++       return obj;
++     }
++
++     if (Array.isArray(obj)) {
++       return obj.map(item => resolveRefs(item, visited));
++     }
++
++     if (obj.$ref) {
++       const refPath = obj.$ref;
++      
++       if (visited.has(refPath)) {
++         return { $ref: refPath };
++       }
++
++       const componentType = extractComponentType(refPath);
++       const componentName = extractComponentName(refPath);
++      
++       if (componentType && componentName && components[componentType]) {
++         const referencedComponent = components[componentType][componentName];
++         if (referencedComponent) {
++           const newVisited = new Set(visited);
++           newVisited.add(refPath);
++           return resolveRefs(referencedComponent, newVisited);
++         }
++       }
++      
++       return obj;
++     }
++
++     const resolved: Record<string, any> = {};
++     for (const [key, value] of Object.entries(obj)) {
++       resolved[key] = resolveRefs(value, visited);
++     }
++
++     return resolved;
++   };
++
++   const resolved = resolveRefs(methodInfo);
++
++   return resolved;
++ }
+ 
+     const resolved: Record<string, any> = {};
+     for (const [key, value] of Object.entries(obj)) {

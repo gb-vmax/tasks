@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..8ffcf6cc0 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -312,11 +312,50 @@ export class CookieJar {
+     unset(url: string, name: string, cb: (error?: Error | null) => void) {
+         const domainCookies = this.jar.get(url);
+         if (!domainCookies) {
+-            cb(undefined);
+-        } else {
+-            domainCookies.delete(name);
+-            cb(undefined);
+-        }
++private deletionHistory: Array<{
++    domain: string;
++    cookieName: string;
++    cookie: Cookie;
++    deletedAt: Date;
++}> = [];
++private readonly MAX_DELETION_HISTORY = 50;
++
++private trackDeletion(domain: string, cookieName: string, cookie: Cookie) {
++    this.deletionHistory.unshift({
++        domain,
++        cookieName,
++        cookie,
++        deletedAt: new Date(),
++    });
++    
++    if (this.deletionHistory.length > this.MAX_DELETION_HISTORY) {
++        this.deletionHistory = this.deletionHistory.slice(0, this.MAX_DELETION_HISTORY);
++    }
++}
++
++getDeletionHistory() {
++    return [...this.deletionHistory];
++}
++
++clearDeletionHistory() {
++    this.deletionHistory = [];
++}
++
++ unset(url: string, name: string, cb: (error?: Error | null, deletedCookie?: Cookie) => void) {
++     const domainCookies = this.jar.get(url);
++     if (!domainCookies) {
++         cb(undefined, undefined);
++     } else {
++         const cookieToDelete = domainCookies.get(name);
++         if (cookieToDelete) {
++             domainCookies.delete(name);
++             this.trackDeletion(url, name, cookieToDelete);
++             cb(undefined, cookieToDelete);
++         } else {
++             cb(undefined, undefined);
++         }
++     }
++ }
+     }
+ 
+     clear(url: string, cb: (error?: Error | null) => void) {

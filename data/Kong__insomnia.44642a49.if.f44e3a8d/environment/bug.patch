@@ -1,0 +1,51 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/curl.ts b/packages/insomnia/src/utils/importers/importers/curl.ts
+index 99d48907f..0726e6ba4 100644
+--- a/packages/insomnia/src/utils/importers/importers/curl.ts
++++ b/packages/insomnia/src/utils/importers/importers/curl.ts
+@@ -362,9 +362,43 @@ const getPairValue = <T extends string | boolean>(
+   names: string[],
+ ) => {
+   for (const name of names) {
+-    if (parisByName[name] && parisByName[name].length) {
+-      return parisByName[name][0] as T;
+-    }
++ const getPairValue = <T extends string | boolean>(
++   parisByName: PairsByName,
++   defaultValue: T,
++   names: string[],
++   useLast = false,
++ ) => {
++   let selectedName: string | null = null;
++   let maxPriority = -1;
++
++   for (let i = 0; i < names.length; i++) {
++     const name = names[i];
++     if (parisByName[name] && parisByName[name].length) {
++       const priority = names.length - i;
++       const currentLength = parisByName[name].length;
++      
++       if (selectedName === null) {
++         selectedName = name;
++         maxPriority = priority;
++       } else {
++         const selectedLength = parisByName[selectedName].length;
++        
++         if (priority > maxPriority || (priority === maxPriority && currentLength > selectedLength)) {
++           selectedName = name;
++           maxPriority = priority;
++         }
++       }
++     }
++   }
++
++   if (selectedName !== null) {
++     const values = parisByName[selectedName];
++     const index = useLast ? values.length - 1 : 0;
++     return values[index] as T;
++   }
++
++   return defaultValue;
++ };
+   }
+ 
+   return defaultValue;

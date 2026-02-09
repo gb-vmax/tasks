@@ -1,0 +1,170 @@
+diff --git a/packages/insomnia/src/models/helpers/project.ts b/packages/insomnia/src/models/helpers/project.ts
+index a71759777..f4558db3c 100644
+--- a/packages/insomnia/src/models/helpers/project.ts
++++ b/packages/insomnia/src/models/helpers/project.ts
+@@ -13,6 +13,91 @@ export const sortProjects = (projects: Project[]) => [
+     .sort((a, b) => a.name.localeCompare(b.name)),
+ ];
+ 
++async function retryWithExponentialBackoff<T>(
++  fn: () => Promise<T>,
++  maxRetries: number,
++  initialDelayMs: number
++): Promise<T> {
++  let lastError: any;
++  
++  for (let attempt = 0; attempt <= maxRetries; attempt++) {
++    try {
++      return await fn();
++    } catch (error) {
++      lastError = error;
++      
++      if (attempt < maxRetries) {
++        const delay = initialDelayMs * Math.pow(2, attempt);
++        const jitter = Math.random() * 0.3 * delay;
++        await new Promise(resolve => setTimeout(resolve, delay + jitter));
++      }
++    }
++  }
++  
++  throw lastError;
++}
++
++async function processWorkspacesInBatches(
++  workspaces: Workspace[],
++  vcs: VCS,
++  project: Project,
++  batchSize: number
++): Promise<Array<{
++  workspaceId: string;
++  workspaceName: string;
++  success: boolean;
++  error?: string;
++}>> {
++  const results: Array<{
++    workspaceId: string;
++    workspaceName: string;
++    success: boolean;
++    error?: string;
++  }> = [];
++
++  for (let i = 0; i < workspaces.length; i += batchSize) {
++    const batch = workspaces.slice(i, i + batchSize);
++    
++    const batchResults = await Promise.allSettled(
++      batch.map(async workspace => {
++        const workspaceMeta = await getOrCreateWorkspaceMeta(workspace._id);
++
++        if (!workspaceMeta.gitRepositoryId) {
++          invariant(vcs, 'VCS must be initialized');
++
++          await initializeLocalBackendProjectAndMarkForSync({ vcs, workspace });
++          await pushSnapshotOnInitialize({ vcs, workspace, project });
++        }
++
++        return {
++          workspaceId: workspace._id,
++          workspaceName: workspace.name,
++          success: true,
++        };
++      })
++    );
++
++    for (let j = 0; j < batchResults.length; j++) {
++      const result = batchResults[j];
++      const workspace = batch[j];
++
++      if (result.status === 'fulfilled') {
++        results.push(result.value);
++      } else {
++        console.warn('Failed to initialize sync on workspace. This will be retried when the workspace is opened on the app.', result.reason);
++        results.push({
++          workspaceId: workspace._id,
++          workspaceName: workspace.name,
++          success: false,
++          error: result.reason?.message || 'Unknown error',
++        });
++      }
++    }
++  }
++
++  return results;
++}
++
+ export async function updateLocalProjectToRemote({
+   project,
+   vcs,
+@@ -24,10 +109,69 @@ export async function updateLocalProjectToRemote({
+   sessionId: string;
+   organizationId: string;
+ }) {
+-  const newCloudProject = await insomniaFetch<{
+-    id: string;
+-    name: string;
+-  } | {
++  const newCloudProject = await retryWithExponentialBackoff(
++    () => insomniaFetch<{
++      id: string;
++      name: string;
++    } | {
++      error: string;
++      message?: string;
++    }>({
++      path: `/v1/organizations/${organizationId}/team-projects`,
++      method: 'POST',
++      data: {
++        name: project.name,
++      },
++      sessionId,
++    }),
++    3,
++    1000
++  );
++
++  if (!newCloudProject || 'error' in newCloudProject) {
++    let error = 'An unexpected error occurred while creating the project. Please try again.';
++    if (newCloudProject.error === 'FORBIDDEN' || newCloudProject.error === 'NEEDS_TO_UPGRADE') {
++      error = newCloudProject.error;
++    }
++
++    return {
++      error,
++    };
++  }
++
++  const updatedProject = await updateProject(project, { name: newCloudProject.name, remoteId: newCloudProject.id });
++
++  const projectWorkspaces = (await database.find<Workspace>('Workspace', {
++    parentId: updatedProject._id,
++  }));
++
++  const workspaceResults = await processWorkspacesInBatches(
++    projectWorkspaces,
++    vcs,
++    updatedProject,
++    5
++  );
++
++  const failedWorkspaces = workspaceResults.filter(r => !r.success);
++  const succeededWorkspaces = workspaceResults.filter(r => r.success);
++
++  if (failedWorkspaces.length === projectWorkspaces.length && projectWorkspaces.length > 0) {
++    return {
++      error: 'Failed to initialize sync for all workspaces',
++      workspaceResults,
++    };
++  }
++
++  return {
++    error: null,
++    workspaceResults,
++    summary: {
++      total: projectWorkspaces.length,
++      succeeded: succeededWorkspaces.length,
++      failed: failedWorkspaces.length,
++    },
++  };
++}
+     error: string;
+     message?: string;
+   }>({

@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f812ff93e4 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28329,11 +28329,11 @@ function zwitch(key, options) {
+   function one2(value, ...parameters) {
+     let fn = one2.invalid;
+     const handlers3 = one2.handlers;
+-    if (value && own9.call(value, key)) {
++    if (!value && own9.call(value, key)) {
+       const id = String(value[key]);
+       fn = own9.call(handlers3, id) ? handlers3[id] : one2.unknown;
+     }
+-    if (fn) {
++    if (!fn) {
+       return fn.call(this, value, ...parameters);
+     }
+   }

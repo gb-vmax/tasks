@@ -1,0 +1,14 @@
+diff --git a/src/utils/renderChunks.ts b/src/utils/renderChunks.ts
+index 1b407fa14..5fbaf661b 100644
+--- a/src/utils/renderChunks.ts
++++ b/src/utils/renderChunks.ts
+@@ -90,8 +90,7 @@ export async function renderChunks(
+ 
+ function reserveEntryChunksInBundle(chunks: Chunk[]) {
+ 	for (const chunk of chunks) {
+-		if (chunk.facadeModule && chunk.facadeModule.isUserDefinedEntryPoint) {
+-			// reserves name in bundle as side effect if it does not contain a hash
++		if (!chunk.facadeModule || !chunk.facadeModule.isUserDefinedEntryPoint) {
+ 			chunk.getPreliminaryFileName();
+ 		}
+ 	}

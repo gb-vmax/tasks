@@ -1,0 +1,464 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..9b87f6ea0 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -590,202 +590,263 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+         },
+       ],
+ 
+-      async run(context, field, id, filter, resendBehavior, maxAgeSeconds) {
+-        filter = filter || '';
+-        resendBehavior = (resendBehavior || 'never').toLowerCase();
+-
+-        if (!['body', 'header', 'raw', 'url'].includes(field)) {
+-          throw new Error(`Invalid response field ${field}`);
+-        }
+-
+-        if (!id) {
+-          throw new Error('No request specified');
+-        }
+-
+-        const request = await context.util.models.request.getById(id);
+-        if (!request) {
+-          throw new Error(`Could not find request ${id}`);
+-        }
+-
+-        const environmentId = context.context.getEnvironmentId?.();
+-        let response: Response = await context.util.models.response.getLatestForRequestId(id, environmentId);
+-
+-        let shouldResend = false;
+-        switch (resendBehavior) {
+-          case 'no-history':
+-            shouldResend = !response;
+-            break;
+-
+-          case 'when-expired':
+-            if (!response) {
+-              shouldResend = true;
+-            } else {
+-              const ageSeconds = (Date.now() - response.created) / 1000;
+-              shouldResend = ageSeconds > maxAgeSeconds;
+-            }
+-            break;
+-
+-          case 'always':
+-            shouldResend = true;
+-            break;
+-
+-          case 'never':
+-          default:
+-            shouldResend = false;
+-            break;
+-
+-        }
+-
+-        // Make sure we only send the request once per render so we don't have infinite recursion
+-        const requestChain = context.context.getExtraInfo?.('requestChain') || [];
+-        if (requestChain.some((id: any) => id === request._id)) {
+-          console.log('[response tag] Preventing recursive render');
+-          shouldResend = false;
+-        }
+-
+-        if (shouldResend && context.renderPurpose === 'send') {
+-          console.log('[response tag] Resending dependency');
+-          requestChain.push(request._id);
+-          response = await context.network.sendRequest(request, [
+-            { name: 'requestChain', value: requestChain },
+-          ]);
+-        }
+-
+-        if (!response) {
+-          console.log('[response tag] No response found');
+-          throw new Error('No responses for request');
+-        }
+-
+-        if (response.error) {
+-          console.log('[response tag] Response error ' + response.error);
+-          throw new Error('Failed to send dependent request ' + response.error);
+-        }
+-
+-        if (!response.statusCode) {
+-          console.log('[response tag] Invalid status code ' + response.statusCode);
+-          throw new Error('No successful responses for request');
+-        }
+-
+-        if ((field !== 'raw' && field !== 'url') && !filter) {
+-          throw new Error(`No ${field} filter specified`);
+-        }
+-
+-        const sanitizedFilter = filter.trim();
+-        const bodyBuffer = context.util.models.response.getBodyBuffer(response, '');
+-        const match = response.contentType && response.contentType.match(/charset=([\w-]+)/);
+-        const charset = match && match.length >= 2 ? match[1] : 'utf-8';
+-        if (field === 'url') {
+-          return response.url;
+-        }
+-        if (field === 'raw') {
+-          // Sometimes iconv conversion fails so fallback to regular buffer
+-          try {
+-            return iconv.decode(bodyBuffer, charset);
+-          } catch (err) {
+-            console.warn('[response] Failed to decode body', err);
+-            return bodyBuffer.toString();
+-          }
+-        }
+-        if (field === 'header') {
+-          if (!response.headers.length) {
+-            throw new Error('No headers available');
+-          }
+-          const header = response.headers.find(h => h.name.toLowerCase() === sanitizedFilter.toLowerCase());
+-          if (!header) {
+-            const names = response.headers.map(c => `"${c.name}"`).join(',\n\t');
+-            throw new Error(`No header with name "${sanitizedFilter}".\nChoices are [\n\t${names}\n]`);
+-          }
+-          return header.value;
+-        }
+-        if (field === 'body') {
+-          // Sometimes iconv conversion fails so fallback to regular buffer
+-          let body;
+-          try {
+-            body = iconv.decode(bodyBuffer, charset);
+-          } catch (err) {
+-            console.warn('[response] Failed to decode body', err);
+-            body = bodyBuffer.toString();
+-          }
+-
+-          if (sanitizedFilter.indexOf('$') === 0) {
+-            let bodyJSON;
+-            let results;
+-
+-            try {
+-              bodyJSON = JSON.parse(body);
+-            } catch (err) {
+-              throw new Error(`Invalid JSON: ${err.message}`);
+-            }
+-
+-            try {
+-              results = JSONPath({ json: bodyJSON, path: sanitizedFilter });
+-              if (!Array.isArray(results)) {
+-                results = [results];
+-              }
+-            } catch (err) {
+-              throw new Error(`Invalid JSONPath query: ${sanitizedFilter}`);
+-            }
+-
+-            if (results.length === 0) {
+-              throw new Error(`Returned no results: ${sanitizedFilter}`);
+-            }
+-
+-            if (results.length > 1) {
+-              return JSON.stringify(results);
+-            }
+-
+-            if (typeof results[0] !== 'string') {
+-              return JSON.stringify(results[0]);
+-            } else {
+-              return results[0];
+-            }
+-          } else {
+-            const DOMParser = (await import('xmldom')).DOMParser;
+-            const dom = new DOMParser().parseFromString(body);
+-            if (sanitizedFilter === undefined) {
+-              throw new Error('Must pass an XPath query.');
+-            }
+-            try {
+-              const selectedValues = (await import('xpath')).select(sanitizedFilter, dom);
+-
+-              let results: { outer: string; inner: string | null }[] = [];
+-
+-              // Functions return plain strings
+-              if (typeof selectedValues === 'string') {
+-                results = [{ outer: selectedValues, inner: selectedValues }];
+-              }
+-
+-              results = (selectedValues as Node[])
+-                .filter(sv => sv.nodeType === Node.ATTRIBUTE_NODE
+-                  || sv.nodeType === Node.ELEMENT_NODE
+-                  || sv.nodeType === Node.TEXT_NODE)
+-                .map(selectedValue => {
+-                  const outer = selectedValue.toString().trim();
+-                  if (selectedValue.nodeType === Node.ATTRIBUTE_NODE) {
+-                    return { outer, inner: selectedValue.nodeValue };
+-                  }
+-                  if (selectedValue.nodeType === Node.ELEMENT_NODE) {
+-                    return { outer, inner: selectedValue.childNodes.toString() };
+-                  }
+-                  if (selectedValue.nodeType === Node.TEXT_NODE) {
+-                    return { outer, inner: selectedValue.toString().trim() };
+-                  }
+-                  return { outer, inner: null };
+-                });
+-
+-              if (results.length === 0) {
+-                throw new Error(`Returned no results: ${sanitizedFilter}`);
+-              } else if (results.length > 1) {
+-                throw new Error(`Returned more than one result: ${sanitizedFilter}`);
+-              }
+-
+-              return results[0].inner;
+-            } catch (err) {
+-              throw new Error(`Invalid XPath query: ${sanitizedFilter}`);
+-            }
+-          }
+-        }
+-      },
++function applyResponseTransform(transform: string, value: any): string {
++  const valueStr = typeof value === 'string' ? value : JSON.stringify(value);
++  const [transformType, ...args] = transform.split(':');
++  
++  switch (transformType.toLowerCase()) {
++    case 'base64encode':
++      return Buffer.from(valueStr, 'utf8').toString('base64');
++    
++    case 'base64decode':
++      return Buffer.from(valueStr, 'base64').toString('utf8');
++    
++    case 'base64urlencode':
++      return Buffer.from(valueStr, 'utf8')
++        .toString('base64')
++        .replace(/\+/g, '-')
++        .replace(/\//g, '_')
++        .replace(/=/g, '');
++    
++    case 'urlencode':
++      return encodeURIComponent(valueStr);
++    
++    case 'urldecode':
++      return decodeURIComponent(valueStr);
++    
++    case 'hash':
++      const algorithm = args[0] || 'sha256';
++      const encoding = args[1] || 'hex';
++      if (encoding !== 'hex' && encoding !== 'base64') {
++        throw new Error(`Invalid hash encoding ${encoding}. Choices are hex, base64`);
++      }
++      const hash = crypto.createHash(algorithm);
++      hash.update(valueStr, 'utf8');
++      return hash.digest(encoding as 'hex' | 'base64');
++    
++    case 'lowercase':
++      return valueStr.toLowerCase();
++    
++    case 'uppercase':
++      return valueStr.toUpperCase();
++    
++    default:
++      throw new Error(`Unknown transform type "${transformType}"`);
++  }
++}
++
++ async run(context, field, id, filter, resendBehavior, maxAgeSeconds, transform, fallbackValue) {
++   filter = filter || '';
++   resendBehavior = (resendBehavior || 'never').toLowerCase();
++
++   if (!['body', 'header', 'raw', 'url'].includes(field)) {
++     throw new Error(`Invalid response field ${field}`);
++   }
++
++   if (!id) {
++     throw new Error('No request specified');
++   }
++
++   const request = await context.util.models.request.getById(id);
++   if (!request) {
++     throw new Error(`Could not find request ${id}`);
++   }
++
++   const environmentId = context.context.getEnvironmentId?.();
++   let response: Response = await context.util.models.response.getLatestForRequestId(id, environmentId);
++
++   let shouldResend = false;
++   switch (resendBehavior) {
++     case 'no-history':
++       shouldResend = !response;
++       break;
++
++     case 'when-expired':
++       if (!response) {
++         shouldResend = true;
++       } else {
++         const ageSeconds = (Date.now() - response.created) / 1000;
++         shouldResend = ageSeconds > maxAgeSeconds;
++       }
++       break;
++
++     case 'always':
++       shouldResend = true;
++       break;
++
++     case 'never':
++     default:
++       shouldResend = false;
++       break;
++
++   }
++
++   const requestChain = context.context.getExtraInfo?.('requestChain') || [];
++   if (requestChain.some((id: any) => id === request._id)) {
++     console.log('[response tag] Preventing recursive render');
++     shouldResend = false;
++   }
++
++   if (shouldResend && context.renderPurpose === 'send') {
++     console.log('[response tag] Resending dependency');
++     requestChain.push(request._id);
++     response = await context.network.sendRequest(request, [
++       { name: 'requestChain', value: requestChain },
++     ]);
++   }
++
++   if (!response) {
++     console.log('[response tag] No response found');
++     if (fallbackValue !== undefined && fallbackValue !== null && fallbackValue !== '') {
++       return fallbackValue;
++     }
++     throw new Error('No responses for request');
++   }
++
++   if (response.error) {
++     console.log('[response tag] Response error ' + response.error);
++     if (fallbackValue !== undefined && fallbackValue !== null && fallbackValue !== '') {
++       return fallbackValue;
++     }
++     throw new Error('Failed to send dependent request ' + response.error);
++   }
++
++   if (!response.statusCode) {
++     console.log('[response tag] Invalid status code ' + response.statusCode);
++     if (fallbackValue !== undefined && fallbackValue !== null && fallbackValue !== '') {
++       return fallbackValue;
++     }
++     throw new Error('No successful responses for request');
++   }
++
++   if ((field !== 'raw' && field !== 'url') && !filter) {
++     if (fallbackValue !== undefined && fallbackValue !== null && fallbackValue !== '') {
++       return fallbackValue;
++     }
++     throw new Error(`No ${field} filter specified`);
++   }
++
++   const sanitizedFilter = filter.trim();
++   const bodyBuffer = context.util.models.response.getBodyBuffer(response, '');
++   const match = response.contentType && response.contentType.match(/charset=([\w-]+)/);
++   const charset = match && match.length >= 2 ? match[1] : 'utf-8';
++  
++   try {
++     let extractedValue;
++    
++     if (field === 'url') {
++       extractedValue = response.url;
++     } else if (field === 'raw') {
++       try {
++         extractedValue = iconv.decode(bodyBuffer, charset);
++       } catch (err) {
++         console.warn('[response] Failed to decode body', err);
++         extractedValue = bodyBuffer.toString();
++       }
++     } else if (field === 'header') {
++       if (!response.headers.length) {
++         throw new Error('No headers available');
++       }
++       const header = response.headers.find(h => h.name.toLowerCase() === sanitizedFilter.toLowerCase());
++       if (!header) {
++         const names = response.headers.map(c => `"${c.name}"`).join(',\n\t');
++         throw new Error(`No header with name "${sanitizedFilter}".\nChoices are [\n\t${names}\n]`);
++       }
++       extractedValue = header.value;
++     } else if (field === 'body') {
++       let body;
++       try {
++         body = iconv.decode(bodyBuffer, charset);
++       } catch (err) {
++         console.warn('[response] Failed to decode body', err);
++         body = bodyBuffer.toString();
++       }
++
++       if (sanitizedFilter.indexOf('$') === 0) {
++         let bodyJSON;
++         let results;
++
++         try {
++           bodyJSON = JSON.parse(body);
++         } catch (err) {
++           throw new Error(`Invalid JSON: ${err.message}`);
++         }
++
++         try {
++           results = JSONPath({ json: bodyJSON, path: sanitizedFilter });
++           if (!Array.isArray(results)) {
++             results = [results];
++           }
++         } catch (err) {
++           throw new Error(`Invalid JSONPath query: ${sanitizedFilter}`);
++         }
++
++         if (results.length === 0) {
++           throw new Error(`Returned no results: ${sanitizedFilter}`);
++         }
++
++         if (results.length > 1) {
++           extractedValue = JSON.stringify(results);
++         } else if (typeof results[0] !== 'string') {
++           extractedValue = JSON.stringify(results[0]);
++         } else {
++           extractedValue = results[0];
++         }
++       } else {
++         const DOMParser = (await import('xmldom')).DOMParser;
++         const dom = new DOMParser().parseFromString(body);
++         if (sanitizedFilter === undefined) {
++           throw new Error('Must pass an XPath query.');
++         }
++        
++         const selectedValues = (await import('xpath')).select(sanitizedFilter, dom);
++
++         let results: { outer: string; inner: string | null }[] = [];
++
++         if (typeof selectedValues === 'string') {
++           results = [{ outer: selectedValues, inner: selectedValues }];
++         } else {
++           results = (selectedValues as Node[])
++             .filter(sv => sv.nodeType === Node.ATTRIBUTE_NODE
++               || sv.nodeType === Node.ELEMENT_NODE
++               || sv.nodeType === Node.TEXT_NODE)
++             .map(selectedValue => {
++               const outer = selectedValue.toString().trim();
++               if (selectedValue.nodeType === Node.ATTRIBUTE_NODE) {
++                 return { outer, inner: selectedValue.nodeValue };
++               }
++               if (selectedValue.nodeType === Node.ELEMENT_NODE) {
++                 return { outer, inner: selectedValue.childNodes.toString() };
++               }
++               if (selectedValue.nodeType === Node.TEXT_NODE) {
++                 return { outer, inner: selectedValue.toString().trim() };
++               }
++               return { outer, inner: null };
++             });
++         }
++
++         if (results.length === 0) {
++           throw new Error(`Returned no results: ${sanitizedFilter}`);
++         } else if (results.length > 1) {
++           throw new Error(`Returned more than one result: ${sanitizedFilter}`);
++         }
++
++         extractedValue = results[0].inner;
++       }
++     }
++
++     if (transform && typeof transform === 'string') {
++       extractedValue = applyResponseTransform(transform, extractedValue);
++     }
++
++     return extractedValue;
++   } catch (err) {
++     if (fallbackValue !== undefined && fallbackValue !== null && fallbackValue !== '') {
++       return fallbackValue;
++     }
++     throw err;
++   }
++ }
+     },
+   },
+   {

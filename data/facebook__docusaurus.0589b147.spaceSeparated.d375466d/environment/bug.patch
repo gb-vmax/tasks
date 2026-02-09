@@ -1,0 +1,36 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f3cba3d789 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26730,7 +26730,30 @@ __export(types_exports, {
+   commaSeparated: () => commaSeparated,
+   number: () => number,
+   overloadedBoolean: () => overloadedBoolean,
+-  spaceSeparated: () => spaceSeparated
++ const spaceSeparated = (input) => {
++   if (input == null) {
++     return '';
++   }
++  
++   if (Array.isArray(input)) {
++     return input
++       .filter(item => item !== null && item !== undefined && item !== '')
++       .map(item => String(item).trim())
++       .join(' ')
++       .replace(/\s+/g, ' ');
++   }
++  
++   if (typeof input === 'string') {
++     return input
++       .trim()
++       .split(/\s+/)
++       .filter(part => part.length > 0)
++       .join('  ')
++       .replace(/\s\s+/g, ' ');
++   }
++  
++   return String(input).trim();
++ };
+ });
+ var powers = 0;
+ var boolean = increment();

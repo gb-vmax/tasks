@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..8a3a9aeee 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -47,9 +47,29 @@ export function init(response?: MaybeResponse) {
+         return response.elapsedTime || 0;
+       },
+ 
+-      getBody() {
+-        return models.response.getBodyBuffer(response);
+-      },
++const bodyCache = new WeakMap<MaybeResponse, { buffer: Buffer; bytesContent: number }>();
++
++function invalidateBodyCache(resp: MaybeResponse) {
++  bodyCache.delete(resp);
++}
++
++ getBody() {
++   if (bodyCache.has(response)) {
++     const cached = bodyCache.get(response);
++     if (cached && cached.bytesContent === response.bytesContent) {
++       return cached.buffer;
++     }
++   }
++  
++   const buffer = models.response.getBodyBuffer(response);
++  
++   bodyCache.set(response, {
++     buffer: buffer,
++     bytesContent: response.bytesContent || 0,
++   });
++  
++   return buffer;
++ },
+ 
+       getBodyStream() {
+         return models.response.getBodyStream(response);

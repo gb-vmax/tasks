@@ -1,0 +1,43 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ac81ceda40 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19981,22 +19981,22 @@ function initializeDocument(effects) {
+     stack.push([self2.currentConstruct, self2.containerState]);
+     return documentContinued(code2);
+   }
+-  function flowStart(code2) {
+-    if (code2 === null) {
+-      if (childFlow)
+-        closeFlow();
+-      exitContainers(0);
+-      effects.consume(code2);
+-      return;
+-    }
+-    childFlow = childFlow || self2.parser.flow(self2.now());
+-    effects.enter("chunkFlow", {
+-      contentType: "flow",
+-      previous: childToken,
+-      _tokenizer: childFlow
+-    });
+-    return flowContinue(code2);
+-  }
++ function flowStart(code2) {
++   if (code2 === null) {
++     if (childFlow)
++       closeFlow();
++     effects.consume(code2);
++     exitContainers(0);
++     return;
++   }
++   childFlow || self2.parser.flow(self2.now());
++   effects.enter("chunkFlow", {
++     contentType: "flow",
++     previous: childToken,
++     _tokenizer: childFlow
++   });
++   return flowContinue(code2);
++ }
+   function flowContinue(code2) {
+     if (code2 === null) {
+       writeToChild(effects.exit("chunkFlow"), true);

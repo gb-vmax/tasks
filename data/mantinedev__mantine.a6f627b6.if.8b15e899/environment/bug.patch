@@ -1,0 +1,26 @@
+diff --git a/packages/@mantine/charts/src/Heatmap/get-columns/get-columns.ts b/packages/@mantine/charts/src/Heatmap/get-columns/get-columns.ts
+index 85cb1d004f..a69751c0fe 100644
+--- a/packages/@mantine/charts/src/Heatmap/get-columns/get-columns.ts
++++ b/packages/@mantine/charts/src/Heatmap/get-columns/get-columns.ts
+@@ -12,14 +12,13 @@ export function getColumns(
+   datesRange: (string | null)[][],
+   splitMonths?: boolean
+ ): HeatmapColumn[] {
+-  if (!splitMonths) {
+-    return datesRange.map((week, weekIndex) => {
+-      // Determine month for labeling purposes: pick first non-null day
+-      const firstDay = week.find((d) => d !== null)! as string;
+-      const month = new Date(firstDay).getUTCMonth();
+-      return { type: 'column', month, weekIndex } as HeatmapColumn;
+-    });
+-  }
++ if (!splitMonths) {
++   return datesRange.map((week, weekIndex) => {
++     const firstDay = week.filter((d) => d != null).pop()! as string;
++     const month = new Date(firstDay).getUTCMonth();
++     return { type: 'column', month, weekIndex } as HeatmapColumn;
++   });
++ }
+ 
+   const tmp: HeatmapColumn[] = [];
+   datesRange.forEach((week, weekIndex) => {

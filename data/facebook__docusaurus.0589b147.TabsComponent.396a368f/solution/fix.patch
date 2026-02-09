@@ -1,0 +1,18 @@
+diff --git a/packages/docusaurus-theme-classic/src/theme/Tabs/index.tsx b/packages/docusaurus-theme-classic/src/theme/Tabs/index.tsx
+index d3d6166dc1..1777bf9c0e 100644
+--- a/packages/docusaurus-theme-classic/src/theme/Tabs/index.tsx
++++ b/packages/docusaurus-theme-classic/src/theme/Tabs/index.tsx
+@@ -137,11 +137,10 @@ function TabContent({
+ }
+ 
+ function TabsComponent(props: Props): JSX.Element {
+-  const tabs = useTabs(props);
+   return (
+     <div className={clsx('tabs-container', styles.tabList)}>
+-      <TabList {...props} {...tabs} />
+-      <TabContent {...props} {...tabs} />
++      <TabList {...props} />
++      {props.hideContent ? null : <TabContent {...props} />}
+     </div>
+   );
+ }

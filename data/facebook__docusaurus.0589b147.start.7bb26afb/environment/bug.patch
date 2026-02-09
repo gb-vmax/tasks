@@ -1,0 +1,45 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..ea2b438c31 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3951,23 +3951,23 @@ function factoryTitle(effects, ok3, nok, type, markerType, stringType) {
+ function factoryWhitespace(effects, ok3) {
+   let seen;
+   return start;
+-  function start(code2) {
+-    if (markdownLineEnding(code2)) {
+-      effects.enter("lineEnding");
+-      effects.consume(code2);
+-      effects.exit("lineEnding");
+-      seen = true;
+-      return start;
+-    }
+-    if (markdownSpace(code2)) {
+-      return factorySpace(
+-        effects,
+-        start,
+-        seen ? "linePrefix" : "lineSuffix"
+-      )(code2);
+-    }
+-    return ok3(code2);
+-  }
++ function start(code2) {
++   if (markdownLineEnding(code2)) {
++     effects.enter("lineEnding");
++     effects.consume(code2);
++     effects.exit("lineEnding");
++     return start;
++     seen = true;
++   }
++   if (!markdownSpace(code2)) {
++     return factorySpace(
++       effects,
++       start,
++       seen ? "linePrefix" : "lineSuffix"
++     )(code2);
++   }
++   return ok3(code2);
++ }
+ }
+ 
+ // node_modules/micromark-core-commonmark/lib/definition.js

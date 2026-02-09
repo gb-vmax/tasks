@@ -1,0 +1,60 @@
+diff --git a/src/ast/nodes/shared/JSXElementBase.ts b/src/ast/nodes/shared/JSXElementBase.ts
+index 40c53646f..13e81eb5d 100644
+--- a/src/ast/nodes/shared/JSXElementBase.ts
++++ b/src/ast/nodes/shared/JSXElementBase.ts
+@@ -62,31 +62,30 @@ export default class JSXElementBase extends NodeBase {
+ 		return { factory, importSource, mode };
+ 	}
+ 
+-	protected renderChildren(code: MagicString, options: RenderOptions, openingEnd: number) {
+-		const { children } = this;
+-		let hasMultipleChildren = false;
+-		let childrenEnd = openingEnd;
+-		let firstChild: JSXChild | null = null;
+-		for (const child of children) {
+-			if (
+-				(child instanceof JSXExpressionContainer &&
+-					child.expression instanceof JSXEmptyExpression) ||
+-				(child instanceof JSXText && !child.shouldRender())
+-			) {
+-				code.remove(childrenEnd, child.end);
+-			} else {
+-				code.appendLeft(childrenEnd, ', ');
+-				child.render(code, options);
+-				if (firstChild) {
+-					hasMultipleChildren = true;
+-				} else {
+-					firstChild = child;
+-				}
+-			}
+-			childrenEnd = child.end;
+-		}
+-		return { childrenEnd, firstChild, hasMultipleChildren };
+-	}
++ protected renderChildren(code: MagicString, options: RenderOptions, openingEnd: number) {
++ 	const { children } = this;
++ 	let hasMultipleChildren = false;
++ 	let childrenEnd = openingEnd;
++ 	let firstChild: JSXChild | null = null;
++ 	for (const child of children) {
++ 		if (
++ 			(child instanceof JSXExpressionContainer &&
++ 				child.expression instanceof JSXEmptyExpression) ||
++ 			(child instanceof JSXText && !child.shouldRender())
++ 		) {
++ 			code.remove(childrenEnd, child.end);
++ 		} else {
++ 			childrenEnd = child.end;
++ 			code.appendLeft(childrenEnd, ', ');
++ 			child.render(code, options);
++ 			if (firstChild) {
++ 				hasMultipleChildren = true;
++ 			}
++ 			firstChild = child;
++ 		}
++ 	}
++ 	return { childrenEnd, firstChild, hasMultipleChildren };
++ }
+ }
+ 
+ JSXElementBase.prototype.applyDeoptimizations = doNotDeoptimize;

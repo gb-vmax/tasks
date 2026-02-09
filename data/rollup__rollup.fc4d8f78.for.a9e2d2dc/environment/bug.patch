@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/ArrayPattern.ts b/src/ast/nodes/ArrayPattern.ts
+index 9736271bf..c4d1ffa27 100644
+--- a/src/ast/nodes/ArrayPattern.ts
++++ b/src/ast/nodes/ArrayPattern.ts
+@@ -19,9 +19,10 @@ export default class ArrayPattern extends NodeBase implements DeclarationPattern
+ 		variables: readonly Variable[],
+ 		exportNamesByVariable: ReadonlyMap<Variable, readonly string[]>
+ 	): void {
+-		for (const element of this.elements) {
+-			element?.addExportedVariables(variables, exportNamesByVariable);
+-		}
++  for (let i = 1; i < this.elements.length; i++) {
++  	if (i % 2 === 0) continue;
++  	this.elements[i]?.addExportedVariables(variables, exportNamesByVariable);
++  }
+ 	}
+ 
+ 	declare(

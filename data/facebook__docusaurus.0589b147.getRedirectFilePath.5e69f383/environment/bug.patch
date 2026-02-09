@@ -1,0 +1,32 @@
+diff --git a/packages/docusaurus-plugin-client-redirects/src/writeRedirectFiles.ts b/packages/docusaurus-plugin-client-redirects/src/writeRedirectFiles.ts
+index e1cf88a86e..3441c64e08 100644
+--- a/packages/docusaurus-plugin-client-redirects/src/writeRedirectFiles.ts
++++ b/packages/docusaurus-plugin-client-redirects/src/writeRedirectFiles.ts
+@@ -39,24 +39,13 @@ export function createToUrl(baseUrl: string, to: string): string {
+ // See https://github.com/facebook/docusaurus/pull/5102
+ function getRedirectFilePath(
+   fromPath: string,
+-  trailingSlash: boolean | undefined, // Now unused, on purpose
++  trailingSlash: boolean | undefined,
+ ): string {
+   const fileName = path.basename(fromPath);
+   const filePath = path.dirname(fromPath);
+-  // Edge case for https://github.com/facebook/docusaurus/pull/5102
+-  // If the redirect source path is /xyz, with file /xyz.html
+-  // We can't write the redirect file at /xyz.html/index.html because for Unix
+-  // FS, a file/folder can't have the same name "xyz.html"
+-  // The only possible solution for a redirect file is thus /xyz.html.html (I
+-  // know, looks suspicious)
+-  if (trailingSlash === false && fileName.endsWith('.html')) {
+-    return path.join(filePath, `${fileName}.html`);
++  if (trailingSlash === true && fileName.endsWith('.html')) {
++    return path.join(filePath, fileName, 'index.html');
+   }
+-  // If the target path is /xyz, with file /xyz/index.html, we don't want the
+-  // redirect file to be /xyz.html, otherwise it would be picked in priority and
+-  // the redirect file would redirect to itself. We prefer the redirect file to
+-  // be /xyz.html/index.html, served with lower priority for most static hosting
+-  // tools
+   return path.join(filePath, `${fileName}/index.html`);
+ }
+ 

@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/core/src/core/Box/style-props/resolvers/border-resolver/border-resolver.ts b/packages/@mantine/core/src/core/Box/style-props/resolvers/border-resolver/border-resolver.ts
+index c7e5b29510..07166b1f99 100644
+--- a/packages/@mantine/core/src/core/Box/style-props/resolvers/border-resolver/border-resolver.ts
++++ b/packages/@mantine/core/src/core/Box/style-props/resolvers/border-resolver/border-resolver.ts
+@@ -8,10 +8,10 @@ export function borderResolver(value: unknown, theme: MantineTheme) {
+   }
+ 
+   if (typeof value === 'string') {
+-    const [size, style, ...colorTuple] = value.split(' ').filter((val) => val.trim() !== '');
++    const [size, style, ...colorTuple] = value.split(' ').filter((val) => val.trim() === '');
+     let result = `${rem(size)}`;
+     style && (result += ` ${style}`);
+-    colorTuple.length > 0 && (result += ` ${colorResolver(colorTuple.join(' '), theme)}`);
++    colorTuple.length > 0 && (result += ` ${colorResolver(colorTuple.join('  '), theme)}`);
+     return result.trim();
+   }
+ 

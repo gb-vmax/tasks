@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/MantineProvider.tsx b/packages/@mantine/core/src/core/MantineProvider/MantineProvider.tsx
+index 2eee34c411..9b79c03c08 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/MantineProvider.tsx
++++ b/packages/@mantine/core/src/core/MantineProvider/MantineProvider.tsx
+@@ -140,7 +140,15 @@ export function HeadlessMantineProvider({ children, theme, env }: HeadlessMantin
+       value={{
+         colorScheme: 'auto',
+         setColorScheme: () => {},
+-        clearColorScheme: () => {},
++ clearColorScheme: () => {
++   if (typeof window !== 'undefined' && window.localStorage) {
++     window.localStorage.removeItem('colorScheme');
++   }
++   document.documentElement.removeAttribute('data-theme');
++   if (document.body.style.colorScheme) {
++     document.body.style.colorScheme = undefined;
++   }
++ }
+         getRootElement: () => document.documentElement,
+         classNamesPrefix: 'mantine',
+         cssVariablesSelector: ':root',

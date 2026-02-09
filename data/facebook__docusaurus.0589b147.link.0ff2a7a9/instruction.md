@@ -2,36 +2,30 @@
 
 ### Describe the bug
 
-I'm encountering an issue when rendering MDX links where the position information seems to be getting lost or applied incorrectly. The links are rendering, but their source position metadata isn't being preserved properly in the generated output.
+I'm experiencing an issue with link rendering in MDX where the position information seems to be incorrect or missing. When processing links, the resulting element doesn't have the proper position data attached to it.
 
 ### Reproduction
 
-```jsx
+```js
 import { compile } from '@mdx-js/mdx'
 
 const mdxContent = `
-[Link text](https://example.com)
+[My Link](https://example.com)
 `
 
-const result = await compile(mdxContent, {
-  // position tracking enabled
-})
-
-// The resulting link element doesn't have correct position data
-console.log(result)
+const result = await compile(mdxContent)
+// The link element's position data is not correctly set
 ```
 
-When I inspect the output, the position information for link nodes appears to be missing or incorrectly applied to the generated AST nodes.
+When I inspect the generated AST, the link nodes don't have the expected position information that should be carried over from the original markdown node.
 
 ### Expected behavior
 
-Link elements should maintain their source position information from the original MDX content, allowing proper source mapping and debugging capabilities.
+The link element should have position information properly transferred from the source markdown node. The position data should be available on the resulting HAST node for source mapping and debugging purposes.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0
 - Node version: 18.x
-
-This seems to have started recently - position data was working correctly in earlier versions. The links themselves render fine, but tools that depend on position metadata (like error reporting and source maps) are affected.
 
 ---
 Repository: /testbed

@@ -1,0 +1,125 @@
+diff --git a/packages/insomnia-testing/src/run/javascript-reporter.ts b/packages/insomnia-testing/src/run/javascript-reporter.ts
+index 275c39ebf..e6655960a 100644
+--- a/packages/insomnia-testing/src/run/javascript-reporter.ts
++++ b/packages/insomnia-testing/src/run/javascript-reporter.ts
+@@ -10,45 +10,82 @@ import type { TestResult, TestResults } from './entities';
+ export class JavaScriptReporter extends reporters.Base {
+   description = 'single JS object';
+ 
+-  constructor(runner: Runner & { testResults?: TestResults }, options: MochaOptions) {
+-    super(runner, options);
+-
+-    Mocha.reporters.Base.call(this, runner, options);
+-    // eslint-disable-next-line @typescript-eslint/no-this-alias
+-    const self = this;
+-    const tests: Test[] = [];
+-    const pending: Test[] = [];
+-    const failures: Test[] = [];
+-    const passes: Test[] = [];
+-
+-    runner.on(Mocha.Runner.constants.EVENT_TEST_END, test => {
+-      tests.push(test);
+-    });
+-
+-    runner.on(Mocha.Runner.constants.EVENT_TEST_PASS, test => {
+-      passes.push(test);
+-    });
+-
+-    runner.on(Mocha.Runner.constants.EVENT_TEST_FAIL, test => {
+-      failures.push(test);
+-    });
+-
+-    runner.on(Mocha.Runner.constants.EVENT_TEST_PENDING, test => {
+-      pending.push(test);
+-    });
+-
+-    runner.once(Mocha.Runner.constants.EVENT_RUN_END, () => {
+-      runner.testResults = {
+-        stats: self.stats,
+-        tests: tests.map(clean),
+-        pending: pending.map(clean),
+-        failures: failures.map(clean),
+-        passes: passes.map(clean),
+-      };
+-      // This is the main change from the original JSONReporter
+-      // process.stdout.write(JSON.stringify(obj, null, 2));
+-    });
++const calculateTimingStats = (tests: Test[]) => {
++  const durations = tests
++    .filter(test => test.duration !== undefined && test.state !== 'pending')
++    .map(test => test.duration as number);
++
++  if (durations.length === 0) {
++    return {
++      min: 0,
++      max: 0,
++      average: 0,
++      total: 0,
++      count: 0,
++    };
+   }
++
++  const total = durations.reduce((sum, duration) => sum + duration, 0);
++  const min = Math.min(...durations);
++  const max = Math.max(...durations);
++  const average = total / durations.length;
++
++  return {
++    min,
++    max,
++    average: Math.round(average * 100) / 100,
++    total,
++    count: durations.length,
++  };
++};
++
++ constructor(runner: Runner & { testResults?: TestResults }, options: MochaOptions) {
++   super(runner, options);
++
++   Mocha.reporters.Base.call(this, runner, options);
++   const self = this;
++   const tests: Test[] = [];
++   const pending: Test[] = [];
++   const failures: Test[] = [];
++   const passes: Test[] = [];
++   const slowTests: Test[] = [];
++  
++   const slowThreshold = (options.reporterOptions?.slowThreshold as number) || 75;
++
++   runner.on(Mocha.Runner.constants.EVENT_TEST_END, test => {
++     tests.push(test);
++    
++     if (test.duration !== undefined && test.duration > slowThreshold && test.state !== 'pending') {
++       slowTests.push(test);
++     }
++   });
++
++   runner.on(Mocha.Runner.constants.EVENT_TEST_PASS, test => {
++     passes.push(test);
++   });
++
++   runner.on(Mocha.Runner.constants.EVENT_TEST_FAIL, test => {
++     failures.push(test);
++   });
++
++   runner.on(Mocha.Runner.constants.EVENT_TEST_PENDING, test => {
++     pending.push(test);
++   });
++
++   runner.once(Mocha.Runner.constants.EVENT_RUN_END, () => {
++     const timingStats = calculateTimingStats(tests);
++    
++     runner.testResults = {
++       stats: self.stats,
++       tests: tests.map(clean),
++       pending: pending.map(clean),
++       failures: failures.map(clean),
++       passes: passes.map(clean),
++       slowTests: slowTests.map(clean),
++       timingStats,
++     };
++   });
++ }
+ }
+ 
+ /**

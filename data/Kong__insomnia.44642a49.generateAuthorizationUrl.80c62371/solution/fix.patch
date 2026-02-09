@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/sync/git/github-oauth-provider.ts b/packages/insomnia/src/sync/git/github-oauth-provider.ts
+index 3111361f0..8f00e3486 100644
+--- a/packages/insomnia/src/sync/git/github-oauth-provider.ts
++++ b/packages/insomnia/src/sync/git/github-oauth-provider.ts
+@@ -13,19 +13,47 @@ export const GITHUB_GRAPHQL_API_URL = getGitHubGraphQLApiURL();
+  */
+ const statesCache = new Set<string>();
+ 
+-export function generateAuthorizationUrl() {
++const STATE_EXPIRATION_MS = 10 * 60 * 1000;
++
++const statesCache = new Map<string, number>();
++
++function cleanExpiredStates() {
++  const now = Date.now();
++  const expiredStates: string[] = [];
++  
++  statesCache.forEach((timestamp, state) => {
++    if (now - timestamp > STATE_EXPIRATION_MS) {
++      expiredStates.push(state);
++    }
++  });
++  
++  expiredStates.forEach(state => statesCache.delete(state));
++}
++
++export function generateAuthorizationUrl(options?: {
++  scopes?: string[];
++  redirectUri?: string;
++}) {
+   const state = v4();
+-  const scopes = ['repo', 'read:user', 'user:email'];
++  const defaultScopes = ['repo', 'read:user', 'user:email'];
++  const scopes = options?.scopes || defaultScopes;
+   const scope = scopes.join(' ');
+ 
+   const url = new URL(getAppWebsiteBaseURL() + '/oauth/github');
+ 
+-  statesCache.add(state);
++  cleanExpiredStates();
++  statesCache.set(state, Date.now());
+ 
+-  url.search = new URLSearchParams({
++  const params: Record<string, string> = {
+     scope,
+     state,
+-  }).toString();
++  };
++
++  if (options?.redirectUri) {
++    params.redirect_uri = options.redirectUri;
++  }
++
++  url.search = new URLSearchParams(params).toString();
+ 
+   return url.toString();
+ }

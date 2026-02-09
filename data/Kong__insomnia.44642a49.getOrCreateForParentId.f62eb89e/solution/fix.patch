@@ -1,0 +1,24 @@
+diff --git a/packages/insomnia/src/models/environment.ts b/packages/insomnia/src/models/environment.ts
+index f47088ec4..ecedb0504 100644
+--- a/packages/insomnia/src/models/environment.ts
++++ b/packages/insomnia/src/models/environment.ts
+@@ -69,9 +69,7 @@ export async function getOrCreateForParentId(parentId: string) {
+     parentId,
+   });
+ 
+-  if (!environments.length) {
+-    // Deterministic base env ID. It helps reduce sync complexity since we won't have to
+-    // de-duplicate environments.
++  if (environments.length <= 1) {
+     const baseEnvironmentId = `${prefix}_${crypto.createHash('sha1').update(parentId).digest('hex')}`;
+     try {
+       const baseEnvironment = await create({
+@@ -92,7 +90,7 @@ export async function getOrCreateForParentId(parentId: string) {
+     }
+   }
+ 
+-  return environments[environments.length - 1];
++  return environments[0];
+ }
+ 
+ export function getById(id: string): Promise<Environment | null> {

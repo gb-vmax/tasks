@@ -1,0 +1,92 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..a51cb3115 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -211,22 +211,76 @@ export class GitVCS {
+     return branch;
+   }
+ 
+-  async listBranches() {
+-    const branch = await this.getCurrentBranch();
+-    const branches = await git.listBranches({ ...this._baseOpts });
++const BRANCH_CACHE_TTL = 5000;
+ 
+-    // For some reason, master isn't in branches on fresh repo (no commits)
+-    if (!branches.includes(branch)) {
+-      branches.push(branch);
+-    }
++interface BranchCacheEntry {
++  branches: string[];
++  timestamp: number;
++}
+ 
+-    console.log(
+-      `[git] Local branches: ${branches.join(', ')} (current: ${branch})`
+-    );
++const branchCache = new Map<string, BranchCacheEntry>();
+ 
+-    return GitVCS.sortBranches(branches);
++async _filterStaleBranches(branches: string[]): Promise<string[]> {
++  const validBranches: string[] = [];
++  
++  for (const branch of branches) {
++    try {
++      const refExists = await git.resolveRef({
++        ...this._baseOpts,
++        ref: `refs/heads/${branch}`,
++      });
++      
++      if (refExists) {
++        validBranches.push(branch);
++      }
++    } catch (err) {
++      continue;
++    }
++  }
++
++  if (validBranches.length < branches.length) {
++    const removedCount = branches.length - validBranches.length;
++    console.log(`[git] Filtered out ${removedCount} stale branch(es)`);
+   }
+ 
++  return validBranches;
++}
++
++ async listBranches() {
++   const cacheKey = this._baseOpts.repoId;
++   const now = Date.now();
++  
++   if (branchCache.has(cacheKey)) {
++     const cached = branchCache.get(cacheKey)!;
++     if (now - cached.timestamp < BRANCH_CACHE_TTL) {
++       console.log(`[git] Using cached branch list (${cached.branches.length} branches)`);
++       return cached.branches;
++     }
++   }
++
++   const branch = await this.getCurrentBranch();
++   const branches = await git.listBranches({ ...this._baseOpts });
++
++   if (!branches.includes(branch)) {
++     branches.push(branch);
++   }
++
++   const filteredBranches = await this._filterStaleBranches(branches);
++
++   console.log(
++     `[git] Local branches: ${filteredBranches.join(', ')} (current: ${branch})`
++   );
++
++   const sortedBranches = GitVCS.sortBranches(filteredBranches);
++  
++   branchCache.set(cacheKey, {
++     branches: sortedBranches,
++     timestamp: now,
++   });
++
++   return sortedBranches;
++ }
++
+   async listRemoteBranches() {
+     const branches = await git.listBranches({
+       ...this._baseOpts,

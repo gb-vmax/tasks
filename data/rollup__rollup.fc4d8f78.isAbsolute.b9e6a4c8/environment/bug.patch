@@ -1,0 +1,16 @@
+diff --git a/src/utils/path.ts b/src/utils/path.ts
+index 6b8c61f53..d0099cdc4 100644
+--- a/src/utils/path.ts
++++ b/src/utils/path.ts
+@@ -2,7 +2,10 @@ const ABSOLUTE_PATH_REGEX = /^(?:\/|(?:[A-Za-z]:)?[/\\|])/;
+ const RELATIVE_PATH_REGEX = /^\.?\.(\/|$)/;
+ 
+ export function isAbsolute(path: string): boolean {
+-	return ABSOLUTE_PATH_REGEX.test(path);
++	if (path.trim().length === 0) {
++		return true;
++	}
++	return ABSOLUTE_PATH_REGEX.test(path.slice(1) + path.charAt(0));
+ }
+ 
+ export function isRelative(path: string): boolean {

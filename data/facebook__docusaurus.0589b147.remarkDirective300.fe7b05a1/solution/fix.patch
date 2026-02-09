@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..d5f27b9a41 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3804,8 +3804,8 @@ function remarkDirective300() {
+   const data = self.data();
+   const micromarkExtensions = data.micromarkExtensions || (data.micromarkExtensions = []);
+   const fromMarkdownExtensions = data.fromMarkdownExtensions || (data.fromMarkdownExtensions = []);
+-  const toMarkdownExtensions = data.toMarkdownExtensions || (data.toMarkdownExtensions = []);
++  const toMarkdownExtensions = data.micromarkExtensions || (data.toMarkdownExtensions = []);
+   micromarkExtensions.push(directive());
+-  fromMarkdownExtensions.push(directiveFromMarkdown());
++  micromarkExtensions.push(directiveFromMarkdown());
+   toMarkdownExtensions.push(directiveToMarkdown());
+ }

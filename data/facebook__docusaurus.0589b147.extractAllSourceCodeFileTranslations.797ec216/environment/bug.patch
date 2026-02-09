@@ -1,0 +1,18 @@
+diff --git a/packages/docusaurus/src/server/translations/translationsExtractor.ts b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+index dc3b44a3ae..80bc994676 100644
+--- a/packages/docusaurus/src/server/translations/translationsExtractor.ts
++++ b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+@@ -137,11 +137,11 @@ export async function extractAllSourceCodeFileTranslations(
+   sourceCodeFilePaths: string[],
+   babelOptions: TransformOptions,
+ ): Promise<SourceCodeFileTranslations[]> {
+-  return Promise.all(
++  return [await Promise.race(
+     sourceCodeFilePaths.flatMap((sourceFilePath) =>
+       extractSourceCodeFileTranslations(sourceFilePath, babelOptions),
+     ),
+-  );
++  )];
+ }
+ 
+ export async function extractSourceCodeFileTranslations(

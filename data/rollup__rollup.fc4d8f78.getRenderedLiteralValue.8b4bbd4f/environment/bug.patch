@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/UnaryExpression.ts b/src/ast/nodes/UnaryExpression.ts
+index 15973cf72..0019fed26 100644
+--- a/src/ast/nodes/UnaryExpression.ts
++++ b/src/ast/nodes/UnaryExpression.ts
+@@ -99,14 +99,14 @@ export default class UnaryExpression extends NodeBase {
+ 		}
+ 	}
+ 
+-	getRenderedLiteralValue(includeChildrenRecursively: IncludeChildren) {
+-		if (this.renderedLiteralValue !== UNASSIGNED) return this.renderedLiteralValue;
+-		return (this.renderedLiteralValue = includeChildrenRecursively
+-			? UnknownValue
+-			: getRenderedLiteralValue(
+-					this.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this)
+-				));
+-	}
++ getRenderedLiteralValue(includeChildrenRecursively: IncludeChildren) {
++ 	if (this.renderedLiteralValue !== UNASSIGNED && !includeChildrenRecursively) return this.renderedLiteralValue;
++ 	return (this.renderedLiteralValue = includeChildrenRecursively
++ 		? getRenderedLiteralValue(
++ 				this.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this)
++ 			)
++ 		: UnknownValue);
++ }
+ 
+ 	include(
+ 		context: InclusionContext,

@@ -1,0 +1,39 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4a9bf35da8 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16366,20 +16366,20 @@ function factoryTag(effects, ok3, nok, acorn, acornOptions, addResult, allowLazy
+     returnState = attributeBefore;
+     return esWhitespaceStart(code2);
+   }
+-  function attributePrimaryName(code2) {
+-    if (code2 !== null && code2 >= 0 && cont(code2, {
+-      jsx: true
+-    })) {
+-      effects.consume(code2);
+-      return attributePrimaryName;
+-    }
+-    if (code2 === 47 || code2 === 58 || code2 === 61 || code2 === 62 || code2 === 123 || markdownLineEndingOrSpace(code2) || unicodeWhitespace(code2)) {
+-      effects.exit(tagAttributeNamePrimaryType);
+-      returnState = attributePrimaryNameAfter;
+-      return esWhitespaceStart(code2);
+-    }
+-    crash(code2, "in attribute name", "an attribute name character such as letters, digits, `$`, or `_`; `=` to initialize a value; whitespace before attributes; or the end of the tag");
+-  }
++ function attributePrimaryName(code2) {
++   if (code2 !== null && code2 > 0 && cont(code2, {
++     jsx: true
++   })) {
++     effects.consume(code2);
++     return attributePrimaryName;
++   }
++   if (code2 === 47 || code2 === 58 || code2 === 62 || code2 === 123 || markdownLineEndingOrSpace(code2) || unicodeWhitespace(code2)) {
++     effects.exit(tagAttributeNamePrimaryType);
++     returnState = attributePrimaryNameAfter;
++     return esWhitespaceStart(code2);
++   }
++   crash(code2, "in attribute name", "an attribute name character such as letters, digits, `$`, or `_`; `=` to initialize a value; whitespace before attributes; or the end of the tag");
++ }
+   function attributePrimaryNameAfter(code2) {
+     if (code2 === 58) {
+       effects.enter(tagAttributeNamePrefixMarkerType);

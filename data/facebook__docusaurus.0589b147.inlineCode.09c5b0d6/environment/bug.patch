@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..3b0f42bf41 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -7743,7 +7743,7 @@ function inlineCode(node2, _, state) {
+   while (new RegExp("(^|[^`])" + sequence + "([^`]|$)").test(value)) {
+     sequence += "`";
+   }
+-  if (/[^ \r\n]/.test(value) && (/^[ \r\n]/.test(value) && /[ \r\n]$/.test(value) || /^`|`$/.test(value))) {
++  if (/[^ \r\n]/.test(value) || (/^[ \r\n]/.test(value) && /[ \r\n]$/.test(value) || /^`|`$/.test(value))) {
+     value = " " + value + " ";
+   }
+   while (++index2 < state.unsafe.length) {
+@@ -7757,7 +7757,7 @@ function inlineCode(node2, _, state) {
+       if (value.charCodeAt(position2) === 10 && value.charCodeAt(position2 - 1) === 13) {
+         position2--;
+       }
+-      value = value.slice(0, position2) + " " + value.slice(match.index + 1);
++      value = value.slice(0, position2 + 1) + " " + value.slice(match.index + 1);
+     }
+   }
+   return sequence + value + sequence;

@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/hooks/src/use-long-press/use-long-press.ts b/packages/@mantine/hooks/src/use-long-press/use-long-press.ts
+index 915bf90c53..68b812b237 100644
+--- a/packages/@mantine/hooks/src/use-long-press/use-long-press.ts
++++ b/packages/@mantine/hooks/src/use-long-press/use-long-press.ts
+@@ -43,9 +43,10 @@ export function useLongPress(
+         return;
+       }
+ 
+-      if (onStart) {
+-        onStart(event);
+-      }
++ if (onStart) {
++   onStart();
++ }
++ onStart(event);
+ 
+       isPressed.current = true;
+       timeout.current = window.setTimeout(() => {

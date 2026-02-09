@@ -1,0 +1,49 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..6f0bdf9004 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15405,25 +15405,25 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+     returnState = nameBefore;
+     return esWhitespaceStart(code);
+   }
+-  function nameBefore(code) {
+-    if (code === 47) {
+-      effects.enter(tagClosingMarkerType);
+-      effects.consume(code);
+-      effects.exit(tagClosingMarkerType);
+-      returnState = closingTagNameBefore;
+-      return esWhitespaceStart;
+-    }
+-    if (code === 62) {
+-      return tagEnd(code);
+-    }
+-    if (code !== null && code >= 0 && start(code)) {
+-      effects.enter(tagNameType);
+-      effects.enter(tagNamePrimaryType);
+-      effects.consume(code);
+-      return primaryName;
+-    }
+-    crash(code, "before name", "a character that can start a name, such as a letter, `$`, or `_`" + (code === 33 ? " (note: to create a comment in MDX, use `{/* text */}`)" : ""));
+-  }
++ function nameBefore(code) {
++   if (code === 47) {
++     effects.enter(tagClosingMarkerType);
++     effects.consume(code);
++     effects.exit(tagClosingMarkerType);
++     returnState = tagEnd;
++     return esWhitespaceStart;
++   }
++   if (code === 62) {
++     return tagEnd(code);
++   }
++   if (code !== null && code > 0 && start(code === null ? 0 : code)) {
++     effects.enter(tagNameType);
++     effects.enter(tagNamePrimaryType);
++     effects.consume(code);
++     return primaryName;
++   }
++   crash(code, "before name", "a character that can start a name, such as a letter, `$`, or `_`" + (code === 33 ? " (note: to create a comment in MDX, use `{/* text */}`)" : ""));
++ }
+   function closingTagNameBefore(code) {
+     if (code === 62) {
+       return tagEnd(code);

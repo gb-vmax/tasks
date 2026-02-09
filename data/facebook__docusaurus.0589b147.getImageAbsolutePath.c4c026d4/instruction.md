@@ -1,26 +1,29 @@
 # Bug Report
 
-### Bug: Images with @site/ alias not resolving correctly
+### Describe the bug
 
-I'm experiencing an issue where images referenced using the `@site/` alias are failing to load properly in my MDX files. The image paths seem to be getting mangled during processing.
+Images referenced with `@site/` alias are not resolving correctly. When I use `@site/static/img/logo.png` in my markdown files, the build fails with an error saying the image file cannot be found, even though the file definitely exists at that path.
 
 ### Reproduction
 
-In an MDX file, when I try to reference an image using the `@site/` alias:
-
+1. Create a markdown file with an image reference using `@site/` alias:
 ```md
-![My Image](@site/static/img/my-image.png)
+![Logo](@site/static/img/logo.png)
 ```
 
-The image fails to load. Looking at the console, it appears the path is being resolved incorrectly.
+2. Place the actual image file at `static/img/logo.png` in your site directory
+
+3. Build the site
+
+The build fails with an error about the image not being found.
 
 ### Expected behavior
 
-Images using the `@site/` prefix should resolve correctly to the site directory. For example, `@site/static/img/my-image.png` should resolve to the correct absolute path based on the site's root directory.
+The `@site/` alias should correctly resolve to the site root directory and find the image file. This was working fine before but seems to have broken recently.
 
 ### Additional context
 
-This was working fine in previous versions. It seems like something changed in how the `@site/` alias is being processed. The path resolution logic might not be handling the alias replacement properly anymore.
+This appears to affect all images using the `@site/` prefix. Using relative paths works as a workaround, but the `@site/` alias is much more convenient for referencing static assets.
 
 ---
 Repository: /testbed

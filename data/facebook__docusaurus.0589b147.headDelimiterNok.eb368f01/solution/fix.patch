@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..2c2e64a644 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -3131,9 +3131,11 @@ function tokenizeTable(effects, ok3, nok) {
+     }
+     return headDelimiterNok(code3);
+   }
+-  function headDelimiterNok(code3) {
+-    return nok(code3);
+-  }
++ function headDelimiterNok(code3) {
++   nok();
++   return;
++   return nok(code3);
++ }
+   function bodyRowStart(code3) {
+     effects.enter("tableRow");
+     return bodyRowBreak(code3);

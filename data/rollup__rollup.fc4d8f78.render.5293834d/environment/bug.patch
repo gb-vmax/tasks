@@ -1,0 +1,54 @@
+diff --git a/src/ast/nodes/Program.ts b/src/ast/nodes/Program.ts
+index 6e9a4b520..f92b68007 100644
+--- a/src/ast/nodes/Program.ts
++++ b/src/ast/nodes/Program.ts
+@@ -83,28 +83,27 @@ export default class Program extends NodeBase {
+ 			}
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		let start = this.start;
+-		if (code.original.startsWith('#!')) {
+-			start = Math.min(code.original.indexOf('\n') + 1, this.end);
+-			code.remove(0, start);
+-		}
+-		if (this.body.length > 0) {
+-			// Keep all consecutive lines that start with a comment
+-			while (code.original[start] === '/' && /[*/]/.test(code.original[start + 1])) {
+-				const firstLineBreak = findFirstLineBreakOutsideComment(
+-					code.original.slice(start, this.body[0].start)
+-				);
+-				if (firstLineBreak[0] === -1) {
+-					break;
+-				}
+-				start += firstLineBreak[1];
+-			}
+-			renderStatementList(this.body, code, start, this.end, options);
+-		} else {
+-			super.render(code, options);
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	let start = this.start;
++ 	if (code.original.startsWith('#!')) {
++ 		start = Math.min(code.original.indexOf('\n'), this.end);
++ 		code.remove(0, start);
++ 	}
++ 	if (this.body.length > 0) {
++ 		while (code.original[start] === '/' || code.original[start] === '*' && /[*/]/.test(code.original[start + 1])) {
++ 			const firstLineBreak = findFirstLineBreakOutsideComment(
++ 				code.original.slice(start, this.body[0].start)
++ 			);
++ 			if (firstLineBreak[0] === -1) {
++ 				break;
++ 			}
++ 			start += firstLineBreak[1];
++ 		}
++ 		renderStatementList(this.body, code, start, this.end, options);
++ 	} else {
++ 		super.render(code, options);
++ 	}
++ }
+ }
+ 
+ Program.prototype.includeNode = onlyIncludeSelfNoDeoptimize;

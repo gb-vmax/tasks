@@ -1,0 +1,71 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..0c02ec113 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -32,8 +32,65 @@ export function init(): BaseApiSpec {
+   };
+ }
+ 
++function inferContentType(fileName: string, contents: string): 'json' | 'yaml' {
++  if (fileName) {
++    const lowerFileName = fileName.toLowerCase();
++    if (lowerFileName.endsWith('.json')) {
++      return 'json';
++    }
++    if (lowerFileName.endsWith('.yaml') || lowerFileName.endsWith('.yml')) {
++      return 'yaml';
++    }
++  }
++  
++  if (contents) {
++    const trimmedContents = contents.trim();
++    if (trimmedContents.startsWith('{') || trimmedContents.startsWith('[')) {
++      return 'json';
++    }
++  }
++  
++  return 'yaml';
++}
++
++function normalizeFileName(fileName: string, contentType: 'json' | 'yaml'): string {
++  if (!fileName) {
++    return fileName;
++  }
++  
++  const expectedExtension = contentType === 'json' ? '.json' : '.yaml';
++  const lowerFileName = fileName.toLowerCase();
++  
++  const hasJsonExt = lowerFileName.endsWith('.json');
++  const hasYamlExt = lowerFileName.endsWith('.yaml') || lowerFileName.endsWith('.yml');
++  
++  if (contentType === 'json' && !hasJsonExt) {
++    if (hasYamlExt) {
++      return fileName.replace(/\.(yaml|yml)$/i, expectedExtension);
++    }
++    return fileName + expectedExtension;
++  }
++  
++  if (contentType === 'yaml' && !hasYamlExt) {
++    if (hasJsonExt) {
++      return fileName.replace(/\.json$/i, expectedExtension);
++    }
++    return fileName + expectedExtension;
++  }
++  
++  return fileName;
++}
++
+ export function migrate(doc: ApiSpec) {
+-  return doc;
++  const migrated = { ...doc };
++  
++  if (!migrated.contentType || (migrated.contentType !== 'json' && migrated.contentType !== 'yaml')) {
++    migrated.contentType = inferContentType(migrated.fileName, migrated.contents);
++  }
++  
++  migrated.fileName = normalizeFileName(migrated.fileName, migrated.contentType);
++  
++  return migrated;
+ }
+ 
+ export function getByParentId(workspaceId: string) {

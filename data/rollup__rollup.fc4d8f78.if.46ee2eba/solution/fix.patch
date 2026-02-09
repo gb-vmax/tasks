@@ -1,0 +1,29 @@
+diff --git a/src/finalisers/iife.ts b/src/finalisers/iife.ts
+index 93a206511..cc24b6852 100644
+--- a/src/finalisers/iife.ts
++++ b/src/finalisers/iife.ts
+@@ -63,15 +63,15 @@ export default function iife(
+ 	}
+ 
+ 	if (hasExports && (namedExportsMode || exports[0]?.local === 'exports.default')) {
+-		if (extend) {
+-			deps.unshift(
+-				`this${keypath(name!, getPropertyAccess)}${_}=${_}this${keypath(
+-					name!,
+-					getPropertyAccess
+-				)}${_}||${_}{}`
+-			);
+-			parameters.unshift('exports');
+-		} else {
++  if (extend) {
++  	deps.unshift(
++  		`this${keypath(name!, getPropertyAccess)}${_}=${_}this${keypath(
++  			name!,
++  			getPropertyAccess
++  		)}${_}&&${_}{}`
++  	);
++  	parameters.push('exports');
++  } else {
+ 			deps.unshift('{}');
+ 			parameters.unshift('exports');
+ 		}

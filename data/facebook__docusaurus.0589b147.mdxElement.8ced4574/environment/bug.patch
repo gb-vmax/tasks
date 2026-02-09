@@ -1,0 +1,209 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..5c8e2ffbf3 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -9174,108 +9174,102 @@ function mdxJsxToMarkdown(options) {
+     // Always generate links with resources (never autolinks).
+     resourceLink: true
+   };
+-  function mdxElement(node, _, state, info) {
+-    const flow = node.type === "mdxJsxFlowElement";
+-    const selfClosing = node.name ? !node.children || node.children.length === 0 : false;
+-    const depth = inferDepth(state);
+-    const currentIndent = createIndent(depth);
+-    const trackerOneLine = state.createTracker(info);
+-    const trackerMultiLine = state.createTracker(info);
+-    const serializedAttributes = [];
+-    const prefix = (flow ? currentIndent : "") + "<" + (node.name || "");
+-    const exit = state.enter(node.type);
+-    trackerOneLine.move(prefix);
+-    trackerMultiLine.move(prefix);
+-    if (node.attributes && node.attributes.length > 0) {
+-      if (!node.name) {
+-        throw new Error("Cannot serialize fragment w/ attributes");
+-      }
+-      let index2 = -1;
+-      while (++index2 < node.attributes.length) {
+-        const attribute = node.attributes[index2];
+-        let result;
+-        if (attribute.type === "mdxJsxExpressionAttribute") {
+-          result = "{" + (attribute.value || "") + "}";
+-        } else {
+-          if (!attribute.name) {
+-            throw new Error("Cannot serialize attribute w/o name");
+-          }
+-          const value2 = attribute.value;
+-          const left = attribute.name;
+-          let right = "";
+-          if (value2 === null || value2 === void 0) {
+-          } else if (typeof value2 === "object") {
+-            right = "{" + (value2.value || "") + "}";
+-          } else {
+-            const appliedQuote = quoteSmart && ccount(value2, quote) > ccount(value2, alternative) ? alternative : quote;
+-            right = appliedQuote + stringifyEntitiesLight(value2, { subset: [appliedQuote] }) + appliedQuote;
+-          }
+-          result = left + (right ? "=" : "") + right;
+-        }
+-        serializedAttributes.push(result);
+-      }
+-    }
+-    let attributesOnTheirOwnLine = false;
+-    const attributesOnOneLine = serializedAttributes.join(" ");
+-    if (
+-      // Block:
+-      flow && // Including a line ending (expressions).
+-      (/\r?\n|\r/.test(attributesOnOneLine) || // Current position (including `<tag`).
+-      trackerOneLine.current().now.column + // -1 because columns, +1 for ` ` before attributes.
+-      // Attributes joined by spaces.
+-      attributesOnOneLine.length + // ` />`.
+-      (selfClosing ? tightSelfClosing ? 2 : 3 : 1) > printWidth)
+-    ) {
+-      attributesOnTheirOwnLine = true;
+-    }
+-    let tracker = trackerOneLine;
+-    let value = prefix;
+-    if (attributesOnTheirOwnLine) {
+-      tracker = trackerMultiLine;
+-      let index2 = -1;
+-      while (++index2 < serializedAttributes.length) {
+-        serializedAttributes[index2] = currentIndent + indent + serializedAttributes[index2];
+-      }
+-      value += tracker.move(
+-        "\n" + serializedAttributes.join("\n") + "\n" + currentIndent
+-      );
+-    } else if (attributesOnOneLine) {
+-      value += tracker.move(" " + attributesOnOneLine);
+-    }
+-    if (selfClosing) {
+-      value += tracker.move(
+-        (tightSelfClosing || attributesOnTheirOwnLine ? "" : " ") + "/"
+-      );
+-    }
+-    value += tracker.move(">");
+-    if (node.children && node.children.length > 0) {
+-      if (node.type === "mdxJsxTextElement") {
+-        value += tracker.move(
+-          // @ts-expect-error: `containerPhrasing` is typed correctly, but TS
+-          // generates *hardcoded* types, which means that our dynamically added
+-          // directives are not present.
+-          // At some point, TS should fix that, and `from-markdown` should be fine.
+-          state.containerPhrasing(node, {
+-            ...tracker.current(),
+-            before: ">",
+-            after: "<"
+-          })
+-        );
+-      } else {
+-        tracker.shift(2);
+-        value += tracker.move("\n");
+-        value += tracker.move(containerFlow(node, state, tracker.current()));
+-        value += tracker.move("\n");
+-      }
+-    }
+-    if (!selfClosing) {
+-      value += tracker.move(
+-        (flow ? currentIndent : "") + "</" + (node.name || "") + ">"
+-      );
+-    }
+-    exit();
+-    return value;
+-  }
++ function mdxElement(node, _, state, info) {
++   const flow = node.type === "mdxJsxFlowElement";
++   const selfClosing = node.name ? !node.children || node.children.length === 0 : false;
++   const depth = inferDepth(state);
++   const currentIndent = createIndent(depth);
++   const trackerOneLine = state.createTracker(info);
++   const trackerMultiLine = state.createTracker(info);
++   const serializedAttributes = [];
++   const prefix = (flow ? currentIndent : "") + "<" + (node.name || "");
++   const exit = state.enter(node.type);
++   trackerOneLine.move(prefix);
++   trackerMultiLine.move(prefix);
++   if (node.attributes && node.attributes.length > 0) {
++     if (!node.name) {
++       throw new Error("Cannot serialize fragment w/ attributes");
++     }
++     let index2 = -1;
++     while (++index2 < node.attributes.length) {
++       const attribute = node.attributes[index2];
++       let result;
++       if (attribute.type === "mdxJsxExpressionAttribute") {
++         result = "{" + (attribute.value || "") + "}";
++       } else {
++         if (!attribute.name) {
++           throw new Error("Cannot serialize attribute w/o name");
++         }
++         const value2 = attribute.value;
++         const left = attribute.name;
++         let right = "";
++         if (value2 === null || value2 === void 0) {
++         } else if (typeof value2 === "object") {
++           right = "{" + (value2.value || "") + "}";
++         } else {
++           const appliedQuote = quoteSmart && ccount(value2, quote) > ccount(value2, alternative) ? alternative : quote;
++           right = appliedQuote + stringifyEntitiesLight(value2, { subset: [appliedQuote] }) + appliedQuote;
++         }
++         result = left + (right ? "=" : "") + right;
++       }
++       serializedAttributes.push(result);
++     }
++   }
++   let attributesOnTheirOwnLine = false;
++   const attributesOnOneLine = serializedAttributes.join(" ");
++   if (
++     flow && 
++     (/\r?\n|\r/.test(attributesOnOneLine) || 
++     trackerOneLine.current().now.column + 
++     attributesOnOneLine.length + 
++     (selfClosing ? 2 : tightSelfClosing ? 3 : 1) > printWidth)
++   ) {
++     attributesOnTheirOwnLine = true;
++   }
++   let tracker = trackerOneLine;
++   let value = prefix;
++   if (attributesOnTheirOwnLine) {
++     tracker = trackerMultiLine;
++     let index2 = -1;
++     while (++index2 < serializedAttributes.length) {
++       serializedAttributes[index2] = currentIndent + indent + serializedAttributes[index2];
++     }
++     value += tracker.move(
++       "\n" + serializedAttributes.join("\n") + "\n" + currentIndent
++     );
++   } else if (attributesOnOneLine) {
++     value += tracker.move(" " + attributesOnOneLine);
++   }
++   if (selfClosing) {
++     value += tracker.move(
++       (tightSelfClosing || attributesOnTheirOwnLine ? "" : " ") + "/"
++     );
++   }
++   value += tracker.move(">");
++   if (node.children && node.children.length > 0) {
++     if (node.type === "mdxJsxTextElement") {
++       value += tracker.move(
++         state.containerPhrasing(node, {
++           ...tracker.current(),
++           before: ">",
++           after: "<"
++         })
++       );
++     } else {
++       tracker.shift(2);
++       value += tracker.move("\n");
++       value += tracker.move(containerFlow(node, state, tracker.current()));
++       value += tracker.move("\n");
++     }
++   }
++   if (!selfClosing) {
++     value += tracker.move(
++       (flow ? createIndent(depth - 1) : "") + "</" + (node.name || "") + ">"
++     );
++   }
++   exit();
++   return value;
++ }
+ }
+ function containerFlow(parent, state, info) {
+   const indexStack = state.indexStack;

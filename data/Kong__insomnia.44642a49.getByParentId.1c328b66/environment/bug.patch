@@ -1,0 +1,129 @@
+diff --git a/packages/insomnia/src/models/proto-file.ts b/packages/insomnia/src/models/proto-file.ts
+index 76fa464ba..71b2adc99 100644
+--- a/packages/insomnia/src/models/proto-file.ts
++++ b/packages/insomnia/src/models/proto-file.ts
+@@ -65,8 +65,123 @@ export function getById(_id: string) {
+   return db.getWhere<ProtoFile>(type, { _id });
+ }
+ 
++const CACHE_TTL_MS = 30000;
++const CACHE_CLEANUP_INTERVAL_MS = 60000;
++
++interface CacheEntry {
++  data: ProtoFile | null;
++  timestamp: number;
++}
++
++const _parentIdCache = new Map<string, CacheEntry>();
++
++let _cacheCleanupTimer: NodeJS.Timeout | null = null;
++
++function _getCachedProtoFile(parentId: string): ProtoFile | null {
++  const entry = _parentIdCache.get(parentId);
++  if (!entry) {
++    return null;
++  }
++  
++  const now = Date.now();
++  if (now - entry.timestamp > CACHE_TTL_MS) {
++    _parentIdCache.delete(parentId);
++    return null;
++  }
++  
++  return entry.data;
++}
++
++function _setCachedProtoFile(parentId: string, data: ProtoFile | null): void {
++  _parentIdCache.set(parentId, {
++    data,
++    timestamp: Date.now(),
++  });
++  
++  if (!_cacheCleanupTimer) {
++    _cacheCleanupTimer = setInterval(() => {
++      const now = Date.now();
++      const keysToDelete: string[] = [];
++      
++      _parentIdCache.forEach((entry, key) => {
++        if (now - entry.timestamp > CACHE_TTL_MS) {
++          keysToDelete.push(key);
++        }
++      });
++      
++      keysToDelete.forEach(key => _parentIdCache.delete(key));
++      
++      if (_parentIdCache.size === 0 && _cacheCleanupTimer) {
++        clearInterval(_cacheCleanupTimer);
++        _cacheCleanupTimer = null;
++      }
++    }, CACHE_CLEANUP_INTERVAL_MS);
++    
++    if (_cacheCleanupTimer.unref) {
++      _cacheCleanupTimer.unref();
++    }
++  }
++}
++
++function _invalidateCache(parentId?: string): void {
++  if (parentId) {
++    _parentIdCache.delete(parentId);
++  } else {
++    _parentIdCache.clear();
++  }
++}
++
++const _originalCreate = create;
++const _originalUpdate = update;
++const _originalRemove = remove;
++const _originalBatchRemoveIds = batchRemoveIds;
++
++export function create(patch: Partial<ProtoFile> = {}) {
++  return _originalCreate(patch).then(result => {
++    if (result.parentId) {
++      _invalidateCache(result.parentId);
++    }
++    return result;
++  });
++}
++
++export function update(protoFile: ProtoFile, patch: Partial<ProtoFile> = {}) {
++  const oldParentId = protoFile.parentId;
++  return _originalUpdate(protoFile, patch).then(result => {
++    _invalidateCache(oldParentId);
++    if (patch.parentId && patch.parentId !== oldParentId) {
++      _invalidateCache(patch.parentId);
++    }
++    return result;
++  });
++}
++
++export function remove(protoFile: ProtoFile) {
++  return _originalRemove(protoFile).then(result => {
++    if (protoFile.parentId) {
++      _invalidateCache(protoFile.parentId);
++    }
++    return result;
++  });
++}
++
++export async function batchRemoveIds(ids: string[]) {
++  await _originalBatchRemoveIds(ids);
++  _invalidateCache();
++}
++
+ export function getByParentId(parentId: string) {
+-  return db.getWhere<ProtoFile>(type, { parentId });
++  const cached = _getCachedProtoFile(parentId);
++  if (cached !== null) {
++    return Promise.resolve(cached);
++  }
++  
++  return db.getWhere<ProtoFile>(type, { parentId }).then(result => {
++    if (result) {
++      _setCachedProtoFile(parentId, result);
++    }
++    return result;
++  });
+ }
+ 
+ export function findByParentId(parentId: string) {

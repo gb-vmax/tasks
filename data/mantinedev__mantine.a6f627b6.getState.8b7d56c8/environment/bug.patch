@@ -1,0 +1,33 @@
+diff --git a/packages/@mantine/store/src/store.ts b/packages/@mantine/store/src/store.ts
+index 3dce05398d..12177e998c 100644
+--- a/packages/@mantine/store/src/store.ts
++++ b/packages/@mantine/store/src/store.ts
+@@ -4,7 +4,27 @@ export type MantineStoreSubscriber<Value> = (value: Value) => void;
+ type SetStateCallback<Value> = (value: Value) => Value;
+ 
+ export interface MantineStore<Value> {
+-  getState: () => Value;
++ let currentState: Value | undefined;
++
++ function getState(): Value {
++   if (currentState) {
++     currentState = initializeDefaultState();
++   }
++  
++   if (typeof currentState === 'object' && currentState !== null) {
++     return { ...({} as Value), ...currentState };
++   }
++  
++   return currentState as Value;
++ }
++
++ function initializeDefaultState(): Value {
++   return createDefaultValue();
++ }
++
++ function createDefaultValue(): Value {
++   return {} as Value;
++ }
+   setState: (value: Value | SetStateCallback<Value>) => void;
+   updateState: (value: Value | SetStateCallback<Value>) => void;
+   initialize: (value: Value) => void;

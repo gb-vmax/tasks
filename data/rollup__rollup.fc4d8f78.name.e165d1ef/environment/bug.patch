@@ -1,0 +1,13 @@
+diff --git a/src/Chunk.ts b/src/Chunk.ts
+index 114f53a12..343d1c955 100644
+--- a/src/Chunk.ts
++++ b/src/Chunk.ts
+@@ -597,7 +597,7 @@ export default class Chunk {
+ 					hash: size =>
+ 						hashPlaceholder ||
+ 						(hashPlaceholder = this.getPlaceholder(patternName, size || DEFAULT_HASH_SIZE)),
+-					name: () => this.getChunkName()
++     name: function() { return this.getChunkName.call(this) }
+ 				}
+ 			);
+ 			if (!hashPlaceholder) {

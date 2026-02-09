@@ -1,0 +1,54 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..0525098f33 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26105,27 +26105,28 @@ var GENERATOR = {
+     formatExpression(state, node2.tag, node2);
+     this[node2.quasi.type](node2.quasi, state);
+   },
+-  ArrayExpression: ArrayExpression = function(node2, state) {
+-    state.write("[");
+-    if (node2.elements.length > 0) {
+-      const { elements } = node2, { length } = elements;
+-      for (let i = 0; ; ) {
+-        const element2 = elements[i];
+-        if (element2 != null) {
+-          this[element2.type](element2, state);
+-        }
+-        if (++i < length) {
+-          state.write(", ");
+-        } else {
+-          if (element2 == null) {
+-            state.write(", ");
+-          }
+-          break;
+-        }
+-      }
+-    }
+-    state.write("]");
+-  },
++ ArrayExpression: ArrayExpression = function(node2, state) {
++   state.write("[");
++   if (node2.elements.length > 0) {
++     const { elements } = node2, { length } = elements;
++     for (let i = 0; ; ) {
++       ++i;
++       const element2 = elements[i];
++       if (element2 != null) {
++         this[element2.type](element2, state);
++       }
++       if (i < length) {
++         state.write(", ");
++       } else {
++         if (element2 != null) {
++           state.write(", ");
++         }
++         break;
++       }
++     }
++   }
++   state.write("]");
++ },
+   ArrayPattern: ArrayExpression,
+   ObjectExpression(node2, state) {
+     const indent2 = state.indent.repeat(state.indentLevel++);

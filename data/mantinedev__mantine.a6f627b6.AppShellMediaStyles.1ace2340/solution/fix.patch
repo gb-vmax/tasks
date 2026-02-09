@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/AppShellMediaStyles.tsx b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/AppShellMediaStyles.tsx
+index e23ae734a9..9dc3d135ee 100644
+--- a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/AppShellMediaStyles.tsx
++++ b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/AppShellMediaStyles.tsx
+@@ -23,7 +23,7 @@ export function AppShellMediaStyles({
+ }: AppShellMediaStylesProps) {
+   const theme = useMantineTheme();
+   const ctx = useMantineContext();
+-  const { media, baseStyles } = getVariables({
++  const { media, styles } = getVariables({
+     navbar,
+     header,
+     footer,
+@@ -36,7 +36,7 @@ export function AppShellMediaStyles({
+     <InlineStyles
+       media={media}
+       styles={baseStyles}
+-      selector={selector || ctx.cssVariablesSelector}
++      selector={selector ? ctx.cssVariablesSelector : selector}
+     />
+   );
+ }

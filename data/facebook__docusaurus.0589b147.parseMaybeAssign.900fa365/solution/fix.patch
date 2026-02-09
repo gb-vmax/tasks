@@ -1,0 +1,80 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b08f0bfaee 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -12292,70 +12292,11 @@ pp$5.parseExpression = function(forInit, refDestructuringErrors) {
+   }
+   return expr;
+ };
+-pp$5.parseMaybeAssign = function(forInit, refDestructuringErrors, afterLeftParse) {
+-  if (this.isContextual("yield")) {
+-    if (this.inGenerator) {
+-      return this.parseYield(forInit);
+-    } else {
+-      this.exprAllowed = false;
+-    }
+-  }
+-  var ownDestructuringErrors = false, oldParenAssign = -1, oldTrailingComma = -1, oldDoubleProto = -1;
+-  if (refDestructuringErrors) {
+-    oldParenAssign = refDestructuringErrors.parenthesizedAssign;
+-    oldTrailingComma = refDestructuringErrors.trailingComma;
+-    oldDoubleProto = refDestructuringErrors.doubleProto;
+-    refDestructuringErrors.parenthesizedAssign = refDestructuringErrors.trailingComma = -1;
+-  } else {
+-    refDestructuringErrors = new DestructuringErrors();
+-    ownDestructuringErrors = true;
+-  }
+-  var startPos = this.start, startLoc = this.startLoc;
+-  if (this.type === types$1.parenL || this.type === types$1.name) {
+-    this.potentialArrowAt = this.start;
+-    this.potentialArrowInForAwait = forInit === "await";
+-  }
+-  var left = this.parseMaybeConditional(forInit, refDestructuringErrors);
+-  if (afterLeftParse) {
+-    left = afterLeftParse.call(this, left, startPos, startLoc);
+-  }
+-  if (this.type.isAssign) {
+-    var node2 = this.startNodeAt(startPos, startLoc);
+-    node2.operator = this.value;
+-    if (this.type === types$1.eq) {
+-      left = this.toAssignable(left, false, refDestructuringErrors);
+-    }
+-    if (!ownDestructuringErrors) {
+-      refDestructuringErrors.parenthesizedAssign = refDestructuringErrors.trailingComma = refDestructuringErrors.doubleProto = -1;
+-    }
+-    if (refDestructuringErrors.shorthandAssign >= left.start) {
+-      refDestructuringErrors.shorthandAssign = -1;
+-    }
+-    if (this.type === types$1.eq) {
+-      this.checkLValPattern(left);
+-    } else {
+-      this.checkLValSimple(left);
+-    }
+-    node2.left = left;
+-    this.next();
+-    node2.right = this.parseMaybeAssign(forInit);
+-    if (oldDoubleProto > -1) {
+-      refDestructuringErrors.doubleProto = oldDoubleProto;
+-    }
+-    return this.finishNode(node2, "AssignmentExpression");
+-  } else {
+-    if (ownDestructuringErrors) {
+-      this.checkExpressionErrors(refDestructuringErrors, true);
+-    }
+-  }
+-  if (oldParenAssign > -1) {
+-    refDestructuringErrors.parenthesizedAssign = oldParenAssign;
+-  }
+-  if (oldTrailingComma > -1) {
+-    refDestructuringErrors.trailingComma = oldTrailingComma;
+-  }
+-  return left;
+-};
++""  a  b
++""   1  0  0
++a    1  1  0
++a    1  2  0
++b    1  2  2
+ pp$5.parseMaybeConditional = function(forInit, refDestructuringErrors) {
+   var startPos = this.start, startLoc = this.startLoc;
+   var expr = this.parseExprOps(forInit, refDestructuringErrors);

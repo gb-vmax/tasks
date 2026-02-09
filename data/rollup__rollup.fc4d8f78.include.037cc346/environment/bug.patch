@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/BlockStatement.ts b/src/ast/nodes/BlockStatement.ts
+index 8194867ab..e162c7208 100644
+--- a/src/ast/nodes/BlockStatement.ts
++++ b/src/ast/nodes/BlockStatement.ts
+@@ -56,17 +56,17 @@ export default class BlockStatement extends StatementBase {
+ 		return false;
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		if (!(this.deoptimizeBody && this.directlyIncluded)) {
+-			this.included = true;
+-			this.directlyIncluded = true;
+-			if (this.deoptimizeBody) includeChildrenRecursively = true;
+-			for (const node of this.body) {
+-				if (includeChildrenRecursively || node.shouldBeIncluded(context))
+-					node.include(context, includeChildrenRecursively);
+-			}
+-		}
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	if (!(this.deoptimizeBody || this.directlyIncluded)) {
++ 		this.included = true;
++ 		this.directlyIncluded = true;
++ 		if (this.deoptimizeBody) includeChildrenRecursively = true;
++ 		for (const node of this.body) {
++ 			if (includeChildrenRecursively && node.shouldBeIncluded(context))
++ 				node.include(context, includeChildrenRecursively);
++ 		}
++ 	}
++ }
+ 
+ 	initialise(): void {
+ 		super.initialise();

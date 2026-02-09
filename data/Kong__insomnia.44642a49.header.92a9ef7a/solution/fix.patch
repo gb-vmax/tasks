@@ -1,0 +1,41 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..9fb43ee6d 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -245,7 +245,35 @@ export class Response extends Property {
+             // follows extend chai's chains for compatibility
+             have: {
+                 status: (expected: number | string) => haveStatus(expected, true),
+-                header: (expected: string) => haveHeader(expected, true),
++const haveHeaderWithValue = (expectedKey: string, expectedValue: string, checkEquality: boolean) => {
++    const header = this.headers.toObject().find(
++        h => h.key.toLowerCase() === expectedKey.toLowerCase()
++    );
++    
++    if (!header) {
++        if (checkEquality) {
++            throw Error(`Header "${expectedKey}" not found in response`);
++        }
++        return;
++    }
++    
++    const actualValue = header.value.trim();
++    const trimmedExpectedValue = expectedValue.trim();
++    
++    const valuesMatch = actualValue === trimmedExpectedValue;
++    
++    if ((checkEquality && !valuesMatch) || (!checkEquality && valuesMatch)) {
++        throw Error(`Header "${expectedKey}" value "${actualValue}" is not equal to the expected value: "${trimmedExpectedValue}"`);
++    }
++};
++
++ header: (expected: string | { key: string; value: string }) => {
++     if (typeof expected === 'string') {
++         return haveHeader(expected, true);
++     } else {
++         return haveHeaderWithValue(expected.key, expected.value, true);
++     }
++ }
+                 body: (expected: string) => haveBody(expected, true),
+                 jsonBody: (expected: object) => haveJsonBody(expected, true),
+                 jsonSchema: (expected: object) => haveJsonSchema(expected, true),

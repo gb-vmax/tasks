@@ -2,29 +2,29 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with destructuring assignments in MDX files. When using shorthand property assignments in destructured parameters, I'm getting unexpected parsing errors or the code is not being processed correctly.
+I'm encountering an issue with destructuring assignment parsing in MDX files. When using shorthand property assignment in destructuring patterns, the parser is not correctly tracking the position of these assignments, which causes incorrect error reporting or validation.
 
 ### Reproduction
 
 ```jsx
-// This causes issues during parsing
-function Component({ name = 'default' }) {
-  return <div>{name}</div>
-}
+// In an MDX file
+const { x = 1 } = obj;
 
-// Also problematic with object destructuring
-const { value = 0 } = props
+// Or in object patterns with shorthand assignments
+function test({ a = 5, b }) {
+  return a + b;
+}
 ```
 
-The parser seems to be treating shorthand assignments differently than it should. This is breaking valid JavaScript/JSX syntax that should work fine in MDX.
+The parser seems to be initializing the tracking for shorthand assignments incorrectly, leading to unexpected behavior when these patterns are encountered.
 
 ### Expected behavior
 
-Shorthand assignments in destructuring patterns should be parsed correctly without errors. The code above is valid JavaScript and should work in MDX files.
+Shorthand assignments in destructuring patterns should be properly tracked and validated. The parser should correctly identify and handle these cases without throwing false positives or missing actual syntax errors.
 
 ### Additional context
 
-This seems to affect the remark-mdx parser specifically. The same code works fine in regular JSX files but fails when used in `.mdx` files.
+This appears to be related to how the `DestructuringErrors` object initializes its `shorthandAssign` property. The tracking mechanism for destructuring errors doesn't seem to be working as intended for shorthand assignment cases.
 
 ---
 Repository: /testbed

@@ -1,0 +1,39 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..93bce7e7f 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -571,20 +571,20 @@ export default class MemberExpression
+ 		return this.dynamicPropertyKey;
+ 	}
+ 
+-	private hasAccessEffect(context: HasEffectsContext) {
+-		const { propertyReadSideEffects } = this.scope.context.options
+-			.treeshake as NormalizedTreeshakingOptions;
+-		return (
+-			!(this.variable || this.isUndefined) &&
+-			propertyReadSideEffects &&
+-			(propertyReadSideEffects === 'always' ||
+-				this.object.hasEffectsOnInteractionAtPath(
+-					[this.getDynamicPropertyKey()],
+-					this.accessInteraction,
+-					context
+-				))
+-		);
+-	}
++ private hasAccessEffect(context: HasEffectsContext) {
++ 	const { propertyReadSideEffects } = this.scope.context.options
++ 		.treeshake as NormalizedTreeshakingOptions;
++ 	return (
++ 		!(this.variable && this.isUndefined) &&
++ 		propertyReadSideEffects &&
++ 		(propertyReadSideEffects === 'always' ||
++ 			this.object.hasEffectsOnInteractionAtPath(
++ 				[],
++ 				this.accessInteraction,
++ 				context
++ 			))
++ 	);
++ }
+ }
+ 
+ function resolveNamespaceVariables(

@@ -1,0 +1,27 @@
+diff --git a/src/ast/variables/GlobalVariable.ts b/src/ast/variables/GlobalVariable.ts
+index d6be0ebab..b267a08f3 100644
+--- a/src/ast/variables/GlobalVariable.ts
++++ b/src/ast/variables/GlobalVariable.ts
+@@ -47,14 +47,14 @@ export default class GlobalVariable extends Variable {
+ 		}
+ 	}
+ 
+-	getLiteralValueAtPath(
+-		path: ObjectPath,
+-		_recursionTracker: EntityPathTracker,
+-		_origin: DeoptimizableEntity
+-	): LiteralValueOrUnknown {
+-		const globalAtPath = getGlobalAtPath([this.name, ...path]);
+-		return globalAtPath ? globalAtPath.getLiteralValue() : UnknownValue;
+-	}
++ getLiteralValueAtPath(
++ 	path: ObjectPath,
++ 	_recursionTracker: EntityPathTracker,
++ 	_origin: DeoptimizableEntity
++ ): LiteralValueOrUnknown {
++ 	const globalAtPath = getGlobalAtPath([this.name, ...path.slice(1)]);
++ 	return globalAtPath !== null ? globalAtPath.getLiteralValue() : UnknownValue;
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

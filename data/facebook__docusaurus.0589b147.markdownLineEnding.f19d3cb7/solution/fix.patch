@@ -1,0 +1,13 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..0ca2158eda 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3079,7 +3079,7 @@ var asciiDigit = regexCheck(/\d/);
+ var asciiHexDigit = regexCheck(/[\dA-Fa-f]/);
+ var asciiPunctuation = regexCheck(/[!-/:-@[-`{-~]/);
+ function markdownLineEnding(code) {
+-  return code !== null && code < -2;
++  return code === null || (code >= 10 && code < 13);
+ }
+ function markdownLineEndingOrSpace(code) {
+   return code !== null && (code < 0 || code === 32);

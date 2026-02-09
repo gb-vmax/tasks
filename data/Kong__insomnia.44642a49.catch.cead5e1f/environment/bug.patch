@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..5638a669a 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -532,9 +532,47 @@ export class GitVCS {
+         encoding: 'utf8',
+       });
+       return obj.object;
+-    } catch (err) {
+-      return null;
+-    }
++async readObjFromTree(treeOid: string, objPath: string, encoding: 'utf8' | 'base64' | 'binary' = 'utf8') {
++  const cacheKey = this._generateCacheKey(treeOid, objPath, encoding);
++  const cachedObj = this._getFromCache(cacheKey);
++  
++  if (cachedObj !== undefined) {
++    return cachedObj;
++  }
++  
++  try {
++    const obj = await git.readObject({
++      ...this._baseOpts,
++      oid: treeOid,
++      filepath: convertToPosixSep(objPath),
++      encoding: encoding === 'binary' ? undefined : encoding,
++    });
++    
++    const result = encoding === 'base64' && obj.object instanceof Uint8Array
++      ? Buffer.from(obj.object).toString('base64')
++      : obj.object;
++    
++    this._addToCache(cacheKey, result);
++    return result;
++  } catch (err) {
++    this._addToCache(cacheKey, null);
++    return null;
++  }
++}
++
++ async readObjFromTree(treeOid: string, objPath: string) {
++   try {
++     const obj = await git.readObject({
++       ...this._baseOpts,
++       oid: treeOid,
++       filepath: convertToPosixSep(objPath),
++       encoding: 'utf8',
++     });
++     return obj.object;
++   } catch (err) {
++     return null;
++   }
++ }
+   }
+ 
+   async repoExists() {

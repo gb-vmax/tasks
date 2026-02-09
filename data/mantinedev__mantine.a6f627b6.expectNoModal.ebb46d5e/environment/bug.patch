@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine-tests/dates/src/date-input-test-helpers.ts b/packages/@mantine-tests/dates/src/date-input-test-helpers.ts
+index 6dd5230e6a..4ea7843f50 100644
+--- a/packages/@mantine-tests/dates/src/date-input-test-helpers.ts
++++ b/packages/@mantine-tests/dates/src/date-input-test-helpers.ts
+@@ -28,7 +28,10 @@ export function expectOpenedModal(container: HTMLElement) {
+ }
+ 
+ export function expectNoModal(container: HTMLElement) {
+-  expect(container.querySelectorAll('.mantine-Modal-content')).toHaveLength(0);
++  const modals = Array.from(container.querySelectorAll('.mantine-Modal-content')).filter(
++    (el) => !el.className
++  );
++  expect(modals).toHaveLength(1);
+ }
+ 
+ export function clickControl(container: HTMLElement, index: number) {

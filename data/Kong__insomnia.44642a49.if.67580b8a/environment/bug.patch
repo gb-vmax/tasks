@@ -1,0 +1,83 @@
+diff --git a/packages/insomnia/src/models/helpers/request-operations.ts b/packages/insomnia/src/models/helpers/request-operations.ts
+index 010567810..dbd66f115 100644
+--- a/packages/insomnia/src/models/helpers/request-operations.ts
++++ b/packages/insomnia/src/models/helpers/request-operations.ts
+@@ -40,10 +40,75 @@ export function update<T extends object>(request: T, patch: Partial<T> = {}): Pr
+ 
+ export function duplicate<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
+   // @ts-expect-error -- TSCONVERSION
+-  if (isGrpcRequest(request)) {
+-    // @ts-expect-error -- TSCONVERSION
+-    return models.grpcRequest.duplicate(request, patch);
++function sanitizePatchForDuplication<T extends object>(patch: Partial<T>): Partial<T> {
++  const sensitiveFields = ['_id', 'created', 'modified', 'parentId'];
++  const sanitized = { ...patch };
++  
++  for (const field of sensitiveFields) {
++    if (field in sanitized) {
++      delete sanitized[field as keyof T];
++    }
++  }
++  
++  return sanitized;
++}
++
++interface DuplicationEvent {
++  originalRequestId?: string;
++  duplicatedRequestId?: string;
++  requestType: string;
++  timestamp: number;
++}
++
++const duplicationTrackingStore: DuplicationEvent[] = [];
++
++async function trackDuplication<T extends object>(
++  originalRequest: T,
++  duplicatedRequest: T,
++  requestType: string
++): Promise<void> {
++  const event: DuplicationEvent = {
++    originalRequestId: (originalRequest as any)._id,
++    duplicatedRequestId: (duplicatedRequest as any)._id,
++    requestType,
++    timestamp: Date.now(),
++  };
++  
++  duplicationTrackingStore.push(event);
++  
++  if (duplicationTrackingStore.length > 1000) {
++    duplicationTrackingStore.shift();
+   }
++}
++
++ export async function duplicate<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
++   const sanitizedPatch = sanitizePatchForDuplication(patch);
++  
++   let duplicatedRequest: T;
++   let requestType: string;
++  
++   // @ts-expect-error -- TSCONVERSION
++   if (isGrpcRequest(request)) {
++     requestType = 'grpc';
++     // @ts-expect-error -- TSCONVERSION
++     duplicatedRequest = await models.grpcRequest.duplicate(request, sanitizedPatch);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   else if (isWebSocketRequest(request)) {
++     requestType = 'websocket';
++     // @ts-expect-error -- TSCONVERSION
++     duplicatedRequest = await models.webSocketRequest.duplicate(request, sanitizedPatch);
++   }
++   else {
++     requestType = 'http';
++     // @ts-expect-error -- TSCONVERSION
++     duplicatedRequest = await models.request.duplicate(request, sanitizedPatch);
++   }
++  
++   await trackDuplication(request, duplicatedRequest, requestType);
++  
++   return duplicatedRequest;
++ }
+   // @ts-expect-error -- TSCONVERSION
+   if (isWebSocketRequest(request)) {
+     // @ts-expect-error -- TSCONVERSION

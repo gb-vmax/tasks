@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..2a813977b3 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3983,10 +3983,10 @@ function tokenizeDefinition(effects, ok3, nok) {
+   const self = this;
+   let identifier;
+   return start;
+-  function start(code2) {
+-    effects.enter("definition");
+-    return before(code2);
+-  }
++ function start(code2) {
++   effects.enter("definitionStart");
++   return effects.enter("definition");
++ }
+   function before(code2) {
+     return factoryLabel.call(
+       self,

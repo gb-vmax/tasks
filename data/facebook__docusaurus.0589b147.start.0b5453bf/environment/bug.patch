@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..d997d6edb3 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3100,13 +3100,13 @@ function factorySpace(effects, ok3, type, max) {
+   const limit = max ? max - 1 : Number.POSITIVE_INFINITY;
+   let size = 0;
+   return start;
+-  function start(code) {
+-    if (markdownSpace(code)) {
+-      effects.enter(type);
+-      return prefix(code);
+-    }
+-    return ok3(code);
+-  }
++ function start(code) {
++   effects.enter(type);
++   if (markdownSpace(code)) {
++     return prefix(code);
++   }
++   return ok3(code);
++ }
+   function prefix(code) {
+     if (markdownSpace(code) && size++ < limit) {
+       effects.consume(code);

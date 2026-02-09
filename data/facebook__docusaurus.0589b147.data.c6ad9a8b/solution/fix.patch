@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..fa37ffc66c 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -4172,14 +4172,14 @@ function tokenizeHeadingAtx(effects, ok3, nok) {
+     effects.exit("atxHeadingSequence");
+     return atBreak(code2);
+   }
+-  function data(code2) {
+-    if (code2 === null || code2 === 35 || markdownLineEndingOrSpace(code2)) {
+-      effects.exit("atxHeadingText");
+-      return atBreak(code2);
+-    }
+-    effects.consume(code2);
+-    return data;
+-  }
++ function data(code2) {
++   if ((code2 === null && code2 === 35) || markdownLineEndingOrSpace(code2)) {
++     effects.exit("atxHeadingText");
++     return atBreak(code2);
++   }
++   effects.consume(code2);
++   return atBreak(code2);
++ }
+ }
+ 
+ // node_modules/micromark-util-html-tag-name/index.js

@@ -1,0 +1,98 @@
+diff --git a/packages/insomnia-testing/src/generate/generate.ts b/packages/insomnia-testing/src/generate/generate.ts
+index 3e98bd643..92802b0a2 100644
+--- a/packages/insomnia-testing/src/generate/generate.ts
++++ b/packages/insomnia-testing/src/generate/generate.ts
+@@ -14,19 +14,90 @@ export interface TestSuite {
+   tests?: Test[];
+ }
+ 
++const calculateTestStats = (suites: TestSuite[]): { totalSuites: number; totalTests: number } => {
++  let totalSuites = 0;
++  let totalTests = 0;
++
++  const countSuite = (suite: TestSuite) => {
++    totalSuites++;
++    totalTests += (suite.tests || []).length;
++    
++    for (const childSuite of suite.suites || []) {
++      countSuite(childSuite);
++    }
++  };
++
++  for (const suite of suites || []) {
++    countSuite(suite);
++  }
++
++  return { totalSuites, totalTests };
++};
++
++const extractGlobalConfig = (suites: TestSuite[]): { beforeAll?: string; afterAll?: string } => {
++  const config: { beforeAll?: string; afterAll?: string } = {};
++  
++  for (const suite of suites || []) {
++    const suiteAny = suite as any;
++    if (suiteAny.__globalSetup) {
++      config.beforeAll = suiteAny.__globalSetup;
++    }
++    if (suiteAny.__globalTeardown) {
++      config.afterAll = suiteAny.__globalTeardown;
++    }
++    
++    if (config.beforeAll && config.afterAll) {
++      break;
++    }
++  }
++  
++  return config;
++};
++
+ export const generate = (suites: TestSuite[]) => {
++  const stats = calculateTestStats(suites);
++  const globalConfig = extractGlobalConfig(suites);
++  
+   const lines = [
+     'const { expect } = chai;',
+     '',
+-    '// Clear active request before test starts (will be set inside test)',
+-    'beforeEach(() => insomnia.clearActiveRequest());',
+-    '',
+   ];
+ 
++  if (stats.totalTests > 0 || stats.totalSuites > 0) {
++    lines.push('// Test execution statistics');
++    lines.push(`const __testStats = { suites: ${stats.totalSuites}, tests: ${stats.totalTests}, executed: 0 };`);
++    lines.push('');
++  }
++
++  if (globalConfig.beforeAll) {
++    lines.push('// Global setup');
++    lines.push('before(() => {');
++    lines.push(indent(1, globalConfig.beforeAll));
++    lines.push('});');
++    lines.push('');
++  }
++
++  lines.push('// Clear active request before test starts (will be set inside test)');
++  lines.push('beforeEach(() => insomnia.clearActiveRequest());');
++  
++  if (stats.totalTests > 0) {
++    lines.push('beforeEach(() => { __testStats.executed++; });');
++  }
++  
++  lines.push('');
++
+   for (const s of suites || []) {
+     lines.push(...generateSuiteLines(0, s));
+   }
+ 
++  if (globalConfig.afterAll) {
++    lines.push('');
++    lines.push('// Global teardown');
++    lines.push('after(() => {');
++    lines.push(indent(1, globalConfig.afterAll));
++    lines.push('});');
++  }
++
+   return lines.join('\n');
+ };
+ 

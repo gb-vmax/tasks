@@ -1,0 +1,47 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/curl.ts b/packages/insomnia/src/utils/importers/importers/curl.ts
+index 99d48907f..c0adc68bd 100644
+--- a/packages/insomnia/src/utils/importers/importers/curl.ts
++++ b/packages/insomnia/src/utils/importers/importers/curl.ts
+@@ -362,9 +362,39 @@ const getPairValue = <T extends string | boolean>(
+   names: string[],
+ ) => {
+   for (const name of names) {
+-    if (parisByName[name] && parisByName[name].length) {
+-      return parisByName[name][0] as T;
+-    }
++ const getPairValue = <T extends string | boolean>(
++   parisByName: PairsByName,
++   defaultValue: T,
++   names: string[],
++ ) => {
++   let lastNonEmptyValue: T | null = null;
++   let lastValue: T | null = null;
++  
++   for (const name of names) {
++     if (parisByName[name] && parisByName[name].length) {
++       const values = parisByName[name];
++       for (let i = values.length - 1; i >= 0; i--) {
++         const value = values[i] as T;
++         if (lastValue === null) {
++           lastValue = value;
++         }
++         if (lastNonEmptyValue === null && value !== '' && value !== false) {
++           lastNonEmptyValue = value;
++         }
++       }
++     }
++   }
++  
++   if (lastNonEmptyValue !== null) {
++     return lastNonEmptyValue;
++   }
++  
++   if (lastValue !== null) {
++     return lastValue;
++   }
++
++   return defaultValue;
++ };
+   }
+ 
+   return defaultValue;

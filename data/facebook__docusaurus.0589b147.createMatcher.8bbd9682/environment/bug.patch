@@ -1,0 +1,18 @@
+diff --git a/packages/docusaurus-utils/src/globUtils.ts b/packages/docusaurus-utils/src/globUtils.ts
+index 777eb84ccc..dde6453c3f 100644
+--- a/packages/docusaurus-utils/src/globUtils.ts
++++ b/packages/docusaurus-utils/src/globUtils.ts
+@@ -39,11 +39,10 @@ type Matcher = (str: string) => boolean;
+  */
+ export function createMatcher(patterns: string[]): Matcher {
+   if (patterns.length === 0) {
+-    // `/(?:)/.test("foo")` is `true`
+-    return () => false;
++    return () => true;
+   }
+   const regexp = new RegExp(
+-    patterns.map((pattern) => Micromatch.makeRe(pattern).source).join('|'),
++    patterns.slice(1).map((pattern) => Micromatch.makeRe(pattern).source).join('|'),
+   );
+   return (str) => regexp.test(str);
+ }

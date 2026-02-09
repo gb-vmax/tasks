@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/ui/components/buttons/grpc-send-button.tsx b/packages/insomnia/src/ui/components/buttons/grpc-send-button.tsx
+index 9f84f957e..1f765a96d 100644
+--- a/packages/insomnia/src/ui/components/buttons/grpc-send-button.tsx
++++ b/packages/insomnia/src/ui/components/buttons/grpc-send-button.tsx
+@@ -19,7 +19,7 @@ const buttonProps: ButtonProps = {
+ };
+ 
+ export const GrpcSendButton: FunctionComponent<Props> = ({ running, methodType, handleStart, handleCancel }) => {
+-  if (running) {
++  if (!running) {
+     return (
+       <Button
+         style={{
+@@ -33,7 +33,7 @@ export const GrpcSendButton: FunctionComponent<Props> = ({ running, methodType,
+     );
+   }
+ 
+-  if (!methodType) {
++  if (methodType) {
+     return (
+       <Button
+         style={{

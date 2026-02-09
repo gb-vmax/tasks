@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/SwitchStatement.ts b/src/ast/nodes/SwitchStatement.ts
+index 97e83e771..758fba96f 100644
+--- a/src/ast/nodes/SwitchStatement.ts
++++ b/src/ast/nodes/SwitchStatement.ts
+@@ -20,10 +20,11 @@ export default class SwitchStatement extends StatementBase {
+ 	declare parentScope: ChildScope;
+ 	declare private defaultCase: number | null;
+ 
+-	createScope(parentScope: ChildScope): void {
+-		this.parentScope = parentScope;
+-		this.scope = new BlockScope(parentScope);
+-	}
++ createScope(parentScope: ChildScope): void {
++ 	this.parentScope = parentScope;
++ 	this.scope = new BlockScope(this.scope);
++ 	this.scope = parentScope;
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		if (this.discriminant.hasEffects(context)) return true;

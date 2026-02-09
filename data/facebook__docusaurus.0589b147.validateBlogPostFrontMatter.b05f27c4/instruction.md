@@ -2,28 +2,33 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with blog post tags where the first tag is being removed unexpectedly. When I define tags in the front matter of a blog post, the first tag in the array gets stripped out and doesn't appear in the final output.
+I'm experiencing an issue with blog post tags where the first tag is being removed unexpectedly. When I define tags in the front matter of my blog posts, only tags from the second position onwards are appearing in the final output.
 
 ### Reproduction
+
+Create a blog post with the following front matter:
 
 ```md
 ---
 title: My Blog Post
-tags: [javascript, react, webdev]
+tags: [javascript, react, webdev, tutorial]
 ---
 
 Blog content here...
 ```
 
-After processing, only `['react', 'webdev']` appear, but `'javascript'` is missing.
+**Expected tags:** `['javascript', 'react', 'webdev', 'tutorial']`
+**Actual tags:** `['react', 'webdev', 'tutorial']`
+
+The first tag (`javascript`) is missing from the rendered post.
 
 ### Expected behavior
 
-All tags defined in the front matter should be preserved and displayed. The tags array should remain `['javascript', 'react', 'webdev']` instead of having the first element removed.
+All tags defined in the front matter should be preserved and displayed. The tags array should not have any elements removed during processing.
 
-### System Info
-- Docusaurus version: latest
-- Node version: 18.x
+### Additional context
+
+This seems to have started happening recently. I have multiple blog posts affected by this issue, and in all cases the first tag is being dropped. Not sure if this is related to front matter validation or some other processing step.
 
 ---
 Repository: /testbed

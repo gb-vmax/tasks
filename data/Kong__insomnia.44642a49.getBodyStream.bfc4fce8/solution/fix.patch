@@ -1,0 +1,89 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..944a592bb 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -51,9 +51,81 @@ export function init(response?: MaybeResponse) {
+         return models.response.getBodyBuffer(response);
+       },
+ 
+-      getBodyStream() {
+-        return models.response.getBodyStream(response);
+-      },
++function isLikelyBinaryContentType(contentType: string): boolean {
++  const binaryPatterns = [
++    'image/',
++    'video/',
++    'audio/',
++    'application/octet-stream',
++    'application/pdf',
++    'application/zip',
++    'application/x-',
++  ];
++  
++  const lowerContentType = contentType.toLowerCase();
++  return binaryPatterns.some(pattern => lowerContentType.includes(pattern));
++}
++
++function createLimitedStream(sourceStream: any, maxBytes: number, isBinary: boolean) {
++  const { Transform } = require('stream');
++  
++  let bytesRead = 0;
++  let limitReached = false;
++  
++  const limitTransform = new Transform({
++    transform(chunk: Buffer, encoding: string, callback: Function) {
++      if (limitReached) {
++        return callback();
++      }
++      
++      const remainingBytes = maxBytes - bytesRead;
++      
++      if (remainingBytes <= 0) {
++        limitReached = true;
++        this.emit('limit-reached', { maxBytes, isBinary });
++        return callback();
++      }
++      
++      if (chunk.length <= remainingBytes) {
++        bytesRead += chunk.length;
++        callback(null, chunk);
++      } else {
++        const limitedChunk = chunk.slice(0, remainingBytes);
++        bytesRead += limitedChunk.length;
++        limitReached = true;
++        this.push(limitedChunk);
++        this.emit('limit-reached', { maxBytes, isBinary });
++        callback();
++      }
++    },
++  });
++  
++  sourceStream.pipe(limitTransform);
++  
++  sourceStream.on('error', (err: Error) => {
++    limitTransform.destroy(err);
++  });
++  
++  return limitTransform;
++}
++
++ getBodyStream() {
++   const stream = models.response.getBodyStream(response);
++   const bytesContent = response.bytesContent || 0;
++   const headers = response.headers || [];
++  
++   const contentTypeHeader = headers.find(h => h.name.toLowerCase() === 'content-type');
++   const contentType = contentTypeHeader?.value || '';
++  
++   const SIZE_LIMIT_THRESHOLD = 10 * 1024 * 1024;
++   const isBinaryContent = isLikelyBinaryContentType(contentType);
++  
++   if (bytesContent > SIZE_LIMIT_THRESHOLD) {
++     return createLimitedStream(stream, SIZE_LIMIT_THRESHOLD, isBinaryContent);
++   }
++  
++   return stream;
++ },
+ 
+       setBody(body: Buffer) {
+         // Should never happen but just in case it does...

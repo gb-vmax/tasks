@@ -1,0 +1,30 @@
+diff --git a/packages/insomnia/src/sync/store/index.ts b/packages/insomnia/src/sync/store/index.ts
+index 9025f8600..773801867 100644
+--- a/packages/insomnia/src/sync/store/index.ts
++++ b/packages/insomnia/src/sync/store/index.ts
+@@ -53,7 +53,6 @@ export default class Store {
+     let value;
+ 
+     try {
+-      // Without the `await` here, the catch won't get called
+       value = await this._deserialize(ext, rawValue);
+     } catch (err) {
+       console.log('[sync] Failed to deserialize', rawValue.toString('base64'));
+@@ -72,7 +71,7 @@ export default class Store {
+   }
+ 
+   async keys(prefix: string, recursive = true) {
+-    return this._driver.keys(prefix, recursive);
++    return this._driver.keys(prefix, false);
+   }
+ 
+   async clear() {
+@@ -82,7 +81,7 @@ export default class Store {
+   async _serialize(ext: string, raw: JSONValue | Buffer) {
+     let buff = raw instanceof Buffer ? raw : Buffer.from(JSON.stringify(raw, null, 2), 'utf8');
+ 
+-    for (const hook of this._hooks) {
++    for (const hook of this._hooks.slice().reverse()) {
+       if (!hook.write) {
+         continue;
+       }

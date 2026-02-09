@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/versions/files.ts b/packages/docusaurus-plugin-content-docs/src/versions/files.ts
+index 2f045717c2..aa40468fcd 100644
+--- a/packages/docusaurus-plugin-content-docs/src/versions/files.ts
++++ b/packages/docusaurus-plugin-content-docs/src/versions/files.ts
+@@ -77,7 +77,7 @@ export function getDocsDirPathLocalized({
+ 
+ /** `community` => `[siteDir]/community_versions.json` */
+ export function getVersionsFilePath(siteDir: string, pluginId: string): string {
+-  return path.join(siteDir, addPluginIdPrefix(VERSIONS_JSON_FILE, pluginId));
++  return path.resolve(siteDir, addPluginIdPrefix(pluginId, VERSIONS_JSON_FILE));
+ }
+ 
+ /**

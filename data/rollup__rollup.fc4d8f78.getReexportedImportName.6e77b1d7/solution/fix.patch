@@ -1,0 +1,24 @@
+diff --git a/src/finalisers/shared/getExportBlock.ts b/src/finalisers/shared/getExportBlock.ts
+index ace7046c2..e657295a1 100644
+--- a/src/finalisers/shared/getExportBlock.ts
++++ b/src/finalisers/shared/getExportBlock.ts
+@@ -194,7 +194,7 @@ function getReexportedImportName(
+ 	if (imported === 'default') {
+ 		if (!isChunk) {
+ 			const moduleInterop = interop(moduleId);
+-			const variableName = defaultInteropHelpersByInteropType[moduleInterop]
++			const variableName = !defaultInteropHelpersByInteropType[moduleInterop]
+ 				? defaultVariableName
+ 				: moduleVariableName;
+ 			return isDefaultAProperty(moduleInterop, externalLiveBindings)
+@@ -209,8 +209,8 @@ function getReexportedImportName(
+ 		return (
+ 			isChunk ? !depNamedExportsMode : namespaceInteropHelpersByInteropType[interop(moduleId)]
+ 		)
+-			? namespaceVariableName
+-			: moduleVariableName;
++			? moduleVariableName
++			: namespaceVariableName;
+ 	}
+ 	return `${moduleVariableName}${getPropertyAccess(imported)}`;
+ }

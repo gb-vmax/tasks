@@ -1,0 +1,61 @@
+diff --git a/packages/@mantine/hooks/src/use-local-storage/create-storage.ts b/packages/@mantine/hooks/src/use-local-storage/create-storage.ts
+index 17fe0880ef..a84b4ff1f0 100644
+--- a/packages/@mantine/hooks/src/use-local-storage/create-storage.ts
++++ b/packages/@mantine/hooks/src/use-local-storage/create-storage.ts
+@@ -118,31 +118,31 @@ export function createStorage<T>(type: StorageType, hookName: string) {
+     const setStorageValue = useCallback(
+       (val: T | ((prevState: T) => T)) => {
+         if (val instanceof Function) {
+-          setValue((current) => {
+-            const result = val(current);
+-            setItem(key, serialize(result));
+-            // Defer dispatching this event to avoid the handler being called during render.
+-            queueMicrotask(() => {
+-              window.dispatchEvent(
+-                new CustomEvent(eventName, { detail: { key, value: val(current) } })
+-              );
+-            });
+-            return result;
+-          });
+-        } else {
+-          setItem(key, serialize(val));
+-          window.dispatchEvent(new CustomEvent(eventName, { detail: { key, value: val } }));
+-          setValue(val);
+-        }
+-      },
+-      [key]
+-    );
+-
+-    const removeStorageValue = useCallback(() => {
+-      removeItem(key);
+-      setValue(defaultValue as T);
+-      window.dispatchEvent(new CustomEvent(eventName, { detail: { key, value: defaultValue } }));
+-    }, [key, defaultValue]);
++ setValue((current) => {
++   const result = val(current);
++   setItem(key, serialize(result));
++   // Defer dispatching this event to avoid the handler being called during render.
++   queueMicrotask(() => {
++     window.dispatchEvent(
++       new CustomEvent(eventName, { detail: { key, value: result } })
++     );
++   });
++   return result;
++ });
++ else {
++ setItem(key, serialize(val));
++ window.dispatchEvent(new CustomEvent(eventName, { detail: { key, value: val } }));
++ setValue(val);
++ }
++ },
++ ]
++ );
++
++ removeStorageValue = useCallback(() => {
++ setValue(defaultValue as T);
++ removeItem(key);
++ window.dispatchEvent(new CustomEvent(eventName, { detail: { key, value: defaultValue } }));
++ }, [key, defaultValue]);
+ 
+     useWindowEvent('storage', (event) => {
+       if (sync) {

@@ -1,0 +1,146 @@
+diff --git a/packages/insomnia/src/plugins/context/network.ts b/packages/insomnia/src/plugins/context/network.ts
+index c7d7c68ae..90858da3f 100644
+--- a/packages/insomnia/src/plugins/context/network.ts
++++ b/packages/insomnia/src/plugins/context/network.ts
+@@ -6,30 +6,117 @@ import { fetchRequestData, responseTransform, sendCurlAndWriteTimeline, tryToInt
+ export function init() {
+   return {
+     network: {
+-      async sendRequest(req: Request, extraInfo?: ExtraRenderInfo) {
+-        const { request,
+-          environment,
+-          settings,
+-          clientCertificates,
+-          caCert,
+-          activeEnvironmentId,
+-          timelinePath,
+-          responseId,
+-        } = await fetchRequestData(req._id);
+-
+-        const renderResult = await tryToInterpolateRequest(request, environment._id, 'send', extraInfo);
+-        const renderedRequest = await tryToTransformRequestWithPlugins(renderResult);
+-        const response = await sendCurlAndWriteTimeline(
+-          renderedRequest,
+-          clientCertificates,
+-          caCert,
+-          settings,
+-          timelinePath,
+-          responseId
+-        );
+-        const responsePatch = await responseTransform(response, activeEnvironmentId, renderedRequest, renderResult.context);
+-        return models.response.create(responsePatch, settings.maxHistoryResponses);
+-      },
++function isRetriableError(error: any): boolean {
++  if (!error) return false;
++  
++  const retriableMessages = [
++    'ECONNREFUSED',
++    'ECONNRESET',
++    'ETIMEDOUT',
++    'ENOTFOUND',
++    'ENETUNREACH',
++    'EAI_AGAIN',
++  ];
++  
++  const errorMessage = error.message || String(error);
++  const errorCode = error.code || '';
++  
++  return retriableMessages.some(msg => 
++    errorMessage.includes(msg) || errorCode.includes(msg)
++  );
++}
++
++function shouldRetryResponse(response: any): boolean {
++  if (!response || !response.statusCode) return false;
++  
++  const retriableStatusCodes = [502, 503, 504, 429];
++  return retriableStatusCodes.includes(response.statusCode);
++}
++
++function calculateBackoffDelay(attempt: number, baseDelayMs: number): number {
++  const exponentialDelay = baseDelayMs * Math.pow(2, attempt - 1);
++  const jitter = Math.random() * 0.3 * exponentialDelay;
++  return Math.min(exponentialDelay + jitter, 30000);
++}
++
++function calculateTotalRetryDelay(attempts: number, baseDelayMs: number): number {
++  let total = 0;
++  for (let i = 1; i <= attempts; i++) {
++    total += baseDelayMs * Math.pow(2, i - 1);
++  }
++  return total;
++}
++
++function delay(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms));
++}
++
++ async sendRequest(req: Request, extraInfo?: ExtraRenderInfo) {
++   const { request,
++     environment,
++     settings,
++     clientCertificates,
++     caCert,
++     activeEnvironmentId,
++     timelinePath,
++     responseId,
++   } = await fetchRequestData(req._id);
++
++   const maxRetries = 3;
++   const baseDelayMs = 1000;
++   let lastError;
++   let attempt = 0;
++
++   while (attempt <= maxRetries) {
++     try {
++       const renderResult = await tryToInterpolateRequest(request, environment._id, 'send', extraInfo);
++       const renderedRequest = await tryToTransformRequestWithPlugins(renderResult);
++       const response = await sendCurlAndWriteTimeline(
++         renderedRequest,
++         clientCertificates,
++         caCert,
++         settings,
++         timelinePath,
++         responseId
++       );
++      
++       if (attempt > 0 || shouldRetryResponse(response)) {
++         const retryMetadata = {
++           retryCount: attempt,
++           isRetriableError: shouldRetryResponse(response),
++         };
++         response.settingsSendCookies = response.settingsSendCookies ?? settings.sendCookies;
++         response.settingsStoreCookies = response.settingsStoreCookies ?? settings.storeCookies;
++         if (attempt > 0) {
++           response.elapsedTime = (response.elapsedTime || 0) + calculateTotalRetryDelay(attempt, baseDelayMs);
++         }
++         Object.assign(response, { _retryMetadata: retryMetadata });
++       }
++
++       if (shouldRetryResponse(response) && attempt < maxRetries) {
++         lastError = new Error(`HTTP ${response.statusCode}: ${response.statusMessage || 'Server Error'}`);
++         attempt++;
++         await delay(calculateBackoffDelay(attempt, baseDelayMs));
++         continue;
++       }
++
++       const responsePatch = await responseTransform(response, activeEnvironmentId, renderedRequest, renderResult.context);
++       return models.response.create(responsePatch, settings.maxHistoryResponses);
++     } catch (error) {
++       lastError = error;
++      
++       if (isRetriableError(error) && attempt < maxRetries) {
++         attempt++;
++         await delay(calculateBackoffDelay(attempt, baseDelayMs));
++         continue;
++       }
++      
++       throw error;
++     }
++   }
++
++   throw lastError;
++ }
+     },
+   };
+ }

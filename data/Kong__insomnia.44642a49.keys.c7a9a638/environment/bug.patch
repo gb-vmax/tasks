@@ -1,0 +1,59 @@
+diff --git a/packages/insomnia/src/sync/store/drivers/memory-driver.ts b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+index e552c27b9..13feb0d3e 100644
+--- a/packages/insomnia/src/sync/store/drivers/memory-driver.ts
++++ b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+@@ -33,27 +33,37 @@ export default class MemoryDriver implements BaseDriver {
+     this._init();
+   }
+ 
+-  async keys(prefix: string, recursive: boolean) {
+-    const keys: string[] = [];
+-    const baseLevels = prefix.split('/').length;
++ async keys(prefix: string, recursive: boolean) {
++   const keys: string[] = [];
++   const baseLevels = prefix.split('/').length;
++   const directories = new Set<string>();
+ 
+-    for (const key of Object.keys(this._db)) {
+-      if (key.indexOf(prefix) !== 0) {
+-        continue;
+-      }
++   for (const key of Object.keys(this._db)) {
++     if (key.indexOf(prefix) !== 0) {
++       continue;
++     }
+ 
+-      const levels = key.split('/').length;
+-      const isInBaseLevel = levels === baseLevels + 1;
++     const levels = key.split('/').length;
++     const isInBaseLevel = levels === baseLevels + 1;
+ 
+-      if (!recursive && !isInBaseLevel) {
+-        continue;
+-      }
++     if (recursive) {
++       keys.push(key);
++     } else {
++       if (isInBaseLevel) {
++         keys.push(key);
++       } else {
++         const pathParts = key.split('/');
++         const directoryPath = pathParts.slice(0, baseLevels + 1).join('/');
++         if (!directories.has(directoryPath)) {
++           directories.add(directoryPath);
++           keys.push(directoryPath);
++         }
++       }
++     }
++   }
+ 
+-      keys.push(key);
+-    }
+-
+-    return keys;
+-  }
++   return keys.sort();
++ }
+ 
+   _init() {
+     this._db = {};

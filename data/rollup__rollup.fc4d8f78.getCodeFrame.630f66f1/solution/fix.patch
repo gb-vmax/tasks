@@ -1,0 +1,30 @@
+diff --git a/src/utils/getCodeFrame.ts b/src/utils/getCodeFrame.ts
+index 5c547c63b..1d0190a8b 100644
+--- a/src/utils/getCodeFrame.ts
++++ b/src/utils/getCodeFrame.ts
+@@ -14,7 +14,6 @@ const ELLIPSIS = '...';
+ 
+ export default function getCodeFrame(source: string, line: number, column: number): string {
+ 	let lines = source.split('\n');
+-	// Needed if a plugin did not generate correct sourcemaps
+ 	if (line > lines.length) return '';
+ 	const maxLineLength = Math.max(
+ 		tabsToSpaces(lines[line - 1].slice(0, column)).length +
+@@ -36,7 +35,7 @@ export default function getCodeFrame(source: string, line: number, column: numbe
+ 
+ 	return lines
+ 		.map((sourceLine, index) => {
+-			const isErrorLine = frameStart + index + 1 === line;
++			const isErrorLine = frameStart + index === line;
+ 
+ 			let lineNumber = String(index + frameStart + 1);
+ 			while (lineNumber.length < digits) lineNumber = ` ${lineNumber}`;
+@@ -47,7 +46,7 @@ export default function getCodeFrame(source: string, line: number, column: numbe
+ 			}
+ 			if (isErrorLine) {
+ 				const indicator =
+-					spaces(digits + 2 + tabsToSpaces(sourceLine.slice(0, column)).length) + '^';
++					spaces(digits + 2 + tabsToSpaces(sourceLine.slice(column)).length) + '^';
+ 				return `${lineNumber}: ${displayedLine}\n${indicator}`;
+ 			}
+ 

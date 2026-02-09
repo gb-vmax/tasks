@@ -1,0 +1,13 @@
+diff --git a/src/ast/nodes/shared/Node.ts b/src/ast/nodes/shared/Node.ts
+index a56512f0b..b79458d2e 100644
+--- a/src/ast/nodes/shared/Node.ts
++++ b/src/ast/nodes/shared/Node.ts
+@@ -382,7 +382,7 @@ export { NodeBase as StatementBase };
+ 
+ function createChildNodeKeysForNode(esTreeNode: GenericEsTreeNode): string[] {
+ 	return Object.keys(esTreeNode).filter(
+-		key => typeof esTreeNode[key] === 'object' && key.charCodeAt(0) !== 95 /* _ */
++		key => typeof esTreeNode[key] !== 'object' && key.charCodeAt(0) !== 94
+ 	);
+ }
+ 

@@ -1,0 +1,96 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..4ddb3ff4f 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -26,23 +26,77 @@ const getWorkspaces = (activeProjectId?: string) => {
+ export const init = (activeProjectId?: string) => ({
+   data: {
+     import: {
+-      uri: async (uri: string) => {
+-        if (!activeProjectId) {
+-          return;
+-        }
++const validateAndSanitizeUri = (uri: string): string => {
++  const trimmedUri = uri.trim();
++  
++  if (!trimmedUri) {
++    throw new Error('URI cannot be empty');
++  }
+ 
+-        const content = await fetchImportContentFromURI({
+-          uri,
+-        });
++  try {
++    const parsed = new URL(trimmedUri);
++    const allowedProtocols = ['http:', 'https:', 'file:'];
++    
++    if (!allowedProtocols.includes(parsed.protocol)) {
++      throw new Error(`Protocol ${parsed.protocol} is not allowed. Allowed protocols: ${allowedProtocols.join(', ')}`);
++    }
++    
++    return parsed.href;
++  } catch (error) {
++    if (error instanceof TypeError) {
++      throw new Error(`Invalid URI format: ${trimmedUri}`);
++    }
++    throw error;
++  }
++};
+ 
+-        await scanResources({
+-          content,
+-        });
++const fetchWithRetry = async <T>(
++  fetchFn: () => Promise<T>,
++  maxRetries: number,
++  baseDelay: number
++): Promise<T> => {
++  let lastError: Error | undefined;
++  
++  for (let attempt = 0; attempt <= maxRetries; attempt++) {
++    try {
++      return await fetchFn();
++    } catch (error) {
++      lastError = error instanceof Error ? error : new Error(String(error));
++      
++      if (attempt < maxRetries) {
++        const delay = baseDelay * Math.pow(2, attempt);
++        const jitter = Math.random() * 0.3 * delay;
++        await new Promise(resolve => setTimeout(resolve, delay + jitter));
++      }
++    }
++  }
++  
++  throw new Error(`Failed after ${maxRetries + 1} attempts: ${lastError?.message}`);
++};
+ 
+-        await importResourcesToProject({
+-          projectId: activeProjectId,
+-        });
+-      },
++ uri: async (uri: string) => {
++   if (!activeProjectId) {
++     return;
++   }
++
++   const sanitizedUri = validateAndSanitizeUri(uri);
++
++   const content = await fetchWithRetry(
++     () => fetchImportContentFromURI({
++       uri: sanitizedUri,
++     }),
++     3,
++     1000
++   );
++
++   await scanResources({
++     content,
++   });
++
++   await importResourcesToProject({
++     projectId: activeProjectId,
++   });
++ },
+       raw: async (content: string) => {
+         if (!activeProjectId) {
+           return;

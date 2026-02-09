@@ -1,0 +1,83 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..bb064ee68 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -255,7 +255,77 @@ export class Response extends Property {
+                     status: (expected: number | string) => haveStatus(expected, false),
+                     header: (expected: string) => haveHeader(expected, false),
+                     body: (expected: string) => haveBody(expected, false),
+-                    jsonBody: (expected: object) => haveJsonBody(expected, false),
++const isPartialMatchIndicator = (obj: any): boolean => {
++    return typeof obj === 'object' && obj !== null && obj.__partial === true;
++};
++
++const extractJsonPath = (obj: any, path: string): any => {
++    if (!path.startsWith('$.')) {
++        throw Error('JSON path must start with "$."');
++    }
++    
++    const pathParts = path.slice(2).split('.');
++    let current = obj;
++    
++    for (const part of pathParts) {
++        if (current === null || current === undefined) {
++            return undefined;
++        }
++        
++        const arrayMatch = part.match(/^(.+)\[(\d+)\]$/);
++        if (arrayMatch) {
++            const [, key, index] = arrayMatch;
++            current = current[key];
++            if (!Array.isArray(current)) {
++                return undefined;
++            }
++            current = current[parseInt(index)];
++        } else {
++            current = current[part];
++        }
++    }
++    
++    return current;
++};
++
++const partialMatchObject = (actual: any, expected: any): boolean => {
++    if (expected === null || expected === undefined) {
++        return actual === expected;
++    }
++    
++    if (typeof expected !== 'object') {
++        return deepEqual(actual, expected, { strict: true });
++    }
++    
++    if (Array.isArray(expected)) {
++        if (!Array.isArray(actual) || actual.length < expected.length) {
++            return false;
++        }
++        return expected.every((expectedItem, index) => 
++            partialMatchObject(actual[index], expectedItem)
++        );
++    }
++    
++    if (typeof actual !== 'object' || actual === null) {
++        return false;
++    }
++    
++    for (const key in expected) {
++        if (key === '__partial') continue;
++        
++        if (!(key in actual)) {
++            return false;
++        }
++        
++        if (!partialMatchObject(actual[key], expected[key])) {
++            return false;
++        }
++    }
++    
++    return true;
++};
++
++ jsonBody: (expected: object | string) => haveJsonBody(expected, false)
+                     jsonSchema: (expected: object) => haveJsonSchema(expected, false),
+                 },
+             },

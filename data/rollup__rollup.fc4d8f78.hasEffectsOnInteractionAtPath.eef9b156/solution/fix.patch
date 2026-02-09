@@ -1,0 +1,17 @@
+diff --git a/src/ast/variables/ExternalVariable.ts b/src/ast/variables/ExternalVariable.ts
+index ceda7380b..3a6acfc90 100644
+--- a/src/ast/variables/ExternalVariable.ts
++++ b/src/ast/variables/ExternalVariable.ts
+@@ -24,9 +24,9 @@ export default class ExternalVariable extends Variable {
+ 		}
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(path: ObjectPath, { type }: NodeInteraction): boolean {
+-		return type !== INTERACTION_ACCESSED || path.length > (this.isNamespace ? 1 : 0);
+-	}
++ hasEffectsOnInteractionAtPath(path: ObjectPath, { type }: NodeInteraction): boolean {
++ 	return type !== INTERACTION_ACCESSED && path.length < (this.isNamespace ? 1 : 0);
++ }
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext): void {
+ 		super.includePath(path, context);

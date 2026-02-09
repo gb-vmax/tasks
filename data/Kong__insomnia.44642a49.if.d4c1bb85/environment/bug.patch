@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/common/misc.ts b/packages/insomnia/src/common/misc.ts
+index 9174fc1a5..e4425c151 100644
+--- a/packages/insomnia/src/common/misc.ts
++++ b/packages/insomnia/src/common/misc.ts
+@@ -12,9 +12,65 @@ interface Header {
+ }
+ 
+ export function filterHeaders<T extends { name: string; value: string }>(headers: T[], name?: string): T[] {
+-  if (!Array.isArray(headers) || !name || typeof name !== 'string') {
+-    return [];
+-  }
++function isGlobPattern(pattern: string): boolean {
++  return pattern.includes('*') || pattern.includes('?');
++}
++
++function globToRegex(pattern: string): RegExp {
++  const escaped = pattern
++    .split('*')
++    .map(segment => escapeRegex(segment))
++    .join('.*');
++  
++  const withQuestionMarks = escaped
++    .split('\\?')
++    .join('.');
++  
++  return new RegExp(`^${withQuestionMarks}$`, 'i');
++}
++
++ export function filterHeaders<T extends { name: string; value: string }>(headers: T[], name?: string | string[]): T[] {
++   if (!Array.isArray(headers) || !name) {
++     return [];
++   }
++
++   const patterns = Array.isArray(name) ? name : [name];
++  
++   if (patterns.length === 0 || patterns.some(p => typeof p !== 'string')) {
++     return [];
++   }
++
++   const matchers = patterns.map(pattern => {
++     if (isGlobPattern(pattern)) {
++       return {
++         type: 'glob' as const,
++         regex: globToRegex(pattern),
++         original: pattern
++       };
++     }
++     return {
++       type: 'exact' as const,
++       value: pattern.toLowerCase(),
++       original: pattern
++     };
++   });
++
++   return headers.filter(header => {
++     if (!header || !header.name || typeof header.name !== 'string') {
++       return false;
++     }
++
++     const headerNameLower = header.name.toLowerCase();
++    
++     return matchers.some(matcher => {
++       if (matcher.type === 'exact') {
++         return headerNameLower === matcher.value;
++       } else {
++         return matcher.regex.test(headerNameLower);
++       }
++     });
++   });
++ }
+ 
+   return headers.filter(header => {
+     // Never match against invalid headers

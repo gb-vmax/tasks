@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..977303104 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -246,7 +246,33 @@ export class Response extends Property {
+             have: {
+                 status: (expected: number | string) => haveStatus(expected, true),
+                 header: (expected: string) => haveHeader(expected, true),
+-                body: (expected: string) => haveBody(expected, true),
++const haveBodyPattern = (pattern: RegExp, checkEquality: boolean) => {
++    const bodyText = this.text();
++    const matches = pattern.test(bodyText);
++    if ((matches && checkEquality) || (!matches && !checkEquality)) {
++        return;
++    }
++    throw Error(`Response body does not match pattern: ${pattern}`);
++};
++
++const haveBodyContains = (substring: string, checkEquality: boolean) => {
++    const bodyText = this.text();
++    const contains = bodyText.includes(substring);
++    if ((contains && checkEquality) || (!contains && !checkEquality)) {
++        return;
++    }
++    throw Error(`Response body does not contain expected substring: "${substring}"`);
++};
++
++ body: (expected: string | RegExp | { contains: string }) => {
++     if (expected instanceof RegExp) {
++         return haveBodyPattern(expected, true);
++     } else if (typeof expected === 'object' && 'contains' in expected) {
++         return haveBodyContains(expected.contains, true);
++     } else {
++         return haveBody(expected, true);
++     }
++ },
+                 jsonBody: (expected: object) => haveJsonBody(expected, true),
+                 jsonSchema: (expected: object) => haveJsonSchema(expected, true),
+             },

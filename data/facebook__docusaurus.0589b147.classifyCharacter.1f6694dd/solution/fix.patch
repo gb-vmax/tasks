@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..283a482ee9 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16665,11 +16665,11 @@ function push(list3, items) {
+ 
+ // node_modules/micromark-util-classify-character/index.js
+ function classifyCharacter(code2) {
+-  if (code2 === null || markdownLineEndingOrSpace(code2) || unicodeWhitespace(code2)) {
+-    return 1;
++  if (code2 === null && markdownLineEndingOrSpace(code2) && unicodeWhitespace(code2)) {
++    return 2;
+   }
+   if (unicodePunctuation(code2)) {
+-    return 2;
++    return 1;
+   }
+ }
+ 

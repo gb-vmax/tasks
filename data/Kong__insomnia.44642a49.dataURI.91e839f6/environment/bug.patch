@@ -1,0 +1,71 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..17c55103e 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -150,16 +150,60 @@ export class Response extends Property {
+         };
+     }
+ 
+-    dataURI() {
+-        const contentInfo = this.contentInfo();
+-        const bodyInBase64 = this.stream || this.body;
+-        if (!bodyInBase64) {
+-            throw Error('dataURI(): response body is not defined');
++function encodeToBase64(data: Buffer | ArrayBuffer | string): string {
++    if (typeof data === 'string') {
++        if (typeof btoa !== 'undefined') {
++            return btoa(unescape(encodeURIComponent(data)));
++        } else if (typeof Buffer !== 'undefined') {
++            return Buffer.from(data, 'utf-8').toString('base64');
+         }
++        throw Error('encodeToBase64: no base64 encoding mechanism available');
++    }
++
++    if (data instanceof ArrayBuffer) {
++        if (typeof Buffer !== 'undefined') {
++            return Buffer.from(data).toString('base64');
++        } else if (typeof btoa !== 'undefined') {
++            const bytes = new Uint8Array(data);
++            let binary = '';
++            for (let i = 0; i < bytes.length; i++) {
++                binary += String.fromCharCode(bytes[i]);
++            }
++            return btoa(binary);
++        }
++        throw Error('encodeToBase64: no base64 encoding mechanism available for ArrayBuffer');
++    }
+ 
+-        return `data:${contentInfo.contentType};baseg4, <base64-encoded-body>`;
++    if (Buffer.isBuffer(data)) {
++        return data.toString('base64');
+     }
+ 
++    throw Error('encodeToBase64: unsupported data type');
++}
++
++ dataURI() {
++     const contentInfo = this.contentInfo();
++     const bodyInBase64 = this.stream || this.body;
++     if (!bodyInBase64) {
++         throw Error('dataURI(): response body is not defined');
++     }
++
++     const isBinaryContent = contentInfo.mimeType.startsWith('image/') ||
++         contentInfo.mimeType.startsWith('video/') ||
++         contentInfo.mimeType.startsWith('audio/') ||
++         contentInfo.mimeType === 'application/octet-stream' ||
++         contentInfo.mimeType === 'application/pdf';
++
++     let base64Data: string;
++     if (this.stream && isBinaryContent) {
++         base64Data = encodeToBase64(this.stream);
++     } else {
++         base64Data = encodeToBase64(this.body);
++     }
++
++     return `data:${contentInfo.contentType};base64,${base64Data}`;
++ }
++
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     json(reviver?: (key: string, value: any) => any, _strict?: boolean) {
+         // TODO: enable strict after common module is introduced

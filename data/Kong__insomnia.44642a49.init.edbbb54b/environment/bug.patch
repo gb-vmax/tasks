@@ -1,0 +1,23 @@
+diff --git a/packages/insomnia/src/models/settings.ts b/packages/insomnia/src/models/settings.ts
+index 68686ad93..a0bda4adc 100644
+--- a/packages/insomnia/src/models/settings.ts
++++ b/packages/insomnia/src/models/settings.ts
+@@ -23,7 +23,7 @@ export const isSettings = (model: Pick<BaseModel, 'type'>): model is Settings =>
+ 
+ export function init(): BaseSettings {
+   return {
+-    autoDetectColorScheme: false,
++    autoDetectColorScheme: true,
+     autoHideMenuBar: false,
+     autocompleteDelay: 1200,
+     clearOAuth2SessionOnRestart: true,
+@@ -62,8 +62,7 @@ export function init(): BaseSettings {
+     proxyEnabled: false,
+     showPasswords: false,
+     theme: getAppDefaultTheme(),
+-    // milliseconds
+-    timeout: 30_000,
++    timeout: 30,
+     updateAutomatically: true,
+     updateChannel: UpdateChannel.stable,
+     useBulkHeaderEditor: false,

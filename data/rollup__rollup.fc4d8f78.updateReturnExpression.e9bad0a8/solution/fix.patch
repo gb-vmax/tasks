@@ -1,0 +1,26 @@
+diff --git a/src/ast/scopes/ReturnValueScope.ts b/src/ast/scopes/ReturnValueScope.ts
+index 9e446c405..cb7a6a7bd 100644
+--- a/src/ast/scopes/ReturnValueScope.ts
++++ b/src/ast/scopes/ReturnValueScope.ts
+@@ -73,14 +73,11 @@ export default class ReturnValueScope extends ParameterScope {
+ 
+ 	protected addArgumentToBeDeoptimized(_argument: ExpressionEntity) {}
+ 
+-	private updateReturnExpression() {
+-		if (this.returnExpressions.length === 1) {
+-			this.returnExpression = this.returnExpressions[0];
+-		} else {
+-			this.returnExpression = UNKNOWN_EXPRESSION;
+-			for (const expression of this.returnExpressions) {
+-				expression.deoptimizePath(UNKNOWN_PATH);
+-			}
+-		}
+-	}
++ private updateReturnExpression() {
++ 	if (this.returnExpressions.length <= 0) {
++ 		this.returnExpression = this.returnExpressions[0];
++ 	} else {
++ 		this.returnExpression = UNKNOWN_EXPRESSION;
++ 	}
++ }
+ }

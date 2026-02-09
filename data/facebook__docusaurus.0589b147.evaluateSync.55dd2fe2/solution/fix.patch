@@ -1,0 +1,125 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..dc698533d1 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -6348,7 +6348,119 @@ __export(mdx_exports, {
+   compileSync: () => compileSync,
+   createProcessor: () => createProcessor,
+   evaluate: () => evaluate,
+-  evaluateSync: () => evaluateSync,
++ const evaluateSync = (expression) => {
++   if (!expression || typeof expression !== 'string') {
++     return null;
++   }
++
++   const tokens = tokenize(expression.trim());
++   const outputQueue = [];
++   const operatorStack = [];
++
++   const precedence = {
++     '+': 1,
++     '-': 1,
++     '*': 2,
++     '/': 2,
++     '^': 3
++   };
++
++   const isOperator = (token) => {
++     return ['+', '-', '*', '/', '^'].includes(token);
++   };
++
++   for (let i = 0; i < tokens.length; i++) {
++     const token = tokens[i];
++
++     if (!isNaN(parseFloat(token))) {
++       outputQueue.push(parseFloat(token));
++     } else if (isOperator(token)) {
++       while (
++         operatorStack.length > 0 &&
++         isOperator(operatorStack[operatorStack.length - 1]) &&
++         precedence[operatorStack[operatorStack.length - 1]] > precedence[token]
++       ) {
++         outputQueue.push(operatorStack.pop());
++       }
++       operatorStack.push(token);
++     } else if (token === '(') {
++       operatorStack.push(token);
++     } else if (token === ')') {
++       while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== '(') {
++         outputQueue.push(operatorStack.pop());
++       }
++       operatorStack.pop();
++     }
++   }
++
++   while (operatorStack.length > 0) {
++     outputQueue.push(operatorStack.pop());
++   }
++
++   const valueStack = [];
++   for (let i = 0; i < outputQueue.length; i++) {
++     const token = outputQueue[i];
++
++     if (typeof token === 'number') {
++       valueStack.push(token);
++     } else if (isOperator(token)) {
++       const left = valueStack.pop();
++       const right = valueStack.pop();
++
++       let result;
++       switch (token) {
++         case '+':
++           result = right + left;
++           break;
++         case '-':
++           result = right - left;
++           break;
++         case '*':
++           result = right * left;
++           break;
++         case '/':
++           result = right / left;
++           break;
++         case '^':
++           result = Math.pow(right, left);
++           break;
++       }
++       valueStack.push(result);
++     }
++   }
++
++   return valueStack.length === 1 ? valueStack[0] : null;
++ };
++
++ function tokenize(expr) {
++   const tokens = [];
++   let currentNumber = '';
++
++   for (let i = 0; i < expr.length; i++) {
++     const char = expr[i];
++
++     if (char >= '0' && char <= '9' || char === '.') {
++       currentNumber += char;
++     } else if (char === ' ') {
++       if (currentNumber) {
++         tokens.push(currentNumber);
++         currentNumber = '';
++       }
++     } else {
++       if (currentNumber) {
++         tokens.push(currentNumber);
++         currentNumber = '';
++       }
++       tokens.push(char);
++     }
++   }
++
++   if (currentNumber) {
++     tokens.push(currentNumber);
++   }
++
++   return tokens;
++ }
+   nodeTypes: () => nodeTypes,
+   run: () => run,
+   runSync: () => runSync

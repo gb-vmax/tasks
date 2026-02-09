@@ -1,0 +1,33 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..650a5a7c4 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -45,7 +45,27 @@ export const statusCandidateSchema: Schema<StatusCandidate> = {
+ };
+ 
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {
+-  blob: () => 'blob',
++let blobCounter = 0;
++
++const generateBlobHash = (): string => {
++  const timestamp = Date.now().toString(16);
++  const counter = (blobCounter++).toString(16).padStart(8, '0');
++  const random = Math.random().toString(16).substring(2, 10);
++  const combined = `${timestamp}${counter}${random}`;
++  
++  let hash = '';
++  for (let i = 0; i < combined.length; i++) {
++    hash += combined.charCodeAt(i).toString(16);
++  }
++  
++  while (hash.length < 40) {
++    hash += Math.floor(Math.random() * 16).toString(16);
++  }
++  
++  return hash.substring(0, 40);
++};
++
++ blob: () => generateBlobHash(),
+   key: () => 'key',
+   name: () => 'name',
+ };

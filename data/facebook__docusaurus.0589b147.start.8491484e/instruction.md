@@ -2,29 +2,30 @@
 
 ### Describe the bug
 
-After a recent update, markdown parsing seems to be broken for content that contains spaces. The parser appears to be entering an incorrect state when processing whitespace characters, causing parsing to fail or produce unexpected results.
+After a recent update, markdown parsing is broken when processing whitespace in certain contexts. Documents that previously parsed correctly are now failing to render properly, particularly when dealing with spaces at the beginning of lines or in specific formatting contexts.
 
 ### Reproduction
 
 ```js
-// Parse markdown with spaces
+// Example markdown that fails to parse correctly
 const markdown = `
-# Heading with spaces
-
-This is a paragraph with normal spaces between words.
+  Some indented text
+  
+  * List item with spaces
+  * Another item
 `;
 
+// The parser gets stuck or produces unexpected output
 const result = parseMarkdown(markdown);
-// Parser fails or produces incorrect output
 ```
 
 ### Expected behavior
 
-The markdown parser should correctly handle spaces in content and produce valid parsed output. Spaces between words and after headings should be processed normally without causing parsing errors.
+The markdown parser should correctly handle whitespace and produce the expected AST/output. Indented text and list items with leading spaces should be processed without issues.
 
 ### Additional context
 
-This seems to affect any markdown content that includes whitespace characters. The issue appears to be related to how the space factory function handles the initial whitespace detection logic.
+This seems to affect the `factorySpace` function in the GFM plugin. The parser appears to get into an incorrect state when encountering markdown spaces, causing it to either hang or produce malformed output.
 
 ---
 Repository: /testbed

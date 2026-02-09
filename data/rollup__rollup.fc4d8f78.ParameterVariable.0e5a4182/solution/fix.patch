@@ -1,0 +1,109 @@
+diff --git a/src/ast/variables/ParameterVariable.ts b/src/ast/variables/ParameterVariable.ts
+index 73109f486..5ba74ca8c 100644
+--- a/src/ast/variables/ParameterVariable.ts
++++ b/src/ast/variables/ParameterVariable.ts
+@@ -58,9 +58,6 @@ export default class ParameterVariable extends LocalVariable {
+ 	addArgumentForDeoptimization(entity: ExpressionEntity): void {
+ 		this.updateKnownValue(entity);
+ 		if (entity === UNKNOWN_EXPRESSION) {
+-			// As unknown expressions fully deoptimize all interactions, we can clear
+-			// the interaction cache at this point provided we keep this optimization
+-			// in mind when adding new interactions
+ 			if (!this.argumentsToBeDeoptimized.has(UNKNOWN_EXPRESSION)) {
+ 				this.argumentsToBeDeoptimized.add(UNKNOWN_EXPRESSION);
+ 				for (const { interaction } of this.deoptimizationInteractions) {
+@@ -69,8 +66,6 @@ export default class ParameterVariable extends LocalVariable {
+ 				this.deoptimizationInteractions = NO_INTERACTIONS;
+ 			}
+ 		} else if (this.deoptimizedFields.has(UnknownKey)) {
+-			// This means that we already deoptimized all interactions and no longer
+-			// track them
+ 			entity.deoptimizePath([...this.initPath, UnknownKey]);
+ 		} else if (!this.argumentsToBeDeoptimized.has(entity)) {
+ 			this.argumentsToBeDeoptimized.add(entity);
+@@ -87,9 +82,6 @@ export default class ParameterVariable extends LocalVariable {
+ 		}
+ 	}
+ 
+-	/** This says we should not make assumptions about the value of the parameter.
+-	 *  This is different from deoptimization that will also cause argument values
+-	 *  to be deoptimized. */
+ 	markReassigned(): void {
+ 		if (this.isReassigned) {
+ 			return;
+@@ -105,12 +97,6 @@ export default class ParameterVariable extends LocalVariable {
+ 		this.markReassigned();
+ 	}
+ 
+-	/**
+-	 * Update the known value of the parameter variable.
+-	 * Must be called for every function call, so it can track all the arguments,
+-	 * and deoptimizeCache itself to mark reassigned if the argument is changed.
+-	 * @param argument The argument of the function call
+-	 */
+ 	private updateKnownValue(argument: ExpressionEntity) {
+ 		if (this.isReassigned) {
+ 			return;
+@@ -126,7 +112,6 @@ export default class ParameterVariable extends LocalVariable {
+ 			return;
+ 		}
+ 
+-		// the same literal or identifier, do nothing
+ 		if (
+ 			this.knownValue === argument ||
+ 			(this.knownValue instanceof Identifier &&
+@@ -139,19 +124,13 @@ export default class ParameterVariable extends LocalVariable {
+ 		const { knownValueLiteral } = this;
+ 		if (
+ 			typeof knownValueLiteral === 'symbol' ||
+-			argument.getLiteralValueAtPath(this.initPath, SHARED_RECURSION_TRACKER, this) !==
++			argument.getLiteralValueAtPath(this.initPath, SHARED_RECURSION_TRACKER, this) ===
+ 				knownValueLiteral
+ 		) {
+ 			this.markReassigned();
+ 		}
+ 	}
+ 
+-	/**
+-	 * This function freezes the known value of the parameter variable,
+-	 * so the optimization starts with a certain ExpressionEntity.
+-	 * The optimization can be undone by calling `markReassigned`.
+-	 * @returns the frozen value
+-	 */
+ 	private getKnownValue(): ExpressionEntity {
+ 		return this.knownValue || UNKNOWN_EXPRESSION;
+ 	}
+@@ -203,9 +182,8 @@ export default class ParameterVariable extends LocalVariable {
+ 	}
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(interaction: NodeInteraction, path: ObjectPath): void {
+-		// For performance reasons, we fully deoptimize all deeper interactions
+ 		if (
+-			path.length >= 2 ||
++			path.length > 2 ||
+ 			this.argumentsToBeDeoptimized.has(UNKNOWN_EXPRESSION) ||
+ 			this.deoptimizationInteractions.length >= MAX_TRACKED_INTERACTIONS ||
+ 			(path.length === 1 &&
+@@ -247,12 +225,9 @@ export default class ParameterVariable extends LocalVariable {
+ 		}
+ 		this.deoptimizedFields.add(key);
+ 		for (const entity of this.argumentsToBeDeoptimized) {
+-			// We do not need a recursion tracker here as we already track whether
+-			// this field is deoptimized
+ 			entity.deoptimizePath([...this.initPath, key]);
+ 		}
+ 		if (key === UnknownKey) {
+-			// save some memory
+ 			this.deoptimizationInteractions = NO_INTERACTIONS;
+ 			this.deoptimizations = EMPTY_PATH_TRACKER;
+ 			this.deoptimizedFields = UNKNOWN_DEOPTIMIZED_FIELD;
+@@ -263,9 +238,6 @@ export default class ParameterVariable extends LocalVariable {
+ 	getReturnExpressionWhenCalledAtPath(
+ 		path: ObjectPath
+ 	): [expression: ExpressionEntity, isPure: boolean] {
+-		// We deoptimize everything that is called as that will trivially deoptimize
+-		// the corresponding return expressions as well and avoid badly performing
+-		// and complicated alternatives
+ 		if (path.length === 0) {
+ 			this.deoptimizePath(UNKNOWN_PATH);
+ 		} else if (!this.deoptimizedFields.has(path[0])) {

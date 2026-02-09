@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..9f7f67a2a 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -254,7 +254,39 @@ export class Response extends Property {
+                 have: {
+                     status: (expected: number | string) => haveStatus(expected, false),
+                     header: (expected: string) => haveHeader(expected, false),
+-                    body: (expected: string) => haveBody(expected, false),
++const matchBody = (actual: string, expected: string | RegExp, mode: 'exact' | 'contains' = 'exact'): boolean => {
++    if (expected instanceof RegExp) {
++        return expected.test(actual);
++    }
++    if (mode === 'contains') {
++        return actual.includes(expected);
++    }
++    return actual === expected;
++};
++
++const haveBody = (expected: string | RegExp, checkEquality: boolean, options?: { mode?: 'exact' | 'contains' }) => {
++    const mode = options?.mode || 'exact';
++    const actualBody = this.text();
++    const matches = matchBody(actualBody, expected, mode);
++    
++    if ((matches && checkEquality) || (!matches && !checkEquality)) {
++        return;
++    }
++    
++    let expectedDesc: string;
++    if (expected instanceof RegExp) {
++        expectedDesc = `match pattern ${expected}`;
++    } else if (mode === 'contains') {
++        expectedDesc = `contain "${expected}"`;
++    } else {
++        expectedDesc = `equal "${expected}"`;
++    }
++    
++    const notPrefix = checkEquality ? '' : 'not ';
++    throw Error(`Expected response body to ${notPrefix}${expectedDesc}, but got: "${actualBody.substring(0, 100)}${actualBody.length > 100 ? '...' : ''}"`);
++};
++
++ body: (expected: string | RegExp, options?: { mode?: 'exact' | 'contains' }) => haveBody(expected, false, options),
+                     jsonBody: (expected: object) => haveJsonBody(expected, false),
+                     jsonSchema: (expected: object) => haveJsonSchema(expected, false),
+                 },

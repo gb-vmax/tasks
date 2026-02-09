@@ -1,0 +1,53 @@
+diff --git a/packages/insomnia-sdk/src/objects/variables.ts b/packages/insomnia-sdk/src/objects/variables.ts
+index 4c72b17f3..cbebf3fab 100644
+--- a/packages/insomnia-sdk/src/objects/variables.ts
++++ b/packages/insomnia-sdk/src/objects/variables.ts
+@@ -36,9 +36,46 @@ export class Variable extends Property {
+ 
+     // cast typecasts a value to the Variable.types of this Variable.
+     cast(value: any) {
+-        if ('_kind' in value && value._kind === 'Variable') {
+-            return value.value;
++private coerceToType(value: any): any {
++    if (this.type === 'string') {
++        return value != null ? String(value) : '';
++    }
++    
++    if (this.type === 'number') {
++        const num = Number(value);
++        return isNaN(num) ? 0 : num;
++    }
++    
++    if (this.type === 'boolean') {
++        if (typeof value === 'boolean') return value;
++        if (typeof value === 'string') {
++            const lower = value.toLowerCase();
++            return lower === 'true' || lower === '1' || lower === 'yes';
+         }
++        return Boolean(value);
++    }
++    
++    return value;
++}
++
++ cast(value: any) {
++     if ('_kind' in value && value._kind === 'Variable') {
++         return this.coerceToType(value.value);
++     }
++    
++     if ('_kind' in value && value._kind === 'VariableList') {
++         const values = [];
++         for (let i = 0; i < value.members.length; i++) {
++             const member = value.members[i];
++             if (member && !member.disabled) {
++                 values.push(member.value);
++             }
++         }
++         return values;
++     }
++    
++     return undefined;
++ }
+         return undefined;
+     }
+ 

@@ -1,0 +1,128 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..524e2271c 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -33,15 +33,116 @@ export class Cookie extends Property {
+     private insoExtensions: InsomniaCookieExtensions = {};
+ 
+     constructor(cookieDef: CookieOptions | string) {
+-        super();
++function normalizeCookieDomain(domain: string): string {
++    if (!domain || typeof domain !== 'string') {
++        throw Error('invalid cookie domain: domain must be a non-empty string');
++    }
+ 
+-        if (typeof cookieDef === 'string') {
+-            const cookieDefParsed = Cookie.parse(cookieDef);
+-            if (!cookieDefParsed) {
+-                throw Error('failed to parse cookie, the cookie string seems invalid');
+-            }
+-            cookieDef = cookieDefParsed;
++    let normalized = domain.trim();
++
++    if (normalized.includes(' ')) {
++        throw Error('invalid cookie domain: domain cannot contain spaces');
++    }
++
++    if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
++        try {
++            const url = new URL(normalized);
++            normalized = url.hostname;
++        } catch {
++            throw Error('invalid cookie domain: malformed URL');
+         }
++    }
++
++    normalized = normalized.toLowerCase();
++
++    const leadingDots = normalized.match(/^\.+/);
++    if (leadingDots && leadingDots[0].length > 1) {
++        normalized = '.' + normalized.replace(/^\.+/, '');
++    }
++
++    if (normalized.length > 253) {
++        throw Error('invalid cookie domain: domain exceeds maximum length of 253 characters');
++    }
++
++    const domainPattern = /^\.?[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/;
++    if (!domainPattern.test(normalized)) {
++        throw Error('invalid cookie domain: domain contains invalid characters or format');
++    }
++
++    return normalized;
++}
++
++function sanitizeCookiePath(path: string): string {
++    if (!path || typeof path !== 'string') {
++        return '/';
++    }
++
++    let sanitized = path.trim();
++
++    if (!sanitized.startsWith('/')) {
++        sanitized = '/' + sanitized;
++    }
++
++    sanitized = sanitized.replace(/\/+/g, '/');
++
++    if (sanitized !== '/' && sanitized.endsWith('/')) {
++        sanitized = sanitized.slice(0, -1);
++    }
++
++    if (sanitized.includes('\\') || sanitized.includes('\0')) {
++        throw Error('invalid cookie path: path contains illegal characters');
++    }
++
++    const dangerousPatterns = ['/../', '/./'];
++    for (const pattern of dangerousPatterns) {
++        if (sanitized.includes(pattern)) {
++            throw Error('invalid cookie path: path contains potentially dangerous patterns');
++        }
++    }
++
++    if (sanitized.length > 4096) {
++        throw Error('invalid cookie path: path exceeds maximum length');
++    }
++
++    return sanitized;
++}
++
++ super();
++
++ if (typeof cookieDef === 'string') {
++     const cookieDefParsed = Cookie.parse(cookieDef);
++     if (!cookieDefParsed) {
++         throw Error('failed to parse cookie, the cookie string seems invalid');
++     }
++     cookieDef = cookieDefParsed;
++ }
++
++ const def = { ...cookieDef };
++
++ if (def.domain) {
++     def.domain = normalizeCookieDomain(def.domain);
++ }
++
++ if (def.path) {
++     def.path = sanitizeCookiePath(def.path);
++ }
++
++ this.extensions = def.extensions ? [...def.extensions] : [];
++ def.extensions = [];
++
++ const cookie = ToughCookie.fromJSON(def);
++ if (!cookie) {
++     throw Error('failed to parse cookie, the cookie string seems invalid');
++ }
++
++ this.id = cookieDef.id || '';
++ this.cookie = cookie;
++ this.insoExtensions = {
++     creation: cookieDef.creation,
++     creationIndex: cookieDef.creationIndex,
++     lastAccessed: cookieDef.lastAccessed,
++     pathIsDefault: cookieDef.pathIsDefault,
++ };
+ 
+         const def = { ...cookieDef };
+         this.extensions = def.extensions ? [...def.extensions] : [];

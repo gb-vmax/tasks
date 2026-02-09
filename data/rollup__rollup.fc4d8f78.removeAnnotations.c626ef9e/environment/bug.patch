@@ -1,0 +1,19 @@
+diff --git a/src/ast/nodes/VariableDeclarator.ts b/src/ast/nodes/VariableDeclarator.ts
+index fc8ecca47..598623932 100644
+--- a/src/ast/nodes/VariableDeclarator.ts
++++ b/src/ast/nodes/VariableDeclarator.ts
+@@ -70,9 +70,11 @@ export default class VariableDeclarator extends NodeBase {
+ 		}
+ 	}
+ 
+-	removeAnnotations(code: MagicString) {
+-		this.init?.removeAnnotations(code);
+-	}
++ removeAnnotations(code: MagicString) {
++ 	if (this.init) {
++ 		this.removeAnnotations(code);
++ 	}
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		const {

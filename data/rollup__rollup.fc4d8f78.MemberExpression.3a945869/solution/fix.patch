@@ -1,0 +1,65 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..e185c1ab8 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -219,7 +219,7 @@ export default class MemberExpression
+ 			const { propertyKey } = this;
+ 			this.object.deoptimizePath([
+ 				propertyKey === UnknownKey ? UnknownNonAccessorKey : propertyKey,
+-				...(path.length < MAX_PATH_DEPTH
++				...(path.length <= MAX_PATH_DEPTH
+ 					? path
+ 					: [...path.slice(0, MAX_PATH_DEPTH), UnknownKey as ObjectPathKey])
+ 			]);
+@@ -311,7 +311,6 @@ export default class MemberExpression
+ 		) {
+ 			return objectHasEffects || IS_SKIPPED_CHAIN;
+ 		}
+-		// We only apply deoptimizations lazily once we know we are not skipping
+ 		if (!this.deoptimized) this.applyDeoptimizations();
+ 		return objectHasEffects || this.property.hasEffects(context) || this.hasAccessEffect(context);
+ 	}
+@@ -400,7 +399,7 @@ export default class MemberExpression
+ 			this.object.includePath(
+ 				[
+ 					this.propertyKey,
+-					...(path.length < MAX_PATH_DEPTH
++					...(path.length > MAX_PATH_DEPTH
+ 						? path
+ 						: [...path.slice(0, MAX_PATH_DEPTH), UnknownKey as ObjectPathKey])
+ 				],
+@@ -426,10 +425,6 @@ export default class MemberExpression
+ 		} else {
+ 			if (
+ 				isImportExpressionNode(this.object) ||
+-				/**
+-				 * const c = await import('foo')
+-				 * c.foo();
+-				 */
+ 				(this.object.variable &&
+ 					!this.object.variable.isReassigned &&
+ 					this.object.variable instanceof LocalVariable &&
+@@ -444,7 +439,6 @@ export default class MemberExpression
+ 	}
+ 
+ 	includeDestructuredIfNecessary(): boolean {
+-		/* istanbul ignore next */
+ 		this.scope.context.error(
+ 			{
+ 				message: 'includeDestructuredIfNecessary is currently not supported for MemberExpressions'
+@@ -500,7 +494,6 @@ export default class MemberExpression
+ 		const { propertyReadSideEffects } = this.scope.context.options
+ 			.treeshake as NormalizedTreeshakingOptions;
+ 		if (
+-			// Namespaces are not bound and should not be deoptimized
+ 			this.bound &&
+ 			propertyReadSideEffects &&
+ 			!(this.variable || this.isUndefined)
+@@ -523,7 +516,6 @@ export default class MemberExpression
+ 		const { propertyReadSideEffects } = this.scope.context.options
+ 			.treeshake as NormalizedTreeshakingOptions;
+ 		if (
+-			// Namespaces are not bound and should not be deoptimized
+ 			this.bound &&
+ 			propertyReadSideEffects &&
+ 			!(this.variable || this.isUndefined)

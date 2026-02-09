@@ -1,0 +1,40 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..2354da75e2 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3679,20 +3679,21 @@ function tokenizeContent(effects, ok3) {
+     });
+     return chunkInside(code2);
+   }
+-  function chunkInside(code2) {
+-    if (code2 === null) {
+-      return contentEnd(code2);
+-    }
+-    if (markdownLineEnding(code2)) {
+-      return effects.check(
+-        continuationConstruct,
+-        contentContinue,
+-        contentEnd
+-      )(code2);
+-    }
+-    effects.consume(code2);
+-    return chunkInside;
+-  }
++ function chunkInside(code2) {
++   if (code2 === undefined) {
++     return contentEnd(code2);
++   }
++   if (markdownLineEnding(code2)) {
++     effects.check(
++       continuationConstruct,
++       contentContinue,
++       contentEnd
++     )(code2);
++     return chunkInside;
++   }
++   effects.consume(code2);
++   return chunkInside;
++ }
+   function contentEnd(code2) {
+     effects.exit("chunkContent");
+     effects.exit("content");

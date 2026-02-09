@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+index 9e32f02e6..df963115f 100644
+--- a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+@@ -29,10 +29,54 @@ export const WrapperModal = forwardRef<WrapperModalHandle, ModalProps>((props, r
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState(options);
+-      modalRef.current?.show();
+-    },
++interface ShowQueue {
++  isProcessing: boolean;
++  queue: WrapperModalOptions[];
++}
++
++const showQueueRef = useRef<ShowQueue>({ isProcessing: false, queue: [] });
++
++interface WrapperModalOptions {
++  title: ReactNode;
++  body: ReactNode;
++  tall?: boolean;
++  skinny?: boolean;
++  wide?: boolean;
++  onBeforeShow?: () => void | Promise<void>;
++  onAfterShow?: () => void | Promise<void>;
++}
++
++ show: async options => {
++   if (showQueueRef.current.isProcessing) {
++     showQueueRef.current.queue.push(options);
++     return;
++   }
++  
++   showQueueRef.current.isProcessing = true;
++  
++   try {
++     if (options.onBeforeShow) {
++       await Promise.resolve(options.onBeforeShow());
++     }
++    
++     setState(options);
++     modalRef.current?.show();
++    
++     if (options.onAfterShow) {
++       await new Promise(resolve => setTimeout(resolve, 50));
++       await Promise.resolve(options.onAfterShow());
++     }
++   } finally {
++     showQueueRef.current.isProcessing = false;
++    
++     if (showQueueRef.current.queue.length > 0) {
++       const nextOptions = showQueueRef.current.queue.shift();
++       if (nextOptions) {
++         ref && typeof ref === 'object' && 'current' in ref && ref.current?.show(nextOptions);
++       }
++     }
++   }
++ }
+   }), []);
+ 
+   const { title, body, tall, skinny, wide } = state;

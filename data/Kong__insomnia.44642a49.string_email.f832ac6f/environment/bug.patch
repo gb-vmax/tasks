@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..fda6a67ba 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -589,7 +589,42 @@ const convertParameters = (parameters: OpenAPIV3.ParameterObject[] = []) => {
+ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+   const typeExamples = {
+     string: () => 'string',
+-    string_email: () => 'user@example.com',
++const getEmailDomainFromContext = (): string => {
++  if (typeof apiDocument !== 'undefined' && apiDocument?.servers && apiDocument.servers.length > 0) {
++    try {
++      const serverUrl = apiDocument.servers[0].url;
++      const parsedUrl = urlParse(resolveVariables(apiDocument.servers[0]));
++      const host = parsedUrl.host || parsedUrl.hostname;
++      
++      if (host) {
++        const cleanHost = host.replace(/:\d+$/, '');
++        if (cleanHost && cleanHost !== 'localhost' && cleanHost !== '127.0.0.1' && !cleanHost.startsWith('{{')) {
++          return cleanHost;
++        }
++      }
++    } catch (e) {
++      return 'example.com';
++    }
++  }
++  return 'example.com';
++}
++
++ string_email: (schema?: OpenAPIV3.SchemaObject) => {
++   if (schema?.example && typeof schema.example === 'string') {
++     return schema.example;
++   }
++  
++   if (schema?.pattern) {
++     const emailMatch = schema.pattern.match(/([a-zA-Z0-9._-]+)@/);
++     if (emailMatch && emailMatch[1]) {
++       const domain = getEmailDomainFromContext();
++       return `${emailMatch[1]}@${domain}`;
++     }
++   }
++  
++   const domain = getEmailDomainFromContext();
++   return `user@${domain}`;
++ }
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,

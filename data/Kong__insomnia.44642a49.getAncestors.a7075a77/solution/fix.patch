@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia/src/templating/base-extension.ts b/packages/insomnia/src/templating/base-extension.ts
+index 7aa13b702..7f359ae24 100644
+--- a/packages/insomnia/src/templating/base-extension.ts
++++ b/packages/insomnia/src/templating/base-extension.ts
+@@ -121,13 +121,63 @@ export default class BaseExtension {
+         models: {
+           request: {
+             getById: models.request.getById,
+-            getAncestors: async (request: any) => {
+-              const ancestors = await db.withAncestors<Request | RequestGroup | Workspace>(request, [
+-                models.requestGroup.type,
+-                models.workspace.type,
+-              ]);
+-              return ancestors.filter(doc => doc._id !== request._id);
+-            },
++function parseAncestorOptions(options: any): { types: string[]; sort: string | null } {
++  if (!options || typeof options !== 'object') {
++    return { types: [], sort: null };
++  }
++  
++  const result: { types: string[]; sort: string | null } = {
++    types: [],
++    sort: null,
++  };
++  
++  if (options.type) {
++    result.types = Array.isArray(options.type) ? options.type : [options.type];
++  } else if (options.types) {
++    result.types = Array.isArray(options.types) ? options.types : [options.types];
++  }
++  
++  if (options.sort === 'closest' || options.sort === 'farthest') {
++    result.sort = options.sort;
++  }
++  
++  return result;
++}
++
++ getAncestors: async (request: any, options?: any) => {
++   const ancestors = await db.withAncestors<Request | RequestGroup | Workspace>(request, [
++     models.requestGroup.type,
++     models.workspace.type,
++   ]);
++  
++   let filtered = ancestors.filter(doc => doc._id !== request._id);
++  
++   const parsedOptions = parseAncestorOptions(options);
++  
++   if (parsedOptions.types && parsedOptions.types.length > 0) {
++     filtered = filtered.filter(doc => parsedOptions.types.includes(doc.type));
++   }
++  
++   if (parsedOptions.sort) {
++     const depthMap = new Map<string, number>();
++     filtered.forEach((doc, index) => {
++       depthMap.set(doc._id, index);
++     });
++    
++     filtered.sort((a, b) => {
++       const depthA = depthMap.get(a._id) ?? 0;
++       const depthB = depthMap.get(b._id) ?? 0;
++      
++       if (parsedOptions.sort === 'closest') {
++         return depthA - depthB;
++       } else {
++         return depthB - depthA;
++       }
++     });
++   }
++  
++   return filtered;
++ },
+           },
+           workspace: {
+             getById: models.workspace.getById,

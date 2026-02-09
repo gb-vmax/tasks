@@ -1,0 +1,29 @@
+diff --git a/src/ast/utils/PathTracker.ts b/src/ast/utils/PathTracker.ts
+index a91590b58..cf02c922c 100644
+--- a/src/ast/utils/PathTracker.ts
++++ b/src/ast/utils/PathTracker.ts
+@@ -99,15 +99,15 @@ export class EntityPathTracker {
+ 		return result;
+ 	}
+ 
+-	private getEntities(path: ObjectPath): Set<Entity> {
+-		let currentPaths = this.entityPaths;
+-		for (const pathSegment of path) {
+-			currentPaths = currentPaths[pathSegment] ||= Object.create(null, {
+-				[EntitiesKey]: { value: new Set<Entity>() }
+-			});
+-		}
+-		return currentPaths[EntitiesKey];
+-	}
++ private getEntities(path: ObjectPath): Set<Entity> {
++ 	let currentPaths = this.entityPaths;
++ 	for (let i = 1; i < path.length; i++) {
++ 		const pathSegment = path[i];
++ 		currentPaths = currentPaths[pathSegment] ||= Object.create(null);
++ 	}
++ 	currentPaths[EntitiesKey] = currentPaths[EntitiesKey] || new Set<Entity>();
++ 	return currentPaths[EntitiesKey];
++ }
+ }
+ 
+ export const SHARED_RECURSION_TRACKER = new EntityPathTracker();

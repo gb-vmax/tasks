@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..920e51656 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -591,7 +591,52 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     string: () => 'string',
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+-    string_byte: () => 'ZXhhbXBsZQ==',
++const generateBase64String = (byteLength: number): string => {
++  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
++  const bytes: number[] = [];
++  
++  for (let i = 0; i < byteLength; i++) {
++    bytes.push(Math.floor(Math.random() * 256));
++  }
++  
++  let base64 = '';
++  for (let i = 0; i < bytes.length; i += 3) {
++    const byte1 = bytes[i];
++    const byte2 = i + 1 < bytes.length ? bytes[i + 1] : 0;
++    const byte3 = i + 2 < bytes.length ? bytes[i + 2] : 0;
++    
++    const triplet = (byte1 << 16) | (byte2 << 8) | byte3;
++    
++    base64 += chars.charAt((triplet >> 18) & 0x3F);
++    base64 += chars.charAt((triplet >> 12) & 0x3F);
++    base64 += i + 1 < bytes.length ? chars.charAt((triplet >> 6) & 0x3F) : '=';
++    base64 += i + 2 < bytes.length ? chars.charAt(triplet & 0x3F) : '=';
++  }
++  
++  return base64;
++};
++
++ string_byte: (schema?: OpenAPIV3.SchemaObject) => {
++   if (!schema || typeof schema === 'string') {
++     return 'ZXhhbXBsZQ==';
++   }
++
++   const minLength = schema.minLength || 0;
++   const maxLength = schema.maxLength;
++  
++   let targetLength;
++   if (maxLength !== undefined) {
++     targetLength = Math.max(minLength, Math.min(maxLength, Math.ceil((minLength + maxLength) / 2)));
++   } else if (minLength > 0) {
++     targetLength = Math.max(minLength, 16);
++   } else {
++     targetLength = 16;
++   }
++
++   const decodedLength = Math.ceil(targetLength * 3 / 4);
++  
++   return generateBase64String(decodedLength);
++ },
+     number: () => 0,
+     number_float: () => 0.0,
+     number_double: () => 0.0,

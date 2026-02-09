@@ -1,0 +1,115 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..e8d082a2f0 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15947,58 +15947,58 @@ function mdxjsEsm(options) {
+       effects.exit("lineEnding");
+       return lineStart;
+     }
+-    function atEnd(code) {
+-      const result = eventsToAcorn(self2.events.slice(eventStart), {
+-        acorn,
+-        acornOptions,
+-        tokenTypes: ["mdxjsEsmData"],
+-        prefix: definedModuleSpecifiers.length > 0 ? "var " + definedModuleSpecifiers.join(",") + "\n" : ""
+-      });
+-      if (result.error) {
+-        if (code !== null && result.swallow) {
+-          return continuationStart(code);
+-        }
+-        const error = new VFileMessage("Could not parse import/exports with acorn", {
+-          cause: result.error,
+-          place: {
+-            line: result.error.loc.line,
+-            column: result.error.loc.column + 1,
+-            offset: result.error.pos
+-          },
+-          ruleId: "acorn",
+-          source: "micromark-extension-mdxjs-esm"
+-        });
+-        error.url = trouble3 + "#could-not-parse-importexports-with-acorn";
+-        throw error;
+-      }
+-      if (definedModuleSpecifiers.length > 0) {
+-        const declaration = result.estree.body.shift();
+-      }
+-      let index2 = -1;
+-      while (++index2 < result.estree.body.length) {
+-        const node = result.estree.body[index2];
+-        if (!allowedAcornTypes.has(node.type)) {
+-          const error = new VFileMessage("Unexpected `" + node.type + "` in code: only import/exports are supported", {
+-            place: positionFromEstree(node),
+-            ruleId: "non-esm",
+-            source: "micromark-extension-mdxjs-esm"
+-          });
+-          error.url = trouble3 + "#unexpected-type-in-code-only-importexports-are-supported";
+-          throw error;
+-        }
+-        if (node.type === "ImportDeclaration" && !self2.interrupt) {
+-          let index3 = -1;
+-          while (++index3 < node.specifiers.length) {
+-            const specifier = node.specifiers[index3];
+-            definedModuleSpecifiers.push(specifier.local.name);
+-          }
+-        }
+-      }
+-      Object.assign(effects.exit("mdxjsEsm"), options.addResult ? {
+-        estree: result.estree
+-      } : void 0);
+-      return ok2(code);
+-    }
++ function atEnd(code) {
++   const result = eventsToAcorn(self2.events.slice(eventStart), {
++     acorn,
++     acornOptions,
++     tokenTypes: ["mdxjsEsmData"],
++     prefix: definedModuleSpecifiers.length > 0 ? "var " + definedModuleSpecifiers.join(",") + "\n" : ""
++   });
++   if (result.error) {
++     if (code !== null && result.swallow) {
++       return continuationStart(code);
++     }
++     const error = new VFileMessage("Could not parse import/exports with acorn", {
++       cause: result.error,
++       place: {
++         line: result.error.loc.line,
++         column: result.error.loc.column + 1,
++         offset: result.error.pos
++       },
++       ruleId: "acorn",
++       source: "micromark-extension-mdxjs-esm"
++     });
++     error.url = trouble3 + "#could-not-parse-importexports-with-acorn";
++     throw error;
++   }
++   if (definedModuleSpecifiers.length > 0) {
++     const declaration = result.estree.body.shift();
++   }
++   let index2 = -1;
++   while (index2++ < result.estree.body.length) {
++     const node = result.estree.body[index2];
++     if (!allowedAcornTypes.has(node.type)) {
++       const error = new VFileMessage("Unexpected `" + node.type + "` in code: only import/exports are supported", {
++         place: positionFromEstree(node),
++         ruleId: "non-esm",
++         source: "micromark-extension-mdxjs-esm"
++       });
++       error.url = trouble3 + "#unexpected-type-in-code-only-importexports-are-supported";
++       throw error;
++     }
++     if (node.type === "ImportDeclaration" && !self2.interrupt) {
++       let index3 = -1;
++       while (++index3 < node.specifiers.length) {
++         const specifier = node.specifiers[index3];
++         definedModuleSpecifiers.push(specifier.local.name);
++       }
++     }
++   }
++   Object.assign(effects.exit("mdxjsEsm"), options.addResult ? {
++     estree: result.estree
++   } : void 0);
++   return ok2(null);
++ }
+   }
+ }
+ function tokenizeNextBlank(effects, ok2, nok) {

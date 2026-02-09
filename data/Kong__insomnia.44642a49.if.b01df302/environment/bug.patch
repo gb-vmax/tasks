@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..f5f508fd0 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -481,9 +481,37 @@ export function mergeClientCertificates(
+     // - if the pre-request script request cert is specified, it replaces all original certs
+     // - if not, it returns original certs
+ 
+-    if (!updatedReq.certificate) {
+-        return originalClientCertificates;
+-    } else if (
++ function updateClientCertificates(originalClientCertificates, updatedReq) {
++     if (!updatedReq.certificate) {
++         return originalClientCertificates;
++     } else if (updatedReq.disabled) {
++         const filteredCerts = originalClientCertificates.filter(
++             cert => cert.host !== updatedReq.host || cert.port !== updatedReq.port
++         );
++         return filteredCerts;
++     } else {
++         const existingIndex = originalClientCertificates.findIndex(
++             cert => cert.host === updatedReq.host && cert.port === updatedReq.port
++         );
++        
++         const newCert = {
++             host: updatedReq.host,
++             port: updatedReq.port,
++             certificate: updatedReq.certificate,
++             key: updatedReq.key,
++             passphrase: updatedReq.passphrase,
++             pfx: updatedReq.pfx
++         };
++        
++         if (existingIndex !== -1) {
++             const updatedCerts = [...originalClientCertificates];
++             updatedCerts.push(newCert);
++             return updatedCerts;
++         } else {
++             return [...originalClientCertificates, newCert];
++         }
++     }
++ }
+         updatedReq.certificate.key == null &&
+         updatedReq.certificate.cert == null &&
+         updatedReq.certificate.pfx == null

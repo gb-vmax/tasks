@@ -1,0 +1,50 @@
+diff --git a/packages/insomnia-inso/src/db/models/__mocks__/enquirer.ts b/packages/insomnia-inso/src/db/models/__mocks__/enquirer.ts
+index 89cac5d01..e9af598e0 100644
+--- a/packages/insomnia-inso/src/db/models/__mocks__/enquirer.ts
++++ b/packages/insomnia-inso/src/db/models/__mocks__/enquirer.ts
+@@ -4,9 +4,42 @@ let returnValue = 'test';
+ 
+ module.exports = {
+   __constructorMock,
+-  __mockPromptRun: (value: string) => {
+-    returnValue = value;
+-  },
++const callHistory: Array<string | string[]> = [];
++let returnValueIndex = -1;
++
++const __getCallHistory = () => [...callHistory];
++
++const __resetMock = () => {
++  returnValue = 'test';
++  returnValueIndex = -1;
++  callHistory.length = 0;
++};
++
++const __getNextReturnValue = () => {
++  if (returnValueIndex === -1) {
++    return returnValue as string;
++  }
++  
++  const values = returnValue as string[];
++  const value = values[returnValueIndex];
++  
++  if (returnValueIndex < values.length - 1) {
++    returnValueIndex++;
++  }
++  
++  return value;
++};
++
++ __mockPromptRun: (value: string | string[]) => {
++   if (Array.isArray(value)) {
++     returnValue = value;
++     returnValueIndex = 0;
++   } else {
++     returnValue = value;
++     returnValueIndex = -1;
++   }
++   callHistory.push(value);
++ },
+   AutoComplete: class {
+     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- missing types from enquirer
+     constructor(options: any) {

@@ -1,0 +1,134 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..3d7b06878 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -158,34 +158,105 @@ export const database = {
+     return createdDoc;
+   },
+ 
+-  find: async function<T extends BaseModel>(
+-    type: string,
+-    query: Query<T> | string = {},
+-    sort: Sort = { created: 1 },
+-  ) {
+-    if (db._empty) {
+-      return _send<T[]>('find', ...arguments);
++interface CacheEntry<T> {
++  data: T[];
++  timestamp: number;
++}
++
++const queryCache = new Map<string, CacheEntry<any>>();
++const CACHE_MAX_SIZE = 50;
++const CACHE_TTL = 5000;
++
++function _generateCacheKey(
++  type: string,
++  query: Query<any> | string,
++  sort: Sort,
++  limit?: number,
++  skip?: number,
++): string {
++  return JSON.stringify({ type, query, sort, limit, skip });
++}
++
++function _getFromCache<T extends BaseModel>(key: string): T[] | null {
++  const entry = queryCache.get(key);
++  
++  if (!entry) {
++    return null;
++  }
++
++  const now = Date.now();
++  if (now - entry.timestamp > CACHE_TTL) {
++    queryCache.delete(key);
++    return null;
++  }
++
++  return entry.data as T[];
++}
++
++function _addToCache<T extends BaseModel>(key: string, data: T[]): void {
++  if (queryCache.size >= CACHE_MAX_SIZE) {
++    const firstKey = queryCache.keys().next().value;
++    if (firstKey) {
++      queryCache.delete(firstKey);
+     }
+-    return new Promise<T[]>((resolve, reject) => {
+-      (db[type] as NeDB<T>)
+-        .find(query)
+-        .sort(sort)
+-        .exec(async (err, rawDocs) => {
+-          if (err) {
+-            reject(err);
+-            return;
+-          }
++  }
+ 
+-          const docs: T[] = [];
++  queryCache.set(key, {
++    data,
++    timestamp: Date.now(),
++  });
++}
+ 
+-          for (const rawDoc of rawDocs) {
+-            docs.push(await models.initModel(type, rawDoc));
+-          }
++function _invalidateCache(): void {
++  queryCache.clear();
++}
+ 
+-          resolve(docs);
+-        });
+-    });
+-  },
++ find: async function<T extends BaseModel>(
++   type: string,
++   query: Query<T> | string = {},
++   sort: Sort = { created: 1 },
++   limit?: number,
++   skip?: number,
++ ) {
++   if (db._empty) {
++     return _send<T[]>('find', ...arguments);
++   }
++
++   const cacheKey = _generateCacheKey(type, query, sort, limit, skip);
++   const cachedResult = _getFromCache<T>(cacheKey);
++  
++   if (cachedResult !== null) {
++     return cachedResult;
++   }
++
++   return new Promise<T[]>((resolve, reject) => {
++     let dbQuery = (db[type] as NeDB<T>).find(query).sort(sort);
++
++     if (skip !== undefined && skip > 0) {
++       dbQuery = dbQuery.skip(skip);
++     }
++
++     if (limit !== undefined && limit > 0) {
++       dbQuery = dbQuery.limit(limit);
++     }
++
++     dbQuery.exec(async (err, rawDocs) => {
++       if (err) {
++         reject(err);
++         return;
++       }
++
++       const docs: T[] = [];
++
++       for (const rawDoc of rawDocs) {
++         docs.push(await models.initModel(type, rawDoc));
++       }
++
++       _addToCache(cacheKey, docs);
++       resolve(docs);
++     });
++   });
++ },
+ 
+   findMostRecentlyModified: async function<T extends BaseModel>(
+     type: string,

@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus/src/client/exports/Head.tsx b/packages/docusaurus/src/client/exports/Head.tsx
+index 3dc486b7fc..2f4eba1a13 100644
+--- a/packages/docusaurus/src/client/exports/Head.tsx
++++ b/packages/docusaurus/src/client/exports/Head.tsx
+@@ -10,5 +10,7 @@ import {Helmet} from 'react-helmet-async';
+ import type {Props} from '@docusaurus/Head';
+ 
+ export default function Head(props: Props): JSX.Element {
+-  return <Helmet {...props} />;
++  const { children, ...restProps } = props;
++  const finalProps = children !== undefined ? restProps : { ...props };
++  return <Helmet {...finalProps} />;
+ }

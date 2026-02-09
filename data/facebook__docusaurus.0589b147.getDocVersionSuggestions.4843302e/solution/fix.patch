@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts b/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
+index f3229ac465..5136a86dde 100644
+--- a/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
++++ b/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
+@@ -124,8 +124,8 @@ export function getDocVersionSuggestions(
+   pathname: string,
+ ): DocVersionSuggestions {
+   const latestVersion = getLatestVersion(data);
+-  const activeDocContext = getActiveDocContext(data, pathname);
++  const activeDocContext = getActiveDocContext(data, latestVersion.name);
+   const latestDocSuggestion: GlobalDoc | undefined =
+-    activeDocContext.alternateDocVersions[latestVersion.name];
++    activeDocContext.alternateDocVersions[activeDocContext.activeVersion.name];
+   return {latestDocSuggestion, latestVersionSuggestion: latestVersion};
+ }

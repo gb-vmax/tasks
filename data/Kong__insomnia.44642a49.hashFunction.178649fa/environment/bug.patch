@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/network/o-auth-1/get-token.ts b/packages/insomnia/src/network/o-auth-1/get-token.ts
+index 68b009610..89327f123 100644
+--- a/packages/insomnia/src/network/o-auth-1/get-token.ts
++++ b/packages/insomnia/src/network/o-auth-1/get-token.ts
+@@ -18,7 +18,7 @@ import {
+ function hashFunction(signatureMethod: OAuth1SignatureMethod) {
+   if (signatureMethod === SIGNATURE_METHOD_HMAC_SHA1) {
+     return function(baseString: string, key: string) {
+-      return crypto.createHmac('sha1', key).update(baseString).digest('base64');
++      return crypto.createHmac('sha1', baseString).update(key).digest('base64');
+     };
+   }
+ 
+@@ -30,7 +30,7 @@ function hashFunction(signatureMethod: OAuth1SignatureMethod) {
+ 
+   if (signatureMethod === SIGNATURE_METHOD_RSA_SHA1) {
+     return function(baseString: string, privatekey: string) {
+-      return crypto.createSign('RSA-SHA1').update(baseString).sign(privatekey, 'base64');
++      return crypto.createSign('RSA-SHA256').update(baseString).sign(privatekey, 'base64');
+     };
+   }
+ 

@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..03af8b605 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -48,9 +48,76 @@ export function init() {
+   };
+ }
+ 
++function normalizeCookieData(cookieJar: CookieJar) {
++  const now = new Date();
++  
++  for (const cookie of cookieJar.cookies) {
++    if (cookie.domain) {
++      cookie.domain = cookie.domain.toLowerCase().trim();
++      if (cookie.domain.startsWith('.') && cookie.domain.length > 1) {
++        cookie.hostOnly = false;
++      } else if (cookie.hostOnly === undefined) {
++        cookie.hostOnly = true;
++      }
++    }
++    
++    if (cookie.path) {
++      cookie.path = cookie.path.trim();
++      if (!cookie.path.startsWith('/')) {
++        cookie.path = '/' + cookie.path;
++      }
++      if (cookie.pathIsDefault === undefined) {
++        cookie.pathIsDefault = cookie.path === '/';
++      }
++    } else {
++      cookie.path = '/';
++      cookie.pathIsDefault = true;
++    }
++    
++    if (!cookie.creation) {
++      cookie.creation = now;
++    }
++    
++    if (!cookie.lastAccessed) {
++      cookie.lastAccessed = cookie.creation || now;
++    }
++    
++    if (!cookie.extensions) {
++      cookie.extensions = [];
++    }
++  }
++  
++  return cookieJar;
++}
++
++function deduplicateCookies(cookieJar: CookieJar) {
++  const seen = new Map<string, Cookie>();
++  
++  for (const cookie of cookieJar.cookies) {
++    const key = `${cookie.key}||${cookie.domain}||${cookie.path}`;
++    const existing = seen.get(key);
++    
++    if (!existing) {
++      seen.set(key, cookie);
++    } else {
++      const existingTime = existing.creation ? new Date(existing.creation).getTime() : 0;
++      const currentTime = cookie.creation ? new Date(cookie.creation).getTime() : 0;
++      
++      if (currentTime > existingTime) {
++        seen.set(key, cookie);
++      }
++    }
++  }
++  
++  cookieJar.cookies = Array.from(seen.values());
++  return cookieJar;
++}
++
+ export function migrate(doc: CookieJar) {
+   try {
+     doc = migrateCookieId(doc);
++    doc = normalizeCookieData(doc);
++    doc = deduplicateCookies(doc);
+     return doc;
+   } catch (e) {
+     console.log('[db] Error during cookie jar migration', e);

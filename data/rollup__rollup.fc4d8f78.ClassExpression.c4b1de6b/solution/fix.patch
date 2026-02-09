@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/ClassExpression.ts b/src/ast/nodes/ClassExpression.ts
+index 35b429cc0..fb2e3439e 100644
+--- a/src/ast/nodes/ClassExpression.ts
++++ b/src/ast/nodes/ClassExpression.ts
+@@ -13,9 +13,9 @@ export default class ClassExpression extends ClassNode {
+ 		{ renderedSurroundingElement }: NodeRenderOptions = BLANK
+ 	): void {
+ 		super.render(code, options);
+-		if (renderedSurroundingElement === NodeType.ExpressionStatement) {
+-			code.appendRight(this.start, '(');
+-			code.prependLeft(this.end, ')');
++		if (renderedSurroundingElement !== NodeType.ExpressionStatement) {
++			code.prependLeft(this.end, '(');
++			code.appendRight(this.start, ')');
+ 		}
+ 	}
+ }

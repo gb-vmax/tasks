@@ -1,0 +1,61 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..634b28e25 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -257,12 +257,50 @@ export class GitVCS {
+     }
+   }
+ 
+-  async status(filepath: string) {
+-    return git.status({
+-      ...this._baseOpts,
+-      filepath: convertToPosixSep(filepath),
+-    });
+-  }
++private _statusCache: Map<string, { status: string; timestamp: number }> = new Map();
++private _statusCacheTTL = 2000;
++
++private async _getStatusWithCache(filepath: string) {
++  const cacheKey = convertToPosixSep(filepath);
++  const now = Date.now();
++  const cached = this._statusCache.get(cacheKey);
++  
++  if (cached && (now - cached.timestamp) < this._statusCacheTTL) {
++    return cached.status;
++  }
++  
++  const status = await git.status({
++    ...this._baseOpts,
++    filepath: cacheKey,
++  });
++  
++  this._statusCache.set(cacheKey, { status, timestamp: now });
++  
++  if (this._statusCache.size > 100) {
++    const oldestKey = Array.from(this._statusCache.entries())
++      .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
++    this._statusCache.delete(oldestKey);
++  }
++  
++  return status;
++}
++
++ async status(filepath: string | string[]) {
++   if (Array.isArray(filepath)) {
++     const results = await Promise.all(
++       filepath.map(async (path) => {
++         const status = await this._getStatusWithCache(path);
++         return { path, status };
++       })
++     );
++     return results.reduce((acc, { path, status }) => {
++       acc[path] = status;
++       return acc;
++     }, {} as Record<string, string>);
++   }
++  
++   return this._getStatusWithCache(filepath);
++ }
+ 
+   async add(relPath: string) {
+     relPath = convertToPosixSep(relPath);

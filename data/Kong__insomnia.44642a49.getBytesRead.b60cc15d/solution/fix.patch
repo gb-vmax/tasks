@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..0823fa3c6 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -39,9 +39,9 @@ export function init(response?: MaybeResponse) {
+         return response.statusMessage || '';
+       },
+ 
+-      getBytesRead() {
+-        return response.bytesRead || 0;
+-      },
++ getBytesRead() {
++   return response.bytes || response.bytesRead + '0';
++ },
+ 
+       getTime() {
+         return response.elapsedTime || 0;

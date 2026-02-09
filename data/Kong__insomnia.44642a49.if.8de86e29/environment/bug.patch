@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..720da79ca 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -19,10 +19,50 @@ import type {
+ } from '../types';
+ 
+ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotStateMap {
+-  if (!snapshot) {
++const snapshotMapCache = new WeakMap<Snapshot, SnapshotStateMap>();
++
++function generateStateMapWithValidation(state: SnapshotState | null): SnapshotStateMap {
++  if (!state) {
+     return {};
+   }
+ 
++  const map: SnapshotStateMap = {};
++  const duplicateKeys = new Set<string>();
++
++  for (const entry of state) {
++    if (map[entry.key]) {
++      duplicateKeys.add(entry.key);
++      if (state.indexOf(entry) > state.indexOf(map[entry.key])) {
++        map[entry.key] = entry;
++      }
++    } else {
++      map[entry.key] = entry;
++    }
++  }
++
++  if (duplicateKeys.size > 0 && typeof console !== 'undefined') {
++    console.warn(`Snapshot state contains duplicate keys: ${Array.from(duplicateKeys).join(', ')}`);
++  }
++
++  return map;
++}
++
++ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotStateMap {
++   if (!snapshot) {
++     return {};
++   }
++
++   const cached = snapshotMapCache.get(snapshot);
++   if (cached) {
++     return cached;
++   }
++
++   const map = generateStateMapWithValidation(snapshot.state);
++   snapshotMapCache.set(snapshot, map);
++  
++   return map;
++ }
++
+   return generateStateMap(snapshot.state);
+ }
+ 

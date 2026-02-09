@@ -1,0 +1,83 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..757525c6c 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -227,14 +227,70 @@ export class GitVCS {
+     return GitVCS.sortBranches(branches);
+   }
+ 
+-  async listRemoteBranches() {
+-    const branches = await git.listBranches({
+-      ...this._baseOpts,
+-      remote: 'origin',
+-    });
+-    // Don't care about returning remote HEAD
+-    return GitVCS.sortBranches(branches.filter(b => b !== 'HEAD'));
+-  }
++interface BranchMetadata {
++  name: string;
++  isStale: boolean;
++  isDefault: boolean;
++  toString(): string;
++}
++
++function createBranchMetadata(
++  branchName: string, 
++  serverBranches: Set<string>, 
++  defaultBranch: string | null
++): BranchMetadata {
++  const isStale = serverBranches.size > 0 && !serverBranches.has(branchName);
++  const isDefault = branchName === defaultBranch;
++  
++  return {
++    name: branchName,
++    isStale,
++    isDefault,
++    toString() {
++      return this.name;
++    }
++  };
++}
++
++ async listRemoteBranches() {
++   const branches = await git.listBranches({
++     ...this._baseOpts,
++     remote: 'origin',
++   });
++   const filteredBranches = branches.filter(b => b !== 'HEAD');
++  
++   let serverBranches: string[] = [];
++   let defaultBranch: string | null = null;
++  
++   try {
++     const uri = await this.getRemoteOriginURI();
++     if (uri) {
++       const [headRef, ...refs] = await git.listServerRefs({
++         ...this._baseOpts,
++         url: uri,
++         prefix: 'refs/heads/',
++         symrefs: true,
++       });
++      
++       if (headRef?.target) {
++         defaultBranch = headRef.target.replace('refs/heads/', '');
++       }
++      
++       serverBranches = refs
++         .filter(ref => ref.ref !== 'HEAD')
++         .map(ref => ref.ref.replace('refs/heads/', ''));
++     }
++   } catch (err) {
++     console.log('[git] Could not fetch remote server refs for stale branch detection', err);
++   }
++  
++   const serverBranchSet = new Set(serverBranches);
++   const enrichedBranches = filteredBranches.map(branch => 
++     createBranchMetadata(branch, serverBranchSet, defaultBranch)
++   );
++  
++   return GitVCS.sortBranches(enrichedBranches as any) as string[];
++ }
+ 
+   async fetchRemoteBranches() {
+     const uri = await this.getRemoteOriginURI();

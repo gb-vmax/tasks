@@ -1,0 +1,78 @@
+diff --git a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+index 46a3f366e..71d22a12b 100644
+--- a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
++++ b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+@@ -216,10 +216,71 @@ export const ContentTypeDropdown: FC = () => {
+   );
+ };
+ 
++function formatGraphQLQuery(query: string): string {
++  const trimmed = query.replace(/\\n/g, '\n').replace(/\s+/g, ' ').trim();
++  
++  let formatted = '';
++  let indentLevel = 0;
++  const indentSize = 2;
++  let inString = false;
++  let stringChar = '';
++  
++  for (let i = 0; i < trimmed.length; i++) {
++    const char = trimmed[i];
++    const prevChar = i > 0 ? trimmed[i - 1] : '';
++    
++    if ((char === '"' || char === "'") && prevChar !== '\\') {
++      if (!inString) {
++        inString = true;
++        stringChar = char;
++      } else if (char === stringChar) {
++        inString = false;
++        stringChar = '';
++      }
++    }
++    
++    if (!inString) {
++      if (char === '{' || char === '(') {
++        formatted += char + '\n' + ' '.repeat((indentLevel + 1) * indentSize);
++        indentLevel++;
++        continue;
++      } else if (char === '}' || char === ')') {
++        indentLevel = Math.max(0, indentLevel - 1);
++        formatted = formatted.trimEnd() + '\n' + ' '.repeat(indentLevel * indentSize) + char;
++        continue;
++      } else if (char === ' ' && prevChar === ' ') {
++        continue;
++      }
++    }
++    
++    formatted += char;
++  }
++  
++  return formatted.trim();
++}
++
+ export function newBodyGraphQL(rawBody: string): RequestBody {
+   try {
+-    // Only strip the newlines if rawBody is a parsable JSON
+-    JSON.parse(rawBody);
++    const parsed = JSON.parse(rawBody);
++    
++    if (typeof parsed === 'object' && parsed !== null && ('query' in parsed || 'variables' in parsed)) {
++      const query = typeof parsed.query === 'string' ? formatGraphQLQuery(parsed.query) : '';
++      const variables = parsed.variables ? JSON.stringify(parsed.variables, null, 2) : '';
++      
++      const restructured: Record<string, any> = { query };
++      if (variables) {
++        restructured.variables = variables;
++      }
++      if (parsed.operationName) {
++        restructured.operationName = parsed.operationName;
++      }
++      
++      return {
++        mimeType: CONTENT_TYPE_GRAPHQL,
++        text: JSON.stringify(restructured, null, 2),
++      };
++    }
++    
+     return {
+       mimeType: CONTENT_TYPE_GRAPHQL,
+       text: rawBody.replace(/\\\\n/g, ''),

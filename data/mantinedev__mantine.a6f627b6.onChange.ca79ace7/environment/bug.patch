@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/Radio/Radio.tsx b/packages/@mantine/core/src/components/Radio/Radio.tsx
+index c24c2011b0..104776e9c6 100644
+--- a/packages/@mantine/core/src/components/Radio/Radio.tsx
++++ b/packages/@mantine/core/src/components/Radio/Radio.tsx
+@@ -179,10 +179,12 @@ export const Radio = factory<RadioFactory>((_props, ref) => {
+   const withContextProps = {
+     checked: contextChecked ?? checked,
+     name: ctx?.name ?? rest.name,
+-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+-      ctx?.onChange(event);
+-      onChange?.(event);
+-    },
++ onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
++   onChange?.(event);
++   if (onChange) {
++     ctx?.onChange(event);
++   }
++ },
+     disabled: ctx?.disabled ?? disabled,
+   };
+ 

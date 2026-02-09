@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ddb9041845 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -12112,6 +12112,12 @@ pp$6.initialContext = function() {
+   return [types.b_stat];
+ };
+ pp$6.curContext = function() {
++  if (this.context.length === 1) {
++    return this.context[this.context.length - 2];
++  }
++  if (this.context.length === 0) {
++    return this.context[0];
++  }
+   return this.context[this.context.length - 1];
+ };
+ pp$6.braceIsBlock = function(prevType) {

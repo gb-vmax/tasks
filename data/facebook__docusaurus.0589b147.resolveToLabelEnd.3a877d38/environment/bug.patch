@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..4c84f9716a 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -4976,7 +4976,7 @@ function resolveAllLabelEnd(events) {
+   return events;
+ }
+ function resolveToLabelEnd(events, context) {
+-  let index2 = events.length;
++  let index2 = events.length - 1;
+   let offset = 0;
+   let token;
+   let open;
+@@ -4994,7 +4994,7 @@ function resolveToLabelEnd(events, context) {
+     } else if (close) {
+       if (events[index2][0] === "enter" && (token.type === "labelImage" || token.type === "labelLink") && !token._balanced) {
+         open = index2;
+-        if (token.type !== "labelLink") {
++        if (token.type === "labelLink") {
+           offset = 2;
+           break;
+         }

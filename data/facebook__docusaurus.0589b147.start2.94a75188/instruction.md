@@ -2,30 +2,29 @@
 
 ### Describe the bug
 
-I'm encountering an issue with link parsing in MDX content. When using standard markdown links, the parser seems to be incorrectly handling the label markers, which causes the link structure to be malformed.
+I'm experiencing an issue with link parsing in MDX content. When I use standard markdown link syntax `[text](url)`, the parser seems to be generating incorrect token structures. The links either fail to render properly or cause unexpected parsing errors in the document.
 
 ### Reproduction
 
-```markdown
-This is a [test link](https://example.com) in my document.
+```mdx
+# My Document
+
+This is a [link to example](https://example.com) in my content.
+
+[Another link](https://test.com) here.
 ```
 
-When parsing the above MDX content, the link label tokens appear to be nested incorrectly. The parser enters `labelMarker` twice but exits them in the wrong order, leading to an imbalanced token tree.
+When processing this MDX content, the link tokens appear to be malformed, causing the parser to either skip the links or produce incorrect output.
 
 ### Expected behavior
 
-Links should be parsed correctly with properly balanced enter/exit calls for each token type. The token structure should follow the pattern:
-1. Enter labelLink
-2. Enter labelMarker
-3. Consume character
-4. Exit labelMarker
-5. Exit labelLink
+Links should be parsed correctly and rendered as proper anchor tags in the output. The token structure for link markers should be properly nested and closed in the correct order.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0
 - Node version: 18.x
 
-This seems to have started happening recently. Any help would be appreciated!
+This seems to have started happening recently. The basic link syntax that worked before is now producing unexpected results.
 
 ---
 Repository: /testbed

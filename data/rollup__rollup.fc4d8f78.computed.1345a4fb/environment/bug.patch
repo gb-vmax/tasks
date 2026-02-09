@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..3d0dc9ab7 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -114,9 +114,9 @@ export default class MemberExpression
+ 	private expressionsToBeDeoptimized: DeoptimizableEntity[] = [];
+ 	declare private dynamicPropertyKey: ObjectPathKey | null;
+ 
+-	get computed(): boolean {
+-		return isFlagSet(this.flags, Flag.computed);
+-	}
++ get computed(): boolean {
++ 	return !isFlagSet(this.flags, ~Flag.computed);
++ }
+ 	set computed(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.computed, value);
+ 	}

@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..1584adcee 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -150,15 +150,37 @@ export class Response extends Property {
+         };
+     }
+ 
+-    dataURI() {
+-        const contentInfo = this.contentInfo();
+-        const bodyInBase64 = this.stream || this.body;
+-        if (!bodyInBase64) {
+-            throw Error('dataURI(): response body is not defined');
+-        }
++function arrayBufferToBuffer(arrayBuffer: ArrayBuffer): Buffer {
++    const buffer = Buffer.alloc(arrayBuffer.byteLength);
++    const view = new Uint8Array(arrayBuffer);
++    for (let i = 0; i < buffer.length; ++i) {
++        buffer[i] = view[i];
++    }
++    return buffer;
++}
+ 
+-        return `data:${contentInfo.contentType};baseg4, <base64-encoded-body>`;
++function encodeBodyToBase64(body: Buffer | ArrayBuffer | string, charset: string): string {
++    if (body instanceof Buffer) {
++        return body.toString('base64');
++    } else if (body instanceof ArrayBuffer) {
++        const buffer = arrayBufferToBuffer(body);
++        return buffer.toString('base64');
++    } else {
++        const buffer = Buffer.from(body, charset as BufferEncoding);
++        return buffer.toString('base64');
+     }
++}
++
++ dataURI() {
++     const contentInfo = this.contentInfo();
++     const bodyInBase64 = this.stream || this.body;
++     if (!bodyInBase64) {
++         throw Error('dataURI(): response body is not defined');
++     }
++
++     const encodedBody = encodeBodyToBase64(bodyInBase64, contentInfo.charset);
++     return `data:${contentInfo.contentType};base64,${encodedBody}`;
++ }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     json(reviver?: (key: string, value: any) => any, _strict?: boolean) {

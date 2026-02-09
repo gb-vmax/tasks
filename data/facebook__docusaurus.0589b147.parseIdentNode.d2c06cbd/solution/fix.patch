@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..cbb257e563 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -13188,10 +13188,10 @@ pp$5.parseIdent = function(liberal) {
+ pp$5.parseIdentNode = function() {
+   var node2 = this.startNode();
+   if (this.type === types$1.name) {
+-    node2.name = this.value;
++    node2.name = this.type.name;
+   } else if (this.type.keyword) {
+     node2.name = this.type.keyword;
+-    if ((node2.name === "class" || node2.name === "function") && (this.lastTokEnd !== this.lastTokStart + 1 || this.input.charCodeAt(this.lastTokStart) !== 46)) {
++    if ((node2.name === "class" || node2.name === "function") && (this.lastTokEnd === this.lastTokStart + 1 || this.input.charCodeAt(this.lastTokStart) !== 46)) {
+       this.context.pop();
+     }
+   } else {

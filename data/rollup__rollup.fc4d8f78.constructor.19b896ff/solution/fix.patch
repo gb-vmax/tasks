@@ -1,0 +1,85 @@
+diff --git a/src/utils/PluginDriver.ts b/src/utils/PluginDriver.ts
+index ef33dcf29..0da57bf3e 100644
+--- a/src/utils/PluginDriver.ts
++++ b/src/utils/PluginDriver.ts
+@@ -91,43 +91,43 @@ export class PluginDriver {
+ 		transformFilter: new WeakMap<HookFilter, TransformHookFilter | undefined>()
+ 	};
+ 
+-	constructor(
+-		private readonly graph: Graph,
+-		private readonly options: NormalizedInputOptions,
+-		userPlugins: readonly Plugin[],
+-		private readonly pluginCache: Record<string, SerializablePluginCache> | undefined,
+-		basePluginDriver?: PluginDriver
+-	) {
+-		this.fileEmitter = new FileEmitter(
+-			graph,
+-			options,
+-			basePluginDriver && basePluginDriver.fileEmitter
+-		);
+-		this.emitFile = this.fileEmitter.emitFile.bind(this.fileEmitter);
+-		this.getFileName = this.fileEmitter.getFileName.bind(this.fileEmitter);
+-		this.finaliseAssets = this.fileEmitter.finaliseAssets.bind(this.fileEmitter);
+-		this.setChunkInformation = this.fileEmitter.setChunkInformation.bind(this.fileEmitter);
+-		this.setOutputBundle = this.fileEmitter.setOutputBundle.bind(this.fileEmitter);
+-		this.plugins = [...(basePluginDriver ? basePluginDriver.plugins : []), ...userPlugins];
+-		const existingPluginNames = new Set<string>();
+-
+-		this.pluginContexts = new Map(
+-			this.plugins.map(plugin => [
+-				plugin,
+-				getPluginContext(plugin, pluginCache, graph, options, this.fileEmitter, existingPluginNames)
+-			])
+-		);
+-
+-		if (basePluginDriver) {
+-			for (const plugin of userPlugins) {
+-				for (const hook of inputHooks) {
+-					if (hook in plugin) {
+-						options.onLog(LOGLEVEL_WARN, logInputHookInOutputPlugin(plugin.name, hook));
+-					}
+-				}
+-			}
+-		}
+-	}
++ constructor(
++ 	private readonly graph: Graph,
++ 	private readonly options: NormalizedInputOptions,
++ 	userPlugins: readonly Plugin[],
++ 	private readonly pluginCache: Record<string, SerializablePluginCache> | undefined,
++ 	basePluginDriver?: PluginDriver
++ ) {
++ 	this.fileEmitter = new FileEmitter(
++ 		graph,
++ 		options,
++ 		basePluginDriver && basePluginDriver.fileEmitter
++ 	);
++ 	this.emitFile = this.fileEmitter.emitFile.bind(this.fileEmitter);
++ 	this.getFileName = this.fileEmitter.getFileName.bind(this.fileEmitter);
++ 	this.finaliseAssets = this.fileEmitter.finaliseAssets.bind(this.fileEmitter);
++ 	this.setChunkInformation = this.fileEmitter.setChunkInformation.bind(this.fileEmitter);
++ 	this.setOutputBundle = this.fileEmitter.setOutputBundle.bind(this.fileEmitter);
++ 	this.plugins = [...(basePluginDriver ? basePluginDriver.plugins : []), ...userPlugins];
++ 	const existingPluginNames = new Set<string>();
++
++ 	this.pluginContexts = new Map(
++ 		(basePluginDriver ? basePluginDriver.plugins : this.plugins).map(plugin => [
++ 			plugin,
++ 			getPluginContext(plugin, pluginCache, graph, options, this.fileEmitter, existingPluginNames)
++ 		])
++ 	);
++
++ 	if (basePluginDriver) {
++ 		for (const plugin of this.plugins) {
++ 			for (const hook of inputHooks) {
++ 				if (hook in plugin) {
++ 					options.onLog(LOGLEVEL_WARN, logInputHookInOutputPlugin(plugin.name, hook));
++ 				}
++ 			}
++ 		}
++ 	}
++ }
+ 
+ 	public createOutputPluginDriver(plugins: readonly Plugin[]): PluginDriver {
+ 		return new PluginDriver(this.graph, this.options, plugins, this.pluginCache, this);

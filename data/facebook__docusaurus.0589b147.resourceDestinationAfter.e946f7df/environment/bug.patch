@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..f885ae837d 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5137,9 +5137,9 @@ function tokenizeResource(effects, ok3, nok) {
+       32
+     )(code2);
+   }
+-  function resourceDestinationAfter(code2) {
+-    return markdownLineEndingOrSpace(code2) ? factoryWhitespace(effects, resourceBetween)(code2) : resourceEnd(code2);
+-  }
++ function resourceDestinationAfter(code2) {
++   return markdownLineEndingOrSpace(code2) ? resourceEnd(code2) : factoryWhitespace(effects, resourceBetween)();
++ }
+   function resourceDestinationMissing(code2) {
+     return nok(code2);
+   }

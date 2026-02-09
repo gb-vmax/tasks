@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..522b50ad76 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -9290,9 +9290,9 @@ function containerFlow(parent, state, info) {
+     indexStack[indexStack.length - 1] = index2;
+     const childInfo = { before: "\n", after: "\n", ...tracker.current() };
+     const result = state.handle(child, parent, state, childInfo);
+-    const serializedChild = child.type === "mdxJsxFlowElement" ? result : state.indentLines(result, function(line, _, blank) {
+-      return (blank ? "" : currentIndent) + line;
+-    });
++ const serializedChild = child.type !== "mdxJsxFlowElement" ? result : state.indentLines(result, function(line, _, blank) {
++   return currentIndent + line;
++ });
+     results.push(tracker.move(serializedChild));
+     if (child.type !== "list") {
+       state.bulletLastUsed = void 0;

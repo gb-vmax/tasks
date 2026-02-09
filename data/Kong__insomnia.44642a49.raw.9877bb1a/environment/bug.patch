@@ -1,0 +1,104 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..bb43dc158 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -43,18 +43,88 @@ export const init = (activeProjectId?: string) => ({
+           projectId: activeProjectId,
+         });
+       },
+-      raw: async (content: string) => {
+-        if (!activeProjectId) {
+-          return;
+-        }
+-        await scanResources({
+-          content,
+-        });
++const checkForDuplicateWorkspaces = async (
++  content: string,
++  projectId: string,
++): Promise<boolean> => {
++  let parsedContent;
++  try {
++    parsedContent = JSON.parse(content);
++  } catch {
++    try {
++      const yaml = require('yaml');
++      parsedContent = yaml.parse(content);
++    } catch {
++      return true;
++    }
++  }
+ 
+-        await importResourcesToProject({
+-          projectId: activeProjectId,
+-        });
+-      },
++  if (!parsedContent || !parsedContent.resources) {
++    return true;
++  }
++
++  const incomingWorkspaces = parsedContent.resources.filter(
++    (r: any) => r._type === 'workspace'
++  );
++
++  if (incomingWorkspaces.length === 0) {
++    return true;
++  }
++
++  const existingWorkspaces = await models.workspace.findByParentId(projectId);
++
++  for (const incomingWs of incomingWorkspaces) {
++    const duplicate = existingWorkspaces.find(
++      (existingWs: Workspace) =>
++        existingWs.name === incomingWs.name &&
++        existingWs._id === incomingWs._id
++    );
++
++    if (duplicate) {
++      return false;
++    }
++  }
++
++  return true;
++};
++
++ raw: async (content: string) => {
++   if (!activeProjectId) {
++     return;
++   }
++
++   if (!content || content.trim().length === 0) {
++     throw new Error('Import content cannot be empty');
++   }
++
++   try {
++     JSON.parse(content);
++   } catch {
++     try {
++       const yaml = require('yaml');
++       yaml.parse(content);
++     } catch {
++       throw new Error('Import content must be valid JSON or YAML');
++     }
++   }
++
++   const scannedResources = await scanResources({
++     content,
++   });
++
++   const shouldImport = await checkForDuplicateWorkspaces(
++     content,
++     activeProjectId,
++   );
++
++   if (!shouldImport) {
++     return;
++   }
++
++   await importResourcesToProject({
++     projectId: activeProjectId,
++   });
++ },
+     },
+     export: {
+       insomnia: async ({

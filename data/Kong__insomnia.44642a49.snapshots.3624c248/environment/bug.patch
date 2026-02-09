@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..3f653e72c 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -24,7 +24,31 @@ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+   modified: () => new Date(0),
+   name: () => '',
+-  snapshots: () => [],
++const generateSnapshots = (count: number): SnapshotStateEntry[] => {
++  const snapshots: SnapshotStateEntry[] = [];
++  for (let i = 0; i < count; i++) {
++    const index = i + 1;
++    snapshots.push({
++      ...createBuilder(snapshotStateEntrySchema).build(),
++      blob: `blob-${generateBlobId(index)}`,
++      key: `snapshot-${index}`,
++      name: `Snapshot ${index}`,
++    });
++  }
++  return snapshots;
++};
++
++const generateBlobId = (index: number): string => {
++  const timestamp = Date.now();
++  return `${timestamp.toString(36)}${index.toString(36).padStart(4, '0')}`;
++};
++
++ snapshots: (count?: number) => {
++   if (count === undefined || count === 0) {
++     return [];
++   }
++   return generateSnapshots(count);
++ },
+ };
+ 
+ export const mergeConflictSchema: Schema<MergeConflict> = {

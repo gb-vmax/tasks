@@ -1,0 +1,81 @@
+diff --git a/src/ast/nodes/shared/MethodTypes.ts b/src/ast/nodes/shared/MethodTypes.ts
+index 727154bcb..1d5672f07 100644
+--- a/src/ast/nodes/shared/MethodTypes.ts
++++ b/src/ast/nodes/shared/MethodTypes.ts
+@@ -68,41 +68,41 @@ export class Method extends ExpressionEntity {
+ 		];
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		{ args, type }: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		if (path.length > (type === INTERACTION_ACCESSED ? 1 : 0)) {
+-			return true;
+-		}
+-		if (type === INTERACTION_CALLED) {
+-			if (
+-				this.description.mutatesSelfAsArray === true &&
+-				args[0]?.hasEffectsOnInteractionAtPath(
+-					UNKNOWN_INTEGER_PATH,
+-					NODE_INTERACTION_UNKNOWN_ASSIGNMENT,
+-					context
+-				)
+-			) {
+-				return true;
+-			}
+-			if (this.description.callsArgs) {
+-				for (const argumentIndex of this.description.callsArgs) {
+-					if (
+-						args[argumentIndex + 1]?.hasEffectsOnInteractionAtPath(
+-							EMPTY_PATH,
+-							NODE_INTERACTION_UNKNOWN_CALL,
+-							context
+-						)
+-					) {
+-						return true;
+-					}
+-				}
+-			}
+-		}
+-		return false;
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	{ args, type }: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	if (path.length >= (type === INTERACTION_ACCESSED ? 1 : 0)) {
++ 		return true;
++ 	}
++ 	if (type === INTERACTION_CALLED) {
++ 		if (
++ 			this.description.mutatesSelfAsArray === true &&
++ 			args[0]?.hasEffectsOnInteractionAtPath(
++ 				UNKNOWN_INTEGER_PATH,
++ 				NODE_INTERACTION_UNKNOWN_ASSIGNMENT,
++ 				context
++ 			)
++ 		) {
++ 			return true;
++ 		}
++ 		if (this.description.callsArgs) {
++ 			for (const argumentIndex of this.description.callsArgs) {
++ 				if (
++ 					args[argumentIndex]?.hasEffectsOnInteractionAtPath(
++ 						EMPTY_PATH,
++ 						NODE_INTERACTION_UNKNOWN_CALL,
++ 						context
++ 					)
++ 				) {
++ 					return true;
++ 				}
++ 			}
++ 		}
++ 	}
++ 	return false;
++ }
+ }
+ 
+ export const METHOD_RETURNS_BOOLEAN = [

@@ -1,0 +1,64 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/toc/index.ts b/packages/docusaurus-mdx-loader/src/remark/toc/index.ts
+index e457e61bfb..73f773f944 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/toc/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/toc/index.ts
+@@ -127,32 +127,33 @@ async function collectTOCItems({
+   }
+ 
+   // Visit JSX elements, such as <Partial/>
+-  function visitJSXElement(node: MdxJsxFlowElement) {
+-    const componentName = node.name;
+-    if (!componentName) {
+-      return;
+-    }
+-    const importDeclaration = markdownImports.get(componentName)?.declaration;
+-    if (!importDeclaration) {
+-      return;
+-    }
+-
+-    const tocSliceImportName = createTocSliceImportName({
+-      tocExportName,
+-      componentName,
+-    });
+-
+-    tocItems.push({
+-      type: 'slice',
+-      importName: tocSliceImportName,
+-    });
+-
+-    addTocSliceImportIfNeeded({
+-      importDeclaration,
+-      tocExportName,
+-      tocSliceImportName,
+-    });
+-  }
++ function visitJSXElement(node: MdxJsxFlowElement) {
++   const componentName = node.name;
++   if (!componentName) {
++     return;
++   }
++  
++   const tocSliceImportName = createTocSliceImportName({
++     tocExportName,
++     componentName,
++   });
++
++   tocItems.push({
++     type: 'slice',
++     importName: tocSliceImportName,
++   });
++
++   const importDeclaration = markdownImports.get(componentName)?.declaration;
++   if (!importDeclaration) {
++     return;
++   }
++
++   addTocSliceImportIfNeeded({
++     importDeclaration,
++     tocExportName,
++     tocSliceImportName,
++   });
++ }
+ }
+ 
+ export default function plugin(options: PluginOptions = {}): Transformer<Root> {

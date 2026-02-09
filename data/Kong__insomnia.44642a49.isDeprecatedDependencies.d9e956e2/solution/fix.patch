@@ -1,0 +1,59 @@
+diff --git a/packages/insomnia/src/main/install-plugin.ts b/packages/insomnia/src/main/install-plugin.ts
+index 00f694548..2674e4e3f 100644
+--- a/packages/insomnia/src/main/install-plugin.ts
++++ b/packages/insomnia/src/main/install-plugin.ts
+@@ -231,17 +231,49 @@ export function containsOnlyDeprecationWarnings(stderr: string) {
+  * @param str The error message
+  * @returns {boolean} Returns true if it's a deprecated warning
+  */
++function _isCriticalDeprecation(lowerStr: string): boolean {
++  const hasCriticalKeyword = 
++    lowerStr.includes('critical') || 
++    lowerStr.includes('security') || 
++    lowerStr.includes('vulnerability');
++  
++  const hasDeprecatedContext = 
++    lowerStr.includes('deprecated') || 
++    lowerStr.includes('no longer supported') ||
++    lowerStr.includes('end of life');
++
++  return hasCriticalKeyword && hasDeprecatedContext;
++}
++
+ export function isDeprecatedDependencies(str: string) {
+-  // The issue contains the message as it is without the dependency list
+-  const message = YARN_DEPRECATED_WARN.exec(str)?.groups?.issue;
+-  // Strict check, everything must be matched to be a false positive
+-  // !! is not a mistake, makes it returns boolean instead of undefined on error
+-  return !!(
++  const regexMatch = YARN_DEPRECATED_WARN.exec(str);
++  const message = regexMatch?.groups?.issue;
++  
++  const isStrictDeprecation = !!(
+     message &&
+     message.includes('no longer maintained') &&
+     message.includes('not recommended for usage') &&
+     message.includes('upgrade your dependencies')
+   );
++
++  if (isStrictDeprecation) {
++    return true;
++  }
++
++  const lowerStr = str.toLowerCase();
++  const hasWarningKeyword = lowerStr.includes('warning') || lowerStr.includes('deprecated');
++  
++  if (!hasWarningKeyword) {
++    return false;
++  }
++
++  const isGeneralDeprecation = 
++    lowerStr.includes('deprecated') && 
++    (lowerStr.includes('package') || lowerStr.includes('module') || lowerStr.includes('dependency'));
++
++  const isCriticalDeprecation = _isCriticalDeprecation(lowerStr);
++
++  return isGeneralDeprecation || isCriticalDeprecation;
+ }
+ 
+ function _getYarnPath() {

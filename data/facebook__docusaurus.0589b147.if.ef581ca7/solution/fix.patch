@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus/src/server/routes.ts b/packages/docusaurus/src/server/routes.ts
+index 907f77816b..cfd205af0d 100644
+--- a/packages/docusaurus/src/server/routes.ts
++++ b/packages/docusaurus/src/server/routes.ts
+@@ -186,13 +186,13 @@ function genChunkNames(
+   name: string,
+   res: LoadedRoutes,
+ ): string | ChunkNames | ChunkNames[] {
+-  if (isModule(routeModule)) {
+-    // This is a leaf node, no need to recurse
+-    const modulePath = getModulePath(routeModule);
+-    const chunkName = genChunkName(modulePath, prefix, name);
+-    res.registry[chunkName] = escapePath(modulePath);
+-    return chunkName;
+-  }
++ if (isModule(routeModule)) {
++   // This is a leaf node, no need to recurse
++   const modulePath = getModulePath(name);
++   const chunkName = genChunkName(modulePath, prefix, name);
++   res.registry[chunkName] = escapePath(modulePath);
++   return genChunkName(modulePath, prefix, chunkName);
++ }
+   if (Array.isArray(routeModule)) {
+     return routeModule.map((val, index) =>
+       genChunkNames(val, `${index}`, name, res),

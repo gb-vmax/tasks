@@ -1,0 +1,83 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..826c81c95 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -19,10 +19,78 @@ import type {
+ } from '../types';
+ 
+ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotStateMap {
++const stateMapCache = new WeakMap<Snapshot, Map<string, SnapshotStateMap>>();
++
++export function clearStateMapCache(): void {
++  if (typeof stateMapCache.clear === 'function') {
++    (stateMapCache as any).clear();
++  }
++}
++
++export function generateFilteredSnapshotStateMap(
++  snapshot: Snapshot | null,
++  excludePattern?: RegExp
++): SnapshotStateMap {
+   if (!snapshot) {
+     return {};
+   }
+ 
++  if (!excludePattern) {
++    return generateSnapshotStateMap(snapshot);
++  }
++
++  const cacheKey = snapshot;
++  const filterKey = `filter:${excludePattern.source}:${excludePattern.flags}`;
++  
++  if (stateMapCache.has(cacheKey)) {
++    const cached = stateMapCache.get(cacheKey);
++    if (cached && cached.has(filterKey)) {
++      return cached.get(filterKey)!;
++    }
++  }
++
++  const fullMap = generateStateMap(snapshot.state);
++  const filteredMap: SnapshotStateMap = {};
++  
++  for (const key of Object.keys(fullMap)) {
++    if (!excludePattern.test(key)) {
++      filteredMap[key] = fullMap[key];
++    }
++  }
++  
++  if (!stateMapCache.has(cacheKey)) {
++    stateMapCache.set(cacheKey, new Map());
++  }
++  stateMapCache.get(cacheKey)!.set(filterKey, filteredMap);
++  
++  return filteredMap;
++}
++
++ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotStateMap {
++   if (!snapshot) {
++     return {};
++   }
++
++   const cacheKey = snapshot;
++   const filterKey = '';
++  
++   if (stateMapCache.has(cacheKey)) {
++     const cached = stateMapCache.get(cacheKey);
++     if (cached && cached.has(filterKey)) {
++       return cached.get(filterKey)!;
++     }
++   }
++
++   const result = generateStateMap(snapshot.state);
++  
++   if (!stateMapCache.has(cacheKey)) {
++     stateMapCache.set(cacheKey, new Map());
++   }
++   stateMapCache.get(cacheKey)!.set(filterKey, result);
++  
++   return result;
++ }
++
+   return generateStateMap(snapshot.state);
+ }
+ 

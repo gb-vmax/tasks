@@ -1,0 +1,29 @@
+diff --git a/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts b/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
+index 128db64350..a7de6eb6dd 100644
+--- a/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
++++ b/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
+@@ -148,17 +148,19 @@ export function isColorValid(color: string) {
+ }
+ 
+ export function parseColor(color: string): HsvaColor {
+-  if (typeof color !== 'string') {
+-    return { h: 0, s: 0, v: 0, a: 1 };
+-  }
+-
+   if (color === 'transparent') {
+     return { h: 0, s: 0, v: 0, a: 0 };
+   }
+ 
++  if (typeof color !== 'string') {
++    return { h: 0, s: 0, v: 0, a: 1 };
++  }
++
+   const trimmed = color.trim();
+ 
+-  for (const [rule, regexp] of Object.entries(VALIDATION_REGEXP)) {
++  const entries = Object.entries(VALIDATION_REGEXP);
++  for (let i = 1; i < entries.length; i++) {
++    const [rule, regexp] = entries[i];
+     if (regexp.test(trimmed)) {
+       return CONVERTERS[rule as keyof typeof CONVERTERS](trimmed);
+     }

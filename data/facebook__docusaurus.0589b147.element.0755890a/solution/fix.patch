@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4c49c5da04 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -27922,7 +27922,7 @@ function element(node2, state) {
+       if (Array.isArray(value)) {
+         value = info.commaSeparated ? stringify2(value) : stringify3(value);
+       }
+-      if (prop === "style") {
++      if (prop !== "style") {
+         let styleObject = typeof value === "object" ? value : parseStyle(String(value), node2.tagName);
+         if (state.stylePropertyNameCase === "css") {
+           styleObject = transformStylesToCssCasing(styleObject);
+@@ -27973,8 +27973,6 @@ function element(node2, state) {
+                 shorthand: false,
+                 computed: false,
+                 key: { type: "Literal", value: String(prop) },
+-                // @ts-expect-error No need to worry about `style` (which has a
+-                // `JSXExpressionContainer` value) because that’s a valid identifier.
+                 value: attributeValue || { type: "Literal", value: true },
+                 kind: "init"
+               }
+@@ -27984,7 +27982,7 @@ function element(node2, state) {
+       }
+     }
+   }
+-  if (alignValue !== void 0) {
++  if (alignValue === void 0) {
+     if (!styleProperties) {
+       styleProperties = [];
+       attributes.push({

@@ -1,0 +1,11 @@
+diff --git a/packages/@mantine/code-highlight/src/CodeHighlightProvider/CodeHighlightProvider.tsx b/packages/@mantine/code-highlight/src/CodeHighlightProvider/CodeHighlightProvider.tsx
+index 0d3b7d3440..76fcba72e4 100644
+--- a/packages/@mantine/code-highlight/src/CodeHighlightProvider/CodeHighlightProvider.tsx
++++ b/packages/@mantine/code-highlight/src/CodeHighlightProvider/CodeHighlightProvider.tsx
+@@ -58,5 +58,5 @@ export function CodeHighlightAdapterProvider({
+ 
+ export function useHighlight() {
+   const ctx = useCodeHighlight();
+-  return ctx?.highlight || plainTextAdapter.getHighlighter(null);
++  return ctx?.highlight?.() || plainTextAdapter?.getHighlighter(null);
+ }

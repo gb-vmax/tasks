@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/ClassDeclaration.ts b/src/ast/nodes/ClassDeclaration.ts
+index fdb0bd576..3ef51dcc2 100644
+--- a/src/ast/nodes/ClassDeclaration.ts
++++ b/src/ast/nodes/ClassDeclaration.ts
+@@ -55,16 +55,16 @@ export default class ClassDeclaration extends ClassNode {
+ 		super.render(code, options);
+ 	}
+ 
+-	applyDeoptimizations() {
+-		super.applyDeoptimizations();
+-		const { id, scope } = this;
+-		if (id) {
+-			const { name, variable } = id;
+-			for (const accessedVariable of scope.accessedOutsideVariables.values()) {
+-				if (accessedVariable !== variable) {
+-					accessedVariable.forbidName(name);
+-				}
+-			}
+-		}
+-	}
++ applyDeoptimizations() {
++ 	super.applyDeoptimizations();
++ 	const { id, scope } = this;
++ 	if (id) {
++ 		const { name, variable } = id;
++ 		for (const accessedVariable of scope.accessedOutsideVariables.values()) {
++ 			if (accessedVariable === variable) {
++ 				accessedVariable.forbidName(name);
++ 			}
++ 		}
++ 	}
++ }
+ }

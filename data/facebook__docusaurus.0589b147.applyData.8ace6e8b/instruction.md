@@ -1,13 +1,13 @@
 # Bug Report
 
-### Describe the bug
+### Issue with MDX element properties being overwritten
 
-When using MDX with custom properties on elements, the properties from `hProperties` are being overwritten by the element's existing properties instead of the other way around. This means that any properties set via `hProperties` get lost if the element already has properties defined.
+I'm experiencing an issue where properties on MDX elements are being incorrectly overwritten when using custom data attributes. When I set properties on an element and also use `hProperties` in the data object, the original element properties get lost instead of being merged properly.
 
 ### Reproduction
 
 ```jsx
-// MDX content with hProperties
+// MDX content with custom properties
 export const meta = {
   hProperties: {
     className: 'custom-class',
@@ -15,19 +15,20 @@ export const meta = {
   }
 }
 
-<div className="original-class">Content</div>
+<div className="original-class" data-test="value">
+  Content here
+</div>
 ```
 
-Expected: The div should have `className: 'custom-class'` and `id: 'custom-id'`
-Actual: The div keeps `className: 'original-class'` and the custom properties are ignored
+The `hProperties` from the meta data completely replaces the original `className` and other properties on the div, rather than merging them together. I expected both the original properties and the hProperties to be present on the final element.
 
 ### Expected behavior
 
-Properties defined in `hProperties` should take precedence and override any existing properties on the element. This is the standard behavior for applying custom properties in MDX.
+The properties should be merged so that both the original element properties and the `hProperties` are preserved. If there are conflicts, the hProperties should take precedence, but other properties should remain intact.
 
-### System Info
-- @mdx-js/mdx version: 3.0.0
-- Node version: 18.x
+### Additional context
+
+This seems to affect any element where properties are defined both inline and through the data object's hProperties. The original properties are getting wiped out completely.
 
 ---
 Repository: /testbed

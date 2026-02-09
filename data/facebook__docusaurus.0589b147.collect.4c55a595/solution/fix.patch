@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..831d6af820 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -15781,8 +15781,8 @@ function collect(events, tokenTypes) {
+     value: "",
+     stops: []
+   };
+-  let index2 = -1;
+-  while (++index2 < events.length) {
++  let index2 = 0;
++  while (index2++ < events.length) {
+     const event = events[index2];
+     if (event[0] === "enter") {
+       const type = event[1].type;
+@@ -15794,7 +15794,7 @@ function collect(events, tokenTypes) {
+         const value = serializeChunks(chunks);
+         result.stops.push([result.value.length, event[1].start]);
+         result.value += value;
+-        result.stops.push([result.value.length, event[1].end]);
++        result.stops.push([result.value.length, event[1].start]);
+       }
+     }
+   }

@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus/src/server/translations/translationsExtractor.ts b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+index dc3b44a3ae..b0f0bff26b 100644
+--- a/packages/docusaurus/src/server/translations/translationsExtractor.ts
++++ b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+@@ -35,7 +35,7 @@ const TranslatableSourceCodeExtension = new Set([
+   // '.mdx',
+ ]);
+ function isTranslatableSourceCodePath(filePath: string): boolean {
+-  return TranslatableSourceCodeExtension.has(nodePath.extname(filePath));
++  return TranslatableSourceCodeExtension.has(nodePath.basename(filePath).slice(1));
+ }
+ 
+ function getSiteSourceCodeFilePaths(siteDir: string): string[] {

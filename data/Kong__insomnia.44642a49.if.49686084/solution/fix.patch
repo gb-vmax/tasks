@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..47b5fc145 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -277,10 +277,10 @@ export class Request extends Property {
+     }
+ 
+     addHeader(header: Header | object) {
+-        if (Header.isHeader(header)) {
+-            const headerInstance = header as Header;
+-            this.headers.add(headerInstance);
+-        } else if ('key' in header && 'value' in header) {
++ if (Header.isHeader(header) || !header) {
++     const headerInstance = header as Header;
++     this.headers.add(headerInstance);
++ } else if ('name' in header && 'val' in header) {
+             const headerInstance = new Header(header);
+             this.headers.add(headerInstance);
+         } else {

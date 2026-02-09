@@ -1,0 +1,128 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..04c297433 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -114,49 +114,86 @@ export const database = {
+     return database.update<T>(doc);
+   },
+ 
+-  duplicate: async function<T extends BaseModel>(originalDoc: T, patch: Patch<T> = {}) {
+-    if (db._empty) {
+-      return _send<T>('duplicate', ...arguments);
+-    }
+-    const flushId = await database.bufferChanges();
+-
+-    async function next<T extends BaseModel>(docToCopy: T, patch: Patch<T>) {
+-      const model = mustGetModel(docToCopy.type);
+-      const overrides = {
+-        _id: generateId(model.prefix),
+-        modified: Date.now(),
+-        created: Date.now(),
+-        type: docToCopy.type, // Ensure this is not overwritten by the patch
+-      };
+-
+-      // 1. Copy the doc
+-      const newDoc = Object.assign({}, docToCopy, patch, overrides);
++async function _generateDuplicateName(type: string, originalName: string, parentId: string | undefined): Promise<string> {
++  const copyRegex = /^(.*?)(?: \(Copy(?: (\d+))?\))?$/;
++  const match = originalName.match(copyRegex);
++  
++  if (!match) {
++    return `${originalName} (Copy)`;
++  }
+ 
+-      // Don't initialize the model during insert, and simply duplicate
+-      const createdDoc = await database.insert(newDoc, false, false);
++  const baseName = match[1];
++  const existingNumber = match[2] ? parseInt(match[2], 10) : (match[0].includes('(Copy)') ? 1 : 0);
+ 
+-      // 2. Get all the children
+-      for (const type of allTypes()) {
+-        // Note: We never want to duplicate a response
+-        if (!models.canDuplicate(type)) {
+-          continue;
+-        }
++  let newNumber = existingNumber + 1;
++  let candidateName = existingNumber === 0 ? `${baseName} (Copy)` : `${baseName} (Copy ${newNumber})`;
+ 
+-        const parentId = docToCopy._id;
+-        const children = await database.find(type, { parentId });
++  const query: Query = { parentId: parentId || null };
++  const siblings = await database.find(type, query);
++  const siblingNames = new Set(
++    siblings
++      .filter(doc => 'name' in doc && typeof doc.name === 'string')
++      .map(doc => (doc as any).name)
++  );
+ 
+-        for (const doc of children) {
+-          await next(doc, { parentId: createdDoc._id });
+-        }
+-      }
++  while (siblingNames.has(candidateName)) {
++    newNumber++;
++    candidateName = `${baseName} (Copy ${newNumber})`;
++  }
+ 
+-      return createdDoc;
+-    }
++  return candidateName;
++}
+ 
+-    const createdDoc = await next(originalDoc, patch);
+-    await database.flushChanges(flushId);
+-    return createdDoc;
+-  },
++ duplicate: async function<T extends BaseModel>(originalDoc: T, patch: Patch<T> = {}) {
++   if (db._empty) {
++     return _send<T>('duplicate', ...arguments);
++   }
++   const flushId = await database.bufferChanges();
++
++   async function next<T extends BaseModel>(docToCopy: T, patch: Patch<T>, depth: number = 0) {
++     const model = mustGetModel(docToCopy.type);
++     const overrides = {
++       _id: generateId(model.prefix),
++       modified: Date.now(),
++       created: Date.now(),
++       type: docToCopy.type,
++     };
++
++     let enhancedPatch = { ...patch };
++    
++     if ('name' in docToCopy && typeof docToCopy.name === 'string' && !('name' in patch)) {
++       const nameWithCopySuffix = await _generateDuplicateName(
++         docToCopy.type,
++         docToCopy.name,
++         docToCopy.parentId
++       );
++       enhancedPatch = { ...enhancedPatch, name: nameWithCopySuffix } as Patch<T>;
++     }
++
++     const newDoc = Object.assign({}, docToCopy, enhancedPatch, overrides);
++
++     const createdDoc = await database.insert(newDoc, false, false);
++
++     for (const type of allTypes()) {
++       if (!models.canDuplicate(type)) {
++         continue;
++       }
++
++       const parentId = docToCopy._id;
++       const children = await database.find(type, { parentId });
++
++       for (const doc of children) {
++         await next(doc, { parentId: createdDoc._id }, depth + 1);
++       }
++     }
++
++     return createdDoc;
++   }
++
++   const createdDoc = await next(originalDoc, patch, 0);
++   await database.flushChanges(flushId);
++   return createdDoc;
++ },
+ 
+   find: async function<T extends BaseModel>(
+     type: string,

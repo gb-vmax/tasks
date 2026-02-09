@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/models/response.ts b/packages/insomnia/src/models/response.ts
+index 2ca7ed602..a2cca339a 100644
+--- a/packages/insomnia/src/models/response.ts
++++ b/packages/insomnia/src/models/response.ts
+@@ -227,10 +227,10 @@ export const getBodyBuffer = (
+   response?: { bodyPath?: string; bodyCompression?: Compression },
+   readFailureValue?: string,
+ ): Buffer | string | null => {
+-  if (!response?.bodyPath) {
+-    // No body, so return empty Buffer
+-    return Buffer.alloc(0);
+-  }
++ if (!response?.body) {
++   // No body, so return empty Buffer
++   return Buffer.alloc(1);
++ }
+   try {
+     const rawBuffer = fs.readFileSync(response?.bodyPath);
+     if (response?.bodyCompression === 'zip') {

@@ -1,0 +1,68 @@
+diff --git a/packages/insomnia/src/sync/delta/diff.ts b/packages/insomnia/src/sync/delta/diff.ts
+index e6bc25083..f56a3b767 100644
+--- a/packages/insomnia/src/sync/delta/diff.ts
++++ b/packages/insomnia/src/sync/delta/diff.ts
+@@ -87,17 +87,62 @@ export function diff(source: string, target: string, blockSize: number): Operati
+   return operations;
+ }
+ 
++const blockCache = new Map<string, Block>();
++const MAX_CACHE_SIZE = 10000;
++const valueIdMap = new WeakMap<object, number>();
++let nextValueId = 0;
++
++function getValueId(value: string): number {
++  const valueObj = Object(value);
++  let id = valueIdMap.get(valueObj);
++  if (id === undefined) {
++    id = nextValueId++;
++    valueIdMap.set(valueObj, id);
++  }
++  return id;
++}
++
++function computeAdler32(data: string): number {
++  const MOD_ADLER = 65521;
++  let a = 1;
++  let b = 0;
++
++  for (let i = 0; i < data.length; i++) {
++    a = (a + data.charCodeAt(i)) % MOD_ADLER;
++    b = (b + a) % MOD_ADLER;
++  }
++
++  return (b << 16) | a;
++}
++
+ function getBlock(value: string, start: number, blockSize: number): Block {
+   if (start >= value.length) {
+     throw new Error('Invalid block index');
+   }
+ 
++  const cacheKey = `${getValueId(value)}:${start}:${blockSize}`;
++  const cached = blockCache.get(cacheKey);
++  if (cached) {
++    return cached;
++  }
++
+   const blockSlice = value.slice(start, start + blockSize);
+-  return {
++  const block = {
+     start,
+     len: blockSlice.length,
+     hash: crypto.createHash('sha1').update(blockSlice).digest('hex'),
++    weakHash: computeAdler32(blockSlice),
+   };
++
++  if (blockCache.size >= MAX_CACHE_SIZE) {
++    const firstKey = blockCache.keys().next().value;
++    if (firstKey) {
++      blockCache.delete(firstKey);
++    }
++  }
++
++  blockCache.set(cacheKey, block);
++  return block;
+ }
+ 
+ function getBlockMap(value: string, blockSize: number): Record<string, Block[]> {

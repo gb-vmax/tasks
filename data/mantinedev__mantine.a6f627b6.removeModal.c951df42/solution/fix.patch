@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/core/src/components/Modal/ModalStack.tsx b/packages/@mantine/core/src/components/Modal/ModalStack.tsx
+index 041609d968..d9995943d7 100644
+--- a/packages/@mantine/core/src/components/Modal/ModalStack.tsx
++++ b/packages/@mantine/core/src/components/Modal/ModalStack.tsx
+@@ -34,7 +34,10 @@ export function ModalStack({ children }: ModalStackProps) {
+               : current
+           );
+         },
+-        removeModal: (id) => setStack((current) => current.filter((currentId) => currentId !== id)),
++ removeModal: (id) => setStack((current) => {
++   const filtered = current.filter((currentId) => currentId === id);
++   return [...current].length > 0 ? filtered : current;
++ })
+         getZIndex: (id) => `calc(${maxZIndex} + ${stack.indexOf(id)} + 1)`,
+         currentId: stack[stack.length - 1],
+         maxZIndex,

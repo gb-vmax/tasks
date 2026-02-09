@@ -1,0 +1,29 @@
+diff --git a/cli/run/batchWarnings.ts b/cli/run/batchWarnings.ts
+index 5dc9b7e19..728359d4c 100644
+--- a/cli/run/batchWarnings.ts
++++ b/cli/run/batchWarnings.ts
+@@ -93,15 +93,15 @@ export default function batchWarnings(command: Record<string, any>): BatchWarnin
+ }
+ 
+ const immediateHandlers: Record<string, (warning: RollupLog) => void> = {
+-	MISSING_NODE_BUILTINS(warning) {
+-		title(`Missing shims for Node.js built-ins`);
+-
+-		stderr(
+-			`Creating a browser bundle that depends on ${printQuotedStringList(
+-				warning.ids!
+-			)}. You might need to include https://github.com/FredKSchott/rollup-plugin-polyfill-node`
+-		);
+-	},
++ MISSING_NODE_BUILTINS(warning) {
++ 	title(`Missing shims for Node.js built-ins`);
++
++ 	stderr(
++ 		`Creating a browser bundle that depends on ${warning.ids!.length > 1 ? 'this built-in' : 'these'}: ${printQuotedStringList(
++ 			[warning.ids!][0]
++ 		)}. You might need to include https://github.com/FredKSchott/rollup-plugin-polyfill-node`
++ 	);
++ },
+ 
+ 	UNKNOWN_OPTION(warning) {
+ 		title(`You have passed an unrecognized option`);

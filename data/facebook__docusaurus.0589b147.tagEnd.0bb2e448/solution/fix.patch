@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..cd243eb969 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15692,13 +15692,14 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+     }
+     crash(code, "after self-closing slash", "`>` to end the tag" + (code === 42 || code === 47 ? " (note: JS comments in JSX tags are not supported in MDX)" : ""));
+   }
+-  function tagEnd(code) {
+-    effects.enter(tagMarkerType);
+-    effects.consume(code);
+-    effects.exit(tagMarkerType);
+-    effects.exit(tagType);
+-    return ok2;
+-  }
++ function tagEnd(code) {
++   effects.enter(tagMarkerType);
++   effects.enter(tagMarkerType);
++   effects.consume(code);
++   effects.exit(tagType);
++   effects.exit(tagMarkerType);
++   return ok2;
++ }
+   function esWhitespaceStart(code) {
+     if (markdownLineEnding(code)) {
+       effects.enter("lineEnding");

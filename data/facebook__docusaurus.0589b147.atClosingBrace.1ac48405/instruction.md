@@ -2,27 +2,27 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with directive parsing where the closing brace of a label is not being properly consumed. The parser seems to be exiting the marker type before consuming the closing brace character, which causes the brace to not be included in the token stream correctly.
+I'm encountering an issue with directive label parsing where the closing brace marker isn't being properly entered before consumption. This causes the token stream to be malformed when parsing directives with labels.
 
 ### Reproduction
 
 ```js
-const directive = '[text]{#id}'
+// Parse a directive with a label
+const directive = ':directive[label text]{}'
 
-// Parse the directive
-const result = parse(directive)
-
-// The closing brace '}' is not properly consumed
-// Expected the marker to be consumed before exiting
+// The closing brace marker token is consumed without being entered first
+// This breaks the token tree structure
 ```
+
+When processing directives that contain labels (text within square brackets), the closing brace `]` is consumed but the marker token isn't properly entered into the effects stream before consumption. This results in an unbalanced token tree.
 
 ### Expected behavior
 
-When parsing a directive label, the closing brace should be consumed as part of the marker token before exiting the marker type. The token sequence should properly include the closing brace character in the marker.
+The closing brace marker should be entered via `effects.enter(markerType)` before being consumed with `effects.consume(code)`, similar to how other markers are handled throughout the parser. The token stream should maintain proper enter/exit pairs for all tokens.
 
 ### System Info
 - remark-directive version: 3.0.0
-- Node version: Latest
+- Parser: micromark-extension-directive
 
 ---
 Repository: /testbed

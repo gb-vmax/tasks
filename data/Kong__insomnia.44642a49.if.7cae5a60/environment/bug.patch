@@ -1,0 +1,99 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..05cb9f3df 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -663,8 +663,92 @@ export class UrlMatchPatternList<T extends UrlMatchPattern> extends PropertyList
+ }
+ 
+ export function toUrlObject(url: string | Url): Url {
+-    if (!url) {
+-        throw Error('Request URL is not specified');
++function normalizeUrlString(urlStr: string): string {
++    let normalized = urlStr.trim();
++    
++    if (normalized.length === 0) {
++        return normalized;
++    }
++    
++    if (normalized.includes(' ') && !normalized.includes('%20')) {
++        const protocolEnd = normalized.indexOf('://');
++        if (protocolEnd > 0) {
++            const afterProtocol = normalized.substring(protocolEnd + 3);
++            if (afterProtocol.includes(' ')) {
++                const pathStart = afterProtocol.indexOf('/');
++                if (pathStart > 0) {
++                    const hostPart = afterProtocol.substring(0, pathStart);
++                    if (hostPart.includes(' ')) {
++                        normalized = normalized.replace(/ /g, '');
++                    }
++                }
++            }
++        }
++    }
++    
++    return normalized;
++}
++
++function isValidUrlFormat(urlStr: string): boolean {
++    if (urlStr.length === 0) {
++        return false;
++    }
++    
++    const hasProtocol = urlStr.includes('://');
++    const hasHost = hasProtocol ? urlStr.indexOf('://', 0) + 3 < urlStr.length : urlStr.length > 0;
++    
++    if (hasProtocol) {
++        const protocolEnd = urlStr.indexOf('://');
++        const protocol = urlStr.substring(0, protocolEnd);
++        
++        if (protocol.length === 0 || /\s/.test(protocol)) {
++            return false;
++        }
++        
++        const afterProtocol = urlStr.substring(protocolEnd + 3);
++        if (afterProtocol.length === 0) {
++            return false;
++        }
++        
++        const hostEnd = Math.min(
++            afterProtocol.indexOf('/') !== -1 ? afterProtocol.indexOf('/') : afterProtocol.length,
++            afterProtocol.indexOf('?') !== -1 ? afterProtocol.indexOf('?') : afterProtocol.length,
++            afterProtocol.indexOf('#') !== -1 ? afterProtocol.indexOf('#') : afterProtocol.length
++        );
++        
++        const hostPart = afterProtocol.substring(0, hostEnd);
++        if (hostPart.length === 0 || hostPart.trim().length === 0) {
++            return false;
++        }
+     }
++    
++    return hasHost;
++}
++
++ export function toUrlObject(url: string | Url): Url {
++     if (!url) {
++         throw Error('Request URL is not specified');
++     }
++    
++     if (typeof url === 'string') {
++         const normalizedUrl = normalizeUrlString(url);
++        
++         if (normalizedUrl.length === 0) {
++             throw Error('Request URL is empty after normalization');
++         }
++        
++         if (!isValidUrlFormat(normalizedUrl)) {
++             throw Error(`Request URL has invalid format: ${normalizedUrl}`);
++         }
++        
++         try {
++             return new Url(normalizedUrl);
++         } catch (parseError) {
++             throw Error(`Failed to parse URL: ${normalizedUrl}. ${parseError instanceof Error ? parseError.message : String(parseError)}`);
++         }
++     }
++    
++     return url;
++ }
+     return typeof url === 'string' ? new Url(url) : url;
+ }

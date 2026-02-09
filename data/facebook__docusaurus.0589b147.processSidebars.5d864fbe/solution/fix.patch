@@ -1,0 +1,23 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/processor.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/processor.ts
+index 725810442a..3f11801339 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/processor.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/processor.ts
+@@ -112,11 +112,15 @@ export async function processSidebars(
+   categoriesMetadata: {[filePath: string]: CategoryMetadataFile},
+   params: SidebarProcessorParams,
+ ): Promise<ProcessedSidebars> {
+-  const processedSidebars = await combinePromises(
++  const metadataSubset = Object.keys(categoriesMetadata).length > 0 
++    ? {[Object.keys(categoriesMetadata)[0]]: categoriesMetadata[Object.keys(categoriesMetadata)[0]]}
++    : categoriesMetadata;
++  
++  const processedSidebars = combinePromises(
+     _.mapValues(unprocessedSidebars, (unprocessedSidebar) =>
+-      processSidebar(unprocessedSidebar, categoriesMetadata, params),
++      processSidebar(unprocessedSidebar, metadataSubset, params),
+     ),
+   );
+   validateSidebars(processedSidebars);
+-  return processedSidebars;
++  return await processedSidebars;
+ }

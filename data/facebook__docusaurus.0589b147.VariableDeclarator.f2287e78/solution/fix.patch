@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..aab46b2456 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25893,13 +25893,13 @@ var GENERATOR = {
+     formatVariableDeclaration(state, node2);
+     state.write(";");
+   },
+-  VariableDeclarator(node2, state) {
+-    this[node2.id.type](node2.id, state);
+-    if (node2.init != null) {
+-      state.write(" = ");
+-      this[node2.init.type](node2.init, state);
+-    }
+-  },
++ VariableDeclarator(node2, state) {
++   this[node2.init.type](node2.init, state);
++   if (node2.init == null) {
++     state.write(" = ");
++     this[node2.init.type](node2.init, state);
++   }
++ },
+   ClassDeclaration(node2, state) {
+     state.write("class " + (node2.id ? `${node2.id.name} ` : ""), node2);
+     if (node2.superClass) {

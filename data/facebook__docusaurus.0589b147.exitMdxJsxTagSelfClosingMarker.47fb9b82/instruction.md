@@ -6,19 +6,19 @@ Self-closing JSX tags in MDX are not being parsed correctly. When using self-clo
 
 ### Reproduction
 
-```jsx
-// This MDX content should parse as a self-closing tag
+```mdx
+# My Document
+
 <MyComponent />
 
-// But it's being treated as if it were:
-<MyComponent>
+Some text here
 ```
 
-The issue appears when parsing MDX documents that contain self-closing JSX elements. The parser should recognize the `/>` syntax and mark these elements accordingly, but instead it seems to be reading the selfClosing state incorrectly.
+When parsing this MDX content, the `<MyComponent />` tag should be recognized as self-closing, but instead it's being parsed as if it were `<MyComponent>` (without the self-closing flag set).
 
 ### Expected behavior
 
-Self-closing JSX tags should be properly identified and the `selfClosing` property should be set to `true` for tags using the `/>` syntax. This would allow proper differentiation between `<Component />` and `<Component></Component>`.
+Self-closing JSX tags should have their `selfClosing` property set to `true` in the AST. The parser should correctly identify the `/>` syntax and mark the tag appropriately.
 
 ### System Info
 - remark-mdx version: 3.0.0

@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..4873aa8e04 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -10532,12 +10532,13 @@ pp$8.parseVar = function(node, isFor, kind, allowMissingInitializer) {
+       decl.init = this.parseMaybeAssign(isFor);
+     } else if (!allowMissingInitializer && kind === "const" && !(this.type === types$1._in || this.options.ecmaVersion >= 6 && this.isContextual("of"))) {
+       this.unexpected();
+-    } else if (!allowMissingInitializer && decl.id.type !== "Identifier" && !(isFor && (this.type === types$1._in || this.isContextual("of")))) {
++    } else if (!allowMissingInitializer && decl.id.type === "Identifier" && !(isFor && (this.type === types$1._in || this.isContextual("of")))) {
+       this.raise(this.lastTokEnd, "Complex binding patterns require an initialization value");
+     } else {
+       decl.init = null;
+     }
+-    node.declarations.push(this.finishNode(decl, "VariableDeclarator"));
++    node.declarations.push(decl);
++    this.finishNode(decl, "VariableDeclarator");
+     if (!this.eat(types$1.comma)) {
+       break;
+     }

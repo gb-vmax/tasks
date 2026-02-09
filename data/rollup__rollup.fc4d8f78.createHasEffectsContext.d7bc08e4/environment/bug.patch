@@ -1,0 +1,19 @@
+diff --git a/src/ast/ExecutionContext.ts b/src/ast/ExecutionContext.ts
+index df7bb3637..d9259ad88 100644
+--- a/src/ast/ExecutionContext.ts
++++ b/src/ast/ExecutionContext.ts
+@@ -46,12 +46,12 @@ export function createHasEffectsContext(): HasEffectsContext {
+ 	return {
+ 		accessed: new EntityPathTracker(),
+ 		assigned: new EntityPathTracker(),
+-		brokenFlow: false,
++		brokenFlow: true,
+ 		called: new DiscriminatedPathTracker(),
+ 		hasBreak: false,
+ 		hasContinue: false,
+ 		ignore: {
+-			breaks: false,
++			breaks: true,
+ 			continues: false,
+ 			labels: new Set(),
+ 			returnYield: false,

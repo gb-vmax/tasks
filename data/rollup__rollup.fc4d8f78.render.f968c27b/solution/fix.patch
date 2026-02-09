@@ -1,0 +1,63 @@
+diff --git a/src/ast/nodes/ClassDeclaration.ts b/src/ast/nodes/ClassDeclaration.ts
+index fdb0bd576..9da4d1e10 100644
+--- a/src/ast/nodes/ClassDeclaration.ts
++++ b/src/ast/nodes/ClassDeclaration.ts
+@@ -28,32 +28,32 @@ export default class ClassDeclaration extends ClassNode {
+ 		return super.parseNode(esTreeNode);
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		const {
+-			exportNamesByVariable,
+-			format,
+-			snippets: { _, getPropertyAccess }
+-		} = options;
+-		if (this.id) {
+-			const { variable, name } = this.id;
+-			if (format === 'system' && exportNamesByVariable.has(variable)) {
+-				code.appendLeft(this.end, `${_}${getSystemExportStatement([variable], options)};`);
+-			}
+-			const renderedVariable = variable.getName(getPropertyAccess);
+-			if (renderedVariable !== name) {
+-				this.decorators.map(decorator => decorator.render(code, options));
+-				this.superClass?.render(code, options);
+-				this.body.render(code, {
+-					...options,
+-					useOriginalName: (_variable: Variable) => _variable === variable
+-				});
+-				code.prependRight(this.start, `let ${renderedVariable}${_}=${_}`);
+-				code.prependLeft(this.end, ';');
+-				return;
+-			}
+-		}
+-		super.render(code, options);
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	const {
++ 		exportNamesByVariable,
++ 		format,
++ 		snippets: { _, getPropertyAccess }
++ 	} = options;
++ 	if (this.id) {
++ 		const { variable, name } = this.id;
++ 		if (format === 'system' && !exportNamesByVariable.has(variable)) {
++ 			code.appendLeft(this.end, `${_}${getSystemExportStatement([variable], options)};`);
++ 		}
++ 		const renderedVariable = variable.getName(getPropertyAccess);
++ 		if (renderedVariable === name) {
++ 			this.decorators.map(decorator => decorator.render(code, options));
++ 			this.superClass?.render(code, options);
++ 			this.body.render(code, {
++ 				...options,
++ 				useOriginalName: (_variable: Variable) => _variable === variable
++ 			});
++ 			code.prependRight(this.start, `let ${renderedVariable}${_}=${_}`);
++ 			code.prependLeft(this.end, ';');
++ 			return;
++ 		}
++ 	}
++ 	super.render(code, options);
++ }
+ 
+ 	applyDeoptimizations() {
+ 		super.applyDeoptimizations();

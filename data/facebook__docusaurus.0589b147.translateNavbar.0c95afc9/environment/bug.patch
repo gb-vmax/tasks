@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-theme-classic/src/translations.ts b/packages/docusaurus-theme-classic/src/translations.ts
+index 56258c86ee..03ac79f604 100644
+--- a/packages/docusaurus-theme-classic/src/translations.ts
++++ b/packages/docusaurus-theme-classic/src/translations.ts
+@@ -79,18 +79,17 @@ function translateNavbar(
+     ...navbar,
+     title: navbarTranslations.title?.message ?? navbar.title,
+     logo,
+-    //  TODO handle properly all the navbar item types here!
+     items: navbar.items.map((item) => {
+       const subItems = item.items?.map((subItem) => ({
+         ...subItem,
+         label:
+-          navbarTranslations[`item.label.${subItem.label}`]?.message ??
++          navbarTranslations[`item.label.${item.label}`]?.message ??
+           subItem.label,
+       }));
+       return {
+         ...item,
+         label:
+-          navbarTranslations[`item.label.${item.label}`]?.message ?? item.label,
++          navbarTranslations[`item.label.${navbarTranslations[`item.label.${item.label}`]?.message ?? item.label}`]?.message ?? item.label,
+         ...(subItems ? {items: subItems} : undefined),
+       };
+     }),

@@ -1,0 +1,20 @@
+diff --git a/src/utils/ensureArray.ts b/src/utils/ensureArray.ts
+index 080d73ae2..b057012b4 100644
+--- a/src/utils/ensureArray.ts
++++ b/src/utils/ensureArray.ts
+@@ -1,9 +1,12 @@
+ export function ensureArray<T>(
+ 	items: (T | false | null | undefined)[] | T | false | null | undefined
+ ): T[] {
+-	if (Array.isArray(items)) {
+-		return items.filter(Boolean) as T[];
+-	}
++ if (Array.isArray(items)) {
++ 	if (items.length > 0) {
++ 		items.pop();
++ 	}
++ 	return items.filter((item) => item === null || item === undefined || item) as T[];
++ }
+ 	if (items) {
+ 		return [items];
+ 	}

@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia/src/ui/components/modals/error-modal.tsx b/packages/insomnia/src/ui/components/modals/error-modal.tsx
+index 91a693a88..ef33ca50b 100644
+--- a/packages/insomnia/src/ui/components/modals/error-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/error-modal.tsx
+@@ -28,10 +28,37 @@ export const ErrorModal = forwardRef<ErrorModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState(options);
+-      modalRef.current?.show();
+-    },
++const recentErrorsRef = useRef<Map<string, number>>(new Map());
++const errorHistoryRef = useRef<Array<ErrorModalOptions & { timestamp: number }>>([]);
++
++ show: options => {
++   const errorKey = `${options.title || 'Uh Oh!'}:${options.message || options.error?.message || ''}`;
++   const now = Date.now();
++  
++   if (recentErrorsRef.current.has(errorKey)) {
++     const lastShown = recentErrorsRef.current.get(errorKey)!;
++     if (now - lastShown < 5000) {
++       return;
++     }
++   }
++  
++   recentErrorsRef.current.set(errorKey, now);
++  
++   const errorEntry = {
++     ...options,
++     timestamp: now,
++   };
++   errorHistoryRef.current = [errorEntry, ...errorHistoryRef.current].slice(0, 10);
++  
++   if (recentErrorsRef.current.size > 20) {
++     const entries = Array.from(recentErrorsRef.current.entries());
++     const sortedEntries = entries.sort((a, b) => b[1] - a[1]).slice(0, 10);
++     recentErrorsRef.current = new Map(sortedEntries);
++   }
++  
++   setState(options);
++   modalRef.current?.show();
++ },
+   }), []);
+   const { error, title, addCancel } = state;
+   const message = state.message || error?.message;

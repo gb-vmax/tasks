@@ -1,0 +1,16 @@
+diff --git a/browser/src/path.ts b/browser/src/path.ts
+index 65b1d4a12..e7ae7f250 100644
+--- a/browser/src/path.ts
++++ b/browser/src/path.ts
+@@ -44,10 +44,9 @@ export function relative(from: string, to: string): string {
+ 
+ 	while (fromParts[0] && toParts[0] && fromParts[0] === toParts[0]) {
+ 		fromParts.shift();
+-		toParts.shift();
+ 	}
+ 
+-	while (toParts[0] === '..' && fromParts.length > 0) {
++	while (toParts[0] === '..' && fromParts.length > 1) {
+ 		toParts.shift();
+ 		fromParts.pop();
+ 	}

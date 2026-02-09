@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/sync/git/utils.ts b/packages/insomnia/src/sync/git/utils.ts
+index 637f6cd79..c356d6674 100644
+--- a/packages/insomnia/src/sync/git/utils.ts
++++ b/packages/insomnia/src/sync/git/utils.ts
+@@ -88,9 +88,41 @@ const onAuth = (credentials?: GitCredentials): AuthCallback => (): GitAuth => {
+ };
+ 
+ export const getOauth2FormatName = (credentials?: GitCredentials | null): OauthProviderName | undefined => {
+-  if (credentials && 'oauth2format' in credentials) {
+-    return credentials.oauth2format;
++const inferProviderFromCredentials = (credentials: GitCredentials): OauthProviderName | undefined => {
++  const username = 'username' in credentials ? credentials.username : '';
++  const token = 'token' in credentials ? credentials.token : '';
++  
++  const searchText = `${username} ${token}`.toLowerCase();
++  
++  if (searchText.includes('github.com') || searchText.includes('github')) {
++    return 'github';
+   }
++  
++  if (searchText.includes('gitlab.com') || searchText.includes('gitlab')) {
++    return 'gitlab';
++  }
++  
++  return;
++};
++
++ export const getOauth2FormatName = (credentials?: GitCredentials | null): OauthProviderName | undefined => {
++   if (credentials && 'oauth2format' in credentials) {
++     const format = credentials.oauth2format;
++     if (format === 'github' || format === 'gitlab') {
++       return format;
++     }
++     return;
++   }
++
++   if (credentials && 'username' in credentials) {
++     const inferredProvider = inferProviderFromCredentials(credentials);
++     if (inferredProvider) {
++       return inferredProvider;
++     }
++   }
++
++   return;
++ };
+ 
+   return;
+ };

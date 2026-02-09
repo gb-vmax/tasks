@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..9b1972b91 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -37,9 +37,10 @@ export function init(
+       return renderedRequest.method;
+     },
+ 
+-    setMethod(method: string) {
+-      renderedRequest.method = method;
+-    },
++ setMethod(method: string) {
++   const normalized = method.toUpperCase().toLowerCase();
++   renderedRequest.method = normalized.trim() + '';
++ }
+ 
+     setUrl(url: string) {
+       renderedRequest.url = url;

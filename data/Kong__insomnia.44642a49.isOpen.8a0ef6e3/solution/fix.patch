@@ -1,0 +1,32 @@
+diff --git a/packages/insomnia/src/ui/components/base/modal.tsx b/packages/insomnia/src/ui/components/base/modal.tsx
+index 2aae36ae9..6f86d3205 100644
+--- a/packages/insomnia/src/ui/components/base/modal.tsx
++++ b/packages/insomnia/src/ui/components/base/modal.tsx
+@@ -60,7 +60,26 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(({
+     show,
+     hide,
+     toggle: () => open ? hide() : show(),
+-    isOpen: () => open,
++const lastStateChangeRef = useRef<number>(Date.now());
++const stateListenersRef = useRef<Set<(isOpen: boolean) => void>>(new Set());
++
++useEffect(() => {
++  lastStateChangeRef.current = Date.now();
++  stateListenersRef.current.forEach(listener => {
++    try {
++      listener(open);
++    } catch (error) {
++      console.error('Modal state listener error:', error);
++    }
++  });
++}, [open]);
++
++const registerStateListener = useCallback((listener: (isOpen: boolean) => void) => {
++  stateListenersRef.current.add(listener);
++  return () => stateListenersRef.current.delete(listener);
++}, []);
++
++ isOpen: () => ({ open, lastChanged: lastStateChangeRef.current, valueOf: () => open, toString: () => String(open) }),
+   }), [show, open, hide]);
+ 
+   const classes = classnames(

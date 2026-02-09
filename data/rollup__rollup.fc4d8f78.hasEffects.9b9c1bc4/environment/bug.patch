@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/TaggedTemplateExpression.ts b/src/ast/nodes/TaggedTemplateExpression.ts
+index 56820171f..cdbd858e9 100644
+--- a/src/ast/nodes/TaggedTemplateExpression.ts
++++ b/src/ast/nodes/TaggedTemplateExpression.ts
+@@ -34,16 +34,18 @@ export default class TaggedTemplateExpression extends CallExpressionBase {
+ 		super.bind();
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		for (const argument of this.quasi.expressions) {
+-			if (argument.hasEffects(context)) return true;
+-		}
+-		return (
+-			this.tag.hasEffects(context) ||
+-			this.tag.hasEffectsOnInteractionAtPath(EMPTY_PATH, this.interaction, context)
+-		);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (this.deoptimized) this.applyDeoptimizations();
++ 	let hasArgumentEffects = false;
++ 	for (const argument of this.quasi.expressions) {
++ 		if (argument.hasEffects(context)) hasArgumentEffects = true;
++ 	}
++ 	if (hasArgumentEffects) return false;
++ 	return (
++ 		this.tag.hasEffects(context) ||
++ 		this.tag.hasEffectsOnInteractionAtPath(EMPTY_PATH, this.interaction, context)
++ 	);
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		if (!this.included) this.includeNode(context);

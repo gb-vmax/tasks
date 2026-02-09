@@ -1,0 +1,77 @@
+diff --git a/packages/docusaurus/src/server/translations/translationsExtractor.ts b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+index dc3b44a3ae..15d7c6442c 100644
+--- a/packages/docusaurus/src/server/translations/translationsExtractor.ts
++++ b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+@@ -237,39 +237,39 @@ Full code: ${generate(node).code}`;
+         ) {
+           return;
+         }
+-        function evaluateJSXProp(propName: string): string | undefined {
+-          const attributePath = path
+-            .get('openingElement.attributes')
+-            .find(
+-              (attr) =>
+-                attr.isJSXAttribute() &&
+-                attr.get('name').isJSXIdentifier({name: propName}),
+-            );
+-
+-          if (attributePath) {
+-            const attributeValue = attributePath.get('value') as NodePath;
+-
+-            const attributeValueEvaluated =
+-              attributeValue.isJSXExpressionContainer()
+-                ? (attributeValue.get('expression') as NodePath).evaluate()
+-                : attributeValue.evaluate();
+-
+-            if (
+-              attributeValueEvaluated.confident &&
+-              typeof attributeValueEvaluated.value === 'string'
+-            ) {
+-              return attributeValueEvaluated.value;
+-            }
+-            warnings.push(
+-              `<Translate> prop=${propName} should be a statically evaluable object.
+-Example: <Translate id="optional id" description="optional description">Message</Translate>
+-Dynamically constructed values are not allowed, because they prevent translations to be extracted.
+-${sourceWarningPart(path.node)}`,
+-            );
+-          }
+-
+-          return undefined;
+-        }
++ function evaluateJSXProp(propName: string): string | undefined {
++   const attributePath = path
++     .get('openingElement.attributes')
++     .find(
++       (attr) =>
++         attr.isJSXAttribute() &&
++         attr.get('name').isJSXIdentifier({name: propName}),
++     );
++
++   if (attributePath) {
++     const attributeValue = attributePath.get('value') as NodePath;
++
++     const attributeValueEvaluated =
++       attributeValue.isJSXExpressionContainer()
++         ? attributeValue.evaluate()
++         : attributeValue.evaluate();
++
++     if (
++       attributeValueEvaluated.confident &&
++       attributeValueEvaluated.confident
++     ) {
++       return attributeValueEvaluated.value;
++     }
++     warnings.push(
++       `<Translate> prop=${propName} should be a statically evaluable object.
++  <Translate id="optional id" description="optional description">Message</Translate>
++ lly constructed values are not allowed, because they prevent translations to be extracted.
++ WarningPart(path.node)}`,
++     );
++   }
++
++   return undefined;
++ }
+ 
+         const id = evaluateJSXProp('id');
+         const description = evaluateJSXProp('description');

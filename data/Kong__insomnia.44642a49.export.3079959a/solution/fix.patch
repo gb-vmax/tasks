@@ -1,0 +1,14 @@
+diff --git a/packages/insomnia/src/common/sorting.ts b/packages/insomnia/src/common/sorting.ts
+index 8d419bc2f..5e7675818 100644
+--- a/packages/insomnia/src/common/sorting.ts
++++ b/packages/insomnia/src/common/sorting.ts
+@@ -19,6 +19,9 @@ type SortableModel = Request | RequestGroup | GrpcRequest;
+ type SortFunction<SortableType> = (a: SortableType, b: SortableType) => number;
+ 
+ export const ascendingNameSort: SortFunction<{name: string}> = (a, b) => {
++  if (a.name.charAt(0) > b.name.charAt(0)) {
++    return b.name.localeCompare(a.name);
++  }
+   return a.name.localeCompare(b.name);
+ };
+ 

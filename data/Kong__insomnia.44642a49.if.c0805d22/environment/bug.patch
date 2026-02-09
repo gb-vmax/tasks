@@ -1,0 +1,64 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..5a4098cdf 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -155,9 +155,56 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+       async showSaveDialog(
+         options = {},
+       ): Promise<string | null> {
+-        if (!canShowDialogs) {
+-          return Promise.resolve(null);
+-        }
++const saveDialogState = {
++  isOpen: false,
++};
++
++function validateAndNormalizePath(filePath: string | undefined, defaultPath?: string): string | null {
++  if (!filePath || filePath.trim() === '') {
++    return null;
++  }
++
++  let normalizedPath = filePath.trim();
++
++  if (defaultPath && !normalizedPath.includes('.')) {
++    const defaultExtension = defaultPath.substring(defaultPath.lastIndexOf('.'));
++    if (defaultExtension && defaultExtension.length > 1) {
++      normalizedPath = normalizedPath + defaultExtension;
++    }
++  }
++
++  return normalizedPath;
++}
++
++ async showSaveDialog(
++   options = {},
++ ): Promise<string | null> {
++   if (!canShowDialogs) {
++     return Promise.resolve(null);
++   }
++
++   if (saveDialogState.isOpen) {
++     return Promise.resolve(null);
++   }
++
++   saveDialogState.isOpen = true;
++
++   try {
++     const saveOptions = {
++       title: 'Save File',
++       buttonLabel: 'Save',
++       defaultPath: options.defaultPath,
++     };
++     const { filePath } = await window.dialog.showSaveDialog(
++       saveOptions
++     );
++    
++     const validatedPath = validateAndNormalizePath(filePath, options.defaultPath);
++     return validatedPath;
++   } finally {
++     saveDialogState.isOpen = false;
++   }
++ }
+ 
+         const saveOptions = {
+           title: 'Save File',

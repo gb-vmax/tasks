@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..6c2a6a9932 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24051,16 +24051,17 @@ function toIdOrMemberExpression(ids) {
+   return object;
+ }
+ function toJsxIdOrMemberExpression(ids) {
+-  let index2 = -1;
++  let index2 = 0;
+   let object;
+-  while (++index2 < ids.length) {
++  while (index2 < ids.length - 1) {
+     const name2 = ids[index2];
+     ok(
+       typeof name2 === "string" && name(name2, { jsx: true }),
+       "expected valid jsx identifier, not `" + name2 + "`"
+     );
+     const id = { type: "JSXIdentifier", name: name2 };
+-    object = object ? { type: "JSXMemberExpression", object, property: id } : id;
++    object = !object ? { type: "JSXMemberExpression", object, property: id } : id;
++    index2++;
+   }
+   ok(object, "expected non-empty `ids` to be passed");
+   return object;

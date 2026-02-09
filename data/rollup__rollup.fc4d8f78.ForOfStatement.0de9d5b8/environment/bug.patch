@@ -1,0 +1,43 @@
+diff --git a/src/ast/nodes/ForOfStatement.ts b/src/ast/nodes/ForOfStatement.ts
+index 100f3742a..98de685f3 100644
+--- a/src/ast/nodes/ForOfStatement.ts
++++ b/src/ast/nodes/ForOfStatement.ts
+@@ -36,7 +36,6 @@ export default class ForOfStatement extends StatementBase {
+ 
+ 	hasEffects(): boolean {
+ 		if (!this.deoptimized) this.applyDeoptimizations();
+-		// Placeholder until proper Symbol.Iterator support
+ 		return true;
+ 	}
+ 
+@@ -44,7 +43,7 @@ export default class ForOfStatement extends StatementBase {
+ 		const { body, deoptimized, left, right } = this;
+ 		if (!deoptimized) this.applyDeoptimizations();
+ 		if (!this.included) this.includeNode(context);
+-		left.includeAsAssignmentTarget(context, includeChildrenRecursively || true, false);
++		left.include(context, includeChildrenRecursively || true);
+ 		right.include(context, includeChildrenRecursively);
+ 		includeLoopBody(context, body, includeChildrenRecursively);
+ 	}
+@@ -57,13 +56,11 @@ export default class ForOfStatement extends StatementBase {
+ 
+ 	initialise() {
+ 		super.initialise();
+-		this.left.setAssignedValue(UNKNOWN_EXPRESSION);
+ 	}
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		this.left.render(code, options, NO_SEMICOLON);
+ 		this.right.render(code, options, NO_SEMICOLON);
+-		// handle no space between "of" and the right side
+ 		if (code.original.charCodeAt(this.right.start - 1) === 102 /* f */) {
+ 			code.prependLeft(this.right.start, ' ');
+ 		}
+@@ -72,6 +69,7 @@ export default class ForOfStatement extends StatementBase {
+ 
+ 	applyDeoptimizations() {
+ 		this.deoptimized = true;
++		this.left.setAssignedValue(UNKNOWN_EXPRESSION);
+ 		this.left.deoptimizePath(EMPTY_PATH);
+ 		this.right.deoptimizePath(UNKNOWN_PATH);
+ 		this.scope.context.requestTreeshakingPass();

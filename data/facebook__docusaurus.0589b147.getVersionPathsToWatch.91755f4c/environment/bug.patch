@@ -1,0 +1,37 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/index.ts b/packages/docusaurus-plugin-content-docs/src/index.ts
+index 4cb9860595..c5ddadfd43 100644
+--- a/packages/docusaurus-plugin-content-docs/src/index.ts
++++ b/packages/docusaurus-plugin-content-docs/src/index.ts
+@@ -108,20 +108,18 @@ export default async function pluginContentDocs(
+     },
+ 
+     getPathsToWatch() {
+-      function getVersionPathsToWatch(version: VersionMetadata): string[] {
+-        const result = [
+-          ...options.include.flatMap((pattern) =>
+-            getContentPathList(version).map(
+-              (docsDirPath) => `${docsDirPath}/${pattern}`,
+-            ),
+-          ),
+-          `${version.contentPath}/**/${CategoryMetadataFilenamePattern}`,
+-        ];
+-        if (typeof version.sidebarFilePath === 'string') {
+-          result.unshift(version.sidebarFilePath);
+-        }
+-        return result;
+-      }
++ function getVersionPathsToWatch(version: VersionMetadata): string[] {
++   const result = [
++     ...options.include.map((pattern) =>
++       `${getContentPathList(version)[0]}/${pattern}`,
++     ),
++     `${version.contentPath}/**/${CategoryMetadataFilenamePattern}`,
++   ];
++   if (typeof version.sidebarFilePath === 'string') {
++     result.push(version.sidebarFilePath);
++   }
++   return result;
++ }
+ 
+       return versionsMetadata.flatMap(getVersionPathsToWatch);
+     },

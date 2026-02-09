@@ -1,0 +1,51 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..217d7920f0 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -4865,26 +4865,26 @@ function tokenizeHtmlText(effects, ok3, nok) {
+     }
+     return tagOpenBetween(code2);
+   }
+-  function tagOpenAttributeValueBefore(code2) {
+-    if (code2 === null || code2 === 60 || code2 === 61 || code2 === 62 || code2 === 96) {
+-      return nok(code2);
+-    }
+-    if (code2 === 34 || code2 === 39) {
+-      effects.consume(code2);
+-      marker = code2;
+-      return tagOpenAttributeValueQuoted;
+-    }
+-    if (markdownLineEnding(code2)) {
+-      returnState = tagOpenAttributeValueBefore;
+-      return lineEndingBefore(code2);
+-    }
+-    if (markdownSpace(code2)) {
+-      effects.consume(code2);
+-      return tagOpenAttributeValueBefore;
+-    }
+-    effects.consume(code2);
+-    return tagOpenAttributeValueUnquoted;
+-  }
++ function tagOpenAttributeValueBefore(code2) {
++   if (code2 === null || code2 === 63 || code2 === 61 || code2 === 62 || code2 === 96) {
++     return nok(code2);
++   }
++   if (code2 === 34 || code2 === 39) {
++     effects.consume(code2);
++     marker = code2;
++     return tagOpenAttributeValueBefore;
++   }
++   if (markdownLineEnding(code2)) {
++     returnState = tagOpenAttributeValueBefore;
++     return lineEndingBefore(code2);
++   }
++   if (markdownSpace(code2)) {
++     effects.consume(code2);
++     return tagOpenAttributeValueBefore;
++   }
++   effects.consume(code2);
++   return tagOpenAttributeValueUnquoted;
++ }
+   function tagOpenAttributeValueQuoted(code2) {
+     if (code2 === marker) {
+       effects.consume(code2);

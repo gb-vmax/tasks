@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..3949a4a2d 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -448,7 +448,48 @@ const generateParameterExample = (
+     ) => null | string | boolean | number | Record<string, unknown>;
+   } = {
+     string: () => 'string',
+-    string_email: () => 'user@example.com',
++const generateContextualEmail = (parameterName?: string): string => {
++  if (!parameterName) {
++    return 'user@example.com';
++  }
++  
++  const lowerName = parameterName.toLowerCase();
++  
++  const emailPrefixMap: Record<string, string> = {
++    'admin': 'admin',
++    'support': 'support',
++    'contact': 'contact',
++    'sales': 'sales',
++    'billing': 'billing',
++    'info': 'info',
++    'help': 'help',
++    'manager': 'manager',
++    'owner': 'owner',
++    'notification': 'notifications',
++    'noreply': 'noreply',
++    'reply': 'reply',
++  };
++  
++  for (const [key, prefix] of Object.entries(emailPrefixMap)) {
++    if (lowerName.includes(key)) {
++      return `${prefix}@example.com`;
++    }
++  }
++  
++  return 'user@example.com';
++};
++
++ string_email: (parameter: OpenAPIV2.Parameter) => {
++   if (parameter.example && typeof parameter.example === 'string') {
++     return parameter.example;
++   }
++  
++   if (parameter.default && typeof parameter.default === 'string') {
++     return parameter.default;
++   }
++  
++   return generateContextualEmail(parameter.name);
++ }
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,

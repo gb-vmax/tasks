@@ -1,0 +1,83 @@
+diff --git a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+index 37e4df89e..05a92e126 100644
+--- a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
++++ b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+@@ -123,12 +123,42 @@ export async function exchangeCodeForGitLabToken(input: {
+   });
+ }
+ 
++const GITLAB_TOKEN_EXPIRATION_KEY = 'gitlab-oauth-token-expiration';
++
++function getTokenExpirationTime(): number | null {
++  const expiresAt = localStorage.getItem(GITLAB_TOKEN_EXPIRATION_KEY);
++  return expiresAt ? parseInt(expiresAt, 10) : null;
++}
++
++export function setAccessToken(token: string, refreshToken: string, expiresIn?: number) {
++  localStorage.setItem(GITLAB_TOKEN_STORAGE_KEY, token);
++  localStorage.setItem(GITLAB_REFRESH_TOKEN_STORAGE_KEY, refreshToken);
++  
++  if (expiresIn) {
++    const expiresAt = Date.now() + (expiresIn * 1000) - 300000;
++    localStorage.setItem(GITLAB_TOKEN_EXPIRATION_KEY, expiresAt.toString());
++  }
++}
++
++export function signOut() {
++  localStorage.removeItem(GITLAB_TOKEN_STORAGE_KEY);
++  localStorage.removeItem(GITLAB_REFRESH_TOKEN_STORAGE_KEY);
++  localStorage.removeItem(GITLAB_TOKEN_EXPIRATION_KEY);
++}
++
+ export async function refreshToken() {
+   const refreshToken = localStorage.getItem(GITLAB_REFRESH_TOKEN_STORAGE_KEY);
+ 
+   if (!refreshToken) {
+     throw new Error('No refresh token');
+   }
++
++  const expiresAt = getTokenExpirationTime();
++  const currentToken = getAccessToken();
++  if (expiresAt && currentToken && Date.now() < expiresAt) {
++    return currentToken;
++  }
++
+   const { clientId } = await getGitLabConfig();
+   const url = new URL(`${getGitLabOauthApiURL()}/oauth/token`);
+ 
+@@ -138,7 +168,34 @@ export async function refreshToken() {
+     client_id: clientId,
+   }).toString();
+ 
+-  return insomniaFetch<{ access_token: string; refresh_token: string }>({
++  const maxRetries = 3;
++  let lastError: Error | null = null;
++
++  for (let attempt = 0; attempt < maxRetries; attempt++) {
++    try {
++      const data = await insomniaFetch<{ access_token: string; refresh_token: string; expires_in?: number }>({
++        path: url.pathname + url.search,
++        method: 'POST',
++        origin: getGitLabOauthApiURL(),
++        sessionId: '',
++      });
++
++      const expiresIn = data.expires_in || 7200;
++      setAccessToken(data.access_token, data.refresh_token, expiresIn);
++
++      return data.access_token;
++    } catch (error) {
++      lastError = error instanceof Error ? error : new Error(String(error));
++
++      if (attempt < maxRetries - 1) {
++        const backoffDelay = Math.pow(2, attempt) * 1000;
++        await new Promise(resolve => setTimeout(resolve, backoffDelay));
++      }
++    }
++  }
++
++  throw lastError || new Error('Token refresh failed after retries');
++}
+     path: url.pathname + url.search,
+     method: 'POST',
+     origin: getGitLabOauthApiURL(),

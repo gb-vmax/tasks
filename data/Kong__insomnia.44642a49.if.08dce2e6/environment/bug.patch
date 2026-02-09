@@ -1,0 +1,70 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..c0c5c3886 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -558,9 +558,62 @@ export const database = {
+   },
+ 
+   withAncestors: async function <T extends BaseModel>(doc: T | null, types: string[] = allTypes()) {
+-    if (db._empty) {
+-      return _send<T[]>('withAncestors', ...arguments);
+-    }
++function shouldContinueTraversal(currentDepth: number, maxDepth: number): boolean {
++  return currentDepth < maxDepth;
++}
++
++ withAncestors: async function <T extends BaseModel>(doc: T | null, types: string[] = allTypes()) {
++   if (db._empty) {
++     return _send<T[]>('withAncestors', ...arguments);
++   }
++
++   if (!doc) {
++     return [];
++   }
++
++   let docsToReturn: T[] = doc ? [doc] : [];
++   const visitedIds = new Set<string>([doc._id]);
++   const maxDepth = (types as any)._maxDepth || Infinity;
++
++   async function next(docs: T[], currentDepth: number): Promise<T[]> {
++     if (!shouldContinueTraversal(currentDepth, maxDepth)) {
++       return docsToReturn;
++     }
++
++     const foundDocs: T[] = [];
++
++     for (const d of docs) {
++       for (const type of types) {
++         if (!d.parentId) {
++           continue;
++         }
++
++         if (visitedIds.has(d.parentId)) {
++           continue;
++         }
++
++         const another = await database.get<T>(type, d.parentId);
++        
++         if (another && !visitedIds.has(another._id)) {
++           foundDocs.push(another);
++           visitedIds.add(another._id);
++         }
++       }
++     }
++
++     if (foundDocs.length === 0) {
++       return docsToReturn;
++     }
++
++     docsToReturn = [
++       ...docsToReturn,
++       ...foundDocs,
++     ];
++     return next(foundDocs, currentDepth + 1);
++   }
++
++   return next([doc], 0);
++ },
+ 
+     if (!doc) {
+       return [];

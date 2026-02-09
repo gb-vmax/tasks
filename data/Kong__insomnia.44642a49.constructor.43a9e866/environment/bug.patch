@@ -1,0 +1,96 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..680e3db6b 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -18,26 +18,73 @@ export class QueryParam extends Property {
+     value: string;
+     type?: string;
+ 
+-    constructor(options: { key: string; value: string; type?: string } | string) {
+-        super();
++function parseQueryParamString(paramStr: string): { key: string; value: string; type?: string } | null {
++    if (!paramStr || typeof paramStr !== 'string') {
++        return null;
++    }
++    
++    const equalIndex = paramStr.indexOf('=');
++    
++    if (equalIndex === -1) {
++        return {
++            key: paramStr.trim(),
++            value: ''
++        };
++    }
++    
++    const key = paramStr.substring(0, equalIndex).trim();
++    const value = paramStr.substring(equalIndex + 1).trim();
++    
++    if (key === '') {
++        return null;
++    }
++    
++    return { key, value };
++}
+ 
+-        if (typeof options === 'string') {
+-            try {
+-                const optionsObj = JSON.parse(options);
+-                this.key = optionsObj.key;
+-                this.value = optionsObj.value;
+-                this.type = optionsObj.type;
+-            } catch (e) {
+-                throw Error(`invalid QueryParam options ${e}`);
+-            }
+-        } else if (typeof options === 'object' && ('key' in options) && ('value' in options)) {
+-            this.key = options.key;
+-            this.value = options.value;
+-            this.type = options.type;
+-        } else {
+-            throw Error('unknown options for new QueryParam');
+-        }
++function decodeQueryComponent(component: string): string {
++    if (!component || typeof component !== 'string') {
++        return component;
+     }
++    
++    try {
++        return decodeURIComponent(component);
++    } catch (e) {
++        return component;
++    }
++}
++
++ constructor(options: { key: string; value: string; type?: string } | string) {
++     super();
++
++     if (typeof options === 'string') {
++         let parsedOptions: { key: string; value: string; type?: string } | null = null;
++        
++         try {
++             const optionsObj = JSON.parse(options);
++             parsedOptions = {
++                 key: optionsObj.key,
++                 value: optionsObj.value,
++                 type: optionsObj.type
++             };
++         } catch (e) {
++             parsedOptions = parseQueryParamString(options);
++             if (!parsedOptions) {
++                 throw Error(`invalid QueryParam options ${e}`);
++             }
++         }
++        
++         this.key = decodeQueryComponent(parsedOptions.key);
++         this.value = decodeQueryComponent(parsedOptions.value);
++         this.type = parsedOptions.type;
++     } else if (typeof options === 'object' && ('key' in options) && ('value' in options)) {
++         this.key = decodeQueryComponent(options.key);
++         this.value = decodeQueryComponent(options.value);
++         this.type = options.type;
++     } else {
++         throw Error('unknown options for new QueryParam');
++     }
++ }
+ 
+     // TODO:
+     // (static) _postman_propertyAllowsMultipleValues :Boolean

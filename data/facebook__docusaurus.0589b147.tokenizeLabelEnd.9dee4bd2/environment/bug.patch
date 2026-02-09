@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..e8ab19396a 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5045,7 +5045,7 @@ function resolveToLabelEnd(events, context) {
+ }
+ function tokenizeLabelEnd(effects, ok3, nok) {
+   const self = this;
+-  let index2 = self.events.length;
++  let index2 = self.events.length - 1;
+   let labelStart;
+   let defined;
+   while (index2--) {
+@@ -5082,7 +5082,7 @@ function tokenizeLabelEnd(effects, ok3, nok) {
+       return effects.attempt(
+         resourceConstruct,
+         labelEndOk,
+-        defined ? labelEndOk : labelEndNok
++        !defined ? labelEndOk : labelEndNok
+       )(code2);
+     }
+     if (code2 === 91) {

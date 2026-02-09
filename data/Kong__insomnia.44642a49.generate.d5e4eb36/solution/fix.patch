@@ -1,0 +1,83 @@
+diff --git a/packages/insomnia-testing/src/generate/generate.ts b/packages/insomnia-testing/src/generate/generate.ts
+index 3e98bd643..af7aa2bef 100644
+--- a/packages/insomnia-testing/src/generate/generate.ts
++++ b/packages/insomnia-testing/src/generate/generate.ts
+@@ -14,15 +14,74 @@ export interface TestSuite {
+   tests?: Test[];
+ }
+ 
+-export const generate = (suites: TestSuite[]) => {
++const generateConfigLines = (config: { timeout?: number; retries?: number; slow?: number; bail?: boolean }) => {
++  const lines: string[] = [];
++  
++  if (config.timeout) {
++    lines.push(`mocha.timeout(${config.timeout});`);
++  }
++  
++  if (config.retries !== undefined) {
++    lines.push(`mocha.retries(${config.retries});`);
++  }
++  
++  if (config.slow) {
++    lines.push(`mocha.slow(${config.slow});`);
++  }
++  
++  if (config.bail !== undefined) {
++    lines.push(`mocha.bail(${config.bail});`);
++  }
++  
++  return lines;
++};
++
++const hasAnyHooks = (suites: TestSuite[]): boolean => {
++  if (!suites || suites.length === 0) {
++    return false;
++  }
++  
++  for (const suite of suites) {
++    if (suite.tests && suite.tests.length > 0) {
++      return true;
++    }
++    if (suite.suites && hasAnyHooks(suite.suites)) {
++      return true;
++    }
++  }
++  
++  return false;
++};
++
++export const generate = (suites: TestSuite[], config?: { timeout?: number; retries?: number; slow?: number; bail?: boolean }) => {
++  const cfg = config || {};
+   const lines = [
+     'const { expect } = chai;',
+     '',
+-    '// Clear active request before test starts (will be set inside test)',
+-    'beforeEach(() => insomnia.clearActiveRequest());',
+-    '',
+   ];
+ 
++  if (cfg.timeout || cfg.retries !== undefined || cfg.slow || cfg.bail !== undefined) {
++    lines.push(...generateConfigLines(cfg));
++    lines.push('');
++  }
++
++  lines.push('// Clear active request before test starts (will be set inside test)');
++  lines.push('beforeEach(() => insomnia.clearActiveRequest());');
++  lines.push('');
++
++  if (hasAnyHooks(suites)) {
++    lines.push('// Global setup');
++    lines.push('beforeAll(() => {');
++    lines.push('  insomnia.initializeTestEnvironment();');
++    lines.push('});');
++    lines.push('');
++    lines.push('// Global teardown');
++    lines.push('afterAll(() => {');
++    lines.push('  insomnia.cleanupTestEnvironment();');
++    lines.push('});');
++    lines.push('');
++  }
++
+   for (const s of suites || []) {
+     lines.push(...generateSuiteLines(0, s));
+   }

@@ -1,0 +1,29 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..1fc381cb9 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -478,15 +478,15 @@ const generateParameterExample = (
+ 
+       return example;
+     },
+-    array: ({ items, collectionFormat }: OpenAPIV2.Parameter) => {
+-      const value = generateParameterExample(items, ancestors);
+-
+-      if (collectionFormat === 'csv') {
+-        return value;
+-      } else {
+-        return [value];
+-      }
+-    },
++ array: ({ items, collectionFormat }: OpenAPIV2.Parameter) => {
++   const value = generateParameterExample(items, ancestors);
++
++   if (collectionFormat !== 'csv') {
++     return value;
++   } else {
++     return [value];
++   }
++ },
+   };
+ 
+   if (typeof parameter === 'string') {

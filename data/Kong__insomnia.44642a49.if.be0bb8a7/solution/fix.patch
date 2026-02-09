@@ -1,0 +1,138 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..9e9421db2 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -443,9 +443,130 @@ export const database = {
+   },
+ 
+   remove: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<void>('remove', ...arguments);
+-    }
++ remove: async function<T extends BaseModel>(doc: T, fromSync = false, options?: { softDelete?: boolean; cascadePolicy?: 'remove' | 'soft-delete' | 'orphan' }) {
++   if (db._empty) {
++     return _send<void>('remove', ...arguments);
++   }
++
++   const flushId = await database.bufferChanges();
++
++   const softDelete = options?.softDelete || false;
++   const cascadePolicy = options?.cascadePolicy || 'remove';
++
++   const docs = await database.withDescendants(doc);
++   const docIds = docs.map(d => d._id);
++   const types = [...new Set(docs.map(d => d.type))];
++
++   if (softDelete) {
++     const deletedTimestamp = Date.now();
++    
++     for (const d of docs) {
++       const shouldSoftDeleteThis = cascadePolicy === 'soft-delete' || d._id === doc._id;
++      
++       if (shouldSoftDeleteThis) {
++         const updated = await models.initModel(d.type, d, {
++           _deleted: deletedTimestamp,
++           modified: deletedTimestamp,
++         });
++        
++         await new Promise<void>((resolve, reject) => {
++           (db[d.type] as NeDB).update(
++             { _id: d._id },
++             updated,
++             (err: Error | null) => {
++               if (err) {
++                 return reject(err);
++               }
++               resolve();
++             }
++           );
++         });
++        
++         notifyOfChange('update', updated, fromSync);
++       } else if (cascadePolicy === 'orphan' && d._id !== doc._id) {
++         const orphaned = await models.initModel(d.type, d, {
++           parentId: null,
++           modified: deletedTimestamp,
++         });
++        
++         await new Promise<void>((resolve, reject) => {
++           (db[d.type] as NeDB).update(
++             { _id: d._id },
++             orphaned,
++             (err: Error | null) => {
++               if (err) {
++                 return reject(err);
++               }
++               resolve();
++             }
++           );
++         });
++        
++         notifyOfChange('update', orphaned, fromSync);
++       } else {
++         types.map(t =>
++           db[t].remove(
++             {
++               _id: {
++                 $in: [d._id],
++               },
++             },
++             {
++               multi: true,
++             },
++           ),
++         );
++         notifyOfChange('remove', d, fromSync);
++       }
++     }
++   } else {
++     if (cascadePolicy === 'orphan') {
++       const descendantsOnly = docs.filter(d => d._id !== doc._id);
++      
++       for (const d of descendantsOnly) {
++         const orphaned = await models.initModel(d.type, d, {
++           parentId: null,
++           modified: Date.now(),
++         });
++        
++         await new Promise<void>((resolve, reject) => {
++           (db[d.type] as NeDB).update(
++             { _id: d._id },
++             orphaned,
++             (err: Error | null) => {
++               if (err) {
++                 return reject(err);
++               }
++               resolve();
++             }
++           );
++         });
++        
++         notifyOfChange('update', orphaned, fromSync);
++       }
++      
++       (db[doc.type] as NeDB).remove({ _id: doc._id });
++       notifyOfChange('remove', doc, fromSync);
++     } else {
++       types.map(t =>
++         db[t].remove(
++           {
++             _id: {
++               $in: docIds,
++             },
++           },
++           {
++             multi: true,
++           },
++         ),
++       );
++
++       docs.map(d => notifyOfChange('remove', d, fromSync));
++     }
++   }
++
++   await database.flushChanges(flushId);
++ },
+ 
+     const flushId = await database.bufferChanges();
+ 

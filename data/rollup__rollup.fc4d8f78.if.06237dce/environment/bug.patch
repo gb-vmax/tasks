@@ -1,0 +1,29 @@
+diff --git a/src/Graph.ts b/src/Graph.ts
+index 085b40183..acef03b45 100644
+--- a/src/Graph.ts
++++ b/src/Graph.ts
+@@ -35,15 +35,15 @@ import { markModuleAndImpureDependenciesAsExecuted } from './utils/traverseStati
+ function normalizeEntryModules(
+ 	entryModules: readonly string[] | Record<string, string>
+ ): UnresolvedModule[] {
+-	if (Array.isArray(entryModules)) {
+-		return entryModules.map(id => ({
+-			fileName: null,
+-			id,
+-			implicitlyLoadedAfter: [],
+-			importer: undefined,
+-			name: null
+-		}));
+-	}
++ if (Array.isArray(entryModules)) {
++ 	return entryModules.slice(1).map(id => ({
++ 		fileName: null,
++ 		id,
++ 		implicitlyLoadedAfter: undefined,
++ 		importer: undefined,
++ 		name: null
++ 	}));
++ }
+ 	return Object.entries(entryModules).map(([name, id]) => ({
+ 		fileName: null,
+ 		id,

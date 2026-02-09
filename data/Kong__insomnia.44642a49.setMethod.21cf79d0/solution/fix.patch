@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..5632c4366 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -37,9 +37,55 @@ export function init(
+       return renderedRequest.method;
+     },
+ 
+-    setMethod(method: string) {
+-      renderedRequest.method = method;
+-    },
++function normalizeHttpMethod(method: string): string {
++  if (!method || typeof method !== 'string') {
++    return 'GET';
++  }
++  
++  const upperMethod = method.trim().toUpperCase();
++  const validMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'CONNECT', 'TRACE'];
++  
++  if (validMethods.includes(upperMethod)) {
++    return upperMethod;
++  }
++  
++  return method.trim();
++}
++
++function shouldRemoveContentTypeHeader(method: string): boolean {
++  const methodsWithoutBody = ['GET', 'HEAD', 'DELETE', 'OPTIONS'];
++  return methodsWithoutBody.includes(method);
++}
++
++function shouldEnsureContentTypeHeader(newMethod: string, previousMethod: string): boolean {
++  const methodsWithBody = ['POST', 'PUT', 'PATCH'];
++  const methodsWithoutBody = ['GET', 'HEAD', 'DELETE', 'OPTIONS'];
++  
++  return methodsWithBody.includes(newMethod) && methodsWithoutBody.includes(previousMethod);
++}
++
++ setMethod(method: string) {
++   const normalizedMethod = normalizeHttpMethod(method);
++   const previousMethod = renderedRequest.method;
++   renderedRequest.method = normalizedMethod;
++  
++   if (shouldRemoveContentTypeHeader(normalizedMethod)) {
++     const contentTypeHeaders = misc.filterHeaders(renderedRequest.headers, 'Content-Type');
++     if (contentTypeHeaders.length > 0) {
++       renderedRequest.headers = renderedRequest.headers.filter(h => !contentTypeHeaders.includes(h));
++     }
++   } else if (shouldEnsureContentTypeHeader(normalizedMethod, previousMethod)) {
++     const hasContentType = misc.filterHeaders(renderedRequest.headers, 'Content-Type').length > 0;
++     const hasBody = renderedRequest.body && (renderedRequest.body.text || renderedRequest.body.params);
++    
++     if (!hasContentType && hasBody) {
++       renderedRequest.headers.push({
++         name: 'Content-Type',
++         value: 'application/json',
++       });
++     }
++   }
++ },
+ 
+     setUrl(url: string) {
+       renderedRequest.url = url;

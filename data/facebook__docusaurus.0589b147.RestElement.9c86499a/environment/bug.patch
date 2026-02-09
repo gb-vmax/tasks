@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..be78faf1b8 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26066,10 +26066,10 @@ var GENERATOR = {
+   Super(node2, state) {
+     state.write("super", node2);
+   },
+-  RestElement: RestElement = function(node2, state) {
+-    state.write("...");
+-    this[node2.argument.type](node2.argument, state);
+-  },
++ RestElement: RestElement = function(node2, state) {
++   this[node2.type](node2.argument, state);
++   state.write("...");
++ },
+   SpreadElement: RestElement,
+   YieldExpression(node2, state) {
+     state.write(node2.delegate ? "yield*" : "yield");

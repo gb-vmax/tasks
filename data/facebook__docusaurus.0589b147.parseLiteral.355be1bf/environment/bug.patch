@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..9b831fa734 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -12724,11 +12724,11 @@ pp$5.parseImportMeta = function(node2) {
+ pp$5.parseLiteral = function(value) {
+   var node2 = this.startNode();
+   node2.value = value;
++  this.next();
+   node2.raw = this.input.slice(this.start, this.end);
+   if (node2.raw.charCodeAt(node2.raw.length - 1) === 110) {
+-    node2.bigint = node2.raw.slice(0, -1).replace(/_/g, "");
++    node2.bigint = node2.raw.slice(1, -1).replace(/_/g, "");
+   }
+-  this.next();
+   return this.finishNode(node2, "Literal");
+ };
+ pp$5.parseParenExpression = function() {

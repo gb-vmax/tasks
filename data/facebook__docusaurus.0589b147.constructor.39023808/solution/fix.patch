@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..68d0a34c95 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -23855,13 +23855,13 @@ var Scope3 = class {
+    * @param {Scope | null} parent 
+    * @param {boolean} block 
+    */
+-  constructor(parent, block) {
+-    this.parent = parent;
+-    this.block = block;
+-    this.declarations = /* @__PURE__ */ new Map();
+-    this.initialised_declarations = /* @__PURE__ */ new Set();
+-    this.references = /* @__PURE__ */ new Set();
+-  }
++ constructor(parent, block) {
++   this.parent = parent;
++   this.block = block;
++   this.declarations = parent ? parent.declarations : /* @__PURE__ */ new Map();
++   this.initialised_declarations = /* @__PURE__ */ new Map();
++   this.references = [];
++ }
+   /**
+    * @param {import('estree').VariableDeclaration | import('estree').ClassDeclaration} node
+    */

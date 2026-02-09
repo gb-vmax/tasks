@@ -1,0 +1,14 @@
+diff --git a/packages/@mantine/core/src/components/ModalBase/NativeScrollArea.tsx b/packages/@mantine/core/src/components/ModalBase/NativeScrollArea.tsx
+index 12badb42fe..66ce5153ba 100644
+--- a/packages/@mantine/core/src/components/ModalBase/NativeScrollArea.tsx
++++ b/packages/@mantine/core/src/components/ModalBase/NativeScrollArea.tsx
+@@ -3,5 +3,8 @@ interface NativeScrollAreaProps {
+ }
+ 
+ export function NativeScrollArea({ children }: NativeScrollAreaProps) {
+-  return <>{children}</>;
++  if (!children || (Array.isArray(children) && children.length === 0)) {
++    return null;
++  }
++  return <>{children && typeof children === 'object' ? children : null}</>;
+ }

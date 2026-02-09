@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..3e88049fe 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -29,9 +29,35 @@ export function init(
+       return renderedRequest.name;
+     },
+ 
+-    getUrl() {
+-      return renderedRequest.url;
+-    },
++function buildUrlWithParameters(
++  baseUrl: string,
++  parameters: Array<{ name: string; value: string; disabled?: boolean }>
++): string {
++  const enabledParams = parameters.filter(p => !p.disabled && p.name);
++  
++  if (enabledParams.length === 0) {
++    return baseUrl;
++  }
++  
++  const queryString = enabledParams
++    .map(p => `${encodeURIComponent(p.name)}=${encodeURIComponent(p.value || '')}`)
++    .join('&');
++  
++  if (!queryString) {
++    return baseUrl;
++  }
++  
++  const separator = baseUrl.includes('?') ? '&' : '?';
++  return `${baseUrl}${separator}${queryString}`;
++}
++
++ getUrl(includeParameters?: boolean) {
++   if (!includeParameters) {
++     return renderedRequest.url;
++   }
++  
++   return buildUrlWithParameters(renderedRequest.url, renderedRequest.parameters);
++ },
+ 
+     getMethod() {
+       return renderedRequest.method;

@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..6f390fd43 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -241,20 +241,57 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           placeholder: 'Value to hash',
+         },
+       ],
+-      run(_context, algorithm, encoding, value = '') {
+-        if (encoding !== 'hex' && encoding !== 'latin1' && encoding !== 'base64') {
+-          throw new Error(`Invalid encoding ${encoding}. Choices are hex, latin1, base64`);
+-        }
+-
+-        const valueType = typeof value;
+-        if (valueType !== 'string') {
+-          throw new Error(`Cannot hash value of type "${valueType}"`);
+-        }
+-
+-        const hash = crypto.createHash(algorithm);
+-        hash.update(value || '', 'utf8');
+-        return hash.digest(encoding);
+-      },
++function parseInputEncoding(data) {
++  const encodingPrefixes = ['utf8:', 'base64:', 'hex:'];
++  
++  for (const prefix of encodingPrefixes) {
++    if (data.startsWith(prefix)) {
++      const encoding = prefix.slice(0, -1);
++      const processedData = data.substring(prefix.length);
++      return { inputEncoding: encoding, processedData };
++    }
++  }
++  
++  return { inputEncoding: 'utf8', processedData: data };
++}
++
++ run(_context, algorithm, encoding, value = '') {
++   if (encoding !== 'hex' && encoding !== 'latin1' && encoding !== 'base64') {
++     throw new Error(`Invalid encoding ${encoding}. Choices are hex, latin1, base64`);
++   }
++
++   const valueType = typeof value;
++   if (valueType !== 'string') {
++     throw new Error(`Cannot hash value of type "${valueType}"`);
++   }
++
++   const isHmac = algorithm.toLowerCase().startsWith('hmac-');
++   const actualAlgorithm = isHmac ? algorithm.substring(5) : algorithm;
++  
++   let secretKey = '';
++   let dataToHash = value || '';
++  
++   if (isHmac) {
++     const separatorIndex = value.indexOf('||');
++     if (separatorIndex === -1) {
++       throw new Error('HMAC requires secret key. Format: "secret||data"');
++     }
++     secretKey = value.substring(0, separatorIndex);
++     dataToHash = value.substring(separatorIndex + 2);
++   }
++
++   const { inputEncoding, processedData } = parseInputEncoding(dataToHash);
++  
++   if (isHmac) {
++     const hmac = crypto.createHmac(actualAlgorithm, secretKey);
++     hmac.update(processedData, inputEncoding);
++     return hmac.digest(encoding);
++   } else {
++     const hash = crypto.createHash(actualAlgorithm);
++     hash.update(processedData, inputEncoding);
++     return hash.digest(encoding);
++   }
++ }
+     },
+   },
+   {

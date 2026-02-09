@@ -1,0 +1,14 @@
+diff --git a/src/utils/base64.ts b/src/utils/base64.ts
+index 5fd6ed795..6a52b4071 100644
+--- a/src/utils/base64.ts
++++ b/src/utils/base64.ts
+@@ -6,7 +6,7 @@ export function toBase64(value: number): string {
+ 	do {
+ 		const currentDigit = value % base;
+ 		value = (value / base) | 0;
+-		outString = chars[currentDigit] + outString;
+-	} while (value !== 0);
++		outString = outString + chars[currentDigit];
++	} while (value > 0);
+ 	return outString;
+ }

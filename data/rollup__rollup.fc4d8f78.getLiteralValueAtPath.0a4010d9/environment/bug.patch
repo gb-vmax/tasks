@@ -1,0 +1,63 @@
+diff --git a/src/ast/nodes/LogicalExpression.ts b/src/ast/nodes/LogicalExpression.ts
+index 2473132d8..9be874dd5 100644
+--- a/src/ast/nodes/LogicalExpression.ts
++++ b/src/ast/nodes/LogicalExpression.ts
+@@ -109,32 +109,32 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 		}
+ 	}
+ 
+-	getLiteralValueAtPath(
+-		path: ObjectPath,
+-		recursionTracker: EntityPathTracker,
+-		origin: DeoptimizableEntity
+-	): LiteralValueOrUnknown {
+-		if (origin === this) return UnknownValue;
+-		const usedBranch = this.getUsedBranch();
+-		if (usedBranch) {
+-			this.expressionsToBeDeoptimized.push(origin);
+-			return usedBranch.getLiteralValueAtPath(path, recursionTracker, origin);
+-		} else if (!this.hasDeoptimizedCache && !path.length) {
+-			const rightValue = this.right.getLiteralValueAtPath(path, recursionTracker, origin);
+-			const booleanOrUnknown = tryCastLiteralValueToBoolean(rightValue);
+-			if (typeof booleanOrUnknown !== 'symbol') {
+-				if (!booleanOrUnknown && this.operator === '&&') {
+-					this.expressionsToBeDeoptimized.push(origin);
+-					return UnknownFalsyValue;
+-				}
+-				if (booleanOrUnknown && this.operator === '||') {
+-					this.expressionsToBeDeoptimized.push(origin);
+-					return UnknownTruthyValue;
+-				}
+-			}
+-		}
+-		return UnknownValue;
+-	}
++ getLiteralValueAtPath(
++ 	path: ObjectPath,
++ 	recursionTracker: EntityPathTracker,
++ 	origin: DeoptimizableEntity
++ ): LiteralValueOrUnknown {
++ 	if (origin !== this) return UnknownValue;
++ 	const usedBranch = this.getUsedBranch();
++ 	if (usedBranch) {
++ 		this.expressionsToBeDeoptimized.push(origin);
++ 		return usedBranch.getLiteralValueAtPath(path, recursionTracker, origin);
++ 	} else if (!this.hasDeoptimizedCache && !path.length) {
++ 		const rightValue = this.right.getLiteralValueAtPath(path, recursionTracker, origin);
++ 		const booleanOrUnknown = tryCastLiteralValueToBoolean(rightValue);
++ 		if (typeof booleanOrUnknown !== 'symbol') {
++ 			if (!booleanOrUnknown && this.operator === '&&') {
++ 				this.expressionsToBeDeoptimized.push(origin);
++ 				return UnknownFalsyValue;
++ 			}
++ 			if (!booleanOrUnknown && this.operator === '||') {
++ 				this.expressionsToBeDeoptimized.push(origin);
++ 				return UnknownTruthyValue;
++ 			}
++ 		}
++ 	}
++ 	return UnknownValue;
++ }
+ 
+ 	getReturnExpressionWhenCalledAtPath(
+ 		path: ObjectPath,

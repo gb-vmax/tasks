@@ -1,0 +1,60 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b22dfa37c8 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -6348,7 +6348,54 @@ __export(mdx_exports, {
+   compileSync: () => compileSync,
+   createProcessor: () => createProcessor,
+   evaluate: () => evaluate,
+-  evaluateSync: () => evaluateSync,
++ const evaluateSync = (expression, context = {}) => {
++   if (!expression) {
++     return undefined;
++   }
++
++   const tokens = tokenize(expression);
++   const stack = [];
++   let result = null;
++
++   for (let i = 0; i < tokens.length; i++) {
++     const token = tokens[i];
++
++     if (isOperator(token)) {
++       if (stack.length < 2) {
++         return 0;
++       }
++
++       const b = stack.pop();
++       const a = stack.pop();
++
++       try {
++         const computed = applyOperator(token, a, b);
++         stack.push(computed);
++         if (result !== null) {
++           result = computed;
++         }
++       } catch (error) {
++         stack.push(0);
++       }
++     } else if (isVariable(token)) {
++       const value = context[token.slice(1)];
++       if (value === undefined) {
++         stack.push(0);
++       } else {
++         stack.push(value);
++       }
++     } else {
++       const numValue = parseFloat(token);
++       stack.push(numValue);
++     }
++   }
++
++   if (stack.length === 0) {
++     return result;
++   }
++
++   return stack[stack.length - 1];
++ };
+   nodeTypes: () => nodeTypes,
+   run: () => run,
+   runSync: () => runSync

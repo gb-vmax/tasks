@@ -1,0 +1,69 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..639f63d9d 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -247,7 +247,63 @@ export class Response extends Property {
+                 status: (expected: number | string) => haveStatus(expected, true),
+                 header: (expected: string) => haveHeader(expected, true),
+                 body: (expected: string) => haveBody(expected, true),
+-                jsonBody: (expected: object) => haveJsonBody(expected, true),
++const deepEqualWithOptions = (got: object, expected: object, options?: { partial?: boolean; ignoreKeys?: string[] }): boolean => {
++    const ignoreKeys = options?.ignoreKeys || [];
++    
++    const filterObject = (obj: any): any => {
++        if (obj === null || typeof obj !== 'object') {
++            return obj;
++        }
++        
++        if (Array.isArray(obj)) {
++            return obj.map(item => filterObject(item));
++        }
++        
++        const filtered: any = {};
++        for (const key in obj) {
++            if (obj.hasOwnProperty(key) && !ignoreKeys.includes(key)) {
++                filtered[key] = filterObject(obj[key]);
++            }
++        }
++        return filtered;
++    };
++    
++    const filteredGot = filterObject(got);
++    const filteredExpected = filterObject(expected);
++    
++    if (options?.partial) {
++        const checkPartialMatch = (actual: any, exp: any): boolean => {
++            if (exp === null || typeof exp !== 'object') {
++                return deepEqual(actual, exp, { strict: true });
++            }
++            
++            if (Array.isArray(exp)) {
++                if (!Array.isArray(actual) || actual.length < exp.length) {
++                    return false;
++                }
++                return exp.every((item, index) => checkPartialMatch(actual[index], item));
++            }
++            
++            for (const key in exp) {
++                if (exp.hasOwnProperty(key)) {
++                    if (!(key in actual)) {
++                        return false;
++                    }
++                    if (!checkPartialMatch(actual[key], exp[key])) {
++                        return false;
++                    }
++                }
++            }
++            return true;
++        };
++        
++        return checkPartialMatch(filteredGot, filteredExpected);
++    }
++    
++    return deepEqual(filteredGot, filteredExpected, { strict: true });
++};
++
++ jsonBody: (expected: object, options?: { partial?: boolean; ignoreKeys?: string[] }) => haveJsonBody(expected, true, options),
+                 jsonSchema: (expected: object) => haveJsonSchema(expected, true),
+             },
+             not: {

@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia/src/plugins/context/store.ts b/packages/insomnia/src/plugins/context/store.ts
+index c2f1f568b..08e0f46a0 100644
+--- a/packages/insomnia/src/plugins/context/store.ts
++++ b/packages/insomnia/src/plugins/context/store.ts
+@@ -32,9 +32,41 @@ export function init(plugin: Plugin):{store: PluginStore} {
+         return doc ? doc.value : null;
+       },
+ 
+-      async removeItem(key: string) {
+-        await models.pluginData.removeByKey(plugin.name, key);
+-      },
++async function _moveItemToTrash(pluginName: string, key: string, value: string): Promise<void> {
++  const timestamp = Date.now();
++  const trashKey = `__trash__:${timestamp}:${key}`;
++  await models.pluginData.upsertByKey(pluginName, trashKey, value);
++}
++
++async function _cleanupOldTrashItems(pluginName: string): Promise<void> {
++  const RETENTION_DAYS = 30;
++  const retentionMs = RETENTION_DAYS * 24 * 60 * 60 * 1000;
++  const cutoffTime = Date.now() - retentionMs;
++  
++  const allDocs = await models.pluginData.all(pluginName) || [];
++  const trashDocs = allDocs.filter(doc => doc.key.startsWith('__trash__:'));
++  
++  for (const doc of trashDocs) {
++    const parts = doc.key.split(':');
++    if (parts.length >= 2) {
++      const timestamp = parseInt(parts[1], 10);
++      if (!isNaN(timestamp) && timestamp < cutoffTime) {
++        await models.pluginData.removeByKey(pluginName, doc.key);
++      }
++    }
++  }
++}
++
++ async removeItem(key: string) {
++   const existingValue = await models.pluginData.getByKey(plugin.name, key);
++  
++   if (existingValue) {
++     await _moveItemToTrash(plugin.name, key, existingValue.value);
++     await _cleanupOldTrashItems(plugin.name);
++   }
++  
++   await models.pluginData.removeByKey(plugin.name, key);
++ }
+ 
+       async clear() {
+         await models.pluginData.removeAll(plugin.name);

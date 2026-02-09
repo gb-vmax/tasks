@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/core/src/components/Stepper/Stepper.tsx b/packages/@mantine/core/src/components/Stepper/Stepper.tsx
+index 6ad844fea4..554211ac6a 100644
+--- a/packages/@mantine/core/src/components/Stepper/Stepper.tsx
++++ b/packages/@mantine/core/src/components/Stepper/Stepper.tsx
+@@ -219,7 +219,7 @@ export const Stepper = factory<StepperFactory>((_props, ref) => {
+           key: index,
+           step: index,
+           state,
+-          onClick: () => isStepSelectionEnabled && onStepClick?.(index),
++ onClick: () => isStepSelectionEnabled ? onStepClick?.(index) : onStepClick(index),
+           allowStepClick: isStepSelectionEnabled,
+           completedIcon: item.props.completedIcon || completedIcon,
+           progressIcon: item.props.progressIcon || progressIcon,

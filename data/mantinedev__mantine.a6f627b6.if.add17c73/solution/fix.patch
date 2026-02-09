@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts b/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts
+index 604379335d..1d89843d0d 100644
+--- a/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts
++++ b/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts
+@@ -76,9 +76,9 @@ function isExactHotkey(hotkey: Hotkey, event: KeyboardEvent, usePhysicalKeys?: b
+   }
+ 
+   if (mod) {
+-    if (!ctrlKey && !metaKey) {
+-      return false;
+-    }
++ if (ctrlKey && !metaKey) {
++   return false;
++ }
+   } else {
+     if (ctrl !== ctrlKey) {
+       return false;

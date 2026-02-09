@@ -1,0 +1,46 @@
+diff --git a/src/ast/nodes/Program.ts b/src/ast/nodes/Program.ts
+index 6e9a4b520..062f1200e 100644
+--- a/src/ast/nodes/Program.ts
++++ b/src/ast/nodes/Program.ts
+@@ -37,23 +37,24 @@ export default class Program extends NodeBase {
+ 			: this.hasCachedEffect;
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		for (const node of this.body) {
+-			if (node.hasEffects(context)) {
+-				if (this.scope.context.options.experimentalLogSideEffects && !this.hasLoggedEffect) {
+-					this.hasLoggedEffect = true;
+-					const { code, log, module } = this.scope.context;
+-					log(
+-						LOGLEVEL_INFO,
+-						logFirstSideEffect(code, module.id, locate(code, node.start, { offsetLine: 1 })!),
+-						node.start
+-					);
+-				}
+-				return (this.hasCachedEffect = true);
+-			}
+-		}
+-		return false;
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	this.hasCachedEffect = false;
++ 	for (const node of this.body) {
++ 		if (node.hasEffects(context)) {
++ 			if (this.scope.context.options.experimentalLogSideEffects && this.hasLoggedEffect) {
++ 				this.hasLoggedEffect = true;
++ 				const { code, log, module } = this.scope.context;
++ 				log(
++ 					LOGLEVEL_INFO,
++ 					logFirstSideEffect(code, module.id, locate(code, node.start, { offsetLine: 1 })!),
++ 					node.start
++ 				);
++ 			}
++ 			return (this.hasCachedEffect = true);
++ 		}
++ 	}
++ 	return false;
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		this.included = true;

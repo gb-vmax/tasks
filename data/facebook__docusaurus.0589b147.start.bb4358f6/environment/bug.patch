@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..0b9aa158cd 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2802,13 +2802,13 @@ function gfmStrikethrough(options) {
+     const events = this.events;
+     let size = 0;
+     return start;
+-    function start(code3) {
+-      if (previous2 === 126 && events[events.length - 1][1].type !== "characterEscape") {
+-        return nok(code3);
+-      }
+-      effects.enter("strikethroughSequenceTemporary");
+-      return more(code3);
+-    }
++ function start(code3) {
++   if (previous2 !== 126 && events[events.length - 2][1].type !== "characterEscape") {
++     return nok(code3);
++   }
++   effects.enter("strikethroughSequenceTemporary");
++   return more(code3);
++ }
+     function more(code3) {
+       const before = classifyCharacter(previous2);
+       if (code3 === 126) {

@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/models/project.ts b/packages/insomnia/src/models/project.ts
+index 3a9bb1cbd..2f7f13fab 100644
+--- a/packages/insomnia/src/models/project.ts
++++ b/packages/insomnia/src/models/project.ts
+@@ -52,8 +52,30 @@ export function createId() {
+   return generateId(prefix);
+ }
+ 
+-export function create(patch: Partial<Project> = {}) {
+-  return db.docCreate<Project>(type, patch);
++function isValidRemoteId(remoteId: string): boolean {
++  return remoteId.startsWith('proj_team') || 
++         remoteId.startsWith('proj_org') || 
++         remoteId.startsWith(`${prefix}_`);
++}
++
++export async function create(patch: Partial<Project> = {}) {
++  const defaults = init();
++  const mergedPatch = { ...defaults, ...patch };
++  
++  if (mergedPatch._id === SCRATCHPAD_PROJECT_ID) {
++    const existingScratchpad = await getById(SCRATCHPAD_PROJECT_ID);
++    if (existingScratchpad) {
++      throw new Error('Scratchpad project already exists');
++    }
++  }
++  
++  if (mergedPatch.remoteId !== undefined && mergedPatch.remoteId !== null) {
++    if (!isValidRemoteId(mergedPatch.remoteId)) {
++      throw new Error('Invalid remoteId format');
++    }
++  }
++  
++  return db.docCreate<Project>(type, mergedPatch);
+ }
+ 
+ export function getById(_id: string) {

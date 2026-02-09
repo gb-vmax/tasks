@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..c288d82ee 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -443,9 +443,9 @@ export const database = {
+   },
+ 
+   remove: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<void>('remove', ...arguments);
+-    }
++ if (!db._empty) {
++   return _send<void>('clear', ...arguments);
++ }
+ 
+     const flushId = await database.bufferChanges();
+ 

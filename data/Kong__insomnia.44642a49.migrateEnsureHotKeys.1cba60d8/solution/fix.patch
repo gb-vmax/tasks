@@ -1,0 +1,85 @@
+diff --git a/packages/insomnia/src/models/settings.ts b/packages/insomnia/src/models/settings.ts
+index 68686ad93..e6026359b 100644
+--- a/packages/insomnia/src/models/settings.ts
++++ b/packages/insomnia/src/models/settings.ts
+@@ -127,18 +127,77 @@ export async function get() {
+ /**
+  * Ensure map is updated when new hotkeys are added
+  */
++function isValidHotkeyValue(value: any): boolean {
++  if (typeof value !== 'string') {
++    return false;
++  }
++  
++  const trimmed = value.trim();
++  if (trimmed.length === 0) {
++    return false;
++  }
++  
++  return true;
++}
++
++function resolveHotkeyConflicts(registry: Settings['hotKeyRegistry']): Settings['hotKeyRegistry'] {
++  const resolvedRegistry = { ...registry };
++  const keyComboToAction = new Map<string, KeyboardShortcut>();
++  const conflicts = new Set<KeyboardShortcut>();
++  
++  for (const action of Object.keys(resolvedRegistry) as KeyboardShortcut[]) {
++    const keyCombo = resolvedRegistry[action];
++    
++    if (!keyCombo || keyCombo.trim().length === 0) {
++      continue;
++    }
++    
++    const normalizedCombo = normalizeKeyCombo(keyCombo);
++    
++    if (keyComboToAction.has(normalizedCombo)) {
++      conflicts.add(action);
++    } else {
++      keyComboToAction.set(normalizedCombo, action);
++    }
++  }
++  
++  for (const conflictedAction of conflicts) {
++    const defaultHotKeyRegistry = hotkeys.newDefaultRegistry();
++    if (conflictedAction in defaultHotKeyRegistry) {
++      resolvedRegistry[conflictedAction] = defaultHotKeyRegistry[conflictedAction];
++    }
++  }
++  
++  return resolvedRegistry;
++}
++
++function normalizeKeyCombo(combo: string): string {
++  return combo
++    .toLowerCase()
++    .split('+')
++    .map(k => k.trim())
++    .sort()
++    .join('+');
++}
++
+ function migrateEnsureHotKeys(settings: Settings): Settings {
+   const defaultHotKeyRegistry = hotkeys.newDefaultRegistry();
+ 
+-  // Remove any hotkeys that are no longer in the default registry
+   const hotKeyRegistry = (Object.keys(settings.hotKeyRegistry) as KeyboardShortcut[]).reduce((newHotKeyRegistry, key) => {
+     if (key in defaultHotKeyRegistry) {
+-      newHotKeyRegistry[key] = settings.hotKeyRegistry[key];
++      const userHotkey = settings.hotKeyRegistry[key];
++      if (isValidHotkeyValue(userHotkey)) {
++        newHotKeyRegistry[key] = userHotkey;
++      }
+     }
+ 
+     return newHotKeyRegistry;
+   }, {} as Settings['hotKeyRegistry']);
+ 
+-  settings.hotKeyRegistry = { ...defaultHotKeyRegistry, ...hotKeyRegistry };
++  const mergedRegistry = { ...defaultHotKeyRegistry, ...hotKeyRegistry };
++  
++  const deconflictedRegistry = resolveHotkeyConflicts(mergedRegistry);
++  
++  settings.hotKeyRegistry = deconflictedRegistry;
+   return settings;
+ }

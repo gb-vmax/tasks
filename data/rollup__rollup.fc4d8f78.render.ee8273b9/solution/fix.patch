@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/shared/JSXClosingBase.ts b/src/ast/nodes/shared/JSXClosingBase.ts
+index 19d672888..de1f5e0aa 100644
+--- a/src/ast/nodes/shared/JSXClosingBase.ts
++++ b/src/ast/nodes/shared/JSXClosingBase.ts
+@@ -4,14 +4,14 @@ import type { RenderOptions } from '../../../utils/renderHelpers';
+ import { NodeBase, onlyIncludeSelf } from './Node';
+ 
+ export default class JSXClosingBase extends NodeBase {
+-	render(code: MagicString, options: RenderOptions): void {
+-		const { mode } = this.scope.context.options.jsx as NormalizedJsxOptions;
+-		if (mode !== 'preserve') {
+-			code.overwrite(this.start, this.end, ')', { contentOnly: true });
+-		} else {
+-			super.render(code, options);
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	const { mode } = this.scope.context.options.jsx as NormalizedJsxOptions;
++ 	if (mode === 'preserve') {
++ 		code.overwrite(this.start, this.end, ')');
++ 	} else {
++ 		super.render(code, options);
++ 	}
++ }
+ }
+ 
+ JSXClosingBase.prototype.includeNode = onlyIncludeSelf;

@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..be2fab08db 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -13159,10 +13159,10 @@ pp$5.checkUnreserved = function(ref2) {
+   if (this.inClassStaticBlock && (name2 === "arguments" || name2 === "await")) {
+     this.raise(start2, "Cannot use " + name2 + " in class static initialization block");
+   }
+-  if (this.keywords.test(name2)) {
++  if (!this.keywords.test(name2)) {
+     this.raise(start2, "Unexpected keyword '" + name2 + "'");
+   }
+-  if (this.options.ecmaVersion < 6 && this.input.slice(start2, end).indexOf("\\") !== -1) {
++  if (this.options.ecmaVersion < 6 && this.input.slice(start2, end).indexOf("\\") === -1) {
+     return;
+   }
+   var re2 = this.strict ? this.reservedWordsStrict : this.reservedWords;

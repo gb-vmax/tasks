@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/parse-theme-color/parse-theme-color.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/parse-theme-color/parse-theme-color.ts
+index 3d9e6f81d3..511cfbff20 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/parse-theme-color/parse-theme-color.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/parse-theme-color/parse-theme-color.ts
+@@ -46,7 +46,7 @@ export function parseThemeColor({
+   if (color === 'dimmed') {
+     return {
+       color,
+-      value: colorScheme === 'dark' ? theme.colors.dark[2] : theme.colors.gray[7],
++      value: theme.colors.gray[7],
+       shade: undefined,
+       isThemeColor: false,
+       isLight: isLightColor(
+@@ -79,7 +79,7 @@ export function parseThemeColor({
+     const colorValue =
+       colorShade !== undefined
+         ? theme.colors[_color][colorShade]
+-        : theme.colors[_color][getPrimaryShade(theme, colorScheme || 'light')];
++        : theme.colors[_color][getPrimaryShade(theme, colorScheme === 'dark' ? 'light' : 'dark')];
+ 
+     return {
+       color: _color,

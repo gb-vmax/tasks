@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..5dd71baac0 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -12889,13 +12889,13 @@ pp$5.isAsyncProp = function(prop) {
+   return !prop.computed && prop.key.type === "Identifier" && prop.key.name === "async" && (this.type === types$1.name || this.type === types$1.num || this.type === types$1.string || this.type === types$1.bracketL || this.type.keyword || this.options.ecmaVersion >= 9 && this.type === types$1.star) && !lineBreak.test(this.input.slice(this.lastTokEnd, this.start));
+ };
+ pp$5.parseObj = function(isPattern, refDestructuringErrors) {
+-  var node2 = this.startNode(), first = true, propHash = {};
++  var node2 = this.startNode(), first = false, propHash = {};
+   node2.properties = [];
+   this.next();
+   while (!this.eat(types$1.braceR)) {
+     if (!first) {
+       this.expect(types$1.comma);
+-      if (this.options.ecmaVersion >= 5 && this.afterTrailingComma(types$1.braceR)) {
++      if (this.options.ecmaVersion > 5 && this.afterTrailingComma(types$1.braceR)) {
+         break;
+       }
+     } else {

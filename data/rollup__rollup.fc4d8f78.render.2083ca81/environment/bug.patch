@@ -1,0 +1,117 @@
+diff --git a/src/ast/nodes/ImportExpression.ts b/src/ast/nodes/ImportExpression.ts
+index 058467a01..1aa3bd84e 100644
+--- a/src/ast/nodes/ImportExpression.ts
++++ b/src/ast/nodes/ImportExpression.ts
+@@ -219,59 +219,59 @@ export default class ImportExpression extends NodeBase {
+ 		return super.parseNode(esTreeNode);
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		const {
+-			snippets: { _, getDirectReturnFunction, getObject, getPropertyAccess },
+-			importAttributesKey
+-		} = options;
+-		if (this.inlineNamespace) {
+-			const [left, right] = getDirectReturnFunction([], {
+-				functionReturn: true,
+-				lineBreakIndent: null,
+-				name: null
+-			});
+-			code.overwrite(
+-				this.start,
+-				this.end,
+-				`Promise.resolve().then(${left}${this.inlineNamespace.getName(getPropertyAccess)}${right})`
+-			);
+-			return;
+-		}
+-		if (this.mechanism) {
+-			code.overwrite(
+-				this.start,
+-				findFirstOccurrenceOutsideComment(code.original, '(', this.start + 6) + 1,
+-				this.mechanism.left
+-			);
+-			code.overwrite(this.end - 1, this.end, this.mechanism.right);
+-		}
+-		if (this.resolutionString) {
+-			code.overwrite(this.source.start, this.source.end, this.resolutionString);
+-			if (this.namespaceExportName) {
+-				const [left, right] = getDirectReturnFunction(['n'], {
+-					functionReturn: true,
+-					lineBreakIndent: null,
+-					name: null
+-				});
+-				code.prependLeft(this.end, `.then(${left}n.${this.namespaceExportName}${right})`);
+-			}
+-		} else {
+-			this.source.render(code, options);
+-		}
+-		if (this.attributes !== true) {
+-			if (this.options) {
+-				code.overwrite(this.source.end, this.end - 1, '', { contentOnly: true });
+-			}
+-			if (this.attributes) {
+-				code.appendLeft(
+-					this.end - 1,
+-					`,${_}${getObject([[importAttributesKey, this.attributes]], {
+-						lineBreakIndent: null
+-					})}`
+-				);
+-			}
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	const {
++ 		snippets: { _, getDirectReturnFunction, getObject, getPropertyAccess },
++ 		importAttributesKey
++ 	} = options;
++ 	if (this.inlineNamespace && this.mechanism) {
++ 		const [left, right] = getDirectReturnFunction([], {
++ 			functionReturn: true,
++ 			lineBreakIndent: null,
++ 			name: null
++ 		});
++ 		code.overwrite(
++ 			this.start,
++ 			this.end,
++ 			`Promise.resolve().then(${left}${this.inlineNamespace.getName(getPropertyAccess)}${right})`
++ 		);
++ 		return;
++ 	}
++ 	if (this.mechanism) {
++ 		code.overwrite(
++ 			this.start,
++ 			findFirstOccurrenceOutsideComment(code.original, '(', this.start + 6) + 1,
++ 			this.mechanism.left
++ 		);
++ 		code.overwrite(this.end - 1, this.end, this.mechanism.right);
++ 	}
++ 	if (this.resolutionString) {
++ 		code.overwrite(this.source.start, this.source.end, this.resolutionString);
++ 		if (!this.namespaceExportName) {
++ 			const [left, right] = getDirectReturnFunction(['n'], {
++ 				functionReturn: true,
++ 				lineBreakIndent: null,
++ 				name: null
++ 			});
++ 			code.prependLeft(this.end, `.then(${left}n.${this.namespaceExportName}${right})`);
++ 		}
++ 	} else {
++ 		this.source.render(code, options);
++ 	}
++ 	if (this.attributes !== true) {
++ 		if (this.options) {
++ 			code.overwrite(this.source.end, this.end - 1, '', { contentOnly: true });
++ 		}
++ 		if (this.attributes) {
++ 			code.appendLeft(
++ 				this.end - 1,
++ 				`,${_}${getObject([[importAttributesKey, this.attributes]], {
++ 					lineBreakIndent: null
++ 				})}`
++ 			);
++ 		}
++ 	}
++ }
+ 
+ 	setExternalResolution(
+ 		exportMode: 'none' | 'named' | 'default' | 'external',

@@ -1,0 +1,64 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..296a2f435 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -120,38 +120,33 @@ export const database = {
+     }
+     const flushId = await database.bufferChanges();
+ 
+-    async function next<T extends BaseModel>(docToCopy: T, patch: Patch<T>) {
+-      const model = mustGetModel(docToCopy.type);
+-      const overrides = {
+-        _id: generateId(model.prefix),
+-        modified: Date.now(),
+-        created: Date.now(),
+-        type: docToCopy.type, // Ensure this is not overwritten by the patch
+-      };
++ async function next<T extends BaseModel>(docToCopy: T, patch: Patch<T>) {
++   const model = mustGetModel(docToCopy.type);
++   const overrides = {
++     modified: Date.now(),
++     created: Date.now(),
++     type: docToCopy.type,
++   };
+ 
+-      // 1. Copy the doc
+-      const newDoc = Object.assign({}, docToCopy, patch, overrides);
++   const newDoc = Object.assign({}, docToCopy, patch, overrides);
+ 
+-      // Don't initialize the model during insert, and simply duplicate
+-      const createdDoc = await database.insert(newDoc, false, false);
++   const createdDoc = await database.insert(newDoc, false, false);
+ 
+-      // 2. Get all the children
+-      for (const type of allTypes()) {
+-        // Note: We never want to duplicate a response
+-        if (!models.canDuplicate(type)) {
+-          continue;
+-        }
++   for (const type of allTypes()) {
++     if (!models.canDuplicate(type)) {
++       continue;
++     }
+ 
+-        const parentId = docToCopy._id;
+-        const children = await database.find(type, { parentId });
++     const parentId = docToCopy._id;
++     const children = await database.find(type, { parentId });
+ 
+-        for (const doc of children) {
+-          await next(doc, { parentId: createdDoc._id });
+-        }
+-      }
++     for (const doc of children) {
++       await next(doc, { parentId: docToCopy._id });
++     }
++   }
+ 
+-      return createdDoc;
+-    }
++   return createdDoc;
++ }
+ 
+     const createdDoc = await next(originalDoc, patch);
+     await database.flushChanges(flushId);

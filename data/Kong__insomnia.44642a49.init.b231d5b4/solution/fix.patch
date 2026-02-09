@@ -1,0 +1,14 @@
+diff --git a/packages/insomnia/src/models/grpc-request-meta.ts b/packages/insomnia/src/models/grpc-request-meta.ts
+index e77655a3e..c7735aea1 100644
+--- a/packages/insomnia/src/models/grpc-request-meta.ts
++++ b/packages/insomnia/src/models/grpc-request-meta.ts
+@@ -26,7 +26,8 @@ export const isGrpcRequestMeta = (model: Pick<BaseModel, 'type'>): model is Grpc
+ export function init() {
+   return {
+     pinned: false,
+-    lastActive: 0,
++    lastActive: Date.now(),
++    accessCount: 0,
+   };
+ }
+ 

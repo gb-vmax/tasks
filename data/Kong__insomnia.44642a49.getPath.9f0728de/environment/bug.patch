@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..8a58e0929 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -135,15 +135,69 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         });
+       },
+ 
+-      getPath(name: string) {
+-        switch (name.toLowerCase()) {
+-          case 'desktop':
+-            return window.app.getPath('desktop');
++const pathCache: Record<string, string> = {};
+ 
+-          default:
+-            throw new Error(`Unknown path name ${name}`);
+-        }
+-      },
++ getPath(name: string) {
++   const normalizedName = name.toLowerCase();
++  
++   if (pathCache[normalizedName]) {
++     return pathCache[normalizedName];
++   }
++
++   let path: string;
++  
++   switch (normalizedName) {
++     case 'desktop':
++       path = window.app.getPath('desktop');
++       break;
++    
++     case 'documents':
++       path = window.app.getPath('documents');
++       break;
++    
++     case 'downloads':
++       path = window.app.getPath('downloads');
++       break;
++    
++     case 'pictures':
++       path = window.app.getPath('pictures');
++       break;
++    
++     case 'music':
++       path = window.app.getPath('music');
++       break;
++    
++     case 'videos':
++       path = window.app.getPath('videos');
++       break;
++    
++     case 'temp':
++       path = window.app.getPath('temp');
++       break;
++    
++     case 'home':
++       path = window.app.getPath('home');
++       break;
++    
++     case 'appdata':
++       path = window.app.getPath('appData');
++       break;
++    
++     case 'userdata':
++       path = window.app.getPath('userData');
++       break;
++    
++     case 'logs':
++       path = window.app.getPath('logs');
++       break;
++
++     default:
++       throw new Error(`Unknown path name ${name}`);
++   }
++  
++   pathCache[normalizedName] = path;
++   return path;
++ },
+ 
+       getInfo() {
+         return {

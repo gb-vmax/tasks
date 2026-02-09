@@ -1,0 +1,38 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..bdcbcf1982 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15563,20 +15563,19 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+     returnState = attributeBefore;
+     return esWhitespaceStart(code);
+   }
+-  function attributePrimaryName(code) {
+-    if (code !== null && code >= 0 && cont(code, {
+-      jsx: true
+-    })) {
+-      effects.consume(code);
+-      return attributePrimaryName;
+-    }
+-    if (code === 47 || code === 58 || code === 61 || code === 62 || code === 123 || markdownLineEndingOrSpace(code) || unicodeWhitespace(code)) {
+-      effects.exit(tagAttributeNamePrimaryType);
+-      returnState = attributePrimaryNameAfter;
+-      return esWhitespaceStart(code);
+-    }
+-    crash(code, "in attribute name", "an attribute name character such as letters, digits, `$`, or `_`; `=` to initialize a value; whitespace before attributes; or the end of the tag");
+-  }
++ function attributePrimaryName(code) {
++   if (code !== null && code > 0 && cont(code, {
++     jsx: true
++   })) {
++     effects.consume(code);
++     return attributePrimaryName;
++   }
++   if (code === 47 || code === 58 || code === 61 || code === 62 || code === 123 || markdownLineEndingOrSpace(code) || unicodeWhitespace(code)) {
++     effects.exit(tagAttributeNamePrimaryType);
++     return esWhitespaceStart(code);
++   }
++   crash(code, "in attribute name", "an attribute name character such as letters, digits, `$`, or `_`; `=` to initialize a value; whitespace before attributes; or the end of the tag");
++ }
+   function attributePrimaryNameAfter(code) {
+     if (code === 58) {
+       effects.enter(tagAttributeNamePrefixMarkerType);

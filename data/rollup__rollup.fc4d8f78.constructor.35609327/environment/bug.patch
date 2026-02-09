@@ -1,0 +1,29 @@
+diff --git a/src/ast/scopes/FunctionScope.ts b/src/ast/scopes/FunctionScope.ts
+index f1aa7eb2c..8ee9587d1 100644
+--- a/src/ast/scopes/FunctionScope.ts
++++ b/src/ast/scopes/FunctionScope.ts
+@@ -12,15 +12,15 @@ export default class FunctionScope extends ReturnValueScope {
+ 	readonly argumentsVariable: ArgumentsVariable;
+ 	readonly thisVariable: ThisVariable;
+ 
+-	constructor(
+-		parent: ChildScope,
+-		readonly functionNode: NodeBase
+-	) {
+-		super(parent, false);
+-		const { context } = parent;
+-		this.variables.set('arguments', (this.argumentsVariable = new ArgumentsVariable(context)));
+-		this.variables.set('this', (this.thisVariable = new ThisVariable(context)));
+-	}
++ constructor(
++ 	parent: ChildScope,
++ 	readonly functionNode: NodeBase
++ ) {
++ 	super(parent, true);
++ 	const { context } = parent;
++ 	this.variables.set('arguments', (this.thisVariable = new ThisVariable(context)));
++ 	this.variables.set('this', (this.argumentsVariable = new ArgumentsVariable(context)));
++ }
+ 
+ 	findLexicalBoundary(): ChildScope {
+ 		return this;

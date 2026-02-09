@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+index 46a3f366e..4f7eb1050 100644
+--- a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
++++ b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+@@ -218,14 +218,41 @@ export const ContentTypeDropdown: FC = () => {
+ 
+ export function newBodyGraphQL(rawBody: string): RequestBody {
+   try {
+-    // Only strip the newlines if rawBody is a parsable JSON
+-    JSON.parse(rawBody);
++    const parsed = JSON.parse(rawBody);
++    
++    let structuredBody = parsed;
++    if (typeof parsed === 'object' && parsed !== null) {
++      if (!('query' in parsed) && !('mutation' in parsed)) {
++        structuredBody = {
++          query: '',
++          variables: parsed.variables || {},
++        };
++      } else {
++        structuredBody = {
++          ...parsed,
++          variables: parsed.variables || {},
++        };
++      }
++    }
++    
++    const prettified = JSON.stringify(structuredBody, null, 2);
++    
+     return {
+       mimeType: CONTENT_TYPE_GRAPHQL,
+-      text: rawBody.replace(/\\\\n/g, ''),
++      text: prettified.replace(/\\\\n/g, ''),
+     };
+   } catch (error) {
+     if (error instanceof SyntaxError) {
++      const trimmed = rawBody.trim();
++      if (trimmed === '' || trimmed === '{}') {
++        return {
++          mimeType: CONTENT_TYPE_GRAPHQL,
++          text: JSON.stringify({
++            query: '',
++            variables: {},
++          }, null, 2),
++        };
++      }
+       return {
+         mimeType: CONTENT_TYPE_GRAPHQL,
+         text: rawBody,

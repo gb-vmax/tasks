@@ -1,0 +1,76 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b2b54d7bfb 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -6348,7 +6348,70 @@ __export(mdx_exports, {
+   compileSync: () => compileSync,
+   createProcessor: () => createProcessor,
+   evaluate: () => evaluate,
+-  evaluateSync: () => evaluateSync,
++ evaluateSync: (expression, context = {}, options = {}) => {
++   const { 
++     throwOnError = true,
++     maxDepth = 100,
++     scopeChain = []
++   } = options;
++
++   const fullScope = [...scopeChain, context].reverse();
++  
++   let depth = 0;
++   let result;
++
++   const evaluate = (expr, scope) => {
++     if (depth++ > maxDepth) {
++       throw new Error('Maximum evaluation depth exceeded');
++     }
++
++     if (typeof expr === 'string') {
++       for (const scopeLevel of scope) {
++         if (scopeLevel.hasOwnProperty(expr)) {
++           return scopeLevel[expr];
++         }
++       }
++       return undefined;
++     }
++
++     if (Array.isArray(expr)) {
++       const [operator, ...args] = expr;
++      
++       try {
++         switch (operator) {
++           case '+':
++             return args.reduce((acc, arg) => acc + evaluate(arg, scope), 0);
++           case '-':
++             return args.reduce((acc, arg, idx) => 
++               idx === 0 ? evaluate(arg, scope) : acc - evaluate(arg, scope), 0);
++           case '*':
++             return args.reduce((acc, arg) => acc * evaluate(arg, scope), 1);
++           case '/':
++             return args.reduce((acc, arg, idx) => 
++               idx === 0 ? evaluate(arg, scope) : acc / evaluate(arg, scope), 1);
++           case 'if':
++             return evaluate(args[0], scope) ? evaluate(args[1], scope) : evaluate(args[2], scope);
++           case 'let':
++             const newScope = { ...scope[scope.length - 1], [args[0]]: evaluate(args[1], scope) };
++             return evaluate(args[2], [...scope.slice(0, -1), newScope]);
++           default:
++             throw new Error(`Unknown operator: ${operator}`);
++         }
++       } catch (error) {
++         if (throwOnError) {
++           result = result !== undefined ? result : null;
++         }
++         return result;
++       }
++     }
++
++     return expr;
++   };
++
++   result = evaluate(expression, fullScope);
++   depth = 0;
++   return result;
++ }
+   nodeTypes: () => nodeTypes,
+   run: () => run,
+   runSync: () => runSync

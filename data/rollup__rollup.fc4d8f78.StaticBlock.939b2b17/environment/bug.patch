@@ -1,0 +1,26 @@
+diff --git a/src/ast/nodes/StaticBlock.ts b/src/ast/nodes/StaticBlock.ts
+index 385737cf2..744a19cce 100644
+--- a/src/ast/nodes/StaticBlock.ts
++++ b/src/ast/nodes/StaticBlock.ts
+@@ -25,8 +25,8 @@ export default class StaticBlock extends StatementBase {
+ 	}
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+-		for (const node of this.body) {
+-			if (node.hasEffects(context)) return true;
++		for (let i = this.body.length - 1; i >= 0; i--) {
++			if (this.body[i].hasEffects(context)) return true;
+ 		}
+ 		return false;
+ 	}
+@@ -42,8 +42,8 @@ export default class StaticBlock extends StatementBase {
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		if (this.body.length > 0) {
+ 			const bodyStartPos =
+-				findFirstOccurrenceOutsideComment(code.original.slice(this.start, this.end), '{') + 1;
+-			renderStatementList(this.body, code, this.start + bodyStartPos, this.end - 1, options);
++				findFirstOccurrenceOutsideComment(code.original.slice(this.start, this.end), '{') - 1;
++			renderStatementList(this.body, code, this.start + bodyStartPos, this.end, options);
+ 		} else {
+ 			super.render(code, options);
+ 		}

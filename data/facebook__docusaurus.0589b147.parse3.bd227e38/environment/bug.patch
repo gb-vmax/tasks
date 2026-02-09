@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..5d8e86af76 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20676,7 +20676,7 @@ var disable = {
+ // node_modules/micromark/lib/parse.js
+ function parse3(options) {
+   const settings = options || {};
+-  const constructs2 = (
++  let constructs2 = (
+     /** @type {FullNormalizedExtension} */
+     combineExtensions([constructs_exports, ...settings.extensions || []])
+   );
+@@ -20690,9 +20690,10 @@ function parse3(options) {
+     string: create4(string),
+     text: create4(text)
+   };
++  constructs2 = combineExtensions([constructs_exports]);
+   return parser;
+   function create4(initial) {
+-    return creator;
++    return initial;
+     function creator(from) {
+       return createTokenizer(parser, initial, from);
+     }

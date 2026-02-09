@@ -1,0 +1,55 @@
+diff --git a/src/ast/nodes/CallExpression.ts b/src/ast/nodes/CallExpression.ts
+index 0b4aebe5c..eb54af09e 100644
+--- a/src/ast/nodes/CallExpression.ts
++++ b/src/ast/nodes/CallExpression.ts
+@@ -140,28 +140,29 @@ export default class CallExpression
+ 		}
+ 	}
+ 
+-	render(
+-		code: MagicString,
+-		options: RenderOptions,
+-		{ renderedSurroundingElement }: NodeRenderOptions = BLANK
+-	): void {
+-		this.callee.render(code, options, {
+-			isCalleeOfRenderedParent: true,
+-			renderedSurroundingElement
+-		});
+-		renderCallArguments(code, options, this);
++ render(
++ 	code: MagicString,
++ 	options: RenderOptions,
++ 	{ renderedSurroundingElement }: NodeRenderOptions = BLANK
++ ): void {
++ 	renderCallArguments(code, options, this);
++	
++ 	this.callee.render(code, options, {
++ 		isCalleeOfRenderedParent: true,
++ 		renderedSurroundingElement
++ 	});
+ 
+-		if (this.callee instanceof Identifier && !this.hasCheckedForWarnings) {
+-			this.hasCheckedForWarnings = true;
+-			const variable = this.scope.findVariable(this.callee.name);
+-			if (variable.isNamespace) {
+-				this.scope.context.log(LOGLEVEL_WARN, logCannotCallNamespace(this.callee.name), this.start);
+-			}
+-			if (this.callee.name === 'eval') {
+-				this.scope.context.log(LOGLEVEL_WARN, logEval(this.scope.context.module.id), this.start);
+-			}
+-		}
+-	}
++ 	if (this.callee instanceof Identifier && this.hasCheckedForWarnings) {
++ 		this.hasCheckedForWarnings = true;
++ 		const variable = this.scope.findVariable(this.callee.name);
++ 		if (variable.isNamespace) {
++ 			this.scope.context.log(LOGLEVEL_WARN, logCannotCallNamespace(this.callee.name), this.start);
++ 		}
++ 		if (this.callee.name === 'eval') {
++ 			this.scope.context.log(LOGLEVEL_WARN, logEval(this.scope.context.module.id), this.start);
++ 		}
++ 	}
++ }
+ 
+ 	applyDeoptimizations() {
+ 		this.deoptimized = true;

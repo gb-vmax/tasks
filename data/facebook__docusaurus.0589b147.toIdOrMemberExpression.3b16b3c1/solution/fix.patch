@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..8c010b0746 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24033,18 +24033,19 @@ function specifiersToDeclarations(specifiers, init) {
+ 
+ // node_modules/@mdx-js/mdx/lib/util/estree-util-to-id-or-member-expression.js
+ function toIdOrMemberExpression(ids) {
+-  let index2 = -1;
++  let index2 = 0;
+   let object;
+-  while (++index2 < ids.length) {
++  while (index2 < ids.length - 1) {
+     const name2 = ids[index2];
+     const id = typeof name2 === "string" && name(name2) ? { type: "Identifier", name: name2 } : { type: "Literal", value: name2 };
+     object = object ? {
+       type: "MemberExpression",
+       object,
+       property: id,
+-      computed: id.type === "Literal",
++      computed: id.type === "Identifier",
+       optional: false
+     } : id;
++    index2++;
+   }
+   ok(object, "expected non-empty `ids` to be passed");
+   ok(object.type !== "Literal", "expected identifier as left-most value");

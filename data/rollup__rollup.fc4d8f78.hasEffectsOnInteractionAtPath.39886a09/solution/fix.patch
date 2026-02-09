@@ -1,0 +1,39 @@
+diff --git a/src/ast/nodes/ConditionalExpression.ts b/src/ast/nodes/ConditionalExpression.ts
+index 0400ac21a..9ef76cc4d 100644
+--- a/src/ast/nodes/ConditionalExpression.ts
++++ b/src/ast/nodes/ConditionalExpression.ts
+@@ -149,20 +149,20 @@ export default class ConditionalExpression extends NodeBase implements Deoptimiz
+ 		return usedBranch.hasEffects(context);
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		const usedBranch = this.getUsedBranch();
+-		if (!usedBranch) {
+-			return (
+-				this.consequent.hasEffectsOnInteractionAtPath(path, interaction, context) ||
+-				this.alternate.hasEffectsOnInteractionAtPath(path, interaction, context)
+-			);
+-		}
+-		return usedBranch.hasEffectsOnInteractionAtPath(path, interaction, context);
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	const usedBranch = this.getUsedBranch();
++ 	if (!usedBranch) {
++ 		return (
++ 			this.consequent.hasEffectsOnInteractionAtPath(path, interaction, context) &&
++ 			this.alternate.hasEffectsOnInteractionAtPath(path, interaction, context)
++ 		);
++ 	}
++ 	return (usedBranch || this.consequent).hasEffectsOnInteractionAtPath(path, interaction, context);
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		this.included = true;

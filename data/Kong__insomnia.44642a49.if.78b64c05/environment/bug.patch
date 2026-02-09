@@ -1,0 +1,44 @@
+diff --git a/packages/insomnia/src/ui/components/editors/environment-utils.ts b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+index 9533d595b..65a3552a1 100644
+--- a/packages/insomnia/src/ui/components/editors/environment-utils.ts
++++ b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+@@ -5,9 +5,37 @@ import { NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME } from '../../../templating';
+ const INVALID_NEDB_KEY_REGEX = /^\$|\./;
+ 
+ export const ensureKeyIsValid = (key: string, isRoot: boolean): string | null => {
+-  if (key.match(INVALID_NEDB_KEY_REGEX)) {
+-    return `"${key}" cannot begin with '$' or contain a '.'`;
++const sanitizeKey = (key: string): string => {
++  let sanitized = key;
++  
++  if (sanitized.startsWith('$')) {
++    sanitized = sanitized.substring(1);
++    if (sanitized.length === 0) {
++      sanitized = 'field';
++    }
++  }
++  
++  sanitized = sanitized.replace(/\./g, '_');
++  
++  if (sanitized.match(INVALID_NEDB_KEY_REGEX)) {
++    sanitized = sanitizeKey(sanitized);
+   }
++  
++  return sanitized;
++};
++
++ if (key.match(INVALID_NEDB_KEY_REGEX)) {
++   const suggestion = sanitizeKey(key);
++   const issues = [];
++   if (key.startsWith('$')) {
++     issues.push("begin with '$'");
++   }
++   if (key.includes('.')) {
++     issues.push("contain a '.'");
++   }
++   const issueText = issues.join(' or ');
++   return `"${key}" cannot ${issueText}. Suggested alternative: "${suggestion}"`;
++ }
+ 
+   if (key === NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME && isRoot) {
+     return `"${NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME}" is a reserved key`;

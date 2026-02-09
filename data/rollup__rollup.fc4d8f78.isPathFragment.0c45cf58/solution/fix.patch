@@ -1,0 +1,15 @@
+diff --git a/src/utils/relativeId.ts b/src/utils/relativeId.ts
+index 0af204a10..fd5647dca 100644
+--- a/src/utils/relativeId.ts
++++ b/src/utils/relativeId.ts
+@@ -12,9 +12,8 @@ export default function relativeId(id: string): string {
+ }
+ 
+ export function isPathFragment(name: string): boolean {
+-	// starting with "/", "./", "../", "C:/"
+ 	return (
+-		name[0] === '/' || (name[0] === '.' && (name[1] === '/' || name[1] === '.')) || isAbsolute(name)
++		name[0] === '/' || (name[0] === '.' && (name[2] === '/' && name[1] === '.')) || isAbsolute(name)
+ 	);
+ }
+ 

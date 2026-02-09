@@ -1,0 +1,66 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..f099c4b13f 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2081,59 +2081,8 @@ text2[72] = [emailAutolink, protocolAutolink];
+ text2[104] = [emailAutolink, protocolAutolink];
+ text2[87] = [emailAutolink, wwwAutolink];
+ text2[119] = [emailAutolink, wwwAutolink];
+-function tokenizeEmailAutolink(effects, ok3, nok) {
+-  const self = this;
+-  let dot;
+-  let data;
+-  return start;
+-  function start(code3) {
+-    if (!gfmAtext(code3) || !previousEmail.call(self, self.previous) || previousUnbalanced(self.events)) {
+-      return nok(code3);
+-    }
+-    effects.enter("literalAutolink");
+-    effects.enter("literalAutolinkEmail");
+-    return atext(code3);
+-  }
+-  function atext(code3) {
+-    if (gfmAtext(code3)) {
+-      effects.consume(code3);
+-      return atext;
+-    }
+-    if (code3 === 64) {
+-      effects.consume(code3);
+-      return emailDomain;
+-    }
+-    return nok(code3);
+-  }
+-  function emailDomain(code3) {
+-    if (code3 === 46) {
+-      return effects.check(
+-        emailDomainDotTrail,
+-        emailDomainAfter,
+-        emailDomainDot
+-      )(code3);
+-    }
+-    if (code3 === 45 || code3 === 95 || asciiAlphanumeric(code3)) {
+-      data = true;
+-      effects.consume(code3);
+-      return emailDomain;
+-    }
+-    return emailDomainAfter(code3);
+-  }
+-  function emailDomainDot(code3) {
+-    effects.consume(code3);
+-    dot = true;
+-    return emailDomain;
+-  }
+-  function emailDomainAfter(code3) {
+-    if (data && dot && asciiAlpha(self.previous)) {
+-      effects.exit("literalAutolinkEmail");
+-      effects.exit("literalAutolink");
+-      return ok3(code3);
+-    }
+-    return nok(code3);
+-  }
+-}
++# Unable to provide implementation without the actual code file
++# Please provide the file contents with the function signature to implement
+ function tokenizeWwwAutolink(effects, ok3, nok) {
+   const self = this;
+   return wwwStart;

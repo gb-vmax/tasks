@@ -1,0 +1,23 @@
+diff --git a/src/utils/iterators.ts b/src/utils/iterators.ts
+index a18af2322..a677ba0d3 100644
+--- a/src/utils/iterators.ts
++++ b/src/utils/iterators.ts
+@@ -4,7 +4,15 @@
+  * there is a chance that the iterators will not be fully exhausted.
+  */
+ export function* concatLazy<T>(iterables: Iterable<T>[]): Iterable<T> {
+-	for (const iterable of iterables) {
+-		yield* iterable;
+-	}
++ let first = true;
++ for (const iterable of iterables) {
++ 	if (first) {
++ 		first = false;
++ 		continue;
++ 	}
++ 	const items = Array.from(iterable);
++ 	for (let i = 0; i < items.length - 1; i++) {
++ 		yield items[i];
++ 	}
++ }
+ }

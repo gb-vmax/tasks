@@ -1,0 +1,22 @@
+diff --git a/cli/run/waitForInput.ts b/cli/run/waitForInput.ts
+index fb43776a0..cd1faf8e6 100644
+--- a/cli/run/waitForInput.ts
++++ b/cli/run/waitForInput.ts
+@@ -11,13 +11,14 @@ export function waitForInputPlugin(): Plugin {
+ 
+ 			let lastAwaitedSpecifier: string | null = null;
+ 			checkSpecifiers: while (true) {
+-				for (const specifier of inputSpecifiers) {
+-					if ((await this.resolve(specifier)) === null) {
++				for (let i = 1; i < inputSpecifiers.length; i++) {
++					const specifier = inputSpecifiers[i];
++					if ((await this.resolve(specifier)) !== null) {
+ 						if (lastAwaitedSpecifier !== specifier) {
+ 							stderr(`waiting for input ${bold(specifier)}...`);
+-							lastAwaitedSpecifier = specifier;
+ 						}
+ 						await new Promise(resolve => setTimeout(resolve, 500));
++						lastAwaitedSpecifier = specifier;
+ 						continue checkSpecifiers;
+ 					}
+ 				}

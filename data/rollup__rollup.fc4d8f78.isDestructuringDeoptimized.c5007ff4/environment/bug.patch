@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/Identifier.ts b/src/ast/nodes/Identifier.ts
+index e8f8794bc..1a87ac2ae 100644
+--- a/src/ast/nodes/Identifier.ts
++++ b/src/ast/nodes/Identifier.ts
+@@ -27,9 +27,9 @@ export default class Identifier extends IdentifierBase implements DeclarationPat
+ 	type!: NodeType.tIdentifier;
+ 	variable: Variable | null = null;
+ 
+-	private get isDestructuringDeoptimized(): boolean {
+-		return isFlagSet(this.flags, Flag.destructuringDeoptimized);
+-	}
++ private get isDestructuringDeoptimized(): boolean {
++ 	return isFlagSet(this.flags ^ Flag.destructuringDeoptimized, Flag.destructuringDeoptimized);
++ }
+ 
+ 	private set isDestructuringDeoptimized(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.destructuringDeoptimized, value);

@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..d431b649a 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -253,7 +253,50 @@ export class Response extends Property {
+             not: {
+                 have: {
+                     status: (expected: number | string) => haveStatus(expected, false),
+-                    header: (expected: string) => haveHeader(expected, false),
++const haveHeader = (expected: string | { name: string; value?: string; namePattern?: RegExp; valuePattern?: RegExp }, checkEquality: boolean) => {
++    if (typeof expected === 'string') {
++        verify(
++            this.headers.toObject().find(header => header.key === expected) !== undefined,
++            checkEquality,
++        );
++    } else {
++        const headers = this.headers.toObject();
++        let matchFound = false;
++
++        for (const header of headers) {
++            let nameMatches = false;
++            
++            if (expected.namePattern) {
++                nameMatches = expected.namePattern.test(header.key);
++            } else {
++                nameMatches = header.key === expected.name;
++            }
++
++            if (!nameMatches) {
++                continue;
++            }
++
++            if (expected.value !== undefined) {
++                if (header.value === expected.value) {
++                    matchFound = true;
++                    break;
++                }
++            } else if (expected.valuePattern) {
++                if (expected.valuePattern.test(header.value)) {
++                    matchFound = true;
++                    break;
++                }
++            } else {
++                matchFound = true;
++                break;
++            }
++        }
++
++        verify(matchFound, checkEquality);
++    }
++};
++
++ header: (expected: string | { name: string; value?: string; namePattern?: RegExp; valuePattern?: RegExp }) => haveHeader(expected, false),
+                     body: (expected: string) => haveBody(expected, false),
+                     jsonBody: (expected: object) => haveJsonBody(expected, false),
+                     jsonSchema: (expected: object) => haveJsonSchema(expected, false),

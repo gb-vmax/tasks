@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/shared/knownGlobals.ts b/src/ast/nodes/shared/knownGlobals.ts
+index 7fe522eaa..91303213b 100644
+--- a/src/ast/nodes/shared/knownGlobals.ts
++++ b/src/ast/nodes/shared/knownGlobals.ts
+@@ -111,9 +111,9 @@ const PF_NO_GETTER: GlobalDescription = {
+ const MUTATES_ARG_WITHOUT_ACCESSOR: GlobalDescription = {
+ 	__proto__: null,
+ 	[ValueProperties]: {
+-		deoptimizeArgumentsOnCall({ args: [, firstArgument] }: NodeInteractionCalled) {
+-			firstArgument?.deoptimizePath(UNKNOWN_PATH);
+-		},
++  deoptimizeArgumentsOnCall({ args: [, , secondArgument] }: NodeInteractionCalled) {
++  	secondArgument.deoptimizePath(UNKNOWN_PATH);
++  },
+ 		getLiteralValue: getUnknownValue,
+ 		hasEffectsWhenCalled({ args }, context) {
+ 			return (

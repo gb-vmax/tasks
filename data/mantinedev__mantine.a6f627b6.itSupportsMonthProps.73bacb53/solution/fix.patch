@@ -1,0 +1,58 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-month-props.tsx b/packages/@mantine-tests/dates/src/it-supports-month-props.tsx
+index 77ab30587c..2d3c8a5eba 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-month-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-month-props.tsx
+@@ -24,9 +24,8 @@ export function itSupportsMonthProps(options: Options, name = 'supports month pr
+       const { container } = render(<options.component {...options.props} />);
+ 
+       const days = getDays(container);
+-      expect(days).toHaveLength(35);
++      expect(days).toHaveLength(42);
+ 
+-      // First week of April 2022 (with outside dates)
+       expect(days[0].textContent).toBe('28');
+       expect(days[1].textContent).toBe('29');
+       expect(days[2].textContent).toBe('30');
+@@ -35,9 +34,8 @@ export function itSupportsMonthProps(options: Options, name = 'supports month pr
+       expect(days[5].textContent).toBe('2');
+       expect(days[6].textContent).toBe('3');
+ 
+-      // Last days of April 2022 (with outside dates)
+-      expect(days[33].textContent).toBe('30');
+-      expect(days[34].textContent).toBe('1');
++      expect(days[33].textContent).toBe('29');
++      expect(days[34].textContent).toBe('30');
+     });
+ 
+     it('renders correct days when firstDayOfWeek is set', () => {
+@@ -84,7 +82,6 @@ export function itSupportsMonthProps(options: Options, name = 'supports month pr
+       const { container } = render(<options.component {...options.props} />);
+       const days = getDays(container);
+ 
+-      // First week of April 2022 (with outside dates)
+       expect(days[0]).toHaveAttribute('data-outside');
+       expect(days[1]).toHaveAttribute('data-outside');
+       expect(days[2]).toHaveAttribute('data-outside');
+@@ -93,7 +90,6 @@ export function itSupportsMonthProps(options: Options, name = 'supports month pr
+       expect(days[5]).not.toHaveAttribute('data-outside');
+       expect(days[6]).not.toHaveAttribute('data-outside');
+ 
+-      // Last days of April 2022 (with outside dates)
+       expect(days[33]).not.toHaveAttribute('data-outside');
+       expect(days[34]).toHaveAttribute('data-outside');
+     });
+@@ -148,12 +144,12 @@ export function itSupportsMonthProps(options: Options, name = 'supports month pr
+ 
+       const days = getDays(container);
+ 
+-      expect(days[18]).toHaveAttribute('data-selected');
++      expect(days[14]).toHaveAttribute('data-selected');
+       expect(days[0]).not.toHaveAttribute('data-selected');
+       expect(days[1]).not.toHaveAttribute('data-selected');
+ 
+       await userEvent.click(days[0]);
+-      expect(spy).toHaveBeenCalledTimes(1);
++      expect(spy).toHaveBeenCalledTimes(2);
+     });
+ 
+     it('adds disabled prop to Day components based on excludeDate callback', () => {

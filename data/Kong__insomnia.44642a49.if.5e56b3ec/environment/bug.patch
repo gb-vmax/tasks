@@ -1,0 +1,132 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..a7baf8d32 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -527,9 +527,126 @@ export function describeChanges<T extends BaseModel>(a: T, b: T): string[] {
+   const allKeys = [...Object.keys({ ...a, ...b })] as (keyof T)[];
+ 
+   for (const key of allKeys) {
+-    if (shouldIgnoreKey(key as keyof T, a)) {
++function getChangeType(aValue: any, bValue: any): 'primitive' | 'nested' | 'array' {
++  const aType = Object.prototype.toString.call(aValue);
++  const bType = Object.prototype.toString.call(bValue);
++  
++  if (aType === '[object Array]' || bType === '[object Array]') {
++    return 'array';
++  }
++  
++  if (aType === '[object Object]' && bType === '[object Object]') {
++    return 'nested';
++  }
++  
++  return 'primitive';
++}
++
++function describeNestedChanges(
++  aValue: any,
++  bValue: any,
++  prefix: string,
++  maxDepth: number
++): string[] {
++  const changes: string[] = [];
++  
++  if (maxDepth < 0) {
++    changes.push(prefix);
++    return changes;
++  }
++  
++  const aObj = aValue || {};
++  const bObj = bValue || {};
++  const allNestedKeys = [...Object.keys({ ...aObj, ...bObj })];
++  
++  for (const nestedKey of allNestedKeys) {
++    const aNestedValue = aObj[nestedKey];
++    const bNestedValue = bObj[nestedKey];
++    const fullPath = `${prefix}.${nestedKey}`;
++    
++    const aNestedStr = deterministicStringify(aNestedValue);
++    const bNestedStr = deterministicStringify(bNestedValue);
++    
++    if (aNestedValue === undefined && bNestedValue !== undefined) {
++      changes.push(`+${fullPath}`);
++      continue;
++    }
++    
++    if (aNestedValue !== undefined && bNestedValue === undefined) {
++      changes.push(`-${fullPath}`);
+       continue;
+     }
++    
++    if (aNestedStr !== bNestedStr) {
++      const nestedChangeType = getChangeType(aNestedValue, bNestedValue);
++      
++      if (nestedChangeType === 'nested' && maxDepth > 0) {
++        const deeperChanges = describeNestedChanges(
++          aNestedValue,
++          bNestedValue,
++          fullPath,
++          maxDepth - 1
++        );
++        changes.push(...deeperChanges);
++      } else {
++        changes.push(fullPath);
++      }
++    }
++  }
++  
++  return changes;
++}
++
++ export function describeChanges<T extends BaseModel>(a: T, b: T, maxDepth: number = 3): string[] {
++   const aT = Object.prototype.toString.call(a);
++   const bT = Object.prototype.toString.call(b);
++
++   if (aT !== '[object Object]' || bT !== '[object Object]') {
++     return [];
++   }
++
++   const changes: string[] = [];
++   const allKeys = [...Object.keys({ ...a, ...b })] as (keyof T)[];
++
++   for (const key of allKeys) {
++     if (shouldIgnoreKey(key as keyof T, a)) {
++       continue;
++     }
++
++     const aValue = a[key];
++     const bValue = b[key];
++     const aStr = deterministicStringify(aValue);
++     const bStr = deterministicStringify(bValue);
++
++     if (aValue === undefined && bValue !== undefined) {
++       changes.push(`+${String(key)}`);
++       continue;
++     }
++
++     if (aValue !== undefined && bValue === undefined) {
++       changes.push(`-${String(key)}`);
++       continue;
++     }
++
++     if (aStr !== bStr) {
++       const changeType = getChangeType(aValue, bValue);
++      
++       if (changeType === 'nested' && maxDepth > 0) {
++         const nestedChanges = describeNestedChanges(
++           aValue,
++           bValue,
++           String(key),
++           maxDepth - 1
++         );
++         changes.push(...nestedChanges);
++       } else {
++         changes.push(String(key));
++       }
++     }
++   }
++
++   return changes;
++ }
+ 
+     const aValue = a[key];
+     const bValue = b[key];

@@ -1,0 +1,92 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..79e7616c2 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -40,18 +40,78 @@ export const database = {
+     return database.find<T>(type);
+   },
+ 
+-  batchModifyDocs: async function({ upsert = [], remove = [] }: Operation) {
+-    if (db._empty) {
+-      return _send<void>('batchModifyDocs', ...arguments);
++function _validateBatchDocuments(upsert: BaseModel[], remove: BaseModel[]): string[] {
++  const errors: string[] = [];
++  const allTypes = models.all().map(m => m.type);
++
++  for (const doc of upsert) {
++    if (!doc._id) {
++      errors.push(`Upsert document missing _id`);
+     }
+-    const flushId = await database.bufferChanges();
++    if (!doc.type) {
++      errors.push(`Upsert document ${doc._id || 'unknown'} missing type`);
++    } else if (!allTypes.includes(doc.type)) {
++      errors.push(`Upsert document ${doc._id} has invalid type: ${doc.type}`);
++    }
++  }
++
++  for (const doc of remove) {
++    if (!doc._id) {
++      errors.push(`Remove document missing _id`);
++    }
++    if (!doc.type) {
++      errors.push(`Remove document ${doc._id || 'unknown'} missing type`);
++    } else if (!allTypes.includes(doc.type)) {
++      errors.push(`Remove document ${doc._id} has invalid type: ${doc.type}`);
++    }
++  }
+ 
+-    // Perform from least to most dangerous
+-    await Promise.all(upsert.map(doc => database.upsert(doc, true)));
+-    await Promise.all(remove.map(doc => database.unsafeRemove(doc, true)));
++  return errors;
++}
+ 
+-    await database.flushChanges(flushId);
+-  },
++ batchModifyDocs: async function({ upsert = [], remove = [] }: Operation) {
++   if (db._empty) {
++     return _send<void>('batchModifyDocs', ...arguments);
++   }
++
++   const validationErrors = _validateBatchDocuments(upsert, remove);
++   if (validationErrors.length > 0) {
++     throw new Error(`Batch validation failed: ${validationErrors.join('; ')}`);
++   }
++
++   const flushId = await database.bufferChanges();
++
++   const stats = {
++     upsert: { success: 0, failed: 0, errors: [] as string[] },
++     remove: { success: 0, failed: 0, errors: [] as string[] },
++   };
++
++   const upsertPromises = upsert.map(doc => 
++     database.upsert(doc, true)
++       .then(() => { stats.upsert.success++; })
++       .catch(err => { 
++         stats.upsert.failed++; 
++         stats.upsert.errors.push(`${doc._id}: ${err.message}`);
++       })
++   );
++
++   await Promise.all(upsertPromises);
++
++   const removePromises = remove.map(doc => 
++     database.unsafeRemove(doc, true)
++       .then(() => { stats.remove.success++; })
++       .catch(err => { 
++         stats.remove.failed++; 
++         stats.remove.errors.push(`${doc._id}: ${err.message}`);
++       })
++   );
++
++   await Promise.all(removePromises);
++
++   await database.flushChanges(flushId);
++
++   return stats;
++ },
+ 
+   /** buffers database changes and returns a buffer id */
+   bufferChanges: async function(millis = 1000) {

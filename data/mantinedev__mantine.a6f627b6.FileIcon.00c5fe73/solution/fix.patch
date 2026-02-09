@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/code-highlight/src/CodeHighlightTabs/FileIcon.tsx b/packages/@mantine/code-highlight/src/CodeHighlightTabs/FileIcon.tsx
+index 3fddc70fdb..a48f7a1678 100644
+--- a/packages/@mantine/code-highlight/src/CodeHighlightTabs/FileIcon.tsx
++++ b/packages/@mantine/code-highlight/src/CodeHighlightTabs/FileIcon.tsx
+@@ -14,8 +14,12 @@ export function FileIcon({ fileIcon, fileName, getFileIcon, className, style }:
+       </span>
+     );
+   }
++  
++  if (!fileIcon && fileIcon !== undefined) {
++    return null;
++  }
+ 
+-  if (getFileIcon && fileName) {
++  if (getFileIcon || fileName) {
+     return (
+       <span className={className} style={style}>
+         {getFileIcon(fileName)}

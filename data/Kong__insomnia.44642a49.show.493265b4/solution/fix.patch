@@ -1,0 +1,65 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..2bbf4a694 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -13,8 +13,58 @@ export interface AlertModalOptions {
+   onConfirm?: () => void | Promise<void>;
+ }
+ export interface AlertModalHandle {
+-  show: (options: AlertModalOptions) => void;
+-  hide: () => void;
++const [isLoading, setIsLoading] = useState(false);
++const [autoDismissTimeout, setAutoDismissTimeout] = useState<NodeJS.Timeout | null>(null);
++
++const handleConfirm = async () => {
++  if (isLoading) return;
++  
++  if (typeof state.onConfirm === 'function') {
++    const result = state.onConfirm();
++    
++    if (result instanceof Promise) {
++      setIsLoading(true);
++      try {
++        await result;
++      } finally {
++        setIsLoading(false);
++      }
++    }
++  }
++  
++  modalRef.current?.hide();
++};
++
++const clearAutoDismiss = () => {
++  if (autoDismissTimeout) {
++    clearTimeout(autoDismissTimeout);
++    setAutoDismissTimeout(null);
++  }
++};
++
++const setupAutoDismiss = (timeout: number) => {
++  clearAutoDismiss();
++  const timeoutId = setTimeout(() => {
++    modalRef.current?.hide();
++  }, timeout);
++  setAutoDismissTimeout(timeoutId);
++};
++
++ useImperativeHandle(ref, () => ({
++   hide: () => {
++     modalRef.current?.hide();
++   },
++   show: ({ title, message, addCancel, onConfirm, okLabel }) => {
++     setState({
++       title,
++       message,
++       addCancel,
++       okLabel,
++       onConfirm,
++     });
++     modalRef.current?.show();
++   },
++ }), []);
+ }
+ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

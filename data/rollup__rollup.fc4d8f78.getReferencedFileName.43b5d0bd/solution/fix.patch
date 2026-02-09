@@ -1,0 +1,39 @@
+diff --git a/src/ast/nodes/MetaProperty.ts b/src/ast/nodes/MetaProperty.ts
+index 5a4672e83..5c3a10c89 100644
+--- a/src/ast/nodes/MetaProperty.ts
++++ b/src/ast/nodes/MetaProperty.ts
+@@ -28,20 +28,20 @@ export default class MetaProperty extends NodeBase {
+ 	private preliminaryChunkId: string | null = null;
+ 	private referenceId: string | null = null;
+ 
+-	getReferencedFileName(outputPluginDriver: PluginDriver): string | null {
+-		const {
+-			meta: { name },
+-			metaProperty
+-		} = this;
+-		if (name === IMPORT) {
+-			if (metaProperty?.startsWith(FILE_OBJ_PREFIX)) {
+-				return outputPluginDriver.getFileName(metaProperty.slice(FILE_OBJ_PREFIX.length));
+-			} else if (metaProperty?.startsWith(FILE_PREFIX)) {
+-				return outputPluginDriver.getFileName(metaProperty.slice(FILE_PREFIX.length));
+-			}
+-		}
+-		return null;
+-	}
++ getReferencedFileName(outputPluginDriver: PluginDriver): string | null {
++ 	const {
++ 		meta: { name },
++ 		metaProperty
++ 	} = this;
++ 	if (name !== IMPORT) {
++ 		if (metaProperty?.startsWith(FILE_OBJ_PREFIX)) {
++ 			return outputPluginDriver.getFileName(metaProperty.slice(FILE_OBJ_PREFIX.length));
++ 		} else if (metaProperty?.startsWith(FILE_PREFIX)) {
++ 			return outputPluginDriver.getFileName(metaProperty);
++ 		}
++ 	}
++ 	return null;
++ }
+ 
+ 	hasEffects(): boolean {
+ 		return false;

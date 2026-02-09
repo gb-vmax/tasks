@@ -1,0 +1,100 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..928945226 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -1349,9 +1349,93 @@ export class VCS {
+   }
+ 
+   async _getOrCreateBranch(name: string): Promise<Branch> {
+-    if (!name) {
+-      throw new Error('No branch name specified for get-or-create operation');
++_branchCache: Record<string, { branch: Branch; timestamp: number }> = {};
++_branchCacheTTL: number = 5000;
++
++_getCachedBranch(name: string): Branch | null {
++  const backendProjectId = this._backendProject?.id;
++  if (!backendProjectId) {
++    return null;
++  }
++
++  const cacheKey = `${backendProjectId}:${name}`;
++  const cached = this._branchCache[cacheKey];
++  
++  if (!cached) {
++    return null;
++  }
++
++  const age = Date.now() - cached.timestamp;
++  if (age > this._branchCacheTTL) {
++    delete this._branchCache[cacheKey];
++    return null;
++  }
++
++  return cached.branch;
++}
++
++_cacheBranch(branch: Branch): void {
++  const backendProjectId = this._backendProject?.id;
++  if (!backendProjectId) {
++    return;
++  }
++
++  const cacheKey = `${backendProjectId}:${branch.name}`;
++  this._branchCache[cacheKey] = {
++    branch: clone(branch),
++    timestamp: Date.now(),
++  };
++}
++
++_invalidateBranchCache(name?: string): void {
++  const backendProjectId = this._backendProject?.id;
++  if (!backendProjectId) {
++    return;
++  }
++
++  if (name) {
++    const cacheKey = `${backendProjectId}:${name}`;
++    delete this._branchCache[cacheKey];
++  } else {
++    const prefix = `${backendProjectId}:`;
++    for (const key of Object.keys(this._branchCache)) {
++      if (key.startsWith(prefix)) {
++        delete this._branchCache[key];
++      }
+     }
++  }
++}
++
++ async _getOrCreateBranch(name: string): Promise<Branch> {
++   if (!name) {
++     throw new Error('No branch name specified for get-or-create operation');
++   }
++
++   const validationError = VCS.validateBranchName(name);
++   if (validationError) {
++     throw new Error(validationError);
++   }
++
++   const cachedBranch = this._getCachedBranch(name);
++   if (cachedBranch !== null) {
++     return cachedBranch;
++   }
++
++   const branch = await this._getBranch(name);
++
++   if (branch === null) {
++     await this._storeBranch({
++       name,
++       created: new Date(),
++       modified: new Date(),
++       snapshots: [],
++     });
++     return this._getOrCreateBranch(name);
++   }
++
++   this._cacheBranch(branch);
++   return branch;
++ }
+ 
+     const branch = await this._getBranch(name);
+ 

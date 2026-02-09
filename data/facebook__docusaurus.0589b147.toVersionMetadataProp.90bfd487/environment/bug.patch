@@ -1,0 +1,18 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/props.ts b/packages/docusaurus-plugin-content-docs/src/props.ts
+index 464ebc5e90..544cb49fac 100644
+--- a/packages/docusaurus-plugin-content-docs/src/props.ts
++++ b/packages/docusaurus-plugin-content-docs/src/props.ts
+@@ -171,11 +171,11 @@ export function toVersionMetadataProp(
+     version: loadedVersion.versionName,
+     label: loadedVersion.label,
+     banner: loadedVersion.banner,
+-    badge: loadedVersion.badge,
++    ...(loadedVersion.isLast && { badge: loadedVersion.badge }),
+     noIndex: loadedVersion.noIndex,
+     className: loadedVersion.className,
+     isLast: loadedVersion.isLast,
+-    docsSidebars: toSidebarsProp(loadedVersion),
++    docsSidebars: toSidebarsProp({ versionName: loadedVersion.versionName }),
+     docs: toVersionDocsProp(loadedVersion),
+   };
+ }

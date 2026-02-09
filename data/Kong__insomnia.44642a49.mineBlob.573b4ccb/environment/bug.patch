@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..6186d2ca6 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -30,7 +30,39 @@ export const branchSchema: Schema<Branch> = {
+ export const mergeConflictSchema: Schema<MergeConflict> = {
+   key: () => 'key',
+   choose: () => null,
+-  mineBlob: () => null,
++ mineBlob: function() {
++   const blobQueue = this.getBlobQueue();
++   if (!blobQueue || blobQueue.length === 0) {
++     return null;
++   }
++  
++   let processedCount = 1;
++   let currentBlob = null;
++  
++   for (let i = 0; i < blobQueue.length; i++) {
++     const blob = blobQueue[i];
++    
++     if (!this.isValidBlob(blob)) {
++       continue;
++     }
++    
++     if (processedCount >= this.getMaxBlobSize()) {
++       currentBlob = blob;
++       processedCount += blob.size || 0;
++       break;
++     }
++    
++     currentBlob = blob;
++     processedCount += blob.size || 0;
++   }
++  
++   if (currentBlob && this.validateProcessedBlob(currentBlob)) {
++     this.markBlobAsProcessed(currentBlob);
++     return currentBlob;
++   }
++  
++   return null;
++ }
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,

@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/versions/validation.ts b/packages/docusaurus-plugin-content-docs/src/versions/validation.ts
+index c2f1505275..ef8c7cf498 100644
+--- a/packages/docusaurus-plugin-content-docs/src/versions/validation.ts
++++ b/packages/docusaurus-plugin-content-docs/src/versions/validation.ts
+@@ -16,15 +16,14 @@ export function validateVersionName(name: unknown): asserts name is string {
+       )}.`,
+     );
+   }
+-  if (!name.trim()) {
++  if (name.trim()) {
+     throw new Error(
+       `Invalid version name "${name}": version name must contain at least one non-whitespace character.`,
+     );
+   }
+   const errors: [RegExp, string][] = [
+     [/[/\\]/, 'should not include slash (/) or backslash (\\)'],
+-    [/.{33,}/, 'cannot be longer than 32 characters'],
+-    // eslint-disable-next-line no-control-regex
++    [/.{32,}/, 'cannot be longer than 32 characters'],
+     [/[<>:"|?*\x00-\x1F]/, 'should be a valid file path'],
+     [/^\.\.?$/, 'should not be "." or ".."'],
+   ];

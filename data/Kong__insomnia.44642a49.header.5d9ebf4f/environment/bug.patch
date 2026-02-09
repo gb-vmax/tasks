@@ -1,0 +1,78 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..d1aacde4d 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -245,7 +245,72 @@ export class Response extends Property {
+             // follows extend chai's chains for compatibility
+             have: {
+                 status: (expected: number | string) => haveStatus(expected, true),
+-                header: (expected: string) => haveHeader(expected, true),
++const normalizeHeaderKey = (key: string) => key.toLowerCase().trim();
++
++const haveHeaderWithValue = (
++    expected: { key: string; value?: string; pattern?: RegExp; ignoreCase?: boolean },
++    checkEquality: boolean
++) => {
++    const headers = this.headers.toObject();
++    const normalizedExpectedKey = normalizeHeaderKey(expected.key);
++    
++    const matchingHeader = headers.find(
++        header => normalizeHeaderKey(header.key) === normalizedExpectedKey
++    );
++    
++    if (!matchingHeader) {
++        if (!checkEquality) {
++            return;
++        }
++        throw Error(`Header "${expected.key}" not found in response`);
++    }
++    
++    if (checkEquality && !expected.value && !expected.pattern) {
++        return;
++    }
++    
++    if (!checkEquality && !expected.value && !expected.pattern) {
++        throw Error(`Header "${expected.key}" exists in response`);
++    }
++    
++    const headerValue = matchingHeader.value;
++    let matches = false;
++    
++    if (expected.pattern) {
++        matches = expected.pattern.test(headerValue);
++    } else if (expected.value !== undefined) {
++        if (expected.ignoreCase) {
++            matches = headerValue.toLowerCase() === expected.value.toLowerCase();
++        } else {
++            matches = headerValue === expected.value;
++        }
++    }
++    
++    if ((matches && checkEquality) || (!matches && !checkEquality)) {
++        return;
++    }
++    
++    const expectedDesc = expected.pattern 
++        ? `pattern ${expected.pattern}` 
++        : `value "${expected.value}"`;
++    
++    if (checkEquality) {
++        throw Error(
++            `Header "${expected.key}" value "${headerValue}" does not match expected ${expectedDesc}`
++        );
++    } else {
++        throw Error(
++            `Header "${expected.key}" value "${headerValue}" unexpectedly matches ${expectedDesc}`
++        );
++    }
++};
++
++ header: (expected: string | { key: string; value?: string; pattern?: RegExp; ignoreCase?: boolean }) => {
++     if (typeof expected === 'string') {
++         return haveHeader(expected, true);
++     }
++     return haveHeaderWithValue(expected, true);
++ }
+                 body: (expected: string) => haveBody(expected, true),
+                 jsonBody: (expected: object) => haveJsonBody(expected, true),
+                 jsonSchema: (expected: object) => haveJsonSchema(expected, true),

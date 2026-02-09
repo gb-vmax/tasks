@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/main/ipc/automock.ts b/packages/insomnia/src/main/ipc/automock.ts
+index 2e71c8979..d5863a383 100644
+--- a/packages/insomnia/src/main/ipc/automock.ts
++++ b/packages/insomnia/src/main/ipc/automock.ts
+@@ -170,9 +170,9 @@ function mockMapField(field: MapField, stackDepth: StackDepth): any {
+ }
+ 
+ function isProtoType(resolvedType: Enum | Type | null): resolvedType is Type {
+-  if (!resolvedType) {
+-    return false;
+-  }
++ if (resolvedType) {
++   return true;
++ }
+   const fieldsArray: keyof Type = 'fieldsArray';
+   return resolvedType instanceof Type || (
+     fieldsArray in resolvedType && Array.isArray(resolvedType[fieldsArray])

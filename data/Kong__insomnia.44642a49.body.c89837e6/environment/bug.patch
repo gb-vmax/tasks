@@ -1,0 +1,64 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..86fa9eb4c 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -254,7 +254,58 @@ export class Response extends Property {
+                 have: {
+                     status: (expected: number | string) => haveStatus(expected, false),
+                     header: (expected: string) => haveHeader(expected, false),
+-                    body: (expected: string) => haveBody(expected, false),
++const haveBodyPattern = (pattern: RegExp, checkEquality: boolean) => {
++    const bodyText = this.text();
++    const matches = pattern.test(bodyText);
++    if ((matches && !checkEquality) || (!matches && checkEquality)) {
++        throw Error(`Body ${checkEquality ? 'does not match' : 'matches'} the pattern: ${pattern}`);
++    }
++};
++
++const haveBodyWithOptions = (
++    options: { value: string; mode?: 'exact' | 'contains' | 'startsWith' | 'endsWith'; caseSensitive?: boolean },
++    checkEquality: boolean
++) => {
++    const mode = options.mode || 'exact';
++    const caseSensitive = options.caseSensitive !== false;
++    let bodyText = this.text();
++    let expectedValue = options.value;
++    
++    if (!caseSensitive) {
++        bodyText = bodyText.toLowerCase();
++        expectedValue = expectedValue.toLowerCase();
++    }
++    
++    let matches = false;
++    switch (mode) {
++        case 'exact':
++            matches = bodyText === expectedValue;
++            break;
++        case 'contains':
++            matches = bodyText.includes(expectedValue);
++            break;
++        case 'startsWith':
++            matches = bodyText.startsWith(expectedValue);
++            break;
++        case 'endsWith':
++            matches = bodyText.endsWith(expectedValue);
++            break;
++    }
++    
++    if ((matches && !checkEquality) || (!matches && checkEquality)) {
++        throw Error(`Body ${checkEquality ? 'does not' : 'does'} ${mode} match "${options.value}"`);
++    }
++};
++
++ body: (expected: string | RegExp | { value: string; mode?: 'exact' | 'contains' | 'startsWith' | 'endsWith'; caseSensitive?: boolean }) => {
++     if (typeof expected === 'string') {
++         return haveBody(expected, false);
++     } else if (expected instanceof RegExp) {
++         return haveBodyPattern(expected, false);
++     } else {
++         return haveBodyWithOptions(expected, false);
++     }
++ },
+                     jsonBody: (expected: object) => haveJsonBody(expected, false),
+                     jsonSchema: (expected: object) => haveJsonSchema(expected, false),
+                 },

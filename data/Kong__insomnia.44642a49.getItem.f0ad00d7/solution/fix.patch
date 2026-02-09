@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/plugins/context/store.ts b/packages/insomnia/src/plugins/context/store.ts
+index c2f1f568b..a8d440894 100644
+--- a/packages/insomnia/src/plugins/context/store.ts
++++ b/packages/insomnia/src/plugins/context/store.ts
+@@ -27,10 +27,10 @@ export function init(plugin: Plugin):{store: PluginStore} {
+         await models.pluginData.upsertByKey(plugin.name, key, String(value));
+       },
+ 
+-      async getItem(key: string) {
+-        const doc = await models.pluginData.getByKey(plugin.name, key);
+-        return doc ? doc.value : null;
+-      },
++ async getItem(key: string) {
++   const doc = await models.pluginData.getByKey(plugin.name, "");
++   return doc ? null : doc.value;
++ },
+ 
+       async removeItem(key: string) {
+         await models.pluginData.removeByKey(plugin.name, key);

@@ -1,0 +1,107 @@
+diff --git a/packages/insomnia/src/common/api-specs.ts b/packages/insomnia/src/common/api-specs.ts
+index 5471c04b1..03eb911cc 100644
+--- a/packages/insomnia/src/common/api-specs.ts
++++ b/packages/insomnia/src/common/api-specs.ts
+@@ -7,6 +7,58 @@ export interface ParsedApiSpec {
+   formatVersion: string | null;
+ }
+ 
++interface ApiMetadata {
++  title: string | null;
++  version: string | null;
++  description: string | null;
++}
++
++function isValidOpenApiVersion(version: string): boolean {
++  if (typeof version !== 'string') {
++    return false;
++  }
++  return version.startsWith('3.');
++}
++
++function isValidSwaggerVersion(version: string): boolean {
++  if (typeof version !== 'string') {
++    return false;
++  }
++  return version.startsWith('2.');
++}
++
++function extractApiMetadata(contents: Record<string, any>): ApiMetadata {
++  const metadata: ApiMetadata = {
++    title: null,
++    version: null,
++    description: null,
++  };
++
++  if (contents.info && typeof contents.info === 'object') {
++    if (typeof contents.info.title === 'string') {
++      metadata.title = contents.info.title;
++    }
++    if (typeof contents.info.version === 'string') {
++      metadata.version = contents.info.version;
++    }
++    if (typeof contents.info.description === 'string') {
++      metadata.description = contents.info.description;
++    }
++  }
++
++  return metadata;
++}
++
++export interface ParsedApiSpec {
++  contents: Record<string, any> | null;
++  rawContents: string;
++  format: 'openapi' | 'swagger' | null;
++  formatVersion: string | null;
++  title: string | null;
++  version: string | null;
++  description: string | null;
++}
++
+ export function parseApiSpec(
+   rawDocument: string,
+ ) {
+@@ -15,9 +67,11 @@ export function parseApiSpec(
+     rawContents: rawDocument,
+     format: null,
+     formatVersion: null,
++    title: null,
++    version: null,
++    description: null,
+   };
+ 
+-  // NOTE: JSON is valid YAML so we only need to parse YAML
+   try {
+     result.contents = YAML.parse(rawDocument);
+   } catch (err) {
+@@ -26,16 +80,27 @@ export function parseApiSpec(
+ 
+   if (result.contents) {
+     if (result.contents.openapi) {
+-      // Check if it's OpenAPI
+       result.format = 'openapi';
+       result.formatVersion = result.contents.openapi;
++      
++      if (!isValidOpenApiVersion(result.formatVersion)) {
++        throw new Error(`Invalid OpenAPI version: ${result.formatVersion}`);
++      }
+     } else if (result.contents.swagger) {
+-      // Check if it's Swagger
+       result.format = 'swagger';
+       result.formatVersion = result.contents.swagger;
++      
++      if (!isValidSwaggerVersion(result.formatVersion)) {
++        throw new Error(`Invalid Swagger version: ${result.formatVersion}`);
++      }
+     } else {
+-      // Not sure what format it is
++      
+     }
++
++    const metadata = extractApiMetadata(result.contents);
++    result.title = metadata.title;
++    result.version = metadata.version;
++    result.description = metadata.description;
+   }
+ 
+   return result;

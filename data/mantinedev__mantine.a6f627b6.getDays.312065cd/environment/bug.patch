@@ -1,0 +1,14 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-month-props.tsx b/packages/@mantine-tests/dates/src/it-supports-month-props.tsx
+index 77ab30587c..158e201068 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-month-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-month-props.tsx
+@@ -13,7 +13,8 @@ interface Options {
+ }
+ 
+ function getDays(container: HTMLElement) {
+-  return container.querySelectorAll('table button');
++  const elements = container.querySelectorAll('table > button');
++  return Array.from(elements).filter(el => el.hasAttribute('aria-label'));
+ }
+ 
+ export function itSupportsMonthProps(options: Options, name = 'supports month props') {

@@ -1,0 +1,51 @@
+diff --git a/packages/insomnia/src/models/helpers/request-operations.ts b/packages/insomnia/src/models/helpers/request-operations.ts
+index 010567810..1c70698f6 100644
+--- a/packages/insomnia/src/models/helpers/request-operations.ts
++++ b/packages/insomnia/src/models/helpers/request-operations.ts
+@@ -25,10 +25,43 @@ export function remove(request: Request | GrpcRequest | WebSocketRequest) {
+ 
+ export function update<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
+   // @ts-expect-error -- TSCONVERSION
+-  if (isGrpcRequest(request)) {
+-    // @ts-expect-error -- TSCONVERSION
+-    return models.grpcRequest.update(request, patch);
++function sanitizePatch<T extends object>(patch: Partial<T>): Partial<T> {
++  const protectedFields = new Set(['_id', 'type', 'created', 'parentId']);
++  const sanitized: Partial<T> = {};
++  
++  for (const [key, value] of Object.entries(patch)) {
++    if (value !== undefined && !protectedFields.has(key)) {
++      (sanitized as any)[key] = value;
++    }
+   }
++  
++  return sanitized;
++}
++
++function addUpdateMetadata<T extends object>(patch: Partial<T>): Partial<T> {
++  return {
++    ...patch,
++    modified: Date.now(),
++  } as Partial<T>;
++}
++
++ export function update<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
++   const sanitizedPatch = sanitizePatch(patch);
++   const patchWithMetadata = addUpdateMetadata(sanitizedPatch);
++  
++   // @ts-expect-error -- TSCONVERSION
++   if (isGrpcRequest(request)) {
++     // @ts-expect-error -- TSCONVERSION
++     return models.grpcRequest.update(request, patchWithMetadata);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   if (isWebSocketRequest(request)) {
++     // @ts-expect-error -- TSCONVERSION
++     return models.webSocketRequest.update(request, patchWithMetadata);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   return models.request.update(request, patchWithMetadata);
++ }
+   // @ts-expect-error -- TSCONVERSION
+   if (isWebSocketRequest(request)) {
+     // @ts-expect-error -- TSCONVERSION

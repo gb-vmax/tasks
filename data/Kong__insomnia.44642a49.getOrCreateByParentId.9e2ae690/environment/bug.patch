@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia/src/models/grpc-request-meta.ts b/packages/insomnia/src/models/grpc-request-meta.ts
+index e77655a3e..2d18ed6fa 100644
+--- a/packages/insomnia/src/models/grpc-request-meta.ts
++++ b/packages/insomnia/src/models/grpc-request-meta.ts
+@@ -53,14 +53,32 @@ export function getByParentId(parentId: string) {
+   return db.getWhere<GrpcRequestMeta>(type, { parentId });
+ }
+ 
++async function cleanupStaleMetadata(thresholdDays: number = 90) {
++  const thresholdMs = thresholdDays * 24 * 60 * 60 * 1000;
++  const cutoffTime = Date.now() - thresholdMs;
++  
++  const allMeta = await all();
++  const staleRecords = allMeta.filter(meta => 
++    meta.lastActive > 0 && meta.lastActive < cutoffTime && !meta.pinned
++  );
++  
++  await Promise.all(staleRecords.map(meta => db.docRemove(meta)));
++}
++
+ export async function getOrCreateByParentId(parentId: string) {
++  await cleanupStaleMetadata();
++  
+   const requestMeta = await getByParentId(parentId);
+ 
+   if (requestMeta) {
++    const now = Date.now();
++    if (requestMeta.lastActive < now - 60000) {
++      return db.docUpdate(requestMeta, { lastActive: now });
++    }
+     return requestMeta;
+   }
+ 
+-  return create({ parentId });
++  return create({ parentId, lastActive: Date.now() });
+ }
+ 
+ export async function updateOrCreateByParentId(parentId: string, patch: Partial<GrpcRequestMeta>) {

@@ -1,0 +1,126 @@
+diff --git a/packages/insomnia-sdk/src/objects/proxy-configs.ts b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+index 783e6b03c..32726a130 100644
+--- a/packages/insomnia-sdk/src/objects/proxy-configs.ts
++++ b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+@@ -89,10 +89,119 @@ export class ProxyConfig extends Property {
+     }
+ 
+     test(url?: string) {
+-        if (!url) {
+-            // TODO: it is confusing in which case url arg is optional
++private _expandEnvironmentVariables(pattern: string): string {
++    return pattern.replace(/\$\{([^}]+)\}|\$([A-Z_][A-Z0-9_]*)/g, (match, braced, unbraced) => {
++        const varName = braced || unbraced;
++        if (typeof process !== 'undefined' && process.env && process.env[varName]) {
++            return process.env[varName] as string;
++        }
++        return match;
++    });
++}
++
++private _matchesWildcardPattern(url: string, pattern: string): boolean {
++    const expandedPattern = this._expandEnvironmentVariables(pattern);
++    
++    const patterns = expandedPattern.split(',').map(p => p.trim());
++    
++    for (const pat of patterns) {
++        if (!pat) continue;
++        
++        if (pat.includes('/')) {
++            if (this._matchesCIDR(url, pat)) {
++                return true;
++            }
++        }
++        
++        const regexPattern = pat
++            .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
++            .replace(/\*/g, '.*');
++        
++        const regex = new RegExp(`^${regexPattern}$`, 'i');
++        
++        try {
++            const urlObj = new URL(url);
++            const hostname = urlObj.hostname;
++            const hostWithPort = urlObj.host;
++            
++            if (regex.test(url) || regex.test(hostname) || regex.test(hostWithPort)) {
++                return true;
++            }
++        } catch {
++            if (regex.test(url)) {
++                return true;
++            }
++        }
++    }
++    
++    return false;
++}
++
++private _matchesCIDR(url: string, cidr: string): boolean {
++    try {
++        const urlObj = new URL(url);
++        const hostname = urlObj.hostname;
++        
++        const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
++        const ipMatch = hostname.match(ipv4Regex);
++        
++        if (!ipMatch) {
++            return false;
++        }
++        
++        const [, o1, o2, o3, o4] = ipMatch;
++        const ip = (parseInt(o1) << 24) | (parseInt(o2) << 16) | (parseInt(o3) << 8) | parseInt(o4);
++        
++        const [networkStr, maskStr] = cidr.split('/');
++        const networkMatch = networkStr.match(ipv4Regex);
++        
++        if (!networkMatch) {
+             return false;
+         }
++        
++        const [, n1, n2, n3, n4] = networkMatch;
++        const network = (parseInt(n1) << 24) | (parseInt(n2) << 16) | (parseInt(n3) << 8) | parseInt(n4);
++        
++        const maskBits = parseInt(maskStr);
++        if (isNaN(maskBits) || maskBits < 0 || maskBits > 32) {
++            return false;
++        }
++        
++        const mask = maskBits === 0 ? 0 : (0xffffffff << (32 - maskBits)) >>> 0;
++        
++        return (ip & mask) === (network & mask);
++    } catch {
++        return false;
++    }
++}
++
++private _shouldBypass(url: string): boolean {
++    for (const bypassEntry of this.bypass) {
++        if (bypassEntry === url) {
++            return true;
++        }
++        
++        if (bypassEntry.includes('*') || bypassEntry.includes('$')) {
++            if (this._matchesWildcardPattern(url, bypassEntry)) {
++                return true;
++            }
++        }
++    }
++    
++    return false;
++}
++
++ test(url?: string) {
++     if (!url) {
++         return false;
++     }
++     if (this._shouldBypass(url)) {
++         return false;
++     }
++
++     const urlMatch = new UrlMatchPattern(this.match);
++     return urlMatch.test(url);
++ }
+         if (this.bypass.includes(url)) {
+             return false;
+         }

@@ -1,0 +1,95 @@
+diff --git a/packages/insomnia/src/models/response.ts b/packages/insomnia/src/models/response.ts
+index 2ca7ed602..74e5e1070 100644
+--- a/packages/insomnia/src/models/response.ts
++++ b/packages/insomnia/src/models/response.ts
+@@ -227,10 +227,87 @@ export const getBodyBuffer = (
+   response?: { bodyPath?: string; bodyCompression?: Compression },
+   readFailureValue?: string,
+ ): Buffer | string | null => {
+-  if (!response?.bodyPath) {
+-    // No body, so return empty Buffer
+-    return Buffer.alloc(0);
++interface BodyCacheEntry {
++  buffer: Buffer;
++  timestamp: number;
++}
++
++const _bodyCache = new Map<string, BodyCacheEntry>();
++const _bodyCacheMaxSize = 50;
++const _bodyCacheSizeThreshold = 5 * 1024 * 1024;
++
++function _generateBodyCacheKey(bodyPath: string, compression?: Compression): string {
++  return `${bodyPath}:${compression || 'none'}`;
++}
++
++function _getFromBodyCache(key: string): Buffer | null {
++  const entry = _bodyCache.get(key);
++  if (entry) {
++    entry.timestamp = Date.now();
++    return entry.buffer;
++  }
++  return null;
++}
++
++function _addToBodyCache(key: string, buffer: Buffer): void {
++  if (buffer.length > _bodyCacheSizeThreshold) {
++    return;
+   }
++
++  if (_bodyCache.size >= _bodyCacheMaxSize) {
++    let oldestKey: string | null = null;
++    let oldestTimestamp = Infinity;
++    
++    for (const [k, entry] of _bodyCache.entries()) {
++      if (entry.timestamp < oldestTimestamp) {
++        oldestTimestamp = entry.timestamp;
++        oldestKey = k;
++      }
++    }
++    
++    if (oldestKey) {
++      _bodyCache.delete(oldestKey);
++    }
++  }
++
++  _bodyCache.set(key, {
++    buffer,
++    timestamp: Date.now(),
++  });
++}
++
++ export const getBodyBuffer = (
++   response?: { bodyPath?: string; bodyCompression?: Compression },
++   readFailureValue?: string,
++ ): Buffer | string | null => {
++   if (!response?.bodyPath) {
++     return Buffer.alloc(0);
++   }
++
++   const cacheKey = _generateBodyCacheKey(response.bodyPath, response.bodyCompression);
++   const cachedBody = _getFromBodyCache(cacheKey);
++  
++   if (cachedBody !== null) {
++     return cachedBody;
++   }
++
++   try {
++     const rawBuffer = fs.readFileSync(response?.bodyPath);
++     let resultBuffer: Buffer;
++    
++     if (response?.bodyCompression === 'zip') {
++       resultBuffer = zlib.gunzipSync(rawBuffer);
++     } else {
++       resultBuffer = rawBuffer;
++     }
++    
++     _addToBodyCache(cacheKey, resultBuffer);
++     return resultBuffer;
++   } catch (err) {
++     console.warn('Failed to read response body', err.message);
++     return readFailureValue === undefined ? null : readFailureValue;
++   }
++ };
+   try {
+     const rawBuffer = fs.readFileSync(response?.bodyPath);
+     if (response?.bodyCompression === 'zip') {

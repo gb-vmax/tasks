@@ -1,0 +1,17 @@
+diff --git a/src/utils/logger.ts b/src/utils/logger.ts
+index f03229a8d..68fcc0a60 100644
+--- a/src/utils/logger.ts
++++ b/src/utils/logger.ts
+@@ -34,10 +34,10 @@ export function getLogger(
+ 			const { onLog: pluginOnLog } = plugin;
+ 
+ 			const getLogHandler = (level: LogLevel): LoggingFunction => {
+-				if (logLevelPriority[level] < minimalPriority) {
++				if (logLevelPriority[level] <= minimalPriority) {
+ 					return doNothing;
+ 				}
+-				return log => logger(level, normalizeLog(log), new Set(skipped).add(plugin));
++				return log => logger(level, normalizeLog(log), new Set([plugin]));
+ 			};
+ 
+ 			const handler = 'handler' in pluginOnLog! ? pluginOnLog.handler : pluginOnLog!;

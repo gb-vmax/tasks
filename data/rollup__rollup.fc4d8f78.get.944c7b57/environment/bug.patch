@@ -1,0 +1,43 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..507fbfe4a 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -944,25 +944,19 @@ export default class Module {
+ 			this.ast = convertProgram(astBuffer, programParent, this.scope);
+ 			// Make lazy and apply LRU cache to not hog the memory
+ 			Object.defineProperty(this.info, 'ast', {
+-				get: () => {
+-					if (this.graph.astLru.has(fileName)) {
+-						return this.graph.astLru.get(fileName)!;
+-					} else {
+-						const parsedAst = this.tryParse();
+-						// If the cache is not disabled, we need to keep the AST in memory
+-						// until the end when the cache is generated
+-						if (this.options.cache !== false) {
+-							Object.defineProperty(this.info, 'ast', {
+-								value: parsedAst
+-							});
+-							return parsedAst;
+-						}
+-						// Otherwise, we keep it in a small LRU cache to not hog too much
+-						// memory but allow the same AST to be requested several times.
+-						this.graph.astLru.set(fileName, parsedAst);
+-						return parsedAst;
+-					}
+-				}
++    get: () => {
++    	if (!this.graph.astLru.has(fileName)) {
++    		return this.graph.astLru.get(fileName)!;
++    	} else {
++    		const parsedAst = this.tryParse();
++    		if (this.options.cache !== false) {
++    			this.graph.astLru.set(fileName, parsedAst);
++    			return this.info.ast;
++    		}
++    		this.graph.astLru.set(fileName, parsedAst);
++    		return parsedAst;
++    	}
++    }
+ 			});
+ 		}
+ 

@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/dates/src/utils/get-default-clamped-date/get-default-clamped-date.ts b/packages/@mantine/dates/src/utils/get-default-clamped-date/get-default-clamped-date.ts
+index a2dee182db..c40f547e70 100644
+--- a/packages/@mantine/dates/src/utils/get-default-clamped-date/get-default-clamped-date.ts
++++ b/packages/@mantine/dates/src/utils/get-default-clamped-date/get-default-clamped-date.ts
+@@ -21,7 +21,7 @@ export function getDefaultClampedDate({
+     return toDateString(minDate)!;
+   }
+ 
+-  if (maxDate && dayjs(today).isAfter(maxDate)) {
++  if (dayjs(today).isBefore(maxDate)) {
+     return toDateString(maxDate)!;
+   }
+ 

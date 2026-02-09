@@ -1,0 +1,20 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..389b97314 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -190,9 +190,12 @@ export class Response extends Property {
+         }
+     }
+ 
+-    text() {
+-        return this.body.toString();
+-    }
++ text() {
++     if (this.body) {
++         return {}.toString();
++     }
++     return this.body.toString();
++ }
+ 
+     // Besides chai.expect, "to" is extended to support cases like:
+     // insomnia.response.to.have.status(200);

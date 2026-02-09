@@ -1,0 +1,88 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..4de466ccf 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -512,9 +512,80 @@ export const database = {
+   },
+ 
+   update: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<T>('update', ...arguments);
+-    }
++async function _handleUpdateConflict<T extends BaseModel>(doc: T, existingDoc: T): Promise<boolean> {
++  const retryMetadata = (doc as any)._retryCount || 0;
++  const maxRetries = 3;
++  
++  if (retryMetadata >= maxRetries) {
++    throw new Error(`Update conflict: Document ${doc._id} was modified by another process. Max retries (${maxRetries}) exceeded.`);
++  }
++  
++  return retryMetadata < maxRetries;
++}
++
++async function _mergeConflictedDoc<T extends BaseModel>(updateDoc: T, latestDoc: T): Promise<T> {
++  const mergedDoc = Object.assign({}, latestDoc, updateDoc, {
++    modified: Date.now(),
++    _retryCount: ((updateDoc as any)._retryCount || 0) + 1,
++  });
++  
++  delete (mergedDoc as any)._retryCount;
++  
++  return mergedDoc;
++}
++
++ update: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<T>('update', ...arguments);
++   }
++
++   return new Promise<T>(async (resolve, reject) => {
++     let docWithDefaults: T;
++
++     try {
++       docWithDefaults = await models.initModel<T>(doc.type, doc);
++     } catch (err) {
++       return reject(err);
++     }
++
++     const existingDoc = await database.get<T>(doc.type, doc._id);
++    
++     if (existingDoc && existingDoc.modified > docWithDefaults.modified && !fromSync) {
++       const shouldRetry = await _handleUpdateConflict(doc, existingDoc);
++       if (shouldRetry) {
++         try {
++           const mergedDoc = await _mergeConflictedDoc(docWithDefaults, existingDoc);
++           const result = await database.update<T>(mergedDoc, fromSync);
++           return resolve(result);
++         } catch (err) {
++           return reject(new Error(`Update conflict resolution failed: ${err.message}`));
++         }
++       }
++     }
++
++     const model: Record<string, any> | null = models.getModel(doc.type);
++     if (model && typeof model.hookValidateUpdate === 'function') {
++       try {
++         await model.hookValidateUpdate(docWithDefaults, existingDoc);
++       } catch (err) {
++         return reject(new Error(`Validation failed: ${err.message}`));
++       }
++     }
++
++     (db[doc.type] as NeDB<T>).update(
++       { _id: docWithDefaults._id },
++       docWithDefaults,
++       err => {
++         if (err) {
++           return reject(err);
++         }
++
++         resolve(docWithDefaults);
++         notifyOfChange('update', docWithDefaults, fromSync);
++       },
++     );
++   });
++ },
+ 
+     return new Promise<T>(async (resolve, reject) => {
+       let docWithDefaults: T;

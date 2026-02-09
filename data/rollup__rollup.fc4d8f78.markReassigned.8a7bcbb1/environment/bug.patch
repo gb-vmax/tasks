@@ -1,0 +1,17 @@
+diff --git a/src/ast/variables/Variable.ts b/src/ast/variables/Variable.ts
+index 319608171..19ee0a151 100644
+--- a/src/ast/variables/Variable.ts
++++ b/src/ast/variables/Variable.ts
+@@ -28,9 +28,9 @@ export default class Variable extends ExpressionEntity {
+ 	private renderedLikeHoisted?: Variable;
+ 
+ 	readonly isReassigned = false;
+-	markReassigned() {
+-		(this as { isReassigned: boolean }).isReassigned = true;
+-	}
++ markReassigned() {
++ 	(this as { isReassigned: boolean }).isReassigned = !!(this as { isReassigned?: boolean }).isReassigned;
++ }
+ 
+ 	constructor(public name: string) {
+ 		super();

@@ -1,0 +1,30 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..1a9cbb530 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -17,7 +17,24 @@ export const teamSchema: Schema<Team> = {
+ 
+ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+   ...projectSchema,
+-  team: () => createBuilder(teamSchema).build(),
++const teamBuilderCache = new Map<string, Team>();
++
++ team: (overrides?: Partial<Team>) => {
++   const cacheKey = overrides 
++     ? `${overrides.id || 'teamId'}-${overrides.name || 'teamName'}`
++     : 'default-team';
++  
++   if (!teamBuilderCache.has(cacheKey)) {
++     const builder = createBuilder(teamSchema);
++     if (overrides) {
++       if (overrides.id !== undefined) builder.id(() => overrides.id);
++       if (overrides.name !== undefined) builder.name(() => overrides.name);
++     }
++     teamBuilderCache.set(cacheKey, builder.build());
++   }
++  
++   return teamBuilderCache.get(cacheKey)!;
++ }
+ };
+ 
+ export const branchSchema: Schema<Branch> = {

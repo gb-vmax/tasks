@@ -1,0 +1,92 @@
+diff --git a/packages/insomnia/src/common/api-specs.ts b/packages/insomnia/src/common/api-specs.ts
+index 5471c04b1..f36fdaef7 100644
+--- a/packages/insomnia/src/common/api-specs.ts
++++ b/packages/insomnia/src/common/api-specs.ts
+@@ -7,6 +7,43 @@ export interface ParsedApiSpec {
+   formatVersion: string | null;
+ }
+ 
++export interface ParsedApiSpec {
++  contents: Record<string, any> | null;
++  rawContents: string;
++  format: 'openapi' | 'swagger' | null;
++  formatVersion: string | null;
++  metadata: {
++    title: string | null;
++    version: string | null;
++    description: string | null;
++  };
++  validationWarnings: string[];
++}
++
++function isValidOpenApiVersion(version: string): boolean {
++  const validVersionPatterns = [
++    /^3\.0\.\d+$/,
++    /^3\.1\.\d+$/,
++  ];
++  return validVersionPatterns.some(pattern => pattern.test(version));
++}
++
++function isValidSwaggerVersion(version: string): boolean {
++  return version === '2.0';
++}
++
++function extractApiMetadata(info: Record<string, any>): {
++  title: string | null;
++  version: string | null;
++  description: string | null;
++} {
++  return {
++    title: typeof info.title === 'string' ? info.title : null,
++    version: typeof info.version === 'string' ? info.version : null,
++    description: typeof info.description === 'string' ? info.description : null,
++  };
++}
++
+ export function parseApiSpec(
+   rawDocument: string,
+ ) {
+@@ -15,9 +52,14 @@ export function parseApiSpec(
+     rawContents: rawDocument,
+     format: null,
+     formatVersion: null,
++    metadata: {
++      title: null,
++      version: null,
++      description: null,
++    },
++    validationWarnings: [],
+   };
+ 
+-  // NOTE: JSON is valid YAML so we only need to parse YAML
+   try {
+     result.contents = YAML.parse(rawDocument);
+   } catch (err) {
+@@ -26,15 +68,23 @@ export function parseApiSpec(
+ 
+   if (result.contents) {
+     if (result.contents.openapi) {
+-      // Check if it's OpenAPI
+       result.format = 'openapi';
+       result.formatVersion = result.contents.openapi;
++      
++      if (!isValidOpenApiVersion(result.contents.openapi)) {
++        result.validationWarnings.push(`Unsupported OpenAPI version: ${result.contents.openapi}`);
++      }
+     } else if (result.contents.swagger) {
+-      // Check if it's Swagger
+       result.format = 'swagger';
+       result.formatVersion = result.contents.swagger;
+-    } else {
+-      // Not sure what format it is
++      
++      if (!isValidSwaggerVersion(result.contents.swagger)) {
++        result.validationWarnings.push(`Unsupported Swagger version: ${result.contents.swagger}`);
++      }
++    }
++
++    if (result.contents.info) {
++      result.metadata = extractApiMetadata(result.contents.info);
+     }
+   }
+ 

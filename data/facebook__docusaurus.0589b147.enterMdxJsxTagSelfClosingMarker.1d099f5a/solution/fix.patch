@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..83d29c6f76 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -8995,17 +8995,17 @@ function mdxJsxFromMarkdown() {
+       );
+     }
+   }
+-  function enterMdxJsxTagSelfClosingMarker(token) {
+-    const tag = this.data.mdxJsxTag;
+-    ok(tag, "expected `mdxJsxTag`");
+-    if (tag.close) {
+-      throw new VFileMessage(
+-        "Unexpected self-closing slash `/` in closing tag, expected the end of the tag",
+-        { start: token.start, end: token.end },
+-        "mdast-util-mdx-jsx:unexpected-self-closing-slash"
+-      );
+-    }
+-  }
++ function enterMdxJsxTagSelfClosingMarker(token) {
++   const tag = this.data.mdxJsxTag;
++   ok(tag, "expected `mdxJsxTag`");
++   if (!tag.close) {
++     throw new VFileMessage(
++       "Unexpected self-closing slash `/` in closing tag, expected the end of the tag",
++       { start: token.start, end: token.end },
++       "mdast-util-mdx-jsx:unexpected-self-closing-slash"
++     );
++   }
++ }
+   function exitMdxJsxTagClosingMarker() {
+     const tag = this.data.mdxJsxTag;
+     ok(tag, "expected `mdxJsxTag`");

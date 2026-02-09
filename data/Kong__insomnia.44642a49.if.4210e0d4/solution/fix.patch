@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..120717d73 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -101,10 +101,54 @@ export class PropertyBase {
+                 // no op
+             } else {
+                 if (customizer) {
+-                    if (customizer(cloned)) {
+-                        // continue until customizer returns a truthy value
+-                        return cloned;
+-                    }
++ findInParents(
++     property: string,
++     customizer?: (ancester: PropertyBase, depth?: number) => boolean,
++ ): PropertyBase | undefined {
++     const currentParent = this.parent();
++     if (!currentParent) {
++         return;
++     }
++
++     const queue: Array<{ node: PropertyBase; depth: number }> = [{ node: currentParent, depth: 1 }];
++     const visitedCache = new WeakMap<PropertyBase, PropertyBase>();
++
++     while (queue.length > 0) {
++         const item = queue.shift();
++         if (!item) {
++             continue;
++         }
++
++         const { node: ancester, depth } = item;
++
++         let cloned = visitedCache.get(ancester);
++         if (!cloned) {
++             cloned = clone(ancester);
++             visitedCache.set(ancester, cloned);
++         }
++
++         const hasProperty = Object.keys(cloned.meta()).includes(property);
++         if (!hasProperty) {
++             // keep traversing until parent has the property
++             // no op
++         } else {
++             if (customizer) {
++                 if (customizer(cloned, depth)) {
++                     return cloned;
++                 }
++             } else {
++                 return cloned;
++             }
++         }
++
++         const olderAncester = ancester.parent();
++         if (olderAncester) {
++             queue.push({ node: olderAncester, depth: depth + 1 });
++         }
++     }
++
++     return undefined;
++ }
+                 } else {
+                     // customizer is not specified
+                     // stop at the first parent that contains the property

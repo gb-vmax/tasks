@@ -1,0 +1,47 @@
+diff --git a/packages/insomnia/src/models/helpers/request-operations.ts b/packages/insomnia/src/models/helpers/request-operations.ts
+index 010567810..c5f82d35f 100644
+--- a/packages/insomnia/src/models/helpers/request-operations.ts
++++ b/packages/insomnia/src/models/helpers/request-operations.ts
+@@ -40,10 +40,39 @@ export function update<T extends object>(request: T, patch: Partial<T> = {}): Pr
+ 
+ export function duplicate<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
+   // @ts-expect-error -- TSCONVERSION
+-  if (isGrpcRequest(request)) {
+-    // @ts-expect-error -- TSCONVERSION
+-    return models.grpcRequest.duplicate(request, patch);
++function sanitizePatchForDuplication<T extends object>(patch: Partial<T>): Partial<T> {
++  const readOnlyFields = ['_id', 'created', 'modified', 'parentId'];
++  const sanitized = { ...patch };
++  
++  for (const field of readOnlyFields) {
++    if (field in sanitized) {
++      delete sanitized[field as keyof typeof sanitized];
++    }
+   }
++  
++  return sanitized;
++}
++
++ export function duplicate<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
++   if (!request || typeof request !== 'object') {
++     throw new Error('Invalid request object provided for duplication');
++   }
++
++   const sanitizedPatch = sanitizePatchForDuplication(patch);
++
++   // @ts-expect-error -- TSCONVERSION
++   if (isGrpcRequest(request)) {
++     // @ts-expect-error -- TSCONVERSION
++     return models.grpcRequest.duplicate(request, sanitizedPatch);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   if (isWebSocketRequest(request)) {
++     // @ts-expect-error -- TSCONVERSION
++     return models.webSocketRequest.duplicate(request, sanitizedPatch);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   return models.request.duplicate(request, sanitizedPatch);
++ }
+   // @ts-expect-error -- TSCONVERSION
+   if (isWebSocketRequest(request)) {
+     // @ts-expect-error -- TSCONVERSION

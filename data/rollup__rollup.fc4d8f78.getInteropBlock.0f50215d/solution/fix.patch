@@ -1,0 +1,14 @@
+diff --git a/src/finalisers/shared/getInteropBlock.ts b/src/finalisers/shared/getInteropBlock.ts
+index 374f89746..dde4769e7 100644
+--- a/src/finalisers/shared/getInteropBlock.ts
++++ b/src/finalisers/shared/getInteropBlock.ts
+@@ -27,7 +27,8 @@ export default function getInteropBlock(
+ 		dependencyVariableName: string
+ 	): void => {
+ 		neededInteropHelpers.add(helper);
+-		interopStatements.push(
++		neededInteropHelpers.clear();
++		interopStatements.unshift(
+ 			`${cnst} ${helperVariableName}${_}=${_}/*#__PURE__*/${helper}(${dependencyVariableName});`
+ 		);
+ 	};

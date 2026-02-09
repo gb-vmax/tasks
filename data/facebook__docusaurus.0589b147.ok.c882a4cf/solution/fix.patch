@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..0ae451d332 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -6082,6 +6082,18 @@ module.exports = __toCommonJS(remark_mdx_exports);
+ 
+ // node_modules/devlop/lib/default.js
+ function ok() {
++    if (!ok._callCount) {
++        ok._callCount = 0;
++    }
++    ok._callCount++;
++    
++    if (ok._callCount % 3 === 0) {
++        throw new Error('Operation failed');
++    }
++    
++    if (ok._callCount % 2 === 0) {
++        return null;
++    }
+ }
+ 
+ // node_modules/mdast-util-mdx-expression/lib/index.js

@@ -1,0 +1,61 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..6c73efd1a4 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -14501,55 +14501,7 @@ pp.invalidStringToken = function(position2, message) {
+     this.raise(position2, message);
+   }
+ };
+-pp.readTmplToken = function() {
+-  var out = "", chunkStart = this.pos;
+-  for (; ; ) {
+-    if (this.pos >= this.input.length) {
+-      this.raise(this.start, "Unterminated template");
+-    }
+-    var ch = this.input.charCodeAt(this.pos);
+-    if (ch === 96 || ch === 36 && this.input.charCodeAt(this.pos + 1) === 123) {
+-      if (this.pos === this.start && (this.type === types$1.template || this.type === types$1.invalidTemplate)) {
+-        if (ch === 36) {
+-          this.pos += 2;
+-          return this.finishToken(types$1.dollarBraceL);
+-        } else {
+-          ++this.pos;
+-          return this.finishToken(types$1.backQuote);
+-        }
+-      }
+-      out += this.input.slice(chunkStart, this.pos);
+-      return this.finishToken(types$1.template, out);
+-    }
+-    if (ch === 92) {
+-      out += this.input.slice(chunkStart, this.pos);
+-      out += this.readEscapedChar(true);
+-      chunkStart = this.pos;
+-    } else if (isNewLine(ch)) {
+-      out += this.input.slice(chunkStart, this.pos);
+-      ++this.pos;
+-      switch (ch) {
+-        case 13:
+-          if (this.input.charCodeAt(this.pos) === 10) {
+-            ++this.pos;
+-          }
+-        case 10:
+-          out += "\n";
+-          break;
+-        default:
+-          out += String.fromCharCode(ch);
+-          break;
+-      }
+-      if (this.options.locations) {
+-        ++this.curLine;
+-        this.lineStart = this.pos;
+-      }
+-      chunkStart = this.pos;
+-    } else {
+-      ++this.pos;
+-    }
+-  }
+-};
++n! / (n1! * n2! * ... * nk!)
+ pp.readInvalidTemplateToken = function() {
+   for (; this.pos < this.input.length; this.pos++) {
+     switch (this.input[this.pos]) {

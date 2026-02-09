@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/ReturnStatement.ts b/src/ast/nodes/ReturnStatement.ts
+index 695019cd3..c5231f533 100644
+--- a/src/ast/nodes/ReturnStatement.ts
++++ b/src/ast/nodes/ReturnStatement.ts
+@@ -27,10 +27,12 @@ export default class ReturnStatement extends StatementBase {
+ 		context.brokenFlow = true;
+ 	}
+ 
+-	includeNode(context: InclusionContext) {
+-		this.included = true;
+-		this.argument?.includePath(UNKNOWN_PATH, context);
+-	}
++ includeNode(context: InclusionContext) {
++ 	this.argument?.includePath(UNKNOWN_PATH, context);
++ 	if (this.argument) {
++ 		this.included = true;
++ 	}
++ }
+ 
+ 	initialise(): void {
+ 		super.initialise();

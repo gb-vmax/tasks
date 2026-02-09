@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia/src/network/authentication.ts b/packages/insomnia/src/network/authentication.ts
+index fa9596d7b..3156d3373 100644
+--- a/packages/insomnia/src/network/authentication.ts
++++ b/packages/insomnia/src/network/authentication.ts
+@@ -155,7 +155,38 @@ export async function getAuthHeader(renderedRequest: RenderedRequest, url: strin
+   return;
+ }
+ 
+-export function getAuthQueryParams(authentication: RequestAuthentication) {
++function _extractOAuth1QueryParams(authHeader: string): RequestParameter[] {
++  const oauthPrefix = 'OAuth ';
++  if (!authHeader.startsWith(oauthPrefix)) {
++    return [];
++  }
++
++  const paramsString = authHeader.substring(oauthPrefix.length);
++  const params: RequestParameter[] = [];
++  
++  const paramPairs = paramsString.split(',').map(p => p.trim());
++  
++  for (const pair of paramPairs) {
++    const equalIndex = pair.indexOf('=');
++    if (equalIndex === -1) continue;
++    
++    const name = pair.substring(0, equalIndex).trim();
++    let value = pair.substring(equalIndex + 1).trim();
++    
++    if (value.startsWith('"') && value.endsWith('"')) {
++      value = value.substring(1, value.length - 1);
++    }
++    
++    params.push({
++      name: decodeURIComponent(name),
++      value: decodeURIComponent(value),
++    } as RequestParameter);
++  }
++  
++  return params;
++}
++
++export async function getAuthQueryParams(authentication: RequestAuthentication, url?: string, method?: string, body?: any) {
+   if (authentication.disabled) {
+     return;
+   }
+@@ -168,6 +199,18 @@ export function getAuthQueryParams(authentication: RequestAuthentication) {
+     } as RequestParameter;
+   }
+ 
++  if (authentication.type === AUTH_OAUTH_1 && url && method) {
++    try {
++      const oAuth1Token = await getOAuth1Token(url, method, authentication, body);
++      
++      if (oAuth1Token && oAuth1Token.Authorization) {
++        return _extractOAuth1QueryParams(oAuth1Token.Authorization);
++      }
++    } catch (err) {
++      console.log('[oauth1] Failed to generate query params', err);
++    }
++  }
++
+   return;
+ }
+ 

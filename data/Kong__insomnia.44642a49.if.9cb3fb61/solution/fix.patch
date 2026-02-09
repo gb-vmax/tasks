@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia/src/main/local-storage.ts b/packages/insomnia/src/main/local-storage.ts
+index 00514a192..448651043 100644
+--- a/packages/insomnia/src/main/local-storage.ts
++++ b/packages/insomnia/src/main/local-storage.ts
+@@ -31,9 +31,38 @@ class LocalStorage {
+     try {
+       contents = String(fs.readFileSync(path));
+     } catch (error) {
+-      if (error.code === 'ENOENT') {
+-        this.setItem(key, defaultObj);
+-      }
++_recoveryAttempts: Record<string, number> = {};
++
++_logRecovery(key: string) {
++  if (!this._basePath) return;
++  
++  const logPath = path.join(this._basePath, '.recovery.log');
++  const timestamp = new Date().toISOString();
++  const logEntry = `${timestamp} - Recovered missing key: ${key}\n`;
++  
++  try {
++    fs.appendFileSync(logPath, logEntry);
++  } catch (error) {
++    console.error(`[localstorage] Failed to write recovery log: ${error}`);
++  }
++}
++
++_trackRecoveryAttempt(key: string) {
++  if (!this._recoveryAttempts[key]) {
++    this._recoveryAttempts[key] = 0;
++  }
++  this._recoveryAttempts[key]++;
++  
++  if (this._recoveryAttempts[key] > 5) {
++    console.warn(`[localstorage] Key "${key}" has been recovered ${this._recoveryAttempts[key]} times`);
++  }
++}
++
++ if (error.code === 'ENOENT') {
++   this._logRecovery(key);
++   this._trackRecoveryAttempt(key);
++   this.setItem(key, defaultObj);
++ }
+     }
+ 
+     try {

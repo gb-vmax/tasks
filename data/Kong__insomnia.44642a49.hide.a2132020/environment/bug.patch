@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..bda042707 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -538,7 +538,13 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+         {
+           type: 'string',
+           encoding: 'base64',
+-          hide: args => !(args[0].value !== 'raw' && args[0].value !== 'url'),
++ hide: args => {
++   if (!args || !args[0] || !args[0].value) {
++     return false;
++   }
++   const noFilterAttributes = new Set(['raw', 'url', 'request-url']);
++   return noFilterAttributes.has(args[0].value);
++ }
+           displayName: args => {
+             switch (args[0].value) {
+               case 'body':

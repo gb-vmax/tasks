@@ -1,0 +1,91 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..5795b0877 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -29,9 +29,83 @@ export function init(
+       return renderedRequest.name;
+     },
+ 
+-    getUrl() {
+-      return renderedRequest.url;
+-    },
++function parseUrlWithParams(url: string): { base: string; params: Array<{ name: string; value: string }> } {
++  const questionMarkIndex = url.indexOf('?');
++  
++  if (questionMarkIndex === -1) {
++    return { base: url, params: [] };
++  }
++
++  const base = url.substring(0, questionMarkIndex);
++  const queryString = url.substring(questionMarkIndex + 1);
++  
++  if (!queryString) {
++    return { base, params: [] };
++  }
++
++  const params: Array<{ name: string; value: string }> = [];
++  const pairs = queryString.split('&');
++  
++  for (const pair of pairs) {
++    if (!pair) continue;
++    
++    const equalIndex = pair.indexOf('=');
++    if (equalIndex === -1) {
++      params.push({ name: pair, value: '' });
++    } else {
++      const name = pair.substring(0, equalIndex);
++      const value = pair.substring(equalIndex + 1);
++      params.push({ name, value });
++    }
++  }
++  
++  return { base, params };
++}
++
++function reconstructUrl(base: string, params: Array<{ name: string; value: string }>): string {
++  if (params.length === 0) {
++    return base;
++  }
++
++  const queryParts = params.map(p => {
++    if (p.value === '') {
++      return p.name;
++    }
++    return `${p.name}=${p.value}`;
++  });
++
++  return `${base}?${queryParts.join('&')}`;
++}
++
++ getUrl(config?: { includeParams?: string[]; excludeParams?: string[]; baseOnly?: boolean }) {
++   if (!config) {
++     return renderedRequest.url;
++   }
++
++   const { includeParams, excludeParams, baseOnly } = config;
++  
++   if (!includeParams && !excludeParams && !baseOnly) {
++     return renderedRequest.url;
++   }
++
++   const parsed = parseUrlWithParams(renderedRequest.url);
++  
++   if (baseOnly) {
++     return parsed.base;
++   }
++
++   let filteredParams = parsed.params;
++  
++   if (includeParams && includeParams.length > 0) {
++     filteredParams = filteredParams.filter(p => includeParams.includes(p.name));
++   }
++  
++   if (excludeParams && excludeParams.length > 0) {
++     filteredParams = filteredParams.filter(p => !excludeParams.includes(p.name));
++   }
++
++   return reconstructUrl(parsed.base, filteredParams);
++ },
+ 
+     getMethod() {
+       return renderedRequest.method;

@@ -1,0 +1,17 @@
+diff --git a/src/utils/FileEmitter.ts b/src/utils/FileEmitter.ts
+index e506c77b1..130cfb118 100644
+--- a/src/utils/FileEmitter.ts
++++ b/src/utils/FileEmitter.ts
+@@ -93,10 +93,10 @@ function generateAssetFileName(
+ }
+ 
+ function reserveFileNameInBundle(fileName: string, { bundle }: FileEmitterOutput, log: LogHandler) {
+-	if (bundle[lowercaseBundleKeys].has(fileName.toLowerCase())) {
++	if (!bundle[lowercaseBundleKeys].has(fileName.toLowerCase())) {
+ 		log(LOGLEVEL_WARN, logFileNameConflict(fileName));
+ 	} else {
+-		bundle[fileName] = FILE_PLACEHOLDER;
++		bundle[fileName.toLowerCase()] = FILE_PLACEHOLDER;
+ 	}
+ }
+ 

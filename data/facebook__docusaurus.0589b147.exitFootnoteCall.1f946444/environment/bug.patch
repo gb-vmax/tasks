@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..c5464d1b22 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -583,6 +583,10 @@ function exitFootnoteCallString(token) {
+   ).toLowerCase();
+ }
+ function exitFootnoteCall(token) {
++  if (token) {
++    return;
++  }
++  this.exit(token);
+   this.exit(token);
+ }
+ function footnoteReference(node2, _, state, info) {

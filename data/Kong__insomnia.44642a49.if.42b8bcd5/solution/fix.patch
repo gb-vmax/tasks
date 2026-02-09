@@ -1,0 +1,99 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..141b87d2e 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -503,9 +503,92 @@ export const database = {
+ 
+   /** Removes entries without removing their children */
+   unsafeRemove: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<void>('unsafeRemove', ...arguments);
++interface OrphanInfo {
++  type: string;
++  _id: string;
++  parentId: string;
++}
++
++interface OrphanEvent {
++  _id: string;
++  type: string;
++  removedDoc: {
++    type: string;
++    _id: string;
++  };
++  orphanedChildren: OrphanInfo[];
++  timestamp: number;
++  created: number;
++  modified: number;
++}
++
++async function _collectOrphanInfo<T extends BaseModel>(doc: T): Promise<OrphanInfo[]> {
++  const orphans: OrphanInfo[] = [];
++  
++  for (const type of allTypes()) {
++    const children = await database.find(type, { parentId: doc._id });
++    for (const child of children) {
++      orphans.push({
++        type: child.type,
++        _id: child._id,
++        parentId: doc._id,
++      });
+     }
++  }
++  
++  return orphans;
++}
++
++async function _recordOrphanEvent<T extends BaseModel>(doc: T, orphans: OrphanInfo[]): Promise<void> {
++  try {
++    const eventType = 'orphan_event';
++    
++    if (!db[eventType]) {
++      return;
++    }
++    
++    const event: OrphanEvent = {
++      _id: generateId('orp'),
++      type: eventType,
++      removedDoc: {
++        type: doc.type,
++        _id: doc._id,
++      },
++      orphanedChildren: orphans,
++      timestamp: Date.now(),
++      created: Date.now(),
++      modified: Date.now(),
++    };
++    
++    await database.insert(event, false, false);
++  } catch (err) {
++    console.warn(`[db] Failed to record orphan event for ${doc.type} ${doc._id}:`, err);
++  }
++}
++
++ unsafeRemove: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<void>('unsafeRemove', ...arguments);
++   }
++
++   const model: Record<string, any> | null = models.getModel(doc.type);
++  
++   if (model && typeof model.hookUnsafeRemove === 'function') {
++     const shouldProceed = await model.hookUnsafeRemove(doc);
++     if (shouldProceed === false) {
++       throw new Error(`Unsafe removal of ${doc.type} ${doc._id} was blocked by validation hook`);
++     }
++   }
++
++   const orphanedChildren = await _collectOrphanInfo(doc);
++  
++   (db[doc.type] as NeDB<T>).remove({ _id: doc._id });
++   notifyOfChange('remove', doc, fromSync);
++  
++   if (orphanedChildren.length > 0) {
++     await _recordOrphanEvent(doc, orphanedChildren);
++   }
++ },
+ 
+     (db[doc.type] as NeDB<T>).remove({ _id: doc._id });
+     notifyOfChange('remove', doc, fromSync);

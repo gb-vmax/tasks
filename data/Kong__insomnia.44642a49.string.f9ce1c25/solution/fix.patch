@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..79c32810a 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -588,7 +588,69 @@ const convertParameters = (parameters: OpenAPIV3.ParameterObject[] = []) => {
+ // @ts-expect-error -- ran out of time during TypeScript conversion to handle this particular recursion
+ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+   const typeExamples = {
+-    string: () => 'string',
++const generateStringWithLength = (
++  baseString: string,
++  minLength: number,
++  maxLength?: number
++): string => {
++  if (maxLength !== undefined && baseString.length > maxLength) {
++    return baseString.substring(0, maxLength);
++  }
++
++  if (baseString.length >= minLength) {
++    return baseString;
++  }
++
++  const repeats = Math.ceil(minLength / baseString.length);
++  const extended = baseString.repeat(repeats);
++  
++  if (maxLength !== undefined && extended.length > maxLength) {
++    return extended.substring(0, maxLength);
++  }
++
++  return extended.substring(0, Math.max(minLength, baseString.length));
++};
++
++ string: (schema: OpenAPIV3.SchemaObject) => {
++   if (schema?.enum && schema.enum.length > 0) {
++     return schema.enum[0];
++   }
++
++   const minLength = schema?.minLength || 0;
++   const maxLength = schema?.maxLength;
++  
++   const contextualExamples: Record<string, string> = {
++     id: 'abc123',
++     name: 'example name',
++     email: 'user@example.com',
++     username: 'user123',
++     password: 'password123',
++     token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
++     url: 'https://example.com',
++     uri: 'https://example.com/resource',
++     phone: '+1234567890',
++     address: '123 Main St',
++     city: 'New York',
++     country: 'United States',
++     code: 'ABC123',
++     status: 'active',
++     type: 'standard',
++     description: 'example description',
++     title: 'example title',
++   };
++
++   if (schema && typeof schema === 'object' && 'name' in schema && typeof schema.name === 'string') {
++     const lowerName = schema.name.toLowerCase();
++     for (const [key, value] of Object.entries(contextualExamples)) {
++       if (lowerName.includes(key)) {
++         return generateStringWithLength(value, minLength, maxLength);
++       }
++     }
++   }
++
++   const baseString = 'string';
++   return generateStringWithLength(baseString, minLength, maxLength);
++ },
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',

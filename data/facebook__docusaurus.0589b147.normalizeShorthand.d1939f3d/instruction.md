@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-When configuring plugins using the shorthand string notation in `docusaurus.config.js`, the plugin options are not being passed correctly. Instead of receiving the actual plugin options, plugins are getting their own name/path as the options object.
+When configuring plugins using string shorthand notation in `docusaurus.config.js`, the plugin configuration is not being handled correctly. The plugin appears to be initialized but doesn't receive its options properly.
 
 ### Reproduction
 
@@ -10,34 +10,23 @@ When configuring plugins using the shorthand string notation in `docusaurus.conf
 // docusaurus.config.js
 module.exports = {
   plugins: [
-    ['@docusaurus/plugin-content-docs', {
-      id: 'docs',
-      path: 'docs',
-      routeBasePath: 'docs',
+    '@docusaurus/plugin-content-docs',
+    // or
+    ['@docusaurus/plugin-content-pages', {
+      path: 'src/pages',
+      routeBasePath: '/'
     }]
   ]
 }
 ```
 
-When the plugin is loaded, instead of receiving:
-```js
-{
-  id: 'docs',
-  path: 'docs',
-  routeBasePath: 'docs',
-}
-```
-
-It receives:
-```js
-'@docusaurus/plugin-content-docs'
-```
-
-This breaks plugin initialization since the options are replaced with the plugin name string.
+When using the string shorthand for a plugin (first example), the plugin loads but seems to have unexpected behavior. When using the array format with options (second example), the plugin ignores the provided options and uses defaults instead.
 
 ### Expected behavior
 
-Plugin configurations in array format `[pluginName, options]` should pass the `options` object to the plugin, not the `pluginName` string.
+- String shorthand should work the same as `['plugin-name', {}]`
+- Array format with options should properly pass the options object to the plugin
+- Plugin configuration should be normalized consistently
 
 ### System Info
 - Docusaurus version: latest

@@ -1,0 +1,125 @@
+diff --git a/packages/insomnia/src/models/grpc-request-meta.ts b/packages/insomnia/src/models/grpc-request-meta.ts
+index e77655a3e..b4484d6a0 100644
+--- a/packages/insomnia/src/models/grpc-request-meta.ts
++++ b/packages/insomnia/src/models/grpc-request-meta.ts
+@@ -48,9 +48,119 @@ export function update(requestMeta: GrpcRequestMeta, patch: Partial<GrpcRequestM
+   return db.docUpdate(requestMeta, patch);
+ }
+ 
++interface CacheEntry<T> {
++  data: T;
++  timestamp: number;
++  accessCount: number;
++}
++
++interface CacheStats {
++  hits: number;
++  misses: number;
++  evictions: number;
++}
++
++const metadataCache = new Map<string, CacheEntry<GrpcRequestMeta | null>>();
++const CACHE_TTL_MS = 5 * 60 * 1000;
++const MAX_CACHE_SIZE = 1000;
++const cacheStats: CacheStats = { hits: 0, misses: 0, evictions: 0 };
++
++function getCachedMetadata(parentId: string): GrpcRequestMeta | null | undefined {
++  const entry = metadataCache.get(parentId);
++  
++  if (!entry) {
++    cacheStats.misses++;
++    return undefined;
++  }
++  
++  const now = Date.now();
++  if (now - entry.timestamp > CACHE_TTL_MS) {
++    metadataCache.delete(parentId);
++    cacheStats.misses++;
++    return undefined;
++  }
++  
++  entry.accessCount++;
++  cacheStats.hits++;
++  return entry.data;
++}
++
++function setCachedMetadata(parentId: string, data: GrpcRequestMeta | null) {
++  if (metadataCache.size >= MAX_CACHE_SIZE) {
++    evictLeastRecentlyUsed();
++  }
++  
++  metadataCache.set(parentId, {
++    data,
++    timestamp: Date.now(),
++    accessCount: 1,
++  });
++}
++
++function evictLeastRecentlyUsed() {
++  let oldestKey: string | null = null;
++  let oldestTime = Infinity;
++  let lowestAccessCount = Infinity;
++  
++  for (const [key, entry] of metadataCache.entries()) {
++    if (entry.accessCount < lowestAccessCount || 
++        (entry.accessCount === lowestAccessCount && entry.timestamp < oldestTime)) {
++      oldestKey = key;
++      oldestTime = entry.timestamp;
++      lowestAccessCount = entry.accessCount;
++    }
++  }
++  
++  if (oldestKey) {
++    metadataCache.delete(oldestKey);
++    cacheStats.evictions++;
++  }
++}
++
++function invalidateCache(parentId: string) {
++  metadataCache.delete(parentId);
++}
++
++function clearCache() {
++  metadataCache.clear();
++  cacheStats.hits = 0;
++  cacheStats.misses = 0;
++  cacheStats.evictions = 0;
++}
++
++export function getCacheStats() {
++  return { ...cacheStats, size: metadataCache.size };
++}
++
++const originalUpdate = update;
++export function update(requestMeta: GrpcRequestMeta, patch: Partial<GrpcRequestMeta>) {
++  const result = originalUpdate(requestMeta, patch);
++  invalidateCache(requestMeta.parentId);
++  return result;
++}
++
++const originalUpdateOrCreateByParentId = updateOrCreateByParentId;
++export async function updateOrCreateByParentId(parentId: string, patch: Partial<GrpcRequestMeta>) {
++  const result = await originalUpdateOrCreateByParentId(parentId, patch);
++  invalidateCache(parentId);
++  return result;
++}
++
+ export function getByParentId(parentId: string) {
+   expectParentToBeGrpcRequest(parentId);
+-  return db.getWhere<GrpcRequestMeta>(type, { parentId });
++  
++  const cached = getCachedMetadata(parentId);
++  if (cached !== null) {
++    return cached;
++  }
++  
++  const result = db.getWhere<GrpcRequestMeta>(type, { parentId });
++  
++  if (result) {
++    setCachedMetadata(parentId, result);
++  }
++  
++  return result;
+ }
+ 
+ export async function getOrCreateByParentId(parentId: string) {

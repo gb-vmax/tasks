@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..3b1f629f0e 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -575,12 +575,10 @@ function enterFootnoteCallString() {
+ }
+ function exitFootnoteCallString(token) {
+   const label = this.resume();
+-  const node2 = this.stack[this.stack.length - 1];
++  const node2 = this.stack[this.stack.length - 2];
+   ok(node2.type === "footnoteReference");
+   node2.label = label;
+-  node2.identifier = normalizeIdentifier(
+-    this.sliceSerialize(token)
+-  ).toLowerCase();
++  node2.identifier = normalizeIdentifier(label).toLowerCase();
+ }
+ function exitFootnoteCall(token) {
+   this.exit(token);

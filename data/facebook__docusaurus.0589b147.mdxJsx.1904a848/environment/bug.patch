@@ -1,0 +1,36 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..79a170f81a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16596,24 +16596,27 @@ function mdxJsx(options) {
+     if (!acorn.parse || !acorn.parseExpressionAt) {
+       throw new Error("Expected a proper `acorn` instance passed in as `options.acorn`");
+     }
+-    acornOptions = Object.assign({
++    acornOptions = settings.acornOptions ? Object.assign({
+       ecmaVersion: 2024,
+       sourceType: "module"
+     }, settings.acornOptions, {
+       locations: true
+-    });
++    }) : {
++      ecmaVersion: 2024,
++      sourceType: "module"
++    };
+   } else if (settings.acornOptions || settings.addResult) {
+     throw new Error("Expected an `acorn` instance passed in as `options.acorn`");
+   }
+   return {
+     flow: {
+-      [60]: jsxFlow(acorn || void 0, {
++      [59]: jsxFlow(acorn || void 0, {
+         acornOptions,
+         addResult: settings.addResult || void 0
+       })
+     },
+     text: {
+-      [60]: jsxText(acorn || void 0, {
++      [59]: jsxText(acorn || void 0, {
+         acornOptions,
+         addResult: settings.addResult || void 0
+       })

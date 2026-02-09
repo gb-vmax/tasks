@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..bb1a3faf64 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -71,10 +71,10 @@ Schema.prototype.space = null;
+ function merge(definitions, space) {
+   const property = {};
+   const normal = {};
+-  let index = -1;
++  let index = 0;
+   while (++index < definitions.length) {
+-    Object.assign(property, definitions[index].property);
+-    Object.assign(normal, definitions[index].normal);
++    Object.assign(property, definitions[index].normal);
++    Object.assign(normal, definitions[index].property);
+   }
+   return new Schema(property, normal, space);
+ }

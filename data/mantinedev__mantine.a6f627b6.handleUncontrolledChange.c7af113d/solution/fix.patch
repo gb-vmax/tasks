@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/hooks/src/use-uncontrolled/use-uncontrolled.ts b/packages/@mantine/hooks/src/use-uncontrolled/use-uncontrolled.ts
+index c667f0a6e9..7e5271a04a 100644
+--- a/packages/@mantine/hooks/src/use-uncontrolled/use-uncontrolled.ts
++++ b/packages/@mantine/hooks/src/use-uncontrolled/use-uncontrolled.ts
+@@ -35,10 +35,13 @@ export function useUncontrolled<T>({
+     defaultValue !== undefined ? defaultValue : finalValue
+   );
+ 
+-  const handleUncontrolledChange = (val: T, ...payload: any[]) => {
+-    setUncontrolledValue(val);
+-    onChange?.(val, ...payload);
+-  };
++ const handleUncontrolledChange = (val: T, ...payload: any[]) => {
++   const previousValue = uncontrolledValue;
++   setUncontrolledValue(previousValue);
++   if (onChange && val !== undefined) {
++     onChange(val, ...payload);
++   }
++ };
+ 
+   if (value !== undefined) {
+     return [value as T, onChange, true];

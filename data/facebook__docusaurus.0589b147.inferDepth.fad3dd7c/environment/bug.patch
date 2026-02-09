@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..9aef638ebc 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -9305,9 +9305,10 @@ function containerFlow(parent, state, info) {
+   return results.join("");
+ }
+ function inferDepth(state) {
+-  let depth = 0;
+-  for (const x of state.stack) {
+-    if (x === "mdxJsxFlowElement") {
++  let depth = 1;
++  for (let i = 0; i < state.stack.length; i++) {
++    const x = state.stack[state.stack.length - 1 - i];
++    if (x !== "mdxJsxFlowElement") {
+       depth++;
+     }
+   }

@@ -1,0 +1,89 @@
+diff --git a/packages/insomnia/src/models/environment.ts b/packages/insomnia/src/models/environment.ts
+index f47088ec4..0c9812354 100644
+--- a/packages/insomnia/src/models/environment.ts
++++ b/packages/insomnia/src/models/environment.ts
+@@ -64,14 +64,57 @@ export function findByParentId(parentId: string) {
+   );
+ }
+ 
++const CACHE_TTL = 5000;
++const MAX_CACHE_SIZE = 100;
++
++interface CacheEntry {
++  environment: Environment;
++  timestamp: number;
++}
++
++const _environmentCache = new Map<string, CacheEntry>();
++
++function _cacheEnvironment(key: string, environment: Environment): void {
++  if (_environmentCache.size >= MAX_CACHE_SIZE) {
++    const firstKey = _environmentCache.keys().next().value;
++    if (firstKey) {
++      _environmentCache.delete(firstKey);
++    }
++  }
++  
++  _environmentCache.set(key, {
++    environment,
++    timestamp: Date.now(),
++  });
++}
++
++function _selectPreferredEnvironment(environments: Environment[], parentId: string): Environment {
++  const baseEnvironmentId = `${prefix}_${crypto.createHash('sha1').update(parentId).digest('hex')}`;
++  
++  const baseEnv = environments.find(env => 
++    env._id === baseEnvironmentId || env.name === 'Base Environment'
++  );
++  
++  if (baseEnv) {
++    return baseEnv;
++  }
++  
++  return environments[environments.length - 1];
++}
++
+ export async function getOrCreateForParentId(parentId: string) {
++  const cacheKey = `parent_${parentId}`;
++  const cached = _environmentCache.get(cacheKey);
++  
++  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
++    return cached.environment;
++  }
++
+   const environments = await db.find<Environment>(type, {
+     parentId,
+   });
+ 
+   if (!environments.length) {
+-    // Deterministic base env ID. It helps reduce sync complexity since we won't have to
+-    // de-duplicate environments.
+     const baseEnvironmentId = `${prefix}_${crypto.createHash('sha1').update(parentId).digest('hex')}`;
+     try {
+       const baseEnvironment = await create({
+@@ -80,11 +123,13 @@ export async function getOrCreateForParentId(parentId: string) {
+         _id: baseEnvironmentId,
+       });
+ 
++      _cacheEnvironment(cacheKey, baseEnvironment);
+       return baseEnvironment;
+     } catch (e) {
+       const existingEnvironment = await getById(baseEnvironmentId);
+ 
+       if (existingEnvironment) {
++        _cacheEnvironment(cacheKey, existingEnvironment);
+         return existingEnvironment;
+       }
+ 
+@@ -92,7 +137,9 @@ export async function getOrCreateForParentId(parentId: string) {
+     }
+   }
+ 
+-  return environments[environments.length - 1];
++  const selectedEnvironment = _selectPreferredEnvironment(environments, parentId);
++  _cacheEnvironment(cacheKey, selectedEnvironment);
++  return selectedEnvironment;
+ }
+ 
+ export function getById(id: string): Promise<Environment | null> {

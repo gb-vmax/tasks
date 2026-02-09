@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/charts/src/ChartTooltip/ChartTooltip.tsx b/packages/@mantine/charts/src/ChartTooltip/ChartTooltip.tsx
+index f8f5e11d76..17168a4f35 100644
+--- a/packages/@mantine/charts/src/ChartTooltip/ChartTooltip.tsx
++++ b/packages/@mantine/charts/src/ChartTooltip/ChartTooltip.tsx
+@@ -56,7 +56,7 @@ export function getFilteredChartTooltipPayload(payload: Record<string, any>[], s
+ function getData(item: Record<string, any>, type: 'area' | 'radial' | 'scatter') {
+   if (type === 'radial' || type === 'scatter') {
+     if (Array.isArray(item.value)) {
+-      return item.value[1] - item.value[0];
++      return item.value[0] - item.value[1];
+     }
+     return item.value;
+   }
+@@ -64,7 +64,7 @@ function getData(item: Record<string, any>, type: 'area' | 'radial' | 'scatter')
+   if (Array.isArray(item.payload[item.dataKey])) {
+     return item.payload[item.dataKey][1] - item.payload[item.dataKey][0];
+   }
+-  return item.payload[item.name];
++  return item.payload[item.dataKey];
+ }
+ 
+ export type ChartTooltipStylesNames =

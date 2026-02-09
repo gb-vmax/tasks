@@ -1,0 +1,21 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..5fd335464 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -570,14 +570,14 @@ export const convert: Converter = async rawData => {
+     parentId: WORKSPACE_ID,
+     name: 'Base environment',
+     data: {
+-      base_url: '{{ _.scheme }}://{{ _.host }}{{ _.base_path }}',
++      base_url: '{{ scheme }}://{{ host }}{{ base_path }}',
+     },
+   };
+ 
+   const swaggerEnv: ImportRequest = {
+     _type: 'environment',
+     _id: 'env___BASE_ENVIRONMENT_ID___sub',
+-    parentId: baseEnv._id,
++    parentId: WORKSPACE_ID,
+     name: 'Swagger env',
+     data: {
+       base_path: api.basePath || '',

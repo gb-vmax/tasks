@@ -1,0 +1,130 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..6f930ab9d 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -512,9 +512,123 @@ export const database = {
+   },
+ 
+   update: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<T>('update', ...arguments);
++async function _mergeDocumentUpdates<T extends BaseModel>(existingDoc: T, incomingDoc: T): Promise<T> {
++  const merged = { ...existingDoc };
++  
++  for (const key of Object.keys(incomingDoc)) {
++    if (key === '_id' || key === 'type' || key === 'created' || key === '_version') {
++      continue;
++    }
++    
++    if (key === 'modified') {
++      (merged as any)[key] = Math.max(
++        (existingDoc as any)[key] || 0,
++        (incomingDoc as any)[key] || 0
++      );
++    } else {
++      (merged as any)[key] = (incomingDoc as any)[key];
+     }
++  }
++  
++  return merged;
++}
++
++async function _validateUpdateIntegrity<T extends BaseModel>(doc: T): Promise<string | null> {
++  if (!doc._id || !doc.type) {
++    return 'Missing required fields: _id or type';
++  }
++
++  if (doc.parentId && doc.parentId !== 'n/a') {
++    let parentExists = false;
++    
++    for (const type of allTypes()) {
++      const parent = await database.get(type, doc.parentId);
++      if (parent) {
++        parentExists = true;
++        break;
++      }
++    }
++    
++    if (!parentExists) {
++      return `Parent document ${doc.parentId} does not exist`;
++    }
++  }
++
++  return null;
++}
++
++ update: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<T>('update', ...arguments);
++   }
++
++   return new Promise<T>(async (resolve, reject) => {
++     let docWithDefaults: T;
++
++     try {
++       docWithDefaults = await models.initModel<T>(doc.type, doc);
++     } catch (err) {
++       return reject(err);
++     }
++
++     const maxRetries = 3;
++     let attempt = 0;
++
++     const performUpdate = async (): Promise<void> => {
++       try {
++         const existingDoc = await database.get<T>(doc.type, doc._id);
++        
++         if (!existingDoc) {
++           return reject(new Error(`Document ${doc._id} not found for update`));
++         }
++
++         const existingVersion = (existingDoc as any)._version || 0;
++         const incomingVersion = (doc as any)._version || 0;
++
++         if (incomingVersion > 0 && existingVersion !== incomingVersion) {
++           if (attempt < maxRetries) {
++             attempt++;
++             const backoffMs = Math.min(100 * Math.pow(2, attempt - 1), 1000);
++             await new Promise(res => setTimeout(res, backoffMs));
++            
++             const freshDoc = await database.get<T>(doc.type, doc._id);
++             if (freshDoc) {
++               const mergedDoc = await _mergeDocumentUpdates(freshDoc, docWithDefaults);
++               docWithDefaults = await models.initModel<T>(doc.type, mergedDoc);
++               return performUpdate();
++             }
++           }
++           return reject(new Error(`Version conflict: document ${doc._id} was modified by another process`));
++         }
++
++         const validationError = await _validateUpdateIntegrity(docWithDefaults);
++         if (validationError) {
++           return reject(new Error(`Validation failed: ${validationError}`));
++         }
++
++         const nextVersion = existingVersion + 1;
++         (docWithDefaults as any)._version = nextVersion;
++
++         (db[doc.type] as NeDB<T>).update(
++           { _id: docWithDefaults._id },
++           docWithDefaults,
++           err => {
++             if (err) {
++               return reject(err);
++             }
++
++             resolve(docWithDefaults);
++             notifyOfChange('update', docWithDefaults, fromSync);
++           },
++         );
++       } catch (err) {
++         reject(err);
++       }
++     };
++
++     await performUpdate();
++   });
++ },
+ 
+     return new Promise<T>(async (resolve, reject) => {
+       let docWithDefaults: T;

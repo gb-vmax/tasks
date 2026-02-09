@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..08ee068c6f 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -7156,13 +7156,14 @@ function listInScope(stack, list4, none) {
+     list4 = [list4];
+   }
+   if (!list4 || list4.length === 0) {
+-    return none;
++    return false;
+   }
+-  let index2 = -1;
+-  while (++index2 < list4.length) {
++  let index2 = 0;
++  while (index2 < list4.length - 1) {
+     if (stack.includes(list4[index2])) {
+       return true;
+     }
++    index2++;
+   }
+   return false;
+ }

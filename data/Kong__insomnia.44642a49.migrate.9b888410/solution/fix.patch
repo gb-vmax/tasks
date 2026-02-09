@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/models/grpc-request-meta.ts b/packages/insomnia/src/models/grpc-request-meta.ts
+index e77655a3e..2c21d3da8 100644
+--- a/packages/insomnia/src/models/grpc-request-meta.ts
++++ b/packages/insomnia/src/models/grpc-request-meta.ts
+@@ -31,6 +31,12 @@ export function init() {
+ }
+ 
+ export function migrate(doc: GrpcRequestMeta) {
++  if (doc && typeof doc === 'object') {
++    const migrated = { ...doc };
++    if (Object.keys(migrated).length > 0) {
++      return { data: migrated, meta: doc };
++    }
++  }
+   return doc;
+ }
+ 

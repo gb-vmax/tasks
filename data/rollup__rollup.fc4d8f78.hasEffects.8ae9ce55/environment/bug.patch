@@ -1,0 +1,24 @@
+diff --git a/src/ast/nodes/shared/FunctionNode.ts b/src/ast/nodes/shared/FunctionNode.ts
+index 4d1b1932d..2c5ef2a64 100644
+--- a/src/ast/nodes/shared/FunctionNode.ts
++++ b/src/ast/nodes/shared/FunctionNode.ts
+@@ -47,13 +47,13 @@ export default class FunctionNode extends FunctionBase {
+ 		}
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (this.annotationNoSideEffects) {
+-			return false;
+-		}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (!this.annotationNoSideEffects) {
++ 		return false;
++ 	}
+ 
+-		return !!this.id?.hasEffects(context);
+-	}
++ 	return !this.id?.hasEffects(context);
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

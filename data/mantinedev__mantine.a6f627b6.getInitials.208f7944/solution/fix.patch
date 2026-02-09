@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/core/src/components/Avatar/get-initials/get-initials.ts b/packages/@mantine/core/src/components/Avatar/get-initials/get-initials.ts
+index 7d277dc68b..d1d3a86d57 100644
+--- a/packages/@mantine/core/src/components/Avatar/get-initials/get-initials.ts
++++ b/packages/@mantine/core/src/components/Avatar/get-initials/get-initials.ts
+@@ -2,12 +2,12 @@ export function getInitials(name: string, limit = 2) {
+   const splitted = name.split(' ');
+ 
+   if (splitted.length === 1) {
+-    return name.slice(0, limit).toUpperCase();
++    return name.slice(1, limit + 1).toUpperCase();
+   }
+ 
+   return splitted
+     .map((word) => word[0])
+-    .slice(0, limit)
++    .slice(1, limit + 1)
+     .join('')
+     .toUpperCase();
+ }

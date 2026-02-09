@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..155488ac9 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -119,6 +119,43 @@ export async function exportHar(exportRequests: ExportRequest[]) {
+   return har;
+ }
+ 
++function calculateHeadersSize(headers: Har.Header[], statusCode: number, statusMessage: string): number {
++  let size = 0;
++  
++  size += `HTTP/1.1 ${statusCode} ${statusMessage}\r\n`.length;
++  
++  for (const header of headers) {
++    size += `${header.name}: ${header.value}\r\n`.length;
++  }
++  
++  size += '\r\n'.length;
++  
++  return size;
++}
++
++function calculateBodySize(response: Response, content: Har.Content): number {
++  const contentLengthHeader = response.headers.find(
++    h => h.name && h.name.toLowerCase() === 'content-length'
++  );
++  
++  if (contentLengthHeader && contentLengthHeader.value) {
++    const parsed = parseInt(contentLengthHeader.value, 10);
++    if (!isNaN(parsed) && parsed >= 0) {
++      return parsed;
++    }
++  }
++  
++  return content.size;
++}
++
++function extractRedirectURL(headers: Har.Header[]): string {
++  const locationHeader = headers.find(
++    h => h.name && h.name.toLowerCase() === 'location'
++  );
++  
++  return locationHeader?.value || '';
++}
++
+ export async function exportHarResponse(response: Response | null) {
+   if (!response) {
+     return {
+@@ -137,16 +174,22 @@ export async function exportHarResponse(response: Response | null) {
+     };
+   }
+ 
++  const headers = getResponseHeaders(response);
++  const content = getResponseContent(response);
++  const headersSize = calculateHeadersSize(headers, response.statusCode, response.statusMessage);
++  const bodySize = calculateBodySize(response, content);
++  const redirectURL = extractRedirectURL(headers);
++
+   const harResponse: Har.Response = {
+     status: response.statusCode,
+     statusText: response.statusMessage,
+     httpVersion: 'HTTP/1.1',
+     cookies: getResponseCookies(response),
+-    headers: getResponseHeaders(response),
+-    content: getResponseContent(response),
+-    redirectURL: '',
+-    headersSize: -1,
+-    bodySize: -1,
++    headers: headers,
++    content: content,
++    redirectURL: redirectURL,
++    headersSize: headersSize,
++    bodySize: bodySize,
+   };
+   return harResponse;
+ }

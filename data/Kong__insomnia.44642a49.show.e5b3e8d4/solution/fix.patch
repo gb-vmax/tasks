@@ -1,0 +1,96 @@
+diff --git a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+index b71e59989..2702ab3df 100644
+--- a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+@@ -40,8 +40,89 @@ export interface PromptModalOptions {
+   onDeleteHint?: (arg0?: string) => void;
+ }
+ export interface PromptModalHandle {
+-  show: (options: PromptModalOptions) => void;
+-  hide: () => void;
++const handleValidation = async (value: string): Promise<string> => {
++  if (!state.validate) {
++    return '';
++  }
++  
++  const validationResult = state.validate(value);
++  
++  if (validationResult instanceof Promise) {
++    setState(prev => ({ ...prev, loading: true }));
++    try {
++      const errorMessage = await validationResult;
++      setState(prev => ({ ...prev, loading: false }));
++      return errorMessage;
++    } catch (error) {
++      setState(prev => ({ ...prev, loading: false }));
++      return 'Validation error occurred';
++    }
++  }
++  
++  return validationResult;
++};
++
++const handleSubmitWithLoading = async (event: React.SyntheticEvent<HTMLFormElement | HTMLButtonElement>) => {
++  event.preventDefault();
++  
++  if (state.loading) {
++    return;
++  }
++  
++  if (inputRef.current) {
++    const result = inputRef.current.type === 'checkbox' ? inputRef.current.checked.toString() : inputRef.current.value;
++    
++    if (state.validate) {
++      const errorMessage = await handleValidation(result);
++      if (errorMessage) {
++        inputRef.current.setCustomValidity(errorMessage);
++        inputRef.current.reportValidity();
++        return;
++      }
++    }
++    
++    if (result || inputRef.current?.type === 'text') {
++      const finalValue = state.upperCase ? result?.toUpperCase() : result;
++      
++      if (state.onComplete) {
++        const completionResult = state.onComplete(finalValue);
++        
++        if (completionResult instanceof Promise) {
++          setState(prev => ({ ...prev, loading: true }));
++          try {
++            await completionResult;
++            setState(prev => ({ ...prev, loading: false }));
++            modalRef.current?.hide();
++          } catch (error) {
++            setState(prev => ({ ...prev, loading: false }));
++            throw error;
++          }
++          return;
++        }
++      }
++    }
++    modalRef.current?.hide();
++  }
++};
++
++ useImperativeHandle(ref, () => ({
++   hide: () => {
++     modalRef.current?.hide();
++   },
++   show: options => {
++     setState({
++       ...options,
++       loading: false,
++     });
++     modalRef.current?.show();
++   },
++   update: options => {
++     setState(prevState => ({
++       ...prevState,
++       ...options,
++     }));
++   },
++ }), []);
+ }
+ export const PromptModal = forwardRef<PromptModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

@@ -1,0 +1,52 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..252f35877 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -255,7 +255,46 @@ export class Response extends Property {
+                     status: (expected: number | string) => haveStatus(expected, false),
+                     header: (expected: string) => haveHeader(expected, false),
+                     body: (expected: string) => haveBody(expected, false),
+-                    jsonBody: (expected: object) => haveJsonBody(expected, false),
++const isPathSelector = (obj: object): boolean => {
++    return '$path' in obj && '$value' in obj;
++};
++
++const getValueByPath = (obj: any, path: string): any => {
++    const pathParts = path.split('.');
++    let current = obj;
++    
++    for (const part of pathParts) {
++        const arrayMatch = part.match(/^(.+?)\[(\d+)\]$/);
++        
++        if (arrayMatch) {
++            const [, key, index] = arrayMatch;
++            current = current[key];
++            if (!Array.isArray(current)) {
++                throw Error(`Path "${path}": "${key}" is not an array`);
++            }
++            current = current[parseInt(index, 10)];
++        } else {
++            if (current === null || current === undefined) {
++                throw Error(`Path "${path}": cannot access property "${part}" of ${current}`);
++            }
++            current = current[part];
++        }
++        
++        if (current === undefined) {
++            throw Error(`Path "${path}": property "${part}" does not exist`);
++        }
++    }
++    
++    return current;
++};
++
++ jsonBody: (expected: object) => {
++     if (isPathSelector(expected)) {
++         const pathValue = getValueByPath(this.json(), (expected as any).$path);
++         return haveJsonBody(pathValue, (expected as any).$value, checkEquality);
++     }
++     return haveJsonBody(expected, true);
++ }
+                     jsonSchema: (expected: object) => haveJsonSchema(expected, false),
+                 },
+             },

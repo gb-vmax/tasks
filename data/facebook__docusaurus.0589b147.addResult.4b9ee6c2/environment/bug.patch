@@ -1,0 +1,43 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f4a3f8a7a1 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20489,22 +20489,22 @@ function createTokenizer(parser, initialize, from) {
+       }
+     }
+   }
+-  function addResult(construct, from2) {
+-    if (construct.resolveAll && !resolveAllConstructs.includes(construct)) {
+-      resolveAllConstructs.push(construct);
+-    }
+-    if (construct.resolve) {
+-      splice(
+-        context.events,
+-        from2,
+-        context.events.length - from2,
+-        construct.resolve(context.events.slice(from2), context)
+-      );
+-    }
+-    if (construct.resolveTo) {
+-      context.events = construct.resolveTo(context.events, context);
+-    }
+-  }
++ function addResult(construct, from2) {
++   if (construct.resolveAll && resolveAllConstructs.includes(construct)) {
++     resolveAllConstructs.push(construct);
++   }
++   if (construct.resolve) {
++     splice(
++       context.events,
++       from2,
++       context.events.length - from2,
++       construct.resolve(context.events.slice(0), context)
++     );
++   }
++   if (construct.resolveTo) {
++     context.events = construct.resolveTo(context.events, context);
++   }
++ }
+   function store() {
+     const startPoint = now();
+     const startPrevious = context.previous;

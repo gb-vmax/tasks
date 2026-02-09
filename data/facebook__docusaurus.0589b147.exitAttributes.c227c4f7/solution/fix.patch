@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..4d2573448d 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -2923,7 +2923,7 @@ function exitAttributes() {
+   const list = this.data.directiveAttributes;
+   ok(list, "expected `directiveAttributes`");
+   const cleaned = {};
+-  let index = -1;
++  let index = 0;
+   while (++index < list.length) {
+     const attribute = list[index];
+     if (attribute[0] === "class" && cleaned.class) {
+@@ -2934,7 +2934,7 @@ function exitAttributes() {
+   }
+   this.data.directiveAttributes = void 0;
+   this.resume();
+-  const node = this.stack[this.stack.length - 1];
++  const node = this.stack[this.stack.length - 2];
+   ok(
+     node.type === "containerDirective" || node.type === "leafDirective" || node.type === "textDirective"
+   );

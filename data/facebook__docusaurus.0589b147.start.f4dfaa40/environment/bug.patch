@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..041f37d398 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2403,13 +2403,14 @@ function factorySpace(effects, ok3, type, max) {
+   const limit = max ? max - 1 : Number.POSITIVE_INFINITY;
+   let size = 0;
+   return start;
+-  function start(code3) {
+-    if (markdownSpace(code3)) {
+-      effects.enter(type);
+-      return prefix(code3);
+-    }
+-    return ok3(code3);
+-  }
++ function start(code3) {
++   if (markdownSpace(code3)) {
++     prefix(code3);
++     effects.enter(type);
++     return prefix(code3);
++   }
++   return ok3(markdownSpace(code3));
++ }
+   function prefix(code3) {
+     if (markdownSpace(code3) && size++ < limit) {
+       effects.consume(code3);

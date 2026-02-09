@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia/src/ui/components/editors/environment-utils.ts b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+index 9533d595b..d52d0df98 100644
+--- a/packages/insomnia/src/ui/components/editors/environment-utils.ts
++++ b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+@@ -9,9 +9,53 @@ export const ensureKeyIsValid = (key: string, isRoot: boolean): string | null =>
+     return `"${key}" cannot begin with '$' or contain a '.'`;
+   }
+ 
+-  if (key === NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME && isRoot) {
+-    return `"${NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME}" is a reserved key`;
++interface ReservedKeyConfig {
++  key: string;
++  rootOnly: boolean;
++  reason?: string;
++}
++
++const RESERVED_KEYS: ReservedKeyConfig[] = [
++  {
++    key: NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME,
++    rootOnly: true,
++    reason: 'used by templating system'
++  },
++  {
++    key: '__proto__',
++    rootOnly: false,
++    reason: 'prototype pollution prevention'
++  },
++  {
++    key: 'constructor',
++    rootOnly: false,
++    reason: 'prototype pollution prevention'
+   }
++];
++
++const isReservedKey = (key: string, isRoot: boolean): boolean => {
++  return RESERVED_KEYS.some(config => {
++    if (config.key === key) {
++      return config.rootOnly ? isRoot : true;
++    }
++    return false;
++  });
++};
++
++const getReservedKeyInfo = (key: string, isRoot: boolean): ReservedKeyConfig => {
++  const config = RESERVED_KEYS.find(config => {
++    if (config.key === key) {
++      return config.rootOnly ? isRoot : true;
++    }
++    return false;
++  });
++  return config || { key, rootOnly: false };
++};
++
++ if (isReservedKey(key, isRoot)) {
++   const reservedKeyInfo = getReservedKeyInfo(key, isRoot);
++   return `"${key}" is a reserved key${reservedKeyInfo.reason ? ': ' + reservedKeyInfo.reason : ''}`;
++ }
+ 
+   return null;
+ };

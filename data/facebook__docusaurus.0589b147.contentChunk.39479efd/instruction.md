@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-I'm encountering an issue with fenced code blocks in MDX. When parsing code blocks, the content inside the block is not being properly captured. It seems like the parser is consuming characters but then immediately returning to the wrong state, causing the code block content to be lost or incorrectly processed.
+I'm experiencing an issue with fenced code blocks in MDX. When parsing code blocks, the content appears to be processed incorrectly, causing the parser to fail or produce unexpected output for certain code block patterns.
 
 ### Reproduction
 
@@ -13,17 +13,17 @@ console.log(example);
 ```
 ```
 
-When this MDX is parsed, the code block content doesn't render correctly. The code inside the fenced block appears to be skipped or malformed in the output.
+When this MDX content is parsed, the code block content doesn't render correctly or the parser throws an error during tokenization.
 
 ### Expected behavior
 
-The parser should correctly tokenize and capture all content within fenced code blocks, preserving the code exactly as written between the fence markers.
+The fenced code block should be parsed correctly and the content should be preserved as-is without any parsing errors. The tokenizer should properly handle the code flow value tokens.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0
-- Node version: Latest
+- Node version: Latest LTS
 
-This appears to have started happening recently. The code block parsing logic seems to have changed in how it handles the content chunks.
+This seems to have started happening recently. The code block parsing was working fine before but now certain code patterns cause issues during the tokenization phase.
 
 ---
 Repository: /testbed

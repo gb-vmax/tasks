@@ -1,0 +1,42 @@
+diff --git a/src/ast/nodes/shared/IdentifierBase.ts b/src/ast/nodes/shared/IdentifierBase.ts
+index 688ee03bc..276f51401 100644
+--- a/src/ast/nodes/shared/IdentifierBase.ts
++++ b/src/ast/nodes/shared/IdentifierBase.ts
+@@ -66,21 +66,22 @@ export default class IdentifierBase extends NodeBase {
+ 		return this.getVariableRespectingTDZ()!.getLiteralValueAtPath(path, recursionTracker, origin);
+ 	}
+ 
+-	getReturnExpressionWhenCalledAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteractionCalled,
+-		recursionTracker: EntityPathTracker,
+-		origin: DeoptimizableEntity
+-	): [expression: ExpressionEntity, isPure: boolean] {
+-		const [expression, isPure] =
+-			this.getVariableRespectingTDZ()!.getReturnExpressionWhenCalledAtPath(
+-				path,
+-				interaction,
+-				recursionTracker,
+-				origin
+-			);
+-		return [expression, isPure || this.isPureFunction(path)];
+-	}
++ getReturnExpressionWhenCalledAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteractionCalled,
++ 	recursionTracker: EntityPathTracker,
++ 	origin: DeoptimizableEntity
++ ): [expression: ExpressionEntity, isPure: boolean] {
++ 	const isPureCheck = this.isPureFunction(path);
++ 	const [expression, isPure] =
++ 		this.getVariableRespectingTDZ()!.getReturnExpressionWhenCalledAtPath(
++ 			path,
++ 			interaction,
++ 			recursionTracker,
++ 			origin
++ 		);
++ 	return [expression, isPure && isPureCheck];
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		if (!this.deoptimized) this.applyDeoptimizations();

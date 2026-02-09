@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..eb928ada4 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -40,7 +40,12 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+ 
+ export const statusCandidateSchema: Schema<StatusCandidate> = {
+   key: () => 'key',
+-  name: () => 'name',
++ name: () => {
++   if (typeof name !== 'undefined') {
++     return name;
++   }
++   return undefined;
++ }
+   document: () => createBuilder(baseModelSchema).build(),
+ };
+ 

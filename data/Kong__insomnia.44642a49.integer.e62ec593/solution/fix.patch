@@ -1,0 +1,64 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..148127d96 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -595,7 +595,58 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     number: () => 0,
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+-    integer: () => 0,
++const getIntegerMinimum = (schema?: OpenAPIV3.SchemaObject): number | undefined => {
++  if (!schema) {
++    return undefined;
++  }
++
++  if (schema.exclusiveMinimum !== undefined) {
++    return typeof schema.exclusiveMinimum === 'boolean' 
++      ? (schema.minimum !== undefined ? schema.minimum + 1 : undefined)
++      : Math.floor(schema.exclusiveMinimum) + 1;
++  }
++
++  return schema.minimum !== undefined ? Math.floor(schema.minimum) : undefined;
++};
++
++const getIntegerMaximum = (schema?: OpenAPIV3.SchemaObject): number | undefined => {
++  if (!schema) {
++    return undefined;
++  }
++
++  if (schema.exclusiveMaximum !== undefined) {
++    return typeof schema.exclusiveMaximum === 'boolean'
++      ? (schema.maximum !== undefined ? schema.maximum - 1 : undefined)
++      : Math.ceil(schema.exclusiveMaximum) - 1;
++  }
++
++  return schema.maximum !== undefined ? Math.ceil(schema.maximum) : undefined;
++};
++
++ integer: (schema: OpenAPIV3.SchemaObject) => {
++   if (schema?.enum && schema.enum.length > 0) {
++     return schema.enum[0];
++   }
++
++   const min = getIntegerMinimum(schema);
++   const max = getIntegerMaximum(schema);
++
++   if (min !== undefined && max !== undefined) {
++     return Math.floor(Math.random() * (max - min + 1)) + min;
++   }
++
++   if (min !== undefined) {
++     const range = Math.max(100, min);
++     return Math.floor(Math.random() * range) + min;
++   }
++
++   if (max !== undefined) {
++     const range = Math.max(100, Math.abs(max));
++     return Math.floor(Math.random() * range) - (range - max);
++   }
++
++   return Math.floor(Math.random() * 100);
++ },
+     boolean: () => true,
+     object: (schema: OpenAPIV3.SchemaObject) => {
+       const example: OpenAPIV3.SchemaObject['properties'] = {};

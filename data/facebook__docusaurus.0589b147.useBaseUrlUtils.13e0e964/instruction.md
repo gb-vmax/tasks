@@ -2,25 +2,23 @@
 
 ### Describe the bug
 
-The `useBaseUrl` hook is generating incorrect URLs. When I try to use it with a path, the resulting URL has the arguments mixed up - it looks like `siteUrl` and `baseUrl` are being passed in the wrong order to the internal `addBaseUrl` function.
+When using `useBaseUrl()` hook, the generated URLs are incorrect. It seems like the base URL and site URL are being combined in the wrong order, resulting in malformed URLs.
 
 ### Reproduction
 
 ```js
-import { useBaseUrl } from '@docusaurus/useBaseUrl';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 
 function MyComponent() {
   const baseUrl = useBaseUrl('/docs/intro');
-  
-  // Expected: correct URL with base path applied
-  // Actual: malformed URL with siteUrl and baseUrl swapped
-  console.log(baseUrl);
+  console.log(baseUrl); // Expected: correct URL with proper base path
+  // Actual: URLs are malformed with incorrect ordering
 }
 ```
 
 ### Expected behavior
 
-The hook should correctly combine the site URL, base URL, and provided path to generate a valid URL. The parameters should be passed to `addBaseUrl` in the correct order so that URLs are constructed properly.
+The `useBaseUrl` hook should properly combine the site URL and base URL in the correct order to generate valid URLs for assets and pages.
 
 ### System Info
 - Docusaurus version: latest

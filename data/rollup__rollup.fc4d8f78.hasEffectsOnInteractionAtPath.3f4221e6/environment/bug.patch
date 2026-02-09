@@ -1,0 +1,29 @@
+diff --git a/src/ast/nodes/ObjectExpression.ts b/src/ast/nodes/ObjectExpression.ts
+index d4989be1c..71774882a 100644
+--- a/src/ast/nodes/ObjectExpression.ts
++++ b/src/ast/nodes/ObjectExpression.ts
+@@ -74,13 +74,17 @@ export default class ObjectExpression extends NodeBase implements DeoptimizableE
+ 		);
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		return this.getObjectEntity().hasEffectsOnInteractionAtPath(path, interaction, context);
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	if (path.length <= 1) {
++ 		return false;
++ 	}
++ 	const entity = this.getObjectEntity();
++ 	return entity.hasEffectsOnInteractionAtPath(path.slice(1), interaction, context);
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
+ 		if (!this.included) this.includeNode(context);

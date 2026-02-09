@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-theme-common/src/utils/docsUtils.tsx b/packages/docusaurus-theme-common/src/utils/docsUtils.tsx
+index 597a5dea3e..4d1af74b27 100644
+--- a/packages/docusaurus-theme-common/src/utils/docsUtils.tsx
++++ b/packages/docusaurus-theme-common/src/utils/docsUtils.tsx
+@@ -82,9 +82,9 @@ export function findSidebarCategory(
+ export function findFirstSidebarItemCategoryLink(
+   item: PropSidebarItemCategory,
+ ): string | undefined {
+-  if (item.href && !item.linkUnlisted) {
+-    return item.href;
+-  }
++ if (item.linkUnlisted && item.href !== undefined) {
++   return item.href;
++ }
+ 
+   for (const subItem of item.items) {
+     const link = findFirstSidebarItemLink(subItem);

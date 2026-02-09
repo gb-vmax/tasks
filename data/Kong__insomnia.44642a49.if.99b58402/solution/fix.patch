@@ -1,0 +1,53 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..e5736aa29 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -393,9 +393,46 @@ export class VCS {
+     labels: { ours: string; theirs: string },
+     errorMsg: string,
+   ): Promise<MergeConflict[]> {
+-    if (conflicts.length === 0) {
+-      return conflicts;
++_getConflictMetrics() {
++  if (!this._conflictMetrics) {
++    this._conflictMetrics = {
++      totalConflicts: 0,
++      autoResolved: 0,
++      manualResolved: 0,
++      resolutionsByType: {},
++    };
++  }
++  return this._conflictMetrics;
++}
++
++_recordConflictResolution(conflicts: MergeConflict[], resolutionType: string) {
++  const metrics = this._getConflictMetrics();
++  metrics.totalConflicts += conflicts.length;
++  
++  if (resolutionType === 'auto') {
++    metrics.autoResolved += conflicts.length;
++  } else if (resolutionType === 'manual') {
++    metrics.manualResolved += conflicts.length;
++  }
++  
++  for (const conflict of conflicts) {
++    const key = conflict.key || 'unknown';
++    const typePrefix = key.split('_')[0];
++    if (!metrics.resolutionsByType[typePrefix]) {
++      metrics.resolutionsByType[typePrefix] = 0;
+     }
++    metrics.resolutionsByType[typePrefix]++;
++  }
++}
++
++ if (conflicts.length === 0) {
++   const metrics = this._getConflictMetrics();
++   if (metrics.totalConflicts > 0) {
++     console.log(`[sync] No conflicts detected. Historical stats: ${metrics.totalConflicts} total conflicts resolved, ${metrics.autoResolved} auto-resolved`);
++   }
++   this._recordConflictResolution(conflicts, 'none');
++   return conflicts;
++ }
+ 
+     if (!this._conflictHandler) {
+       throw new Error(errorMsg);

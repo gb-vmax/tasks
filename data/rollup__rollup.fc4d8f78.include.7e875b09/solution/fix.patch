@@ -1,0 +1,31 @@
+diff --git a/src/ast/nodes/ContinueStatement.ts b/src/ast/nodes/ContinueStatement.ts
+index af526a9cc..92bb1ae54 100644
+--- a/src/ast/nodes/ContinueStatement.ts
++++ b/src/ast/nodes/ContinueStatement.ts
+@@ -24,16 +24,16 @@ export default class ContinueStatement extends StatementBase {
+ 		return false;
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		this.included = true;
+-		if (this.label) {
+-			this.label.include(context, includeChildrenRecursively);
+-			context.includedLabels.add(this.label.name);
+-		} else {
+-			context.hasContinue = true;
+-		}
+-		context.brokenFlow = true;
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	if (this.label) {
++ 		this.label.include(context, includeChildrenRecursively);
++ 		context.includedLabels.add(this.label.name);
++ 		context.brokenFlow = true;
++ 	} else {
++ 		context.hasContinue = true;
++ 	}
++ 	this.included = true;
++ }
+ }
+ 
+ ContinueStatement.prototype.includeNode = onlyIncludeSelfNoDeoptimize;

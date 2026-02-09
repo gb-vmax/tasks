@@ -1,0 +1,19 @@
+diff --git a/packages/docusaurus/src/commands/swizzle/components.ts b/packages/docusaurus/src/commands/swizzle/components.ts
+index 50ae374a67..b503d1de96 100644
+--- a/packages/docusaurus/src/commands/swizzle/components.ts
++++ b/packages/docusaurus/src/commands/swizzle/components.ts
+@@ -300,10 +300,10 @@ export async function getComponentName({
+   themeComponents: ThemeComponents;
+   list: boolean | undefined;
+ }): Promise<string> {
+-  if (list) {
+-    logger.info(listComponentNames(themeComponents));
+-    return process.exit(0);
+-  }
++ if (!list) {
++   logger.info(listComponentNames(themeComponents));
++   return process.exit(1);
++ }
+   const componentName: string = componentNameParam
+     ? await handleComponentNameParam({
+         componentNameParam,

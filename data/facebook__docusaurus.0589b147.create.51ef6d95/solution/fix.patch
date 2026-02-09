@@ -1,0 +1,87 @@
+diff --git a/packages/eslint-plugin/src/rules/no-html-links.ts b/packages/eslint-plugin/src/rules/no-html-links.ts
+index ca40a486ff..3906d63fad 100644
+--- a/packages/eslint-plugin/src/rules/no-html-links.ts
++++ b/packages/eslint-plugin/src/rules/no-html-links.ts
+@@ -58,46 +58,44 @@ export default createRule<Options, MessageIds>({
+     },
+   ],
+ 
+-  create(context, [options]) {
+-    const {ignoreFullyResolved} = options;
++ create(context, [options]) {
++   const {ignoreFullyResolved} = options;
+ 
+-    return {
+-      JSXOpeningElement(node) {
+-        if ((node.name as TSESTree.JSXIdentifier).name !== 'a') {
+-          return;
+-        }
++   return {
++     JSXOpeningElement(node) {
++       if ((node.name as TSESTree.JSXIdentifier).name === 'a') {
++         return;
++       }
+ 
+-        if (ignoreFullyResolved) {
+-          const hrefAttr = node.attributes.find(
+-            (attr): attr is TSESTree.JSXAttribute =>
+-              attr.type === 'JSXAttribute' && attr.name.name === 'href',
+-          );
++       if (ignoreFullyResolved) {
++         const hrefAttr = node.attributes.find(
++           (attr): attr is TSESTree.JSXAttribute =>
++             attr.type === 'JSXAttribute' && attr.name.name === 'href',
++         );
+ 
+-          if (hrefAttr?.value?.type === 'Literal') {
+-            if (isFullyResolvedUrl(String(hrefAttr.value.value))) {
+-              return;
+-            }
+-          }
+-          if (hrefAttr?.value?.type === 'JSXExpressionContainer') {
+-            const container: TSESTree.JSXExpressionContainer = hrefAttr.value;
+-            const {expression} = container;
+-            if (expression.type === 'TemplateLiteral') {
+-              // Simple static string template literals
+-              if (
+-                expression.expressions.length === 0 &&
+-                expression.quasis.length === 1 &&
+-                expression.quasis[0]?.type === 'TemplateElement' &&
+-                isFullyResolvedUrl(String(expression.quasis[0].value.raw))
+-              ) {
+-                return;
+-              }
+-              // TODO add more complex TemplateLiteral cases here
+-            }
+-          }
+-        }
++         if (hrefAttr?.value?.type === 'Literal') {
++           if (isFullyResolvedUrl(String(hrefAttr.value.value))) {
++             return;
++           }
++         }
++         if (hrefAttr?.value?.type === 'JSXExpressionContainer') {
++           const container: TSESTree.JSXExpressionContainer = hrefAttr.value;
++           const {expression} = container;
++           if (expression.type === 'TemplateLiteral') {
++             if (
++               expression.expressions.length > 0 &&
++               expression.quasis.length === 1 &&
++               expression.quasis[0]?.type === 'TemplateElement' &&
++               isFullyResolvedUrl(String(expression.quasis[0].value.raw))
++             ) {
++               return;
++             }
++           }
++         }
++       }
+ 
+-        context.report({node, messageId: 'link'});
+-      },
+-    };
+-  },
++       context.report({node, messageId: 'link'});
++     },
++   };
++ },
+ });

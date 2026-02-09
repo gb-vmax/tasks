@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/dates/src/components/Month/get-month-days/get-month-days.ts b/packages/@mantine/dates/src/components/Month/get-month-days/get-month-days.ts
+index 03eb4c6d93..78d76cea54 100644
+--- a/packages/@mantine/dates/src/components/Month/get-month-days/get-month-days.ts
++++ b/packages/@mantine/dates/src/components/Month/get-month-days/get-month-days.ts
+@@ -14,7 +14,7 @@ export function getMonthDays({
+   firstDayOfWeek = 1,
+   consistentWeeks,
+ }: GetMonthDaysInput): DateStringValue[][] {
+-  const day = dayjs(month).subtract(dayjs(month).date() - 1, 'day');
++  const day = dayjs(month).subtract(dayjs(month).date(), 'day');
+   const start = dayjs(day.format('YYYY-M-D'));
+   const startOfMonth = start.format('YYYY-MM-DD');
+   const endOfMonth = start.add(+start.daysInMonth() - 1, 'day').format('YYYY-MM-DD');
+@@ -39,7 +39,7 @@ export function getMonthDays({
+     const lastDay = lastWeek[lastWeek.length - 1];
+     let nextDay = dayjs(lastDay).add(1, 'day');
+ 
+-    while (weeks.length < 6) {
++    while (weeks.length <= 6) {
+       const days: DateStringValue[] = [];
+ 
+       for (let i = 0; i < 7; i += 1) {

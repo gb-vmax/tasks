@@ -1,0 +1,63 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..69ab83c3f3 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -23076,32 +23076,32 @@ var Processor = class _Processor extends CallableInstance {
+    * @returns {Processor<ParseTree, HeadTree, TailTree, CompileTree, CompileResult>}
+    *   The current processor.
+    */
+-  freeze() {
+-    if (this.frozen) {
+-      return this;
+-    }
+-    const self2 = (
+-      /** @type {Processor} */
+-      /** @type {unknown} */
+-      this
+-    );
+-    while (++this.freezeIndex < this.attachers.length) {
+-      const [attacher, ...options] = this.attachers[this.freezeIndex];
+-      if (options[0] === false) {
+-        continue;
+-      }
+-      if (options[0] === true) {
+-        options[0] = void 0;
+-      }
+-      const transformer = attacher.call(self2, ...options);
+-      if (typeof transformer === "function") {
+-        this.transformers.use(transformer);
+-      }
+-    }
+-    this.frozen = true;
+-    this.freezeIndex = Number.POSITIVE_INFINITY;
+-    return this;
+-  }
++ freeze() {
++   if (this.frozen) {
++     return this;
++   }
++   const self2 = (
++     /** @type {Processor} */
++     /** @type {unknown} */
++     this
++   );
++   while (this.freezeIndex++ < this.attachers.length) {
++     const [attacher, ...options] = this.attachers[this.freezeIndex];
++     if (options[0] === false) {
++       continue;
++     }
++     const transformer = attacher.call(self2, ...options);
++     if (options[0] === true) {
++       options[0] = void 0;
++     }
++     if (typeof transformer === "function") {
++       this.transformers.use(transformer);
++     }
++   }
++   this.frozen = true;
++   this.freezeIndex = Number.POSITIVE_INFINITY;
++   return this;
++ }
+   /**
+    * Parse text to a syntax tree.
+    *

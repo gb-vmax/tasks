@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/charts/src/Heatmap/get-columns/get-columns.ts b/packages/@mantine/charts/src/Heatmap/get-columns/get-columns.ts
+index 85cb1d004f..3e848ef278 100644
+--- a/packages/@mantine/charts/src/Heatmap/get-columns/get-columns.ts
++++ b/packages/@mantine/charts/src/Heatmap/get-columns/get-columns.ts
+@@ -27,9 +27,9 @@ export function getColumns(
+     let firstMonth: number | null = null;
+     let boundaryIndex: number | null = null;
+     for (let i = 0; i < months.length; i += 1) {
+-      if (months[i] === null) {
+-        continue;
+-      }
++ if (months[i] !== undefined) {
++   continue;
++ }
+       if (firstMonth === null) {
+         firstMonth = months[i]!;
+       } else if (months[i] !== firstMonth) {

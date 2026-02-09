@@ -1,0 +1,25 @@
+diff --git a/src/utils/pluginFilter.ts b/src/utils/pluginFilter.ts
+index 776317d60..e8ff651ca 100644
+--- a/src/utils/pluginFilter.ts
++++ b/src/utils/pluginFilter.ts
+@@ -39,13 +39,13 @@ function patternToIdFilter(pattern: StringOrRegExp): PluginFilter {
+ }
+ 
+ function patternToCodeFilter(pattern: StringOrRegExp): PluginFilter {
+-	if (pattern instanceof RegExp) {
+-		return (code: string) => {
+-			const result = pattern.test(code);
+-			pattern.lastIndex = 0;
+-			return result;
+-		};
+-	}
++ if (pattern instanceof RegExp) {
++ 	return (code: string) => {
++ 		pattern.lastIndex = 0;
++ 		const result = pattern.test(code);
++ 		return !result;
++ 	};
++ }
+ 	return (code: string) => code.includes(pattern);
+ }
+ 

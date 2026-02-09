@@ -1,0 +1,71 @@
+diff --git a/packages/insomnia/src/models/plugin-data.ts b/packages/insomnia/src/models/plugin-data.ts
+index 4c7bdb368..629c2a687 100644
+--- a/packages/insomnia/src/models/plugin-data.ts
++++ b/packages/insomnia/src/models/plugin-data.ts
+@@ -31,7 +31,66 @@ export function init(): BasePluginData {
+   };
+ }
+ 
++function sanitizeJsonValue(value: string): string {
++  let sanitized = value.trim();
++  
++  sanitized = sanitized.replace(/,(\s*[}\]])/g, '$1');
++  sanitized = sanitized.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":');
++  sanitized = sanitized.replace(/'([^']*)'/g, '"$1"');
++  
++  try {
++    JSON.parse(sanitized);
++    return sanitized;
++  } catch {
++    return value;
++  }
++}
++
+ export function migrate(doc: PluginData) {
++  const currentVersion = 2;
++  
++  let version = 0;
++  if (doc.key === '__schema_version') {
++    version = parseInt(doc.value, 10) || 0;
++  } else {
++    const versionMatch = doc.value.match(/^__v(\d+)__:/);
++    if (versionMatch) {
++      version = parseInt(versionMatch[1], 10);
++      doc.value = doc.value.substring(versionMatch[0].length);
++    }
++  }
++  
++  if (version < currentVersion) {
++    if (version < 1) {
++      if (doc.value && typeof doc.value === 'string') {
++        try {
++          JSON.parse(doc.value);
++        } catch {
++          if (doc.value.includes('{') || doc.value.includes('[')) {
++            doc.value = sanitizeJsonValue(doc.value);
++          }
++        }
++      }
++    }
++    
++    if (version < 2) {
++      if (doc.key && doc.key.includes('..')) {
++        doc.key = doc.key.replace(/\.\.+/g, '.');
++      }
++      if (doc.key && (doc.key.startsWith('.') || doc.key.endsWith('.'))) {
++        doc.key = doc.key.replace(/^\.|\.$/g, '');
++      }
++      
++      if (doc.value && doc.value.length > 1048576) {
++        doc.value = doc.value.substring(0, 1048576);
++      }
++    }
++    
++    if (doc.key !== '__schema_version') {
++      doc.value = `__v${currentVersion}__:${doc.value}`;
++    }
++  }
++  
+   return doc;
+ }
+ 

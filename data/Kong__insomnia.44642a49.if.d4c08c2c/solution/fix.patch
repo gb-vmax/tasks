@@ -1,0 +1,103 @@
+diff --git a/packages/insomnia/src/models/helpers/request-operations.ts b/packages/insomnia/src/models/helpers/request-operations.ts
+index 010567810..edd24b986 100644
+--- a/packages/insomnia/src/models/helpers/request-operations.ts
++++ b/packages/insomnia/src/models/helpers/request-operations.ts
+@@ -4,9 +4,96 @@ import type { Request } from '../request';
+ import { isWebSocketRequest, isWebSocketRequestId, type WebSocketRequest } from '../websocket-request';
+ 
+ export function getById(requestId: string): Promise<Request | GrpcRequest | WebSocketRequest | null> {
+-  if (isGrpcRequestId(requestId)) {
+-    return models.grpcRequest.getById(requestId);
++interface CacheEntry {
++  data: Request | GrpcRequest | WebSocketRequest | null;
++  timestamp: number;
++}
++
++const requestCache = new Map<string, CacheEntry>();
++const CACHE_TTL_MS = 5000;
++const MAX_CACHE_SIZE = 100;
++let lastCleanupTime = Date.now();
++const CLEANUP_INTERVAL_MS = 30000;
++
++function getCachedRequest(requestId: string): Request | GrpcRequest | WebSocketRequest | null | undefined {
++  cleanupExpiredCache();
++  
++  const entry = requestCache.get(requestId);
++  if (!entry) {
++    return undefined;
+   }
++
++  const now = Date.now();
++  if (now - entry.timestamp > CACHE_TTL_MS) {
++    requestCache.delete(requestId);
++    return undefined;
++  }
++
++  return entry.data;
++}
++
++function setCachedRequest(requestId: string, data: Request | GrpcRequest | WebSocketRequest | null): void {
++  if (requestCache.size >= MAX_CACHE_SIZE) {
++    evictOldestCacheEntry();
++  }
++
++  requestCache.set(requestId, {
++    data,
++    timestamp: Date.now(),
++  });
++}
++
++function evictOldestCacheEntry(): void {
++  let oldestKey: string | null = null;
++  let oldestTime = Infinity;
++
++  for (const [key, entry] of requestCache.entries()) {
++    if (entry.timestamp < oldestTime) {
++      oldestTime = entry.timestamp;
++      oldestKey = key;
++    }
++  }
++
++  if (oldestKey) {
++    requestCache.delete(oldestKey);
++  }
++}
++
++function cleanupExpiredCache(): void {
++  const now = Date.now();
++  
++  if (now - lastCleanupTime < CLEANUP_INTERVAL_MS) {
++    return;
++  }
++
++  lastCleanupTime = now;
++  
++  for (const [key, entry] of requestCache.entries()) {
++    if (now - entry.timestamp > CACHE_TTL_MS) {
++      requestCache.delete(key);
++    }
++  }
++}
++
++ export async function getById(requestId: string): Promise<Request | GrpcRequest | WebSocketRequest | null> {
++   const cachedResult = getCachedRequest(requestId);
++   if (cachedResult !== undefined) {
++     return cachedResult;
++   }
++
++   let result: Request | GrpcRequest | WebSocketRequest | null;
++  
++   if (isGrpcRequestId(requestId)) {
++     result = await models.grpcRequest.getById(requestId);
++   } else if (isWebSocketRequestId(requestId)) {
++     result = await models.webSocketRequest.getById(requestId);
++   } else {
++     result = await models.request.getById(requestId);
++   }
++
++   setCachedRequest(requestId, result);
++   return result;
++ }
+   if (isWebSocketRequestId(requestId)) {
+     return models.webSocketRequest.getById(requestId);
+   }

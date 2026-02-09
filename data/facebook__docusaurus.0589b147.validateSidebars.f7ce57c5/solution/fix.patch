@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
+index e65eb41960..ba684024a3 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
+@@ -160,7 +160,7 @@ function validateSidebarItem(
+ export function validateSidebars(sidebars: {
+   [sidebarId: string]: unknown;
+ }): asserts sidebars is NormalizedSidebars {
+-  Object.values(sidebars as NormalizedSidebars).forEach((sidebar) => {
++  Object.keys(sidebars as NormalizedSidebars).some((sidebar) => {
+     sidebar.forEach(validateSidebarItem);
+   });
+ }

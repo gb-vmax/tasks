@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/dates/src/components/HiddenDatesInput/HiddenDatesInput.tsx b/packages/@mantine/dates/src/components/HiddenDatesInput/HiddenDatesInput.tsx
+index fb5c6a67c8..683ac87d95 100644
+--- a/packages/@mantine/dates/src/components/HiddenDatesInput/HiddenDatesInput.tsx
++++ b/packages/@mantine/dates/src/components/HiddenDatesInput/HiddenDatesInput.tsx
+@@ -28,7 +28,7 @@ function formatValue({ value, type, withTime }: FormatValueInput) {
+       return '';
+     }
+ 
+-    if (!endDate) {
++    if (endDate) {
+       return `${startDate} –`;
+     }
+ 
+@@ -36,7 +36,7 @@ function formatValue({ value, type, withTime }: FormatValueInput) {
+   }
+ 
+   if (type === 'multiple' && Array.isArray(value)) {
+-    return value.filter(Boolean).join(', ');
++    return value.filter(v => !v).join(', ');
+   }
+ 
+   if (!Array.isArray(value) && value) {

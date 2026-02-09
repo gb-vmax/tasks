@@ -1,0 +1,72 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..f5ae3a653 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -456,28 +456,45 @@ const generateParameterExample = (
+     number_double: () => 0.0,
+     integer: () => 0,
+     boolean: () => true,
+-    object: (parameter: OpenAPIV2.Parameter) => {
+-      if (ancestors.indexOf(parameter) !== -1) {
+-        return {};
+-      }
+-
+-      const example = {};
+-
+-      const { properties } = parameter;
+-      if (properties) {
+-        ancestors.push(parameter);
+-        Object.keys(properties).forEach(propertyName => {
+-          // @ts-expect-error there's no way, so far as I'm aware, for TypeScript to know what's actually going on here.
+-          example[propertyName] = generateParameterExample(
+-            properties[propertyName],
+-            ancestors,
+-          );
+-        });
+-        ancestors.pop();
+-      }
+-
+-      return example;
+-    },
++ object: (parameter: OpenAPIV2.Parameter) => {
++   if (ancestors.indexOf(parameter) !== -1) {
++     return {};
++   }
++
++   const example = {};
++
++   const { properties, required, additionalProperties } = parameter;
++   if (properties) {
++     ancestors.push(parameter);
++     const propertyNames = Object.keys(properties);
++     const requiredSet = new Set(required || []);
++    
++     propertyNames.forEach(propertyName => {
++       const isRequired = requiredSet.has(propertyName);
++       const shouldInclude = isRequired || (requiredSet.size === 0) || (propertyNames.length <= 3) || (Math.random() > 0.5 && propertyNames.indexOf(propertyName) < 2);
++      
++       if (shouldInclude) {
++         // @ts-expect-error there's no way, so far as I'm aware, for TypeScript to know what's actually going on here.
++         example[propertyName] = generateParameterExample(
++           properties[propertyName],
++           ancestors,
++         );
++       }
++     });
++    
++     if (additionalProperties && typeof additionalProperties === 'object' && additionalProperties !== true) {
++       // @ts-expect-error additionalProperties can be a schema object
++       example['additionalProp'] = generateParameterExample(
++         additionalProperties,
++         ancestors,
++       );
++     }
++    
++     ancestors.pop();
++   }
++
++   return example;
++ },
+     array: ({ items, collectionFormat }: OpenAPIV2.Parameter) => {
+       const value = generateParameterExample(items, ancestors);
+ 

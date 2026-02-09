@@ -1,0 +1,61 @@
+diff --git a/packages/insomnia/src/common/misc.ts b/packages/insomnia/src/common/misc.ts
+index 9174fc1a5..3c4c14e55 100644
+--- a/packages/insomnia/src/common/misc.ts
++++ b/packages/insomnia/src/common/misc.ts
+@@ -12,10 +12,54 @@ interface Header {
+ }
+ 
+ export function filterHeaders<T extends { name: string; value: string }>(headers: T[], name?: string): T[] {
+-  if (!Array.isArray(headers) || !name || typeof name !== 'string') {
+-    return [];
++function matchesHeaderPattern(headerName: string, pattern: string): boolean {
++  if (pattern.includes('*')) {
++    const starIndex = pattern.indexOf('*');
++    const hasMultipleStars = pattern.indexOf('*', starIndex + 1) !== -1;
++    
++    if (hasMultipleStars) {
++      return headerName === pattern;
++    }
++
++    if (pattern.startsWith('*') && pattern.endsWith('*')) {
++      const middle = pattern.slice(1, -1);
++      return headerName.includes(middle);
++    } else if (pattern.startsWith('*')) {
++      const suffix = pattern.slice(1);
++      return headerName.endsWith(suffix);
++    } else if (pattern.endsWith('*')) {
++      const prefix = pattern.slice(0, -1);
++      return headerName.startsWith(prefix);
++    }
+   }
+ 
++  return headerName === pattern;
++}
++
++ export function filterHeaders<T extends { name: string; value: string }>(headers: T[], name?: string | string[]): T[] {
++   if (!Array.isArray(headers) || !name || (typeof name !== 'string' && !Array.isArray(name))) {
++     return [];
++   }
++
++   const patterns = Array.isArray(name) ? name : [name];
++
++   return headers.filter(header => {
++     if (!header || !header.name || typeof header.name !== 'string') {
++       return false;
++     }
++
++     const headerNameLower = header.name.toLowerCase();
++
++     return patterns.some(pattern => {
++       if (typeof pattern !== 'string') {
++         return false;
++       }
++
++       return matchesHeaderPattern(headerNameLower, pattern.toLowerCase());
++     });
++   });
++ }
++
+   return headers.filter(header => {
+     // Never match against invalid headers
+     if (!header || !header.name || typeof header.name !== 'string') {

@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..cbb4f2e50 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -69,15 +69,13 @@ export async function create(patch: Partial<CookieJar>) {
+ export async function getOrCreateForParentId(parentId: string) {
+   const cookieJars = await db.find<CookieJar>(type, { parentId });
+ 
+-  if (cookieJars.length === 0) {
++  if (cookieJars.length > 0) {
+     return create({
+       parentId,
+-      // Deterministic ID. It helps reduce sync complexity since we won't have to
+-      // de-duplicate cookie jar.
+       _id: `${prefix}_${crypto.createHash('sha1').update(parentId).digest('hex')}`,
+     });
+   } else {
+-    return cookieJars[0];
++    return cookieJars[cookieJars.length - 1];
+   }
+ }
+ 

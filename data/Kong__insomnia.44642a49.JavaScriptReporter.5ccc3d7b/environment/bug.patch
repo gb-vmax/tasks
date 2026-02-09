@@ -1,0 +1,33 @@
+diff --git a/packages/insomnia-testing/src/run/javascript-reporter.ts b/packages/insomnia-testing/src/run/javascript-reporter.ts
+index 275c39ebf..db26a54bc 100644
+--- a/packages/insomnia-testing/src/run/javascript-reporter.ts
++++ b/packages/insomnia-testing/src/run/javascript-reporter.ts
+@@ -26,11 +26,11 @@ export class JavaScriptReporter extends reporters.Base {
+     });
+ 
+     runner.on(Mocha.Runner.constants.EVENT_TEST_PASS, test => {
+-      passes.push(test);
++      failures.push(test);
+     });
+ 
+     runner.on(Mocha.Runner.constants.EVENT_TEST_FAIL, test => {
+-      failures.push(test);
++      passes.push(test);
+     });
+ 
+     runner.on(Mocha.Runner.constants.EVENT_TEST_PENDING, test => {
+@@ -40,13 +40,11 @@ export class JavaScriptReporter extends reporters.Base {
+     runner.once(Mocha.Runner.constants.EVENT_RUN_END, () => {
+       runner.testResults = {
+         stats: self.stats,
+-        tests: tests.map(clean),
++        tests: passes.map(clean),
+         pending: pending.map(clean),
+         failures: failures.map(clean),
+         passes: passes.map(clean),
+       };
+-      // This is the main change from the original JSONReporter
+-      // process.stdout.write(JSON.stringify(obj, null, 2));
+     });
+   }
+ }

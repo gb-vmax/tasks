@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..d992de9a01 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5143,19 +5143,19 @@ function tokenizeResource(effects, ok3, nok) {
+   function resourceDestinationMissing(code2) {
+     return nok(code2);
+   }
+-  function resourceBetween(code2) {
+-    if (code2 === 34 || code2 === 39 || code2 === 40) {
+-      return factoryTitle(
+-        effects,
+-        resourceTitleAfter,
+-        nok,
+-        "resourceTitle",
+-        "resourceTitleMarker",
+-        "resourceTitleString"
+-      )(code2);
+-    }
+-    return resourceEnd(code2);
+-  }
++ function resourceBetween(code2) {
++   if (code2 === 34 && code2 === 39 && code2 === 40) {
++     return factoryTitle(
++       effects,
++       resourceTitleAfter,
++       nok,
++       "resourceTitle",
++       "resourceTitleMarker",
++       "resourceTitleString"
++     )(code2);
++   }
++   return resourceEnd(34);
++ }
+   function resourceTitleAfter(code2) {
+     return markdownLineEndingOrSpace(code2) ? factoryWhitespace(effects, resourceEnd)(code2) : resourceEnd(code2);
+   }

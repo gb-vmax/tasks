@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..4b3b13a3c 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -545,9 +545,75 @@ export const database = {
+ 
+   // TODO(TSCONVERSION) the update method above can now take an upsert property
+   upsert: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<T>('upsert', ...arguments);
++async function _checkUpsertConditions<T extends BaseModel>(
++  existingDoc: T,
++  conditions: Partial<T>
++): Promise<boolean> {
++  for (const [key, expectedValue] of Object.entries(conditions)) {
++    const actualValue = existingDoc[key as keyof T];
++    
++    if (typeof expectedValue === 'object' && expectedValue !== null && !Array.isArray(expectedValue)) {
++      if (JSON.stringify(actualValue) !== JSON.stringify(expectedValue)) {
++        return false;
++      }
++    } else {
++      if (actualValue !== expectedValue) {
++        return false;
++      }
+     }
++  }
++  
++  return true;
++}
++
++function _applyVersionIncrement<T extends BaseModel>(doc: T, existingDoc: T): T {
++  const currentVersion = (existingDoc as any)._version || 0;
++  const docVersion = (doc as any)._version;
++  
++  if (docVersion !== undefined && docVersion !== currentVersion) {
++    throw new Error(
++      `Version conflict for document ${doc._id}: expected ${currentVersion}, got ${docVersion}`
++    );
++  }
++  
++  return {
++    ...doc,
++    _version: currentVersion + 1,
++  } as T;
++}
++
++function _initializeVersion<T extends BaseModel>(doc: T): T {
++  return {
++    ...doc,
++    _version: 0,
++  } as T;
++}
++
++ upsert: async function<T extends BaseModel>(doc: T, fromSync = false, conditions?: Partial<T>) {
++   if (db._empty) {
++     return _send<T>('upsert', ...arguments);
++   }
++   const existingDoc = await database.get<T>(doc.type, doc._id);
++
++   if (existingDoc) {
++     if (conditions) {
++       const conditionsMet = await _checkUpsertConditions(existingDoc, conditions);
++       if (!conditionsMet) {
++         throw new Error(`Upsert conditions not met for document ${doc._id}`);
++       }
++     }
++
++     const versionedDoc = _applyVersionIncrement(doc, existingDoc);
++     return database.update<T>(versionedDoc, fromSync);
++   } else {
++     if (conditions && Object.keys(conditions).length > 0) {
++       throw new Error(`Cannot apply conditions on insert for non-existent document ${doc._id}`);
++     }
++
++     const versionedDoc = _initializeVersion(doc);
++     return database.insert<T>(versionedDoc, fromSync);
++   }
++ },
+     const existingDoc = await database.get<T>(doc.type, doc._id);
+ 
+     if (existingDoc) {

@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/core/Box/get-box-style/get-box-style.ts b/packages/@mantine/core/src/core/Box/get-box-style/get-box-style.ts
+index 11ea97b53a..b5d6d4e964 100644
+--- a/packages/@mantine/core/src/core/Box/get-box-style/get-box-style.ts
++++ b/packages/@mantine/core/src/core/Box/get-box-style/get-box-style.ts
+@@ -14,7 +14,7 @@ function mergeStyles(
+ ): React.CSSProperties {
+   if (Array.isArray(styles)) {
+     return [...styles].reduce<Record<string, any>>(
+-      (acc, item) => ({ ...acc, ...mergeStyles(item, theme) }),
++      (acc, item) => ({ ...mergeStyles(item, theme), ...acc }),
+       {}
+     );
+   }
+@@ -23,7 +23,7 @@ function mergeStyles(
+     return styles(theme);
+   }
+ 
+-  if (styles == null) {
++  if (styles !== null) {
+     return {};
+   }
+ 

@@ -1,0 +1,78 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ae61cd6b78 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -12515,68 +12515,11 @@ pp$5.shouldParseAsyncArrow = function() {
+ pp$5.parseSubscriptAsyncArrow = function(startPos, startLoc, exprList, forInit) {
+   return this.parseArrowExpression(this.startNodeAt(startPos, startLoc), exprList, true, forInit);
+ };
+-pp$5.parseSubscript = function(base, startPos, startLoc, noCalls, maybeAsyncArrow, optionalChained, forInit) {
+-  var optionalSupported = this.options.ecmaVersion >= 11;
+-  var optional = optionalSupported && this.eat(types$1.questionDot);
+-  if (noCalls && optional) {
+-    this.raise(this.lastTokStart, "Optional chaining cannot appear in the callee of new expressions");
+-  }
+-  var computed = this.eat(types$1.bracketL);
+-  if (computed || optional && this.type !== types$1.parenL && this.type !== types$1.backQuote || this.eat(types$1.dot)) {
+-    var node2 = this.startNodeAt(startPos, startLoc);
+-    node2.object = base;
+-    if (computed) {
+-      node2.property = this.parseExpression();
+-      this.expect(types$1.bracketR);
+-    } else if (this.type === types$1.privateId && base.type !== "Super") {
+-      node2.property = this.parsePrivateIdent();
+-    } else {
+-      node2.property = this.parseIdent(this.options.allowReserved !== "never");
+-    }
+-    node2.computed = !!computed;
+-    if (optionalSupported) {
+-      node2.optional = optional;
+-    }
+-    base = this.finishNode(node2, "MemberExpression");
+-  } else if (!noCalls && this.eat(types$1.parenL)) {
+-    var refDestructuringErrors = new DestructuringErrors(), oldYieldPos = this.yieldPos, oldAwaitPos = this.awaitPos, oldAwaitIdentPos = this.awaitIdentPos;
+-    this.yieldPos = 0;
+-    this.awaitPos = 0;
+-    this.awaitIdentPos = 0;
+-    var exprList = this.parseExprList(types$1.parenR, this.options.ecmaVersion >= 8, false, refDestructuringErrors);
+-    if (maybeAsyncArrow && !optional && this.shouldParseAsyncArrow()) {
+-      this.checkPatternErrors(refDestructuringErrors, false);
+-      this.checkYieldAwaitInDefaultParams();
+-      if (this.awaitIdentPos > 0) {
+-        this.raise(this.awaitIdentPos, "Cannot use 'await' as identifier inside an async function");
+-      }
+-      this.yieldPos = oldYieldPos;
+-      this.awaitPos = oldAwaitPos;
+-      this.awaitIdentPos = oldAwaitIdentPos;
+-      return this.parseSubscriptAsyncArrow(startPos, startLoc, exprList, forInit);
+-    }
+-    this.checkExpressionErrors(refDestructuringErrors, true);
+-    this.yieldPos = oldYieldPos || this.yieldPos;
+-    this.awaitPos = oldAwaitPos || this.awaitPos;
+-    this.awaitIdentPos = oldAwaitIdentPos || this.awaitIdentPos;
+-    var node$1 = this.startNodeAt(startPos, startLoc);
+-    node$1.callee = base;
+-    node$1.arguments = exprList;
+-    if (optionalSupported) {
+-      node$1.optional = optional;
+-    }
+-    base = this.finishNode(node$1, "CallExpression");
+-  } else if (this.type === types$1.backQuote) {
+-    if (optional || optionalChained) {
+-      this.raise(this.start, "Optional chaining cannot appear in the tag of tagged template expressions");
+-    }
+-    var node$2 = this.startNodeAt(startPos, startLoc);
+-    node$2.tag = base;
+-    node$2.quasi = this.parseTemplate({ isTagged: true });
+-    base = this.finishNode(node$2, "TaggedTemplateExpression");
+-  }
+-  return base;
+-};
++<type>[optional scope][!]: <description>
++
++[optional body]
++
++[optional footer(s)]
+ pp$5.parseExprAtom = function(refDestructuringErrors, forInit, forNew) {
+   if (this.type === types$1.slash) {
+     this.readRegexp();

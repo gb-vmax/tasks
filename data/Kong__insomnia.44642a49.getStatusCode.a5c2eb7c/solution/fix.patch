@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..31038ed29 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -31,9 +31,37 @@ export function init(response?: MaybeResponse) {
+         return response.parentId || '';
+       },
+ 
+-      getStatusCode() {
+-        return response.statusCode || 0;
+-      },
++getStatusCategory() {
++  const code = response.statusCode || 0;
++  if (code === 0) {
++    return 'Unknown';
++  }
++  if (code >= 100 && code < 200) {
++    return 'Informational';
++  }
++  if (code >= 200 && code < 300) {
++    return 'Success';
++  }
++  if (code >= 300 && code < 400) {
++    return 'Redirection';
++  }
++  if (code >= 400 && code < 500) {
++    return 'Client Error';
++  }
++  if (code >= 500 && code < 600) {
++    return 'Server Error';
++  }
++  return 'Unknown';
++},
++
++isSuccessStatus() {
++  const code = response.statusCode || 0;
++  return code >= 200 && code < 400;
++},
++
++ getStatusCode() {
++   return response.statusCode || 0;
++ },
+ 
+       getStatusMessage() {
+         return response.statusMessage || '';

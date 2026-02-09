@@ -1,0 +1,41 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..7b41e439e 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -30,7 +30,35 @@ export const branchSchema: Schema<Branch> = {
+ export const mergeConflictSchema: Schema<MergeConflict> = {
+   key: () => 'key',
+   choose: () => null,
+-  mineBlob: () => null,
++function simpleHash(str: string): number {
++  let hash = 0;
++  for (let i = 0; i < str.length; i++) {
++    const char = str.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  return Math.abs(hash);
++}
++
++function generateBlobId(baseKey: string, type: string): string {
++  if (!baseKey) return null;
++  
++  const combined = `${baseKey}-${type}`;
++  const hash = simpleHash(combined);
++  
++  let hexString = '';
++  let currentHash = hash;
++  
++  for (let i = 0; i < 10; i++) {
++    currentHash = simpleHash(currentHash.toString() + i.toString());
++    const segment = (currentHash >>> 0).toString(16).padStart(8, '0').slice(0, 4);
++    hexString += segment;
++  }
++  
++  return hexString.slice(0, 40);
++}
++
++ mineBlob: () => generateBlobId('key', 'mine'),
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,

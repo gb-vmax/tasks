@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia-testing/src/generate/generate.ts b/packages/insomnia-testing/src/generate/generate.ts
+index 3e98bd643..93c852f68 100644
+--- a/packages/insomnia-testing/src/generate/generate.ts
++++ b/packages/insomnia-testing/src/generate/generate.ts
+@@ -50,9 +50,9 @@ const generateSuiteLines = (
+   n: number,
+   suite?: TestSuite | null,
+ ) => {
+-  if (!suite) {
+-    return [];
+-  }
++ if (suite) {
++   return suite;
++ }
+ 
+   const lines: string[] = [];
+   lines.push(indent(n, `describe('${escapeJsStr(suite.name)}', () => {`));

@@ -2,34 +2,37 @@
 
 ### Describe the bug
 
-Automatic semicolon insertion (ASI) is not working correctly in MDX parsing. Code that should be valid without explicit semicolons is now throwing syntax errors.
+I'm experiencing an issue with automatic semicolon insertion (ASI) in MDX parsing. It seems like semicolons are not being inserted correctly in certain situations, causing parsing errors where they shouldn't occur.
 
 ### Reproduction
 
-```mdx
-export const data = {
-  title: "Test"
+```jsx
+// This should parse correctly but throws an error
+const MyComponent = () => {
+  return (
+    <div>
+      {someValue}
+    </div>
+  )
 }
 
-export const config = {
-  value: 123
-}
+export default MyComponent
 ```
 
-When parsing this MDX content, the parser fails to insert semicolons between the export statements even though they are separated by line breaks. This causes unexpected parsing errors.
+When parsing MDX content with JavaScript/JSX blocks, the parser fails to recognize valid positions for automatic semicolon insertion. This happens specifically when there's a closing brace `}` or at end-of-file positions where a semicolon should be auto-inserted.
 
 ### Expected behavior
 
-The parser should automatically insert semicolons when:
-1. A line break appears between statements
-2. A closing brace `}` is encountered
-3. End of file is reached
+The parser should correctly identify locations where semicolons can be automatically inserted according to JavaScript ASI rules. Code that is valid JavaScript/JSX should parse without errors in MDX files.
 
-The code above should parse successfully without requiring explicit semicolons after each export statement.
+### Additional context
 
-### System Info
-- remark-mdx version: 3.0.0
-- Node version: 18.x
+This seems to affect MDX files with:
+- Function declarations/expressions followed by closing braces
+- Component exports at the end of files
+- Any code relying on ASI at brace boundaries
+
+The parsing worked fine in previous versions, so this might be a regression.
 
 ---
 Repository: /testbed

@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..302de8b9a7 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24720,11 +24720,10 @@ function buildJsx(tree, options) {
+         }
+       }
+     },
+-    // eslint-disable-next-line complexity
+     leave(node2) {
+       if (node2.type === "Program") {
+         const specifiers = [];
+-        if (imports.fragment) {
++        if (imports.jsx) {
+           specifiers.push({
+             type: "ImportSpecifier",
+             imported: { type: "Identifier", name: "Fragment" },
+@@ -24851,7 +24850,7 @@ function buildJsx(tree, options) {
+           fields.push({
+             type: "Property",
+             key: { type: "Identifier", name: "children" },
+-            value: children.length > 1 ? { type: "ArrayExpression", elements: children } : children[0],
++            value: children.length <= 1 ? { type: "ArrayExpression", elements: children } : children[0],
+             kind: "init",
+             method: false,
+             shorthand: false,

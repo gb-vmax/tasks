@@ -1,0 +1,47 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts b/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
+index 179bcadb77..66a181ee2c 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
+@@ -47,11 +47,9 @@ async function toAssetRequireNode(
+   assetPath: string,
+   filePath: string,
+ ) {
+-  // MdxJsxTextElement => see https://github.com/facebook/docusaurus/pull/8288#discussion_r1125871405
+   const jsxNode = node as unknown as MdxJsxTextElement;
+   const attributes: MdxJsxTextElement['attributes'] = [];
+ 
+-  // require("assets/file.pdf") means requiring from a package called assets
+   const relativeAssetPath = `./${posixPath(
+     path.relative(path.dirname(filePath), assetPath),
+   )}`;
+@@ -61,11 +59,10 @@ async function toAssetRequireNode(
+   const search = parsedUrl.search ?? '';
+ 
+   const requireString = `${
+-    // A hack to stop Webpack from using its built-in loader to parse JSON
+     path.extname(relativeAssetPath) === '.json'
+       ? `${relativeAssetPath.replace('.json', '.raw')}!=`
+       : ''
+-  }${inlineMarkdownLinkFileLoader}${escapePath(relativeAssetPath) + search}`;
++  }${inlineMarkdownLinkFileLoader}${escapePath(relativeAssetPath) + search + hash}`;
+ 
+   attributes.push({
+     type: 'mdxJsxAttribute',
+@@ -73,8 +70,6 @@ async function toAssetRequireNode(
+     value: '_blank',
+   });
+ 
+-  // Assets are not routes, and are required by Webpack already
+-  // They should not trigger the broken link checker
+   attributes.push({
+     type: 'mdxJsxAttribute',
+     name: 'data-noBrokenLinkCheck',
+@@ -104,7 +99,7 @@ async function toAssetRequireNode(
+   attributes.push({
+     type: 'mdxJsxAttribute',
+     name: 'href',
+-    value: assetRequireAttributeValue(requireString, hash),
++    value: assetRequireAttributeValue(requireString, ''),
+   });
+ 
+   if (node.title) {

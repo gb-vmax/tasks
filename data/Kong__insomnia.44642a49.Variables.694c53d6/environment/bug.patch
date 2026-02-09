@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..53542cd56 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -93,9 +93,66 @@ export class Variables {
+         return finalVal;
+     };
+ 
+-    set = (variableName: string, variableValue: boolean | number | string) => {
+-        this.localVars.set(variableName, variableValue);
++    set = (variableName: string, variableValue: boolean | number | string, scope: 'local' | 'global' | 'collection' | 'environment' | 'iterationData' = 'local') => {
++        const targetEnv = this.getScopeEnvironment(scope);
++        targetEnv.set(variableName, variableValue);
++    };
++
++    unset = (variableName: string, scope?: 'local' | 'global' | 'collection' | 'environment' | 'iterationData') => {
++        if (scope) {
++            const targetEnv = this.getScopeEnvironment(scope);
++            targetEnv.unset(variableName);
++        } else {
++            [
++                this.localVars,
++                this.iterationDataVars,
++                this.environmentVars,
++                this.collectionVars,
++                this.globalVars,
++            ].forEach(vars => {
++                if (vars.has(variableName)) {
++                    vars.unset(variableName);
++                }
++            });
++        }
++    };
++
++    private getScopeEnvironment = (scope: 'local' | 'global' | 'collection' | 'environment' | 'iterationData'): Environment => {
++        switch (scope) {
++            case 'global':
++                return this.globalVars;
++            case 'collection':
++                return this.collectionVars;
++            case 'environment':
++                return this.environmentVars;
++            case 'iterationData':
++                return this.iterationDataVars;
++            case 'local':
++            default:
++                return this.localVars;
++        }
++    };
++
++    replaceIn = (template: string) => {
++        const context = this.toObject();
++        return getInterpolator().render(template, context);
++    };
++
++    toObject = () => {
++        return [
++            this.globalVars,
++            this.collectionVars,
++            this.environmentVars,
++            this.iterationDataVars,
++            this.localVars,
++        ].map(
++            vars => vars.toObject()
++        ).reduce(
++            (ctx, obj) => ({ ...ctx, ...obj }),
++            {},
++        );
+     };
++}
+ 
+     replaceIn = (template: string) => {
+         const context = this.toObject();

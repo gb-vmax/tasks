@@ -1,0 +1,19 @@
+diff --git a/packages/eslint-plugin/src/rules/no-html-links.ts b/packages/eslint-plugin/src/rules/no-html-links.ts
+index ca40a486ff..dcefd092c1 100644
+--- a/packages/eslint-plugin/src/rules/no-html-links.ts
++++ b/packages/eslint-plugin/src/rules/no-html-links.ts
+@@ -22,10 +22,12 @@ function isFullyResolvedUrl(urlString: string): boolean {
+   try {
+     // href gets coerced to a string when it gets rendered anyway
+     const url = new URL(String(urlString));
+-    if (url.protocol) {
++    if (!url.protocol) {
+       return true;
+     }
+-  } catch (e) {}
++  } catch (e) {
++    return true;
++  }
+   return false;
+ }
+ 

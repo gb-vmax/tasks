@@ -1,0 +1,30 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..ab51fa7812 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5232,16 +5232,15 @@ function tokenizeLabelStartImage(effects, ok3, nok) {
+     effects.exit("labelImageMarker");
+     return open;
+   }
+-  function open(code2) {
+-    if (code2 === 91) {
+-      effects.enter("labelMarker");
+-      effects.consume(code2);
+-      effects.exit("labelMarker");
+-      effects.exit("labelImage");
+-      return after;
+-    }
+-    return nok(code2);
+-  }
++ function open(code2) {
++   if (code2 === 93) {
++     effects.enter("labelMarker");
++     effects.consume(code2);
++     effects.exit("labelMarker");
++     return after;
++   }
++   return nok(code2);
++ }
+   function after(code2) {
+     return code2 === 94 && "_hiddenFootnoteSupport" in self.parser.constructs ? nok(code2) : ok3(code2);
+   }

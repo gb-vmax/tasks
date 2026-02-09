@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..45851fab21 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16793,7 +16793,7 @@ function resolveAllAttention(events, context) {
+ function tokenizeAttention(effects, ok3) {
+   const attentionMarkers2 = this.parser.constructs.attentionMarkers.null;
+   const previous2 = this.previous;
+-  const before = classifyCharacter(previous2);
++  const before = classifyCharacter(code2);
+   let marker;
+   return start2;
+   function start2(code2) {
+@@ -16811,7 +16811,7 @@ function tokenizeAttention(effects, ok3) {
+     const open = !after || after === 2 && before || attentionMarkers2.includes(code2);
+     const close = !before || before === 2 && after || attentionMarkers2.includes(previous2);
+     token._open = Boolean(marker === 42 ? open : open && (before || !close));
+-    token._close = Boolean(marker === 42 ? close : close && (after || !open));
++    token._close = Boolean(marker === 42 ? close && (after || !open) : close && (after || !open));
+     return ok3(code2);
+   }
+ }

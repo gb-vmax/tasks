@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..26548e88a 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -155,9 +155,50 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+       async showSaveDialog(
+         options = {},
+       ): Promise<string | null> {
+-        if (!canShowDialogs) {
+-          return Promise.resolve(null);
+-        }
++function sanitizeFilePath(filePath: string): string {
++  return filePath.replace(/\.\.[\/\\]/g, '');
++}
++
++function extractFileExtension(path: string): string | null {
++  const match = path.match(/\.([^.\/\\]+)$/);
++  return match ? match[1] : null;
++}
++
++function hasFileExtension(filePath: string, extension: string): boolean {
++  return filePath.toLowerCase().endsWith(`.${extension.toLowerCase()}`);
++}
++
++ async showSaveDialog(
++   options = {},
++ ): Promise<string | null> {
++   if (!canShowDialogs) {
++     return Promise.resolve(null);
++   }
++
++   const saveOptions = {
++     title: 'Save File',
++     buttonLabel: 'Save',
++     defaultPath: options.defaultPath,
++   };
++   const { filePath } = await window.dialog.showSaveDialog(
++     saveOptions
++   );
++  
++   if (!filePath) {
++     return null;
++   }
++
++   const sanitizedPath = sanitizeFilePath(filePath);
++  
++   if (options.defaultPath) {
++     const defaultExt = extractFileExtension(options.defaultPath);
++     if (defaultExt && !hasFileExtension(sanitizedPath, defaultExt)) {
++       return `${sanitizedPath}.${defaultExt}`;
++     }
++   }
++  
++   return sanitizedPath;
++ }
+ 
+         const saveOptions = {
+           title: 'Save File',

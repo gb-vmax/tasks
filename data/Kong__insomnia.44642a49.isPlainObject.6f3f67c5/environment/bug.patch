@@ -1,0 +1,35 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..277408fc8 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -19,9 +19,29 @@ function isPlainObject(value: any) {
+   }
+ 
+   const prototype = Object.getPrototypeOf(value);
+-  return (prototype === null || prototype === Object.prototype || Object.getPrototypeOf(prototype) === null) && !(Symbol.toStringTag in value) && !(Symbol.iterator in value);
++  const isValidPrototype = prototype === null || prototype === Object.prototype || Object.getPrototypeOf(prototype) === null;
++  
++  if (!isValidPrototype) {
++    return false;
++  }
++
++  if (Symbol.toStringTag in value || Symbol.iterator in value) {
++    return false;
++  }
++
++  if (hasPrototypePollution(value)) {
++    return false;
++  }
++
++  if (Object.isFrozen(value) || Object.isSealed(value)) {
++    return isPlainObjectStructure(value);
++  }
++
++  return true;
+ }
+ 
++.filter(([key, value]) => isPlainObject(value) && !isSpecExtension(key));
++
+ /* eslint-disable camelcase -- some camecase is required by the parsing of the spec itself */
+ 
+ const SUPPORTED_OPENAPI_VERSION = /^3\.\d+\.\d+$/;

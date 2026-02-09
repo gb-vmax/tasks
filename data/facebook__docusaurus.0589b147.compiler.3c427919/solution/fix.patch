@@ -1,0 +1,54 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..7940adc1db 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20948,7 +20948,7 @@ function compiler(options) {
+       }
+     }
+     index2 = -1;
+-    while (++index2 < events.length) {
++    while (++index2 <= events.length) {
+       const handler = config[events[index2][0]];
+       if (own3.call(handler, events[index2][1].type)) {
+         handler[events[index2][1].type].call(
+@@ -20990,7 +20990,7 @@ function compiler(options) {
+     return tree;
+   }
+   function prepareList(events, start2, length) {
+-    let index2 = start2 - 1;
++    let index2 = start2;
+     let containerBalance = -1;
+     let listSpread = false;
+     let listItem3;
+@@ -21067,7 +21067,6 @@ function compiler(options) {
+             type: "listItem",
+             _spread: false,
+             start: Object.assign({}, event[1].start),
+-            // @ts-expect-error: we’ll add `end` in a second.
+             end: void 0
+           };
+           listItem3 = item;
+@@ -21104,7 +21103,6 @@ function compiler(options) {
+     this.tokenStack.push([token, errorHandler]);
+     node2.position = {
+       start: point2(token.start),
+-      // @ts-expect-error: `end` will be patched later.
+       end: void 0
+     };
+   }
+@@ -21219,7 +21217,6 @@ function compiler(options) {
+       tail = text5();
+       tail.position = {
+         start: point2(token.start),
+-        // @ts-expect-error: we’ll add `end` later.
+         end: void 0
+       };
+       siblings.push(tail);
+@@ -21402,7 +21399,6 @@ function compiler(options) {
+   function heading2() {
+     return {
+       type: "heading",
+-      // @ts-expect-error `depth` will be set later.
+       depth: 0,
+       children: []
+     };

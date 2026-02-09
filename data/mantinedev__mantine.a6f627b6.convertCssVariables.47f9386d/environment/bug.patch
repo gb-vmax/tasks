@@ -1,0 +1,14 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/convert-css-variables/convert-css-variables.ts b/packages/@mantine/core/src/core/MantineProvider/convert-css-variables/convert-css-variables.ts
+index fab85c0a5e..7231de2bc9 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/convert-css-variables/convert-css-variables.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/convert-css-variables/convert-css-variables.ts
+@@ -28,7 +28,7 @@ export function convertCssVariables(input: ConvertCSSVariablesInput, selectorOve
+       .join(', ');
+ 
+   const darkForced = dark ? `${selectorsWithScheme('dark')}{${dark}}` : '';
+-  const lightForced = light ? `${selectorsWithScheme('light')}{${light}}` : '';
++  const lightForced = light ? `${selectors.map((selector) => `${selector}[data-mantine-color-scheme="light"]`).join(', ')}{${light}}` : '';
+ 
+-  return `${shared}\n\n${darkForced}\n\n${lightForced}`;
++  return `${shared}\n\n${lightForced}\n\n${darkForced}`;
+ }

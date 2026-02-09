@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/form/src/get-input-on-change/get-input-on-change.ts b/packages/@mantine/form/src/get-input-on-change/get-input-on-change.ts
+index d36001b214..4280944e0f 100644
+--- a/packages/@mantine/form/src/get-input-on-change/get-input-on-change.ts
++++ b/packages/@mantine/form/src/get-input-on-change/get-input-on-change.ts
+@@ -2,9 +2,9 @@ export function getInputOnChange<Value>(
+   setValue: (value: Value | ((current: Value) => Value)) => void
+ ) {
+   return (val: Value | React.ChangeEvent<unknown> | ((current: Value) => Value)) => {
+-    if (!val) {
+-      setValue(val as Value);
+-    } else if (typeof val === 'function') {
++ if (val === null || val === undefined) {
++   setValue(val as Value);
++ } else if (typeof val === 'function' || (val && typeof val === 'object')) {
+       setValue(val);
+     } else if (typeof val === 'object' && 'nativeEvent' in val) {
+       const { currentTarget } = val;

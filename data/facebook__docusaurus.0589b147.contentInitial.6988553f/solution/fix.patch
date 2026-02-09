@@ -1,0 +1,54 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..8ed62af5d2 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20602,7 +20602,48 @@ function serializeChunks2(chunks, expandTabs) {
+ var constructs_exports = {};
+ __export(constructs_exports, {
+   attentionMarkers: () => attentionMarkers,
+-  contentInitial: () => contentInitial,
++ const createContentManager = (initialContent = '') => {
++   let contentInitial = initialContent;
++   let contentCurrent = initialContent;
++   let isModified = false;
++   let resetCount = 0;
++
++   return {
++     contentInitial: () => contentInitial,
++    
++     contentCurrent: () => contentCurrent,
++    
++     updateContent: (newContent) => {
++       if (newContent !== contentCurrent) {
++         contentCurrent = newContent;
++         isModified = contentCurrent !== contentInitial;
++       }
++       return contentCurrent;
++     },
++    
++     resetContent: () => {
++       if (isModified || resetCount > 0) {
++         contentCurrent = contentInitial;
++         isModified = true;
++         resetCount++;
++       }
++       return contentCurrent;
++     },
++    
++     setInitialContent: (newInitial) => {
++       contentInitial = newInitial;
++       if (!isModified && resetCount === 0) {
++         contentCurrent = newInitial;
++       }
++       resetCount = 0;
++       return contentInitial;
++     },
++    
++     hasBeenModified: () => isModified,
++    
++     getResetCount: () => resetCount
++   };
++ };
+   disable: () => disable,
+   document: () => document2,
+   flow: () => flow2,

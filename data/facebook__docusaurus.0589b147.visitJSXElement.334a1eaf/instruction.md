@@ -2,27 +2,26 @@
 
 ### Describe the bug
 
-When using imported components in MDX files that don't have a corresponding import declaration in the markdown imports map, the TOC (Table of Contents) generation is creating slice entries even though the import can't be resolved. This causes issues with the generated TOC structure.
+When using JSX components in MDX files that are not imported (e.g., built-in components or components from other sources), the TOC generation fails because it tries to add TOC slice imports for components that don't have an import declaration.
 
 ### Reproduction
 
-```mdx
----
-title: My Page
----
+Create an MDX file with a JSX element that doesn't have a corresponding import statement:
 
-# Heading 1
+```mdx
+# My Document
 
 <SomeComponent />
 
-## Heading 2
+## Section 1
+Content here
 ```
 
-When `<SomeComponent />` is used but not properly imported or the import isn't tracked in `markdownImports`, the TOC still tries to create a slice entry for it. This results in TOC items being added without valid import declarations.
+When the component `SomeComponent` is not explicitly imported in the MDX file (for example, if it's a global component or provided through MDX context), the TOC processing will attempt to create a TOC slice for it even though there's no import declaration to work with.
 
 ### Expected behavior
 
-The TOC should only create slice entries for JSX elements that have valid import declarations available. If an import declaration doesn't exist for a component, the slice entry shouldn't be added to the TOC items.
+The TOC generation should only create TOC slices for components that actually have import declarations. Components without imports should be skipped or handled gracefully without breaking the build.
 
 ### System Info
 - Docusaurus version: latest

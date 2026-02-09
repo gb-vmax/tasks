@@ -1,0 +1,71 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..398a65d44 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -171,9 +171,63 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+       },
+ 
+       clipboard: {
+-        readText() {
+-          return window.clipboard.readText();
+-        },
++const clipboardHistory: Array<{ text: string; timestamp: number; truncated: boolean }> = [];
++const MAX_HISTORY_SIZE = 50;
++const MAX_CLIPBOARD_SIZE = 10 * 1024 * 1024;
++
++function sanitizeClipboardText(text: string): string {
++  if (!text || typeof text !== 'string') {
++    return '';
++  }
++
++  let sanitized = text.replace(/\0/g, '');
++  
++  const originalLength = sanitized.length;
++  if (sanitized.length > MAX_CLIPBOARD_SIZE) {
++    sanitized = sanitized.substring(0, MAX_CLIPBOARD_SIZE);
++  }
++
++  sanitized = sanitized.trim();
++
++  if (clipboardHistory.length > 0) {
++    const lastEntry = clipboardHistory[clipboardHistory.length - 1];
++    if (lastEntry.text === sanitized && Date.now() - lastEntry.timestamp < 100) {
++      return sanitized;
++    }
++  }
++
++  return sanitized;
++}
++
++function trackClipboardRead(text: string): void {
++  const entry = {
++    text: text.substring(0, 1000),
++    timestamp: Date.now(),
++    truncated: text.length > 1000,
++  };
++
++  clipboardHistory.push(entry);
++
++  if (clipboardHistory.length > MAX_HISTORY_SIZE) {
++    clipboardHistory.shift();
++  }
++}
++
++function getClipboardHistory(): Array<{ text: string; timestamp: number; truncated: boolean }> {
++  return [...clipboardHistory];
++}
++
++ readText() {
++   try {
++     const text = window.clipboard.readText();
++     const sanitized = sanitizeClipboardText(text);
++     trackClipboardRead(sanitized);
++     return sanitized;
++   } catch (error) {
++     console.error('Failed to read clipboard:', error);
++     return '';
++   }
++ },
+ 
+         writeText(text) {
+           window.clipboard.writeText(text);

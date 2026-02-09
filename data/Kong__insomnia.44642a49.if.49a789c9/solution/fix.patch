@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..561105e97 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -349,9 +349,40 @@ export function fromPreRequestAuth(auth: RequestAuth): RequestAuthentication {
+         }
+ 
+         for (const kv of kvs) {
+-            if (typeof kv.value === 'string' && kv.key === targetKey) {
+-                return kv.value;
+-            } else if (Array.isArray(kv.value)) {
++ const findValueInOauth2Options = (
++     targetKey: string,
++     kvs?: { key: string; value: string }[] | OAuth2AuthOption[]
++ ) => {
++     if (!kvs) {
++         return '';
++     }
++
++     const normalizeKey = (key: string) => key.toLowerCase().trim();
++     const normalizedTarget = normalizeKey(targetKey);
++
++     for (const kv of kvs) {
++         if (typeof kv.value === 'string' && normalizeKey(kv.key) === normalizedTarget) {
++             return kv.value;
++         } else if (Array.isArray(kv.value)) {
++             const matched = kv.value.find(subKv => normalizeKey(subKv.key) === normalizedTarget);
++             if (matched != null) {
++                 return matched.value;
++             }
++         } else if (typeof kv.value === 'object' && kv.value !== null) {
++             for (const [objKey, objValue] of Object.entries(kv.value)) {
++                 if (normalizeKey(objKey) === normalizedTarget && typeof objValue === 'string') {
++                     return objValue;
++                 }
++             }
++         }
++        
++         if (normalizeKey(kv.key) === normalizedTarget && typeof kv.value === 'string') {
++             return kv.value;
++         }
++     }
++
++     return '';
++ };
+                 const matched = kv.value.find(subKv => subKv.key === targetKey);
+                 if (matched != null) {
+                     return matched.value;

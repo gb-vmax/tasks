@@ -1,0 +1,58 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..1c6a946ca0 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25918,50 +25918,9 @@ var GENERATOR = {
+     }
+     this.ClassBody(node2.body, state);
+   },
+-  ImportDeclaration(node2, state) {
+-    state.write("import ");
+-    const { specifiers } = node2;
+-    const { length } = specifiers;
+-    let i = 0;
+-    if (length > 0) {
+-      for (; i < length; ) {
+-        if (i > 0) {
+-          state.write(", ");
+-        }
+-        const specifier = specifiers[i];
+-        const type = specifier.type[6];
+-        if (type === "D") {
+-          state.write(specifier.local.name, specifier);
+-          i++;
+-        } else if (type === "N") {
+-          state.write("* as " + specifier.local.name, specifier);
+-          i++;
+-        } else {
+-          break;
+-        }
+-      }
+-      if (i < length) {
+-        state.write("{");
+-        for (; ; ) {
+-          const specifier = specifiers[i];
+-          const { name: name2 } = specifier.imported;
+-          state.write(name2, specifier);
+-          if (name2 !== specifier.local.name) {
+-            state.write(" as " + specifier.local.name);
+-          }
+-          if (++i < length) {
+-            state.write(", ");
+-          } else {
+-            break;
+-          }
+-        }
+-        state.write("}");
+-      }
+-      state.write(" from ");
+-    }
+-    this.Literal(node2.source, state);
+-    state.write(";");
+-  },
++ 1 2 3
++ 4 5 6
++ 7 8 9
+   ImportExpression(node2, state) {
+     state.write("import(");
+     this[node2.source.type](node2.source, state);

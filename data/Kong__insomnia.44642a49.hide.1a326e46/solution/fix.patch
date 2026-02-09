@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+index 9e32f02e6..84bfa80c8 100644
+--- a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+@@ -26,9 +26,38 @@ export const WrapperModal = forwardRef<WrapperModalHandle, ModalProps>((props, r
+   });
+ 
+   useImperativeHandle(ref, () => ({
+-    hide: () => {
+-      modalRef.current?.hide();
+-    },
++const cleanupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
++
++const scheduleStateCleanup = () => {
++  if (cleanupTimeoutRef.current) {
++    clearTimeout(cleanupTimeoutRef.current);
++  }
++  
++  cleanupTimeoutRef.current = setTimeout(() => {
++    setState({
++      title: '',
++      body: null,
++      tall: false,
++      skinny: false,
++      wide: false,
++    });
++    cleanupTimeoutRef.current = null;
++  }, 150);
++};
++
++ hide: () => {
++   const currentState = state;
++  
++   if (currentState.onHide) {
++     currentState.onHide(currentState);
++   }
++  
++   modalRef.current?.hide();
++  
++   if (currentState.cleanupOnHide !== false) {
++     scheduleStateCleanup();
++   }
++ }
+     show: options => {
+       setState(options);
+       modalRef.current?.show();

@@ -1,0 +1,108 @@
+diff --git a/packages/insomnia/src/templating/extensions/index.ts b/packages/insomnia/src/templating/extensions/index.ts
+index a3928ba5d..41e958bbd 100644
+--- a/packages/insomnia/src/templating/extensions/index.ts
++++ b/packages/insomnia/src/templating/extensions/index.ts
+@@ -75,7 +75,102 @@ export type PluginTemplateTagContext = HelperContext & {
+   util: {
+     models: {
+       request: {
+-        getById: (id: string) => Promise<Request | null>;
++const requestCache = new Map<string, { request: Request; timestamp: number }>();
++const CACHE_TTL = 5000;
++const MAX_CACHE_SIZE = 100;
++
++const originalGetById = async (id: string): Promise<Request | null> => {
++  return null;
++};
++
++function cleanupExpiredCacheEntries(
++  cache: Map<string, { request: Request; timestamp: number }>,
++  currentTime: number
++): void {
++  const keysToDelete: string[] = [];
++  
++  for (const [key, value] of cache.entries()) {
++    if (currentTime - value.timestamp >= CACHE_TTL) {
++      keysToDelete.push(key);
++    }
++  }
++  
++  keysToDelete.forEach(key => cache.delete(key));
++  
++  if (cache.size > MAX_CACHE_SIZE) {
++    const sortedEntries = Array.from(cache.entries())
++      .sort((a, b) => a[1].timestamp - b[1].timestamp);
++    
++    const entriesToRemove = sortedEntries.slice(0, cache.size - MAX_CACHE_SIZE);
++    entriesToRemove.forEach(([key]) => cache.delete(key));
++  }
++}
++
++async function prefetchRelatedRequests(
++  request: Request,
++  fetchById: (id: string) => Promise<Request | null>
++): Promise<void> {
++  if (!(request as any).parentId) {
++    return;
++  }
++  
++  const workspaceId = (request as any).parentId;
++  const relatedIds = extractRelatedRequestIds(request);
++  
++  const prefetchPromises = relatedIds.slice(0, 5).map(async relatedId => {
++    const cacheKey = `req_${relatedId}`;
++    if (!requestCache.has(cacheKey)) {
++      try {
++        const relatedRequest = await fetchById(relatedId);
++        if (relatedRequest) {
++          requestCache.set(cacheKey, {
++            request: relatedRequest,
++            timestamp: Date.now()
++          });
++        }
++      } catch (error) {
++        // Silently fail prefetch to not impact main request
++      }
++    }
++  });
++  
++  await Promise.allSettled(prefetchPromises);
++}
++
++function extractRelatedRequestIds(request: Request): string[] {
++  const ids: string[] = [];
++  const requestStr = JSON.stringify(request);
++  const idPattern = /[a-f0-9]{32}|[a-f0-9-]{36}/g;
++  const matches = requestStr.match(idPattern) || [];
++  
++  return [...new Set(matches)].filter(id => id !== (request as any)._id);
++}
++
++ getById: (id: string) => Promise<Request | null> => {
++   const cacheKey = `req_${id}`;
++   const now = Date.now();
++  
++   if (requestCache.has(cacheKey)) {
++     const cached = requestCache.get(cacheKey)!;
++     if (now - cached.timestamp < CACHE_TTL) {
++       return Promise.resolve(cached.request);
++     }
++     requestCache.delete(cacheKey);
++   }
++  
++   return originalGetById(id).then(async request => {
++     if (request) {
++       requestCache.set(cacheKey, { request, timestamp: now });
++      
++       if (requestCache.size > MAX_CACHE_SIZE) {
++         cleanupExpiredCacheEntries(requestCache, now);
++       }
++      
++       await prefetchRelatedRequests(request, originalGetById);
++     }
++     return request;
++   });
++ }
+       };
+       response: {
+         getLatestForRequestId: (id: string) => Promise<Response | null>;

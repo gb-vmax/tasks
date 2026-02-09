@@ -2,28 +2,26 @@
 
 ### Describe the bug
 
-I'm encountering an issue with lazy line detection in markdown parsing. It seems like the parser is incorrectly identifying certain lines as lazy continuation lines when they shouldn't be, or vice versa.
+I'm experiencing an issue with lazy line detection in markdown parsing. It appears that lines are being incorrectly marked as lazy when they shouldn't be, or vice versa. This affects how content is parsed within block containers like list items and block quotes.
 
 ### Reproduction
 
-When parsing markdown with containers (like blockquotes or lists), the lazy line tracking appears to be inverted. For example:
+When parsing markdown with nested block structures, the lazy continuation logic seems inverted. For example:
 
 ```markdown
-> Quote line 1
-  This should be a lazy continuation
-> Quote line 3
+> quote line 1
+continuation line
 ```
 
-The parser is marking lines as lazy/non-lazy incorrectly, which affects how the markdown is processed and rendered.
+The continuation line's lazy status is being determined incorrectly, which affects how the parser handles the block structure.
 
 ### Expected behavior
 
-Lines that are actual lazy continuations (indented lines continuing a block without the container marker) should be correctly identified as lazy. Lines that have proper container markers or are not continuations should not be marked as lazy.
+Lines that are actual lazy continuations (lines that continue a block without the block marker) should be properly identified. The lazy flag should correctly reflect whether we stayed at the same container depth or entered/exited containers.
 
-The lazy line tracking should accurately reflect whether a line is continuing a container without its marker present.
+### Additional context
 
-### System Info
-- remark version: 15.0.1
+This seems related to how the parser tracks container depth when determining if a line is a lazy continuation. The logic for comparing the continued depth with the stack length might be inverted.
 
 ---
 Repository: /testbed

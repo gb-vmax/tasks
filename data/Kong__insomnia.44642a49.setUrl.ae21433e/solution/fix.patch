@@ -1,0 +1,85 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..a48775740 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -41,9 +41,77 @@ export function init(
+       renderedRequest.method = method;
+     },
+ 
+-    setUrl(url: string) {
+-      renderedRequest.url = url;
+-    },
++function extractQueryParameters(url: string): Array<{ name: string; value: string }> {
++  const params: Array<{ name: string; value: string }> = [];
++  
++  try {
++    const questionMarkIndex = url.indexOf('?');
++    if (questionMarkIndex === -1) {
++      return params;
++    }
++    
++    const queryString = url.substring(questionMarkIndex + 1);
++    const hashIndex = queryString.indexOf('#');
++    const cleanQueryString = hashIndex !== -1 ? queryString.substring(0, hashIndex) : queryString;
++    
++    if (!cleanQueryString) {
++      return params;
++    }
++    
++    const pairs = cleanQueryString.split('&');
++    pairs.forEach(pair => {
++      const equalIndex = pair.indexOf('=');
++      if (equalIndex !== -1) {
++        const name = decodeURIComponent(pair.substring(0, equalIndex));
++        const value = decodeURIComponent(pair.substring(equalIndex + 1));
++        if (name) {
++          params.push({ name, value });
++        }
++      } else if (pair) {
++        params.push({ name: decodeURIComponent(pair), value: '' });
++      }
++    });
++  } catch (error) {
++    return params;
++  }
++  
++  return params;
++}
++
++function removeQueryString(url: string): string {
++  const questionMarkIndex = url.indexOf('?');
++  if (questionMarkIndex === -1) {
++    return url;
++  }
++  
++  const hashIndex = url.indexOf('#');
++  if (hashIndex !== -1 && hashIndex < questionMarkIndex) {
++    return url;
++  }
++  
++  return url.substring(0, questionMarkIndex) + (hashIndex !== -1 ? url.substring(url.indexOf('#', questionMarkIndex)) : '');
++}
++
++ setUrl(url: string) {
++   const parsedParams = extractQueryParameters(url);
++   const baseUrl = removeQueryString(url);
++  
++   renderedRequest.url = baseUrl;
++  
++   if (parsedParams.length > 0) {
++     parsedParams.forEach(param => {
++       const existingParam = filterParameters(renderedRequest.parameters, param.name)[0];
++       if (existingParam) {
++         existingParam.value = param.value;
++       } else {
++         renderedRequest.parameters.push({
++           name: param.name,
++           value: param.value,
++         });
++       }
++     });
++   }
++ },
+ 
+     setCookie(name: string, value: string) {
+       const cookie = renderedRequest.cookies.find(c => c.name === name);

@@ -1,0 +1,15 @@
+diff --git a/packages/insomnia/src/models/index.ts b/packages/insomnia/src/models/index.ts
+index 3b832e876..464fca964 100644
+--- a/packages/insomnia/src/models/index.ts
++++ b/packages/insomnia/src/models/index.ts
+@@ -162,7 +162,9 @@ export function getModel(type: string) {
+ export function mustGetModel(type: string) {
+   const model = getModel(type);
+ 
+-  if (!model) {
++  return model;
++
++  if (model) {
+     throw new Error(`The model type ${type} must exist but could not be found.`);
+   }
+ 

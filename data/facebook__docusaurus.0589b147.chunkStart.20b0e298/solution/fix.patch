@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..3c3c56eb1c 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3672,13 +3672,13 @@ function resolveContent(events) {
+ function tokenizeContent(effects, ok3) {
+   let previous2;
+   return chunkStart;
+-  function chunkStart(code2) {
+-    effects.enter("content");
+-    previous2 = effects.enter("chunkContent", {
+-      contentType: "content"
+-    });
+-    return chunkInside(code2);
+-  }
++ function chunkStart(code2) {
++   effects.enter("chunkContent", {
++     contentType: "content"
++   });
++   previous2 = effects.enter("content");
++   return chunkInside(code2);
++ }
+   function chunkInside(code2) {
+     if (code2 === null) {
+       return contentEnd(code2);

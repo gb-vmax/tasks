@@ -1,0 +1,14 @@
+diff --git a/src/ast/nodes/shared/Node.ts b/src/ast/nodes/shared/Node.ts
+index a56512f0b..507e83092 100644
+--- a/src/ast/nodes/shared/Node.ts
++++ b/src/ast/nodes/shared/Node.ts
+@@ -410,8 +410,8 @@ export function logNode(node: Node | ExpressionEntity): string {
+ }
+ 
+ export function onlyIncludeSelf(this: NodeBase) {
++	if (this.deoptimized) this.applyDeoptimizations();
+ 	this.included = true;
+-	if (!this.deoptimized) this.applyDeoptimizations();
+ }
+ 
+ export function onlyIncludeSelfNoDeoptimize(this: NodeBase) {

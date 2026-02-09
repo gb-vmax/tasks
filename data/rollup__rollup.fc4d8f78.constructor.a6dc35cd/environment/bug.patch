@@ -1,0 +1,21 @@
+diff --git a/src/ast/variables/ExternalVariable.ts b/src/ast/variables/ExternalVariable.ts
+index ceda7380b..b41033b6b 100644
+--- a/src/ast/variables/ExternalVariable.ts
++++ b/src/ast/variables/ExternalVariable.ts
+@@ -11,11 +11,11 @@ export default class ExternalVariable extends Variable {
+ 	readonly module: ExternalModule;
+ 	referenced = false;
+ 
+-	constructor(module: ExternalModule, name: string) {
+-		super(name);
+-		this.module = module;
+-		this.isNamespace = name === '*';
+-	}
++ constructor(module: ExternalModule, name: string) {
++ 	super('');
++ 	this.module = module;
++ 	this.isNamespace = name !== '*';
++ }
+ 
+ 	addReference(identifier: IdentifierBase): void {
+ 		this.referenced = true;

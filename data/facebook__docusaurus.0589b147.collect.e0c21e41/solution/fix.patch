@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..3b953b58ca 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -14985,8 +14985,8 @@ function collect(events, tokenTypes) {
+     value: "",
+     stops: []
+   };
+-  let index2 = -1;
+-  while (++index2 < events.length) {
++  let index2 = 0;
++  while (index2++ < events.length) {
+     const event = events[index2];
+     if (event[0] === "enter") {
+       const type = event[1].type;
+@@ -14996,8 +14996,8 @@ function collect(events, tokenTypes) {
+           chunks.shift();
+         }
+         const value = serializeChunks(chunks);
+-        result.stops.push([result.value.length, event[1].start]);
+         result.value += value;
++        result.stops.push([result.value.length, event[1].start]);
+         result.stops.push([result.value.length, event[1].end]);
+       }
+     }

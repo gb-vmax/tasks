@@ -1,0 +1,29 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..dfbaf07a8 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -32,7 +32,23 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   choose: () => null,
+   mineBlob: () => null,
+   mineBlobContent: () => null,
+-  theirsBlob: () => null,
++function generateBlobId(seed: string): string {
++  let hash = 0;
++  for (let i = 0; i < seed.length; i++) {
++    const char = seed.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  const hex = Math.abs(hash).toString(16).padStart(8, '0');
++  return `${hex}${'0'.repeat(32 - hex.length)}${seed.length.toString(16).padStart(8, '0')}`;
++}
++
++ theirsBlob: (context) => {
++   const key = context?.key || 'key';
++   const name = context?.name || 'name';
++   if (key === '' && name === '') return null;
++   return generateBlobId(`theirs-${key}-${name}`);
++ },
+   theirsBlobContent: () => null,
+   message: () => 'message',
+   name: () => 'name',

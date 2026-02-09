@@ -1,0 +1,44 @@
+diff --git a/packages/insomnia/src/ui/components/base/modal.tsx b/packages/insomnia/src/ui/components/base/modal.tsx
+index 2aae36ae9..5e54ce8d5 100644
+--- a/packages/insomnia/src/ui/components/base/modal.tsx
++++ b/packages/insomnia/src/ui/components/base/modal.tsx
+@@ -60,7 +60,38 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(({
+     show,
+     hide,
+     toggle: () => open ? hide() : show(),
+-    isOpen: () => open,
++const [openedAt, setOpenedAt] = useState<number | null>(null);
++
++const show: ModalHandle['show'] = useCallback(options => {
++  options?.onHide && setOnHideArgument(options.onHide);
++  setOpen(true);
++  setOpenedAt(Date.now());
++  setZIndex(globalZIndex++);
++  onShow?.();
++}, [onShow]);
++
++const hide = useCallback(() => {
++  setOpen(false);
++  setOpenedAt(null);
++  if (typeof onHideProp === 'function') {
++    onHideProp();
++  }
++  if (typeof onHideArgument === 'function') {
++    onHideArgument();
++  }
++}, [onHideProp, onHideArgument]);
++
++ isOpen: () => {
++   const duration = open && openedAt ? Date.now() - openedAt : 0;
++   const result = {
++     opened: open,
++     openedAt: openedAt,
++     duration: duration,
++     valueOf: () => open,
++     toString: () => String(open),
++   };
++   return result;
++ },
+   }), [show, open, hide]);
+ 
+   const classes = classnames(

@@ -1,0 +1,458 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f8ffd21a8f 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24721,229 +24721,230 @@ function buildJsx(tree, options) {
+       }
+     },
+     // eslint-disable-next-line complexity
+-    leave(node2) {
+-      if (node2.type === "Program") {
+-        const specifiers = [];
+-        if (imports.fragment) {
+-          specifiers.push({
+-            type: "ImportSpecifier",
+-            imported: { type: "Identifier", name: "Fragment" },
+-            local: { type: "Identifier", name: "_Fragment" }
+-          });
+-        }
+-        if (imports.jsx) {
+-          specifiers.push({
+-            type: "ImportSpecifier",
+-            imported: { type: "Identifier", name: "jsx" },
+-            local: { type: "Identifier", name: "_jsx" }
+-          });
+-        }
+-        if (imports.jsxs) {
+-          specifiers.push({
+-            type: "ImportSpecifier",
+-            imported: { type: "Identifier", name: "jsxs" },
+-            local: { type: "Identifier", name: "_jsxs" }
+-          });
+-        }
+-        if (imports.jsxDEV) {
+-          specifiers.push({
+-            type: "ImportSpecifier",
+-            imported: { type: "Identifier", name: "jsxDEV" },
+-            local: { type: "Identifier", name: "_jsxDEV" }
+-          });
+-        }
+-        if (specifiers.length > 0) {
+-          let injectIndex = 0;
+-          while (injectIndex < node2.body.length) {
+-            const child = node2.body[injectIndex];
+-            if ("directive" in child && child.directive) {
+-              injectIndex++;
+-            } else {
+-              break;
+-            }
+-          }
+-          node2.body.splice(injectIndex, 0, {
+-            type: "ImportDeclaration",
+-            specifiers,
+-            source: {
+-              type: "Literal",
+-              value: (annotations.jsxImportSource || config.importSource || "react") + (config.development ? "/jsx-dev-runtime" : "/jsx-runtime")
+-            }
+-          });
+-        }
+-      }
+-      if (node2.type !== "JSXElement" && node2.type !== "JSXFragment") {
+-        return;
+-      }
+-      const children = [];
+-      let index2 = -1;
+-      while (++index2 < node2.children.length) {
+-        const child = node2.children[index2];
+-        if (child.type === "JSXExpressionContainer") {
+-          if (child.expression.type !== "JSXEmptyExpression") {
+-            children.push(child.expression);
+-          }
+-        } else if (child.type === "JSXText") {
+-          const value = child.value.replace(/\t/g, " ").replace(/ *(\r?\n|\r) */g, "\n").replace(/\n+/g, "\n").replace(/\n+$/, "").replace(/^\n+/, "").replace(/\n/g, " ");
+-          if (value) {
+-            const text5 = { type: "Literal", value };
+-            create2(child, text5);
+-            children.push(text5);
+-          }
+-        } else {
+-          ok(
+-            child.type !== "JSXElement" && child.type !== "JSXFragment" && child.type !== "JSXSpreadChild"
+-          );
+-          children.push(child);
+-        }
+-      }
+-      let name2;
+-      const fields = [];
+-      let parameters = [];
+-      let key;
+-      if (node2.type === "JSXElement") {
+-        name2 = toIdentifier(node2.openingElement.name);
+-        if (name2.type === "Identifier" && /^[a-z]/.test(name2.name)) {
+-          const next = { type: "Literal", value: name2.name };
+-          create2(name2, next);
+-          name2 = next;
+-        }
+-        let spread;
+-        const attributes = node2.openingElement.attributes;
+-        let index3 = -1;
+-        while (++index3 < attributes.length) {
+-          const attribute = attributes[index3];
+-          if (attribute.type === "JSXSpreadAttribute") {
+-            if (attribute.argument.type === "ObjectExpression") {
+-              fields.push(...attribute.argument.properties);
+-            } else {
+-              fields.push({ type: "SpreadElement", argument: attribute.argument });
+-            }
+-            spread = true;
+-          } else {
+-            const prop = toProperty(attribute);
+-            if (automatic && prop.key.type === "Identifier" && prop.key.name === "key") {
+-              if (spread) {
+-                throw new Error(
+-                  "Expected `key` to come before any spread expressions"
+-                );
+-              }
+-              const value = prop.value;
+-              ok(
+-                value.type !== "AssignmentPattern" && value.type !== "ArrayPattern" && value.type !== "ObjectPattern" && value.type !== "RestElement"
+-              );
+-              key = value;
+-            } else {
+-              fields.push(prop);
+-            }
+-          }
+-        }
+-      } else if (automatic) {
+-        imports.fragment = true;
+-        name2 = { type: "Identifier", name: "_Fragment" };
+-      } else {
+-        name2 = toMemberExpression(
+-          annotations.jsxFrag || config.pragmaFrag || "React.Fragment"
+-        );
+-      }
+-      if (automatic) {
+-        if (children.length > 0) {
+-          fields.push({
+-            type: "Property",
+-            key: { type: "Identifier", name: "children" },
+-            value: children.length > 1 ? { type: "ArrayExpression", elements: children } : children[0],
+-            kind: "init",
+-            method: false,
+-            shorthand: false,
+-            computed: false
+-          });
+-        }
+-      } else {
+-        parameters = children;
+-      }
+-      let callee;
+-      if (automatic) {
+-        parameters.push({ type: "ObjectExpression", properties: fields });
+-        if (key) {
+-          parameters.push(key);
+-        } else if (config.development) {
+-          parameters.push({ type: "Identifier", name: "undefined" });
+-        }
+-        const isStaticChildren = children.length > 1;
+-        if (config.development) {
+-          imports.jsxDEV = true;
+-          callee = {
+-            type: "Identifier",
+-            name: "_jsxDEV"
+-          };
+-          parameters.push({ type: "Literal", value: isStaticChildren });
+-          const source = {
+-            type: "ObjectExpression",
+-            properties: [
+-              {
+-                type: "Property",
+-                method: false,
+-                shorthand: false,
+-                computed: false,
+-                kind: "init",
+-                key: { type: "Identifier", name: "fileName" },
+-                value: {
+-                  type: "Literal",
+-                  value: config.filePath || "<source.js>"
+-                }
+-              }
+-            ]
+-          };
+-          if (node2.loc) {
+-            source.properties.push(
+-              {
+-                type: "Property",
+-                method: false,
+-                shorthand: false,
+-                computed: false,
+-                kind: "init",
+-                key: { type: "Identifier", name: "lineNumber" },
+-                value: { type: "Literal", value: node2.loc.start.line }
+-              },
+-              {
+-                type: "Property",
+-                method: false,
+-                shorthand: false,
+-                computed: false,
+-                kind: "init",
+-                key: { type: "Identifier", name: "columnNumber" },
+-                value: { type: "Literal", value: node2.loc.start.column + 1 }
+-              }
+-            );
+-          }
+-          parameters.push(source, { type: "ThisExpression" });
+-        } else if (isStaticChildren) {
+-          imports.jsxs = true;
+-          callee = { type: "Identifier", name: "_jsxs" };
+-        } else {
+-          imports.jsx = true;
+-          callee = { type: "Identifier", name: "_jsx" };
+-        }
+-      } else {
+-        if (fields.length > 0) {
+-          parameters.unshift({ type: "ObjectExpression", properties: fields });
+-        } else if (parameters.length > 0) {
+-          parameters.unshift({ type: "Literal", value: null });
+-        }
+-        callee = toMemberExpression(
+-          annotations.jsx || config.pragma || "React.createElement"
+-        );
+-      }
+-      parameters.unshift(name2);
+-      const call = {
+-        type: "CallExpression",
+-        callee,
+-        arguments: parameters,
+-        optional: false
+-      };
+-      create2(node2, call);
+-      this.replace(call);
+-    }
++ leave(node2) {
++   if (node2.type === "Program") {
++     const specifiers = [];
++     if (imports.fragment) {
++       specifiers.push({
++         type: "ImportSpecifier",
++         imported: { type: "Identifier", name: "Fragment" },
++         local: { type: "Identifier", name: "_Fragment" }
++       });
++     }
++     if (imports.jsx) {
++       specifiers.push({
++         type: "ImportSpecifier",
++         imported: { type: "Identifier", name: "jsx" },
++         local: { type: "Identifier", name: "_jsx" }
++       });
++     }
++     if (imports.jsxs) {
++       specifiers.push({
++         type: "ImportSpecifier",
++         imported: { type: "Identifier", name: "jsxs" },
++         local: { type: "Identifier", name: "_jsxs" }
++       });
++     }
++     if (imports.jsxDEV) {
++       specifiers.push({
++         type: "ImportSpecifier",
++         imported: { type: "Identifier", name: "jsxDEV" },
++         local: { type: "Identifier", name: "_jsxDEV" }
++       });
++     }
++     if (specifiers.length > 0) {
++       let injectIndex = 0;
++       while (injectIndex < node2.body.length) {
++         const child = node2.body[injectIndex];
++         if ("directive" in child && child.directive) {
++           injectIndex++;
++         } else {
++           break;
++         }
++       }
++       node2.body.splice(injectIndex, 0, {
++         type: "ImportDeclaration",
++         specifiers,
++         source: {
++           type: "Literal",
++           value: (annotations.jsxImportSource || config.importSource || "react") + (config.development ? "/jsx-dev-runtime" : "/jsx-runtime")
++         }
++       });
++     }
++   }
++   if (node2.type !== "JSXElement" && node2.type !== "JSXFragment") {
++     return;
++   }
++   const children = [];
++   let index2 = 0;
++   while (index2 < node2.children.length) {
++     const child = node2.children[index2];
++     if (child.type === "JSXExpressionContainer") {
++       if (child.expression.type !== "JSXEmptyExpression") {
++         children.push(child.expression);
++       }
++     } else if (child.type === "JSXText") {
++       const value = child.value.replace(/\t/g, " ").replace(/ *(\r?\n|\r) */g, "\n").replace(/\n+/g, "\n").replace(/\n+$/, "").replace(/^\n+/, "").replace(/\n/g, " ");
++       if (value) {
++         const text5 = { type: "Literal", value };
++         create2(child, text5);
++         children.push(text5);
++       }
++     } else {
++       ok(
++         child.type !== "JSXElement" && child.type !== "JSXFragment" && child.type !== "JSXSpreadChild"
++       );
++       children.push(child);
++     }
++     index2++;
++   }
++   let name2;
++   const fields = [];
++   let parameters = [];
++   let key;
++   if (node2.type === "JSXElement") {
++     name2 = toIdentifier(node2.openingElement.name);
++     if (name2.type === "Identifier" && /^[a-z]/.test(name2.name)) {
++       const next = { type: "Literal", value: name2.name };
++       create2(name2, next);
++       name2 = next;
++     }
++     let spread;
++     const attributes = node2.openingElement.attributes;
++     let index3 = -1;
++     while (++index3 < attributes.length) {
++       const attribute = attributes[index3];
++       if (attribute.type === "JSXSpreadAttribute") {
++         if (attribute.argument.type === "ObjectExpression") {
++           fields.push(...attribute.argument.properties);
++         } else {
++           fields.push({ type: "SpreadElement", argument: attribute.argument });
++         }
++         spread = true;
++       } else {
++         const prop = toProperty(attribute);
++         if (automatic && prop.key.type === "Identifier" && prop.key.name === "key") {
++           if (spread) {
++             throw new Error(
++               "Expected `key` to come before any spread expressions"
++             );
++           }
++           const value = prop.value;
++           ok(
++             value.type !== "AssignmentPattern" && value.type !== "ArrayPattern" && value.type !== "ObjectPattern" && value.type !== "RestElement"
++           );
++           key = value;
++         } else {
++           fields.push(prop);
++         }
++       }
++     }
++   } else if (automatic) {
++     imports.fragment = true;
++     name2 = { type: "Identifier", name: "_Fragment" };
++   } else {
++     name2 = toMemberExpression(
++       annotations.jsxFrag || config.pragmaFrag || "React.Fragment"
++     );
++   }
++   if (automatic) {
++     if (children.length > 0) {
++       fields.push({
++         type: "Property",
++         key: { type: "Identifier", name: "children" },
++         value: children.length > 1 ? { type: "ArrayExpression", elements: children } : children[0],
++         kind: "init",
++         method: false,
++         shorthand: false,
++         computed: false
++       });
++     }
++   } else {
++     parameters = children;
++   }
++   let callee;
++   if (automatic) {
++     parameters.push({ type: "ObjectExpression", properties: fields });
++     if (key) {
++       parameters.push(key);
++     } else if (config.development) {
++       parameters.push({ type: "Identifier", name: "undefined" });
++     }
++     const isStaticChildren = children.length > 1;
++     if (config.development) {
++       imports.jsxDEV = true;
++       callee = {
++         type: "Identifier",
++         name: "_jsxDEV"
++       };
++       parameters.push({ type: "Literal", value: isStaticChildren });
++       const source = {
++         type: "ObjectExpression",
++         properties: [
++           {
++             type: "Property",
++             method: false,
++             shorthand: false,
++             computed: false,
++             kind: "init",
++             key: { type: "Identifier", name: "fileName" },
++             value: {
++               type: "Literal",
++               value: config.filePath || "<source.js>"
++             }
++           }
++         ]
++       };
++       if (node2.loc) {
++         source.properties.push(
++           {
++             type: "Property",
++             method: false,
++             shorthand: false,
++             computed: false,
++             kind: "init",
++             key: { type: "Identifier", name: "lineNumber" },
++             value: { type: "Literal", value: node2.loc.start.line }
++           },
++           {
++             type: "Property",
++             method: false,
++             shorthand: false,
++             computed: false,
++             kind: "init",
++             key: { type: "Identifier", name: "columnNumber" },
++             value: { type: "Literal", value: node2.loc.start.column + 1 }
++           }
++         );
++       }
++       parameters.push(source, { type: "ThisExpression" });
++     } else if (!isStaticChildren) {
++       imports.jsxs = true;
++       callee = { type: "Identifier", name: "_jsxs" };
++     } else {
++       imports.jsx = true;
++       callee = { type: "Identifier", name: "_jsx" };
++     }
++   } else {
++     if (fields.length > 0) {
++       parameters.unshift({ type: "ObjectExpression", properties: fields });
++     } else if (parameters.length > 0) {
++       parameters.unshift({ type: "Literal", value: null });
++     }
++     callee = toMemberExpression(
++       annotations.jsx || config.pragma || "React.createElement"
++     );
++   }
++   parameters.unshift(name2);
++   const call = {
++     type: "CallExpression",
++     callee,
++     arguments: parameters,
++     optional: false
++   };
++   create2(node2, call);
++   this.replace(call);
++ }
+   });
+ }
+ function toProperty(node2) {

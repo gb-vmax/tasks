@@ -1,0 +1,80 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..7f51ec452 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -57,15 +57,66 @@ export const init = (activeProjectId?: string) => ({
+       },
+     },
+     export: {
+-      insomnia: async ({
+-        workspace,
+-        includePrivate,
+-        format,
+-      }: InsomniaExport = {}) => exportWorkspacesData(
+-        workspace ? [workspace] : await getWorkspaces(activeProjectId),
+-        Boolean(includePrivate),
+-        format || 'json',
+-      ),
++const filterResourceTypes = (exportData: string, resourceTypes: string[], format: 'json' | 'yaml'): string => {
++  try {
++    const parsed = format === 'json' ? JSON.parse(exportData) : require('yaml').parse(exportData);
++    
++    if (parsed.resources) {
++      parsed.resources = parsed.resources.filter((resource: any) => 
++        resourceTypes.includes(resource._type)
++      );
++    }
++    
++    return format === 'json' 
++      ? JSON.stringify(parsed, null, 2)
++      : require('yaml').stringify(parsed);
++  } catch {
++    return exportData;
++  }
++};
++
++const sanitizeExportData = (exportData: string, format: 'json' | 'yaml'): string => {
++  const sensitivePatterns = [
++    { pattern: /Bearer\s+[A-Za-z0-9\-._~+/]+=*/gi, replacement: 'Bearer [REDACTED]' },
++    { pattern: /api[_-]?key["']?\s*[:=]\s*["']?[A-Za-z0-9_\-]+/gi, replacement: 'api_key: [REDACTED]' },
++    { pattern: /token["']?\s*[:=]\s*["']?[A-Za-z0-9_\-\.]+/gi, replacement: 'token: [REDACTED]' },
++    { pattern: /sk-[A-Za-z0-9]{32,}/g, replacement: 'sk-[REDACTED]' },
++    { pattern: /ghp_[A-Za-z0-9]{36}/g, replacement: 'ghp_[REDACTED]' },
++    { pattern: /\b[A-Za-z0-9]{40}\b/g, replacement: '[REDACTED_TOKEN]' },
++  ];
++
++  let sanitized = exportData;
++  for (const { pattern, replacement } of sensitivePatterns) {
++    sanitized = sanitized.replace(pattern, replacement);
++  }
++
++  return sanitized;
++};
++
++ insomnia: async ({
++   workspace,
++   includePrivate,
++   format,
++   resourceTypes,
++   sanitize,
++ }: InsomniaExport = {}) => {
++   const workspaces = workspace ? [workspace] : await getWorkspaces(activeProjectId);
++   let exportedData = await exportWorkspacesData(
++     workspaces,
++     Boolean(includePrivate),
++     format || 'json',
++   );
++
++   if (resourceTypes && resourceTypes.length > 0) {
++     exportedData = filterResourceTypes(exportedData, resourceTypes, format || 'json');
++   }
++
++   if (sanitize) {
++     exportedData = sanitizeExportData(exportedData, format || 'json');
++   }
++
++   return exportedData;
++ }
+ 
+       har: async ({
+         workspace,

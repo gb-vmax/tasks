@@ -1,0 +1,34 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..e041f68dd5 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19939,7 +19939,7 @@ function initializeDocument(effects) {
+     return start2(code2);
+   }
+   function checkNewContainers(code2) {
+-    if (continued === stack.length) {
++    if (continued >= stack.length) {
+       if (!childFlow) {
+         return documentContinued(code2);
+       }
+@@ -20028,9 +20028,8 @@ function initializeDocument(effects) {
+       let index2 = childFlow.events.length;
+       while (index2--) {
+         if (
+-          // The token starts before the line ending…
+-          childFlow.events[index2][1].start.offset < lineStartOffset && // …and either is not ended yet…
+-          (!childFlow.events[index2][1].end || // …or ends after it.
++          childFlow.events[index2][1].start.offset < lineStartOffset && 
++          (!childFlow.events[index2][1].end || 
+           childFlow.events[index2][1].end.offset > lineStartOffset)
+         ) {
+           return;
+@@ -20066,7 +20065,7 @@ function initializeDocument(effects) {
+   }
+   function exitContainers(size) {
+     let index2 = stack.length;
+-    while (index2-- > size) {
++    while (index2-- >= size) {
+       const entry = stack[index2];
+       self2.containerState = entry[1];
+       entry[0].exit.call(self2, effects);

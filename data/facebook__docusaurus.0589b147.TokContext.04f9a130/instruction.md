@@ -2,28 +2,34 @@
 
 ### Describe the bug
 
-I'm encountering unexpected behavior with MDX parsing after a recent update. It seems like the parser context is not preserving whitespace correctly in certain scenarios, leading to incorrect parsing results.
+I'm experiencing unexpected behavior with MDX parsing after a recent update. The parser seems to be handling token contexts incorrectly, particularly around expression and whitespace preservation logic.
 
 ### Reproduction
 
-```js
-// When parsing MDX content with specific token contexts
-// The preserveSpace flag appears to be inverted
+When parsing MDX content with certain token contexts, the `isExpr` and `preserveSpace` properties are being set to inverted or incorrect boolean values. This affects how the parser processes expressions and whitespace in MDX files.
 
-const context = new TokContext('token', false, false);
-// Expected: preserveSpace should be false
-// Actual: preserveSpace becomes true
+Example MDX content that triggers the issue:
+```mdx
+<Component>
+  Some text with {expression}
+</Component>
 ```
 
-The issue manifests when creating token contexts where `preserveSpace` is explicitly set to `false`. Instead of preserving the intended behavior, the flag seems to be flipped to the opposite value.
+The parser appears to be inverting the `preserveSpace` logic - when it should preserve space it doesn't, and vice versa. Similarly, the `isExpr` flag is being handled inconsistently.
 
 ### Expected behavior
 
-When `preserveSpace` is set to `false`, the context should not preserve whitespace. The boolean conversion should maintain the intended value rather than inverting it.
+Token contexts should correctly:
+- Set `isExpr` to the proper boolean value based on whether the context represents an expression
+- Set `preserveSpace` to `true` when whitespace should be preserved, `false` otherwise
 
-### Additional context
+The current behavior seems to have the `preserveSpace` logic backwards and the `isExpr` handling is overly complex.
 
-This appears to affect MDX parsing in specific edge cases where whitespace handling is critical. The behavior changed recently and is causing parsing inconsistencies in our MDX documents.
+### System Info
+- remark-mdx version: 3.0.0
+- Node version: Latest
+
+This is breaking MDX parsing in our project. Any help would be appreciated!
 
 ---
 Repository: /testbed

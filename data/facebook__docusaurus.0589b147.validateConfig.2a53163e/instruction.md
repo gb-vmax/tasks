@@ -2,27 +2,26 @@
 
 ### Describe the bug
 
-When there's a configuration validation error in my Docusaurus site, the error message formatting appears broken. The accumulated error messages are not displaying properly - I'm only seeing a period (`.`) instead of the actual error details, and it seems like the wrong error types are being included in the output.
+When validating Docusaurus configuration with invalid or unknown fields, the error messages are being displayed incorrectly. The error output appears to be showing the wrong messages or formatting them in an unexpected way.
 
 ### Reproduction
 
-1. Create a Docusaurus config with invalid/unknown configuration options
-2. Try to build or start the dev server
-3. Observe the validation error message
-
-For example, with a config like:
 ```js
+// docusaurus.config.js
 module.exports = {
   title: 'My Site',
-  unknownOption: 'test',
-  anotherBadOption: 123,
+  url: 'https://example.com',
+  unknownField: 'test',  // This should trigger a validation error
+  anotherUnknown: 'value',
   // ... other config
 }
 ```
 
+When running the build or start command, the validation error messages don't seem to be showing up as expected. It looks like the error formatting logic might have an issue.
+
 ### Expected behavior
 
-The validation error should show a clear, formatted list of all configuration errors with proper messages. Instead, the error output seems incomplete or incorrectly formatted - showing just a period and potentially filtering out the wrong error types.
+Configuration validation errors should properly display all relevant error messages, especially for unknown/invalid configuration fields. The error output should clearly indicate what went wrong with the config.
 
 ### System Info
 - Docusaurus version: latest

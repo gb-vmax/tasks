@@ -2,34 +2,28 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with the table of contents generation where slice items are not being rendered correctly. When I have a TOC that includes slice items (like import statements or custom components), they're not showing up in the generated navigation, but heading items seem to work fine.
+The table of contents generation is producing incorrect output for heading items. When generating TOC entries, heading-type items are being processed with the wrong function, causing them to render incorrectly in the final output.
 
 ### Reproduction
 
-Create a document with a TOC that includes both headings and slice items:
+```js
+// Create a markdown file with headings
+const markdown = `
+# Main Title
+## Section 1
+### Subsection 1.1
+## Section 2
+`;
 
-```mdx
----
-toc_min_heading_level: 2
-toc_max_heading_level: 4
----
-
-import CustomComponent from './CustomComponent';
-
-## First Heading
-
-Some content here
-
-## Second Heading
-
-More content
+// Process the markdown to generate TOC
+// The TOC output will show incorrect structure for heading items
 ```
 
-When the TOC is generated, the slice items (like the import statement) are missing from the output, and only the heading items appear in the navigation tree.
+When processing documents with multiple heading levels, the generated table of contents doesn't match the actual document structure. Slice-type items seem to work fine, but heading items are being rendered incorrectly.
 
 ### Expected behavior
 
-Both slice items and heading items should be properly included in the generated table of contents structure. The TOC should reflect all configured items regardless of their type.
+The TOC should correctly represent the document structure with proper handling of both slice and heading type items. Each heading should be processed according to its type and rendered appropriately in the table of contents.
 
 ### System Info
 - Docusaurus version: latest

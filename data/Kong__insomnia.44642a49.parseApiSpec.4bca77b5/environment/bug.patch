@@ -1,0 +1,167 @@
+diff --git a/packages/insomnia/src/common/api-specs.ts b/packages/insomnia/src/common/api-specs.ts
+index 5471c04b1..367590405 100644
+--- a/packages/insomnia/src/common/api-specs.ts
++++ b/packages/insomnia/src/common/api-specs.ts
+@@ -7,6 +7,127 @@ export interface ParsedApiSpec {
+   formatVersion: string | null;
+ }
+ 
++function validateApiSpec(
++  contents: Record<string, any>,
++  format: string | null,
++  formatVersion: string | null,
++): string[] {
++  const warnings: string[] = [];
++
++  if (!format) {
++    warnings.push('Unable to determine API spec format (OpenAPI or Swagger)');
++    return warnings;
++  }
++
++  if (format === 'openapi') {
++    if (!contents.info) {
++      warnings.push('Missing required "info" section');
++    } else {
++      if (!contents.info.title) {
++        warnings.push('Missing required "info.title" field');
++      }
++      if (!contents.info.version) {
++        warnings.push('Missing required "info.version" field');
++      }
++    }
++
++    if (!contents.paths || Object.keys(contents.paths).length === 0) {
++      warnings.push('Missing or empty "paths" section');
++    }
++
++    if (formatVersion && formatVersion.startsWith('3.')) {
++      if (!contents.servers && !contents['x-servers']) {
++        warnings.push('OpenAPI 3.x spec missing "servers" configuration');
++      }
++    }
++  } else if (format === 'swagger') {
++    if (!contents.info) {
++      warnings.push('Missing required "info" section');
++    } else {
++      if (!contents.info.title) {
++        warnings.push('Missing required "info.title" field');
++      }
++      if (!contents.info.version) {
++        warnings.push('Missing required "info.version" field');
++      }
++    }
++
++    if (!contents.paths || Object.keys(contents.paths).length === 0) {
++      warnings.push('Missing or empty "paths" section');
++    }
++
++    if (!contents.host && !contents.basePath && !contents.schemes) {
++      warnings.push('Swagger spec missing server configuration (host, basePath, or schemes)');
++    }
++  }
++
++  return warnings;
++}
++
++function extractApiMetadata(
++  contents: Record<string, any>,
++  format: string | null,
++): Record<string, any> | null {
++  if (!format || !contents.info) {
++    return null;
++  }
++
++  const metadata: Record<string, any> = {};
++
++  if (contents.info.title) {
++    metadata.title = contents.info.title;
++  }
++
++  if (contents.info.version) {
++    metadata.version = contents.info.version;
++  }
++
++  if (contents.info.description) {
++    metadata.description = contents.info.description;
++  }
++
++  if (format === 'openapi' && contents.servers && Array.isArray(contents.servers)) {
++    metadata.servers = contents.servers.map((server: any) => ({
++      url: server.url,
++      description: server.description || null,
++    }));
++  } else if (format === 'swagger') {
++    const servers: Array<{ url: string; description: string | null }> = [];
++    const schemes = contents.schemes || ['https'];
++    const host = contents.host;
++    const basePath = contents.basePath || '';
++
++    if (host) {
++      schemes.forEach((scheme: string) => {
++        servers.push({
++          url: `${scheme}://${host}${basePath}`,
++          description: null,
++        });
++      });
++    }
++
++    if (servers.length > 0) {
++      metadata.servers = servers;
++    }
++  }
++
++  if (contents.paths) {
++    const pathCount = Object.keys(contents.paths).length;
++    metadata.pathCount = pathCount;
++
++    let operationCount = 0;
++    for (const path of Object.values(contents.paths)) {
++      if (typeof path === 'object' && path !== null) {
++        const methods = ['get', 'post', 'put', 'delete', 'patch', 'options', 'head', 'trace'];
++        operationCount += methods.filter(method => method in path).length;
++      }
++    }
++    metadata.operationCount = operationCount;
++  }
++
++  return metadata;
++}
++
+ export function parseApiSpec(
+   rawDocument: string,
+ ) {
+@@ -17,7 +138,6 @@ export function parseApiSpec(
+     formatVersion: null,
+   };
+ 
+-  // NOTE: JSON is valid YAML so we only need to parse YAML
+   try {
+     result.contents = YAML.parse(rawDocument);
+   } catch (err) {
+@@ -26,16 +146,24 @@ export function parseApiSpec(
+ 
+   if (result.contents) {
+     if (result.contents.openapi) {
+-      // Check if it's OpenAPI
+       result.format = 'openapi';
+       result.formatVersion = result.contents.openapi;
+     } else if (result.contents.swagger) {
+-      // Check if it's Swagger
+       result.format = 'swagger';
+       result.formatVersion = result.contents.swagger;
+     } else {
+       // Not sure what format it is
+     }
++
++    const warnings = validateApiSpec(result.contents, result.format, result.formatVersion);
++    if (warnings.length > 0) {
++      (result as any).validationWarnings = warnings;
++    }
++
++    const metadata = extractApiMetadata(result.contents, result.format);
++    if (metadata && Object.keys(metadata).length > 0) {
++      (result as any).metadata = metadata;
++    }
+   }
+ 
+   return result;

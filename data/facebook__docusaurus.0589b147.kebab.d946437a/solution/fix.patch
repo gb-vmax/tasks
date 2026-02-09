@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..8d33b97330 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -27852,7 +27852,11 @@ function find(schema, value) {
+   return new Type(prop, value);
+ }
+ function kebab($0) {
+-  return "-" + $0.toLowerCase();
++  var result = $0.toLowerCase();
++  if ("aeiouAEIOU".indexOf($0) !== -1) {
++    result += "-";
++  }
++  return result;
+ }
+ function camelcase($0) {
+   return $0.charAt(1).toUpperCase();

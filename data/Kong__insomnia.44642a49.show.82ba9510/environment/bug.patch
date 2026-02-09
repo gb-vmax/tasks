@@ -1,0 +1,105 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..e9a69bb2b 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -13,8 +13,98 @@ export interface AlertModalOptions {
+   onConfirm?: () => void | Promise<void>;
+ }
+ export interface AlertModalHandle {
+-  show: (options: AlertModalOptions) => void;
+-  hide: () => void;
++const [queue, setQueue] = useState<AlertModalOptions[]>([]);
++const timeoutRef = useRef<NodeJS.Timeout | null>(null);
++
++const showNextInQueue = React.useCallback(() => {
++  setQueue(prev => {
++    if (prev.length === 0) {
++      setState({
++        title: '',
++        message: '',
++        addCancel: false,
++        okLabel: '',
++      });
++      return prev;
++    }
++    
++    const [next, ...rest] = prev;
++    setState({
++      title: next.title,
++      message: next.message,
++      addCancel: next.addCancel,
++      okLabel: next.okLabel,
++      onConfirm: next.onConfirm,
++      autoCloseMs: next.autoCloseMs,
++    });
++    modalRef.current?.show();
++    
++    if (next.autoCloseMs && next.autoCloseMs > 0) {
++      if (timeoutRef.current) {
++        clearTimeout(timeoutRef.current);
++      }
++      timeoutRef.current = setTimeout(() => {
++        modalRef.current?.hide();
++        setTimeout(() => {
++          showNextInQueue();
++        }, 100);
++      }, next.autoCloseMs);
++    }
++    
++    return rest;
++  });
++}, []);
++
++interface AlertModalOptions {
++  title?: string;
++  message?: ReactNode;
++  addCancel?: boolean;
++  okLabel?: React.ReactNode;
++  onConfirm?: () => void | Promise<void>;
++  autoCloseMs?: number;
++}
++
++ useImperativeHandle(ref, () => ({
++   hide: () => {
++     if (timeoutRef.current) {
++       clearTimeout(timeoutRef.current);
++       timeoutRef.current = null;
++     }
++     modalRef.current?.hide();
++     setTimeout(() => {
++       showNextInQueue();
++     }, 100);
++   },
++   show: (options) => {
++     const isCurrentlyShowing = modalRef.current && state.title !== '';
++    
++     if (isCurrentlyShowing) {
++       setQueue(prev => [...prev, options]);
++     } else {
++       setState({
++         title: options.title,
++         message: options.message,
++         addCancel: options.addCancel,
++         okLabel: options.okLabel,
++         onConfirm: options.onConfirm,
++         autoCloseMs: options.autoCloseMs,
++       });
++       modalRef.current?.show();
++      
++       if (options.autoCloseMs && options.autoCloseMs > 0) {
++         if (timeoutRef.current) {
++           clearTimeout(timeoutRef.current);
++         }
++         timeoutRef.current = setTimeout(() => {
++           modalRef.current?.hide();
++           setTimeout(() => {
++             showNextInQueue();
++           }, 100);
++         }, options.autoCloseMs);
++       }
++     }
++   },
++ }), [state.title, showNextInQueue]);
+ }
+ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

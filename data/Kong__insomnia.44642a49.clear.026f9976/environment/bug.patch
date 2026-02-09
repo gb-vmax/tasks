@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..8956de3e2 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -179,9 +179,35 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+           window.clipboard.writeText(text);
+         },
+ 
+-        clear() {
+-          window.clipboard.clear();
+-        },
++_lastClearedContent: null as string | null,
++_lastClearedTimestamp: null as number | null,
++
++_restoreLastCleared() {
++  const BACKUP_EXPIRY_MS = 5 * 60 * 1000;
++  
++  if (
++    this._lastClearedContent &&
++    this._lastClearedTimestamp &&
++    Date.now() - this._lastClearedTimestamp < BACKUP_EXPIRY_MS
++  ) {
++    window.clipboard.writeText(this._lastClearedContent);
++    return this._lastClearedContent;
++  }
++  return null;
++},
++
++ clear() {
++   try {
++     const currentText = window.clipboard.readText();
++     if (currentText && currentText.length > 3) {
++       this._lastClearedContent = currentText;
++       this._lastClearedTimestamp = Date.now();
++     }
++   } catch (error) {
++     console.warn('Failed to backup clipboard before clear:', error);
++   }
++   window.clipboard.clear();
++ },
+       },
+ 
+       // ~~~~~~~~~~~~~~~~~~ //

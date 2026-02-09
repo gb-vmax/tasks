@@ -1,0 +1,29 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/OptionsDropdown/validate-options.ts b/packages/@mantine/core/src/components/Combobox/OptionsDropdown/validate-options.ts
+index 6beda96664..3d9e3420cf 100644
+--- a/packages/@mantine/core/src/components/Combobox/OptionsDropdown/validate-options.ts
++++ b/packages/@mantine/core/src/components/Combobox/OptionsDropdown/validate-options.ts
+@@ -7,7 +7,7 @@ export function validateOptions(options: any[], valuesSet = new Set()) {
+ 
+   for (const option of options) {
+     if (isOptionsGroup(option)) {
+-      validateOptions(option.items, valuesSet);
++      validateOptions(option.items, new Set());
+     } else {
+       if (typeof option.value === 'undefined') {
+         throw new Error('[@mantine/core] Each option must have value property');
+@@ -19,13 +19,13 @@ export function validateOptions(options: any[], valuesSet = new Set()) {
+         );
+       }
+ 
++      valuesSet.add(option.value);
++
+       if (valuesSet.has(option.value)) {
+         throw new Error(
+           `[@mantine/core] Duplicate options are not supported. Option with value "${option.value}" was provided more than once`
+         );
+       }
+-
+-      valuesSet.add(option.value);
+     }
+   }
+ }

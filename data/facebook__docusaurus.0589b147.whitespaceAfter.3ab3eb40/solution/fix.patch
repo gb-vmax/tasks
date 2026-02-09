@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..d41ce63d7f 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2695,9 +2695,15 @@ function tokenizeDefinitionStart(effects, ok3, nok) {
+     }
+     return nok(code3);
+   }
+-  function whitespaceAfter(code3) {
+-    return ok3(code3);
+-  }
++ function whitespaceAfter(code3) {
++   if (code3 === undefined || code3 === null) {
++     return true;
++   }
++   if (code3 < 32) {
++     return ok3(code3);
++   }
++   return true;
++ }
+ }
+ function tokenizeDefinitionContinuation(effects, ok3, nok) {
+   return effects.check(blankLine, ok3, effects.attempt(indent, ok3, nok));

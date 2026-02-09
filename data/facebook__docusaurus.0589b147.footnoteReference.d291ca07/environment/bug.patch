@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f00f976e66 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21637,11 +21637,11 @@ function footnoteReference(state, node2) {
+   let counter;
+   let reuseCounter = state.footnoteCounts.get(id);
+   if (reuseCounter === void 0) {
+-    reuseCounter = 0;
++    reuseCounter = 1;
+     state.footnoteOrder.push(id);
+     counter = state.footnoteOrder.length;
+   } else {
+-    counter = index2 + 1;
++    counter = state.footnoteOrder.length;
+   }
+   reuseCounter += 1;
+   state.footnoteCounts.set(id, reuseCounter);

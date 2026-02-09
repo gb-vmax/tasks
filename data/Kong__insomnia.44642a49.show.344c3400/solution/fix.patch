@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/ui/components/modals/select-modal.tsx b/packages/insomnia/src/ui/components/modals/select-modal.tsx
+index 9164bb243..0eea4da82 100644
+--- a/packages/insomnia/src/ui/components/modals/select-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/select-modal.tsx
+@@ -34,10 +34,47 @@ export const SelectModal = forwardRef<SelectModalHandle, ModalProps>((_, ref) =>
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState(options);
+-      modalRef.current?.show();
+-    },
++const validateAndPrepareOptions = (options: SelectModalOptions): SelectModalOptions => {
++  if (!options.options || options.options.length === 0) {
++    console.warn('SelectModal: No options provided, using empty array');
++    return {
++      ...options,
++      options: [],
++      value: null,
++    };
++  }
++
++  const validOptions = options.options.filter(opt => 
++    opt && typeof opt.value === 'string' && typeof opt.name === 'string'
++  );
++
++  if (validOptions.length === 0) {
++    console.warn('SelectModal: No valid options found');
++    return {
++      ...options,
++      options: [],
++      value: null,
++    };
++  }
++
++  const providedValue = options.value;
++  const valueExistsInOptions = providedValue !== null && 
++    validOptions.some(opt => opt.value === providedValue);
++
++  const finalValue = valueExistsInOptions ? providedValue : validOptions[0].value;
++
++  return {
++    ...options,
++    options: validOptions,
++    value: finalValue,
++  };
++};
++
++ show: options => {
++   const validatedOptions = validateAndPrepareOptions(options);
++   setState(validatedOptions);
++   modalRef.current?.show();
++ },
+   }), []);
+   const { message, title, options, value, onDone } = state;
+ 

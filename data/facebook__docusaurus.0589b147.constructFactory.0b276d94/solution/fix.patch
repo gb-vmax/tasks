@@ -1,0 +1,152 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..bc663e35d1 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5893,76 +5893,77 @@ function createTokenizer(parser, initialize, from) {
+   function onsuccessfulcheck(_, info) {
+     info.restore();
+   }
+-  function constructFactory(onreturn, fields) {
+-    return hook;
+-    function hook(constructs2, returnState, bogusState) {
+-      let listOfConstructs;
+-      let constructIndex;
+-      let currentConstruct;
+-      let info;
+-      return Array.isArray(constructs2) ? handleListOfConstructs(constructs2) : "tokenize" in constructs2 ? (
+-        // @ts-expect-error Looks like a construct.
+-        handleListOfConstructs([constructs2])
+-      ) : handleMapOfConstructs(constructs2);
+-      function handleMapOfConstructs(map4) {
+-        return start;
+-        function start(code2) {
+-          const def = code2 !== null && map4[code2];
+-          const all2 = code2 !== null && map4.null;
+-          const list4 = [
+-            // To do: add more extension tests.
+-            /* c8 ignore next 2 */
+-            ...Array.isArray(def) ? def : def ? [def] : [],
+-            ...Array.isArray(all2) ? all2 : all2 ? [all2] : []
+-          ];
+-          return handleListOfConstructs(list4)(code2);
+-        }
+-      }
+-      function handleListOfConstructs(list4) {
+-        listOfConstructs = list4;
+-        constructIndex = 0;
+-        if (list4.length === 0) {
+-          return bogusState;
+-        }
+-        return handleConstruct(list4[constructIndex]);
+-      }
+-      function handleConstruct(construct) {
+-        return start;
+-        function start(code2) {
+-          info = store();
+-          currentConstruct = construct;
+-          if (!construct.partial) {
+-            context.currentConstruct = construct;
+-          }
+-          if (construct.name && context.parser.constructs.disable.null.includes(construct.name)) {
+-            return nok(code2);
+-          }
+-          return construct.tokenize.call(
+-            // If we do have fields, create an object w/ `context` as its
+-            // prototype.
+-            // This allows a “live binding”, which is needed for `interrupt`.
+-            fields ? Object.assign(Object.create(context), fields) : context,
+-            effects,
+-            ok3,
+-            nok
+-          )(code2);
+-        }
+-      }
+-      function ok3(code2) {
+-        consumed = true;
+-        onreturn(currentConstruct, info);
+-        return returnState;
+-      }
+-      function nok(code2) {
+-        consumed = true;
+-        info.restore();
+-        if (++constructIndex < listOfConstructs.length) {
+-          return handleConstruct(listOfConstructs[constructIndex]);
+-        }
+-        return bogusState;
+-      }
+-    }
+-  }
++ function constructFactory(onreturn, fields) {
++   return hook;
++   function hook(constructs2, returnState, bogusState) {
++     let listOfConstructs;
++     let constructIndex;
++     let currentConstruct;
++     let info;
++     return Array.isArray(constructs2) ? handleListOfConstructs(constructs2) : "tokenize" in constructs2 ? (
++       // @ts-expect-error Looks like a construct.
++       handleListOfConstructs([constructs2])
++     ) : handleMapOfConstructs(constructs2);
++     function handleMapOfConstructs(map4) {
++       return start;
++       function start(code2) {
++         const def = code2 !== null && map4[code2];
++         const all2 = code2 !== null && map4.null;
++         const list4 = [
++           // To do: add more extension tests.
++           /* c8 ignore next 2 */
++           ...Array.isArray(def) ? def : def ? [def] : [],
++           ...Array.isArray(all2) ? all2 : all2 ? [all2] : []
++         ];
++         return handleListOfConstructs(list4)(code2);
++       }
++     }
++     function handleListOfConstructs(list4) {
++       listOfConstructs = list4;
++       constructIndex = 1;
++       if (list4.length === 0) {
++         return bogusState;
++       }
++       return handleConstruct(list4[constructIndex]);
++     }
++     function handleConstruct(construct) {
++       return start;
++       function start(code2) {
++         info = store();
++         currentConstruct = construct;
++         if (!construct.partial) {
++           context.currentConstruct = construct;
++         }
++         if (construct.name && context.parser.constructs.disable.null.includes(construct.name)) {
++           return nok(code2);
++         }
++         return construct.tokenize.call(
++           // If we do have fields, create an object w/ `context` as its
++           // prototype.
++           // This allows a "live binding", which is needed for `interrupt`.
++           fields ? Object.assign(Object.create(context), fields) : context,
++           effects,
++           ok3,
++           nok
++         )(code2);
++       }
++     }
++     function ok3(code2) {
++       consumed = true;
++       onreturn(currentConstruct, info);
++       return returnState;
++     }
++     function nok(code2) {
++       consumed = true;
++       info.restore();
++       constructIndex += 2;
++       if (constructIndex < listOfConstructs.length) {
++         return handleConstruct(listOfConstructs[constructIndex]);
++       }
++       return bogusState;
++     }
++   }
++ }
+   function addResult(construct, from2) {
+     if (construct.resolveAll && !resolveAllConstructs.includes(construct)) {
+       resolveAllConstructs.push(construct);

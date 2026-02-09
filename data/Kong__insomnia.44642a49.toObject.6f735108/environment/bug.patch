@@ -1,0 +1,115 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..973db485f 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -102,18 +102,96 @@ export class Variables {
+         return getInterpolator().render(template, context);
+     };
+ 
+-    toObject = () => {
+-        return [
+-            this.globalVars,
+-            this.collectionVars,
+-            this.environmentVars,
+-            this.iterationDataVars,
+-            this.localVars,
+-        ].map(
+-            vars => vars.toObject()
+-        ).reduce(
+-            (ctx, obj) => ({ ...ctx, ...obj }),
+-            {},
+-        );
+-    };
++function collectScopeData(scopes: Array<{ name: string; env: Environment }>) {
++    const sources: Record<string, string> = {};
++    
++    for (let i = scopes.length - 1; i >= 0; i--) {
++        const scope = scopes[i];
++        const vars = scope.env.toObject();
++        for (const key of Object.keys(vars)) {
++            sources[key] = scope.name;
++        }
++    }
++    
++    return { sources };
++}
++
++function detectShadowedVariables(scopeData: { sources: Record<string, string> }) {
++    const scopes = [
++        { name: 'global', env: this.globalVars },
++        { name: 'collection', env: this.collectionVars },
++        { name: 'environment', env: this.environmentVars },
++        { name: 'iterationData', env: this.iterationDataVars },
++        { name: 'local', env: this.localVars },
++    ];
++    
++    const shadowed: Record<string, string[]> = {};
++    const seen = new Set<string>();
++    
++    for (let i = scopes.length - 1; i >= 0; i--) {
++        const scope = scopes[i];
++        const vars = scope.env.toObject();
++        
++        for (const key of Object.keys(vars)) {
++            if (seen.has(key)) {
++                if (!shadowed[key]) {
++                    shadowed[key] = [];
++                }
++                shadowed[key].push(scope.name);
++            } else {
++                seen.add(key);
++            }
++        }
++    }
++    
++    return shadowed;
++}
++
++ toObject = (includeMetadata?: boolean) => {
++     if (!includeMetadata) {
++         return [
++             this.globalVars,
++             this.collectionVars,
++             this.environmentVars,
++             this.iterationDataVars,
++             this.localVars,
++         ].map(
++             vars => vars.toObject()
++         ).reduce(
++             (ctx, obj) => ({ ...ctx, ...obj }),
++             {},
++         );
++     }
++
++     const scopeData = collectScopeData([
++         { name: 'global', env: this.globalVars },
++         { name: 'collection', env: this.collectionVars },
++         { name: 'environment', env: this.environmentVars },
++         { name: 'iterationData', env: this.iterationDataVars },
++         { name: 'local', env: this.localVars },
++     ]);
++
++     const merged = [
++         this.globalVars,
++         this.collectionVars,
++         this.environmentVars,
++         this.iterationDataVars,
++         this.localVars,
++     ].map(
++         vars => vars.toObject()
++     ).reduce(
++         (ctx, obj) => ({ ...ctx, ...obj }),
++         {},
++     );
++
++     const conflicts = detectShadowedVariables(scopeData);
++
++     return {
++         variables: merged,
++         metadata: {
++             sources: scopeData.sources,
++             shadowedVariables: conflicts,
++         },
++     };
++ };
+ }

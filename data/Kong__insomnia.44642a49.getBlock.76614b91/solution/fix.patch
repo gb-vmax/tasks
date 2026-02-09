@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/sync/delta/diff.ts b/packages/insomnia/src/sync/delta/diff.ts
+index e6bc25083..052c13f55 100644
+--- a/packages/insomnia/src/sync/delta/diff.ts
++++ b/packages/insomnia/src/sync/delta/diff.ts
+@@ -87,17 +87,69 @@ export function diff(source: string, target: string, blockSize: number): Operati
+   return operations;
+ }
+ 
++interface CachedHash {
++  weak: number;
++  strong: string;
++}
++
++const hashCache = new Map<string, CachedHash>();
++const MAX_CACHE_SIZE = 10000;
++
++function computeWeakHash(data: string): number {
++  let a = 1;
++  let b = 0;
++  const MOD = 65521;
++  
++  for (let i = 0; i < data.length; i++) {
++    a = (a + data.charCodeAt(i)) % MOD;
++    b = (b + a) % MOD;
++  }
++  
++  return (b << 16) | a;
++}
++
++function getFromHashCache(content: string): CachedHash | undefined {
++  return hashCache.get(content);
++}
++
++function addToHashCache(content: string, weak: number, strong: string): void {
++  if (hashCache.size >= MAX_CACHE_SIZE) {
++    const firstKey = hashCache.keys().next().value;
++    if (firstKey !== undefined) {
++      hashCache.delete(firstKey);
++    }
++  }
++  hashCache.set(content, { weak, strong });
++}
++
+ function getBlock(value: string, start: number, blockSize: number): Block {
+   if (start >= value.length) {
+     throw new Error('Invalid block index');
+   }
+ 
+   const blockSlice = value.slice(start, start + blockSize);
++  
++  const cachedHash = getFromHashCache(blockSlice);
++  if (cachedHash) {
++    return {
++      start,
++      len: blockSlice.length,
++      hash: cachedHash.strong,
++      weakHash: cachedHash.weak,
++    } as Block;
++  }
++
++  const weakHash = computeWeakHash(blockSlice);
++  const strongHash = crypto.createHash('sha1').update(blockSlice).digest('hex');
++  
++  addToHashCache(blockSlice, weakHash, strongHash);
++  
+   return {
+     start,
+     len: blockSlice.length,
+-    hash: crypto.createHash('sha1').update(blockSlice).digest('hex'),
+-  };
++    hash: strongHash,
++    weakHash: weakHash,
++  } as Block;
+ }
+ 
+ function getBlockMap(value: string, blockSize: number): Record<string, Block[]> {

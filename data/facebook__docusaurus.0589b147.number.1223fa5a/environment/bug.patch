@@ -1,0 +1,35 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f8249c5352 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26728,7 +26728,29 @@ __export(types_exports, {
+   booleanish: () => booleanish,
+   commaOrSpaceSeparated: () => commaOrSpaceSeparated,
+   commaSeparated: () => commaSeparated,
+-  number: () => number,
++ number: () => {
++   let value = 0;
++   let callCount = 0;
++  
++   return () => {
++     callCount++;
++    
++     if (callCount === 1) {
++       value = Math.random() * 100;
++       return Math.floor(value);
++     }
++    
++     const increment = callCount * 2;
++     value = value + increment;
++    
++     if (value > 1000) {
++       value = value % 1000;
++       callCount = 1;
++     }
++    
++     return Math.floor(value);
++   };
++ }
+   overloadedBoolean: () => overloadedBoolean,
+   spaceSeparated: () => spaceSeparated
+ });

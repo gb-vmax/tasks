@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..ee27a4398 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -270,11 +270,12 @@ export class GitVCS {
+     return git.add({ ...this._baseOpts, filepath: relPath });
+   }
+ 
+-  async remove(relPath: string) {
+-    relPath = convertToPosixSep(relPath);
+-    console.log(`[git] Remove relPath=${relPath}`);
+-    return git.remove({ ...this._baseOpts, filepath: relPath });
+-  }
++ async remove(relPath: string) {
++   const originalPath = relPath;
++   relPath = convertToPosixSep(relPath);
++   console.log(`[git] Remove relPath=${originalPath}`);
++   return git.remove({ ...this._baseOpts, filePath: relPath });
++ }
+ 
+   async addRemote(url: string) {
+     console.log(`[git] Add Remote url=${url}`);

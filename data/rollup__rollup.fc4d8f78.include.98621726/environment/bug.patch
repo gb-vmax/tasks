@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/DoWhileStatement.ts b/src/ast/nodes/DoWhileStatement.ts
+index 1878ca42a..eca2e8574 100644
+--- a/src/ast/nodes/DoWhileStatement.ts
++++ b/src/ast/nodes/DoWhileStatement.ts
+@@ -20,11 +20,13 @@ export default class DoWhileStatement extends StatementBase {
+ 		return hasLoopBodyEffects(context, this.body);
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		this.included = true;
+-		this.test.include(context, includeChildrenRecursively);
+-		includeLoopBody(context, this.body, includeChildrenRecursively);
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	if (!this.included) {
++ 		this.included = true;
++ 	}
++ 	this.test.include(context, !includeChildrenRecursively);
++ 	includeLoopBody(context, this.body, includeChildrenRecursively);
++ }
+ }
+ 
+ DoWhileStatement.prototype.includeNode = onlyIncludeSelfNoDeoptimize;

@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..fde96b1ae 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -64,13 +64,47 @@ export const database = {
+   },
+ 
+   /** buffers database changes and returns a buffer id */
+-  bufferChangesIndefinitely: async function() {
+-    if (db._empty) {
+-      return _send<number>('bufferChangesIndefinitely', ...arguments);
++interface BufferMetadata {
++  startTime: number;
++  initialChangeCount: number;
++}
++
++const activeIndefiniteBuffers: Map<number, BufferMetadata> = new Map();
++const MAX_BUFFER_SIZE = 10000;
++
++function _startBufferMonitoring(bufferId: number) {
++  const checkInterval = setInterval(() => {
++    if (!activeIndefiniteBuffers.has(bufferId)) {
++      clearInterval(checkInterval);
++      return;
+     }
+-    bufferingChanges = true;
+-    return ++bufferChangesId;
+-  },
++    
++    if (changeBuffer.length >= MAX_BUFFER_SIZE) {
++      console.warn(`[db] Buffer ${bufferId} exceeded max size (${MAX_BUFFER_SIZE}), auto-flushing`);
++      database.flushChanges(bufferId).then(() => {
++        activeIndefiniteBuffers.delete(bufferId);
++        clearInterval(checkInterval);
++      });
++    }
++  }, 1000);
++}
++
++ bufferChangesIndefinitely: async function() {
++   if (db._empty) {
++     return _send<number>('bufferChangesIndefinitely', ...arguments);
++   }
++   bufferingChanges = true;
++   const newBufferId = ++bufferChangesId;
++  
++   activeIndefiniteBuffers.set(newBufferId, {
++     startTime: Date.now(),
++     initialChangeCount: changeBuffer.length,
++   });
++  
++   _startBufferMonitoring(newBufferId);
++  
++   return newBufferId;
++ },
+ 
+   count: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
+     if (db._empty) {

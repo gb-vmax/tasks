@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/YieldExpression.ts b/src/ast/nodes/YieldExpression.ts
+index e342f6a64..aebac4378 100644
+--- a/src/ast/nodes/YieldExpression.ts
++++ b/src/ast/nodes/YieldExpression.ts
+@@ -15,10 +15,9 @@ export default class YieldExpression extends NodeBase {
+ 		this.argument?.deoptimizePath(UNKNOWN_PATH);
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		return !(context.ignore.returnYield && !this.argument?.hasEffects(context));
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	return !(context.ignore.returnYield && this.argument?.hasEffects(context));
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

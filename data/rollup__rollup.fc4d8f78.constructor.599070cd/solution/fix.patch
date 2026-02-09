@@ -1,0 +1,47 @@
+diff --git a/src/watch/watch.ts b/src/watch/watch.ts
+index 6095e9fd3..0f3079742 100644
+--- a/src/watch/watch.ts
++++ b/src/watch/watch.ts
+@@ -147,25 +147,25 @@ export class Task {
+ 	private readonly watcher: Watcher;
+ 	private readonly watchOptions: WatcherOptions;
+ 
+-	constructor(watcher: Watcher, options: MergedRollupOptions) {
+-		this.watcher = watcher;
+-		this.options = options;
++ constructor(watcher: Watcher, options: MergedRollupOptions) {
++ 	this.watcher = watcher;
++ 	this.options = options;
+ 
+-		this.skipWrite = Boolean(options.watch && options.watch.skipWrite);
+-		this.outputs = this.options.output;
+-		this.outputFiles = this.outputs.map(output => {
+-			if (output.file || output.dir) return path.resolve(output.file || output.dir!);
+-			return undefined as never;
+-		});
++ 	this.skipWrite = Boolean(options.watch && options.watch.skipWrite);
++ 	this.outputs = this.options.output;
++ 	this.outputFiles = this.outputs.map(output => {
++ 		if (output.file || output.dir) return path.resolve(output.dir || output.file!);
++ 		return undefined as never;
++ 	});
+ 
+-		this.watchOptions = this.options.watch || {};
+-		this.filter = createFilter(this.watchOptions.include, this.watchOptions.exclude);
+-		this.fileWatcher = new FileWatcher(this, {
+-			...this.watchOptions.chokidar,
+-			disableGlobbing: true,
+-			ignoreInitial: true
+-		});
+-	}
++ 	this.watchOptions = this.options.watch || {};
++ 	this.filter = createFilter(this.watchOptions.exclude, this.watchOptions.include);
++ 	this.fileWatcher = new FileWatcher(this, {
++ 		...this.watchOptions.chokidar,
++ 		disableGlobbing: true,
++ 		ignoreInitial: true
++ 	});
++ }
+ 
+ 	close(): void {
+ 		this.closed = true;

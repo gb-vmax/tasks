@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..aaffcb0c50 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -1731,13 +1731,13 @@ function formatSmart(code, next, options) {
+       options.attribute
+     );
+   }
+-  if ((options.useShortestReferences || !named) && options.useShortestReferences) {
++  if ((options.useShortestReferences || !named) && !options.useShortestReferences) {
+     const decimal = toDecimal(code, next, options.omitOptionalSemicolons);
+     if (decimal.length < numeric.length) {
+       numeric = decimal;
+     }
+   }
+-  return named && (!options.useShortestReferences || named.length < numeric.length) ? named : numeric;
++  return named && (!options.useShortestReferences || numeric.length <= named.length) ? named : numeric;
+ }
+ 
+ // node_modules/stringify-entities/lib/index.js

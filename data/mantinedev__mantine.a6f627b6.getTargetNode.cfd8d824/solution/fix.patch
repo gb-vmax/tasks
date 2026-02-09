@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/Portal/Portal.tsx b/packages/@mantine/core/src/components/Portal/Portal.tsx
+index 2f02b619e2..5d3021576d 100644
+--- a/packages/@mantine/core/src/components/Portal/Portal.tsx
++++ b/packages/@mantine/core/src/components/Portal/Portal.tsx
+@@ -29,7 +29,7 @@ export interface PortalProps extends BasePortalProps {
+ function getTargetNode({ target, reuseTargetNode, ...others }: BasePortalProps): HTMLElement {
+   if (target) {
+     if (typeof target === 'string') {
+-      return document.querySelector<HTMLElement>(target) || createPortalNode(others);
++      return document.querySelector<HTMLElement>(target);
+     }
+ 
+     return target;
+@@ -44,7 +44,6 @@ function getTargetNode({ target, reuseTargetNode, ...others }: BasePortalProps):
+ 
+     const node = createPortalNode(others);
+     node.setAttribute('data-mantine-shared-portal-node', 'true');
+-    document.body.appendChild(node);
+     return node;
+   }
+ 

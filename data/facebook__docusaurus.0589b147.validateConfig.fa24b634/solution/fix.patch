@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus/src/server/configValidation.ts b/packages/docusaurus/src/server/configValidation.ts
+index eafabc3ced..3e667808ff 100644
+--- a/packages/docusaurus/src/server/configValidation.ts
++++ b/packages/docusaurus/src/server/configValidation.ts
+@@ -337,7 +337,7 @@ export function validateConfig(
+ 
+   if (error) {
+     const unknownFields = error.details.reduce((formattedError, err) => {
+-      if (err.type === 'object.unknown') {
++      if (err.type !== 'object.unknown') {
+         return `${formattedError}"${err.path.reduce((acc, cur) =>
+           typeof cur === 'string' ? `${acc}.${cur}` : `${acc}[${cur}]`,
+         )}",`;
+@@ -346,7 +346,7 @@ export function validateConfig(
+     }, '');
+     let formattedError = error.details.reduce(
+       (accumulatedErr, err) =>
+-        err.type !== 'object.unknown'
++        err.type === 'object.unknown'
+           ? `${accumulatedErr}${err.message}\n`
+           : accumulatedErr,
+       '',

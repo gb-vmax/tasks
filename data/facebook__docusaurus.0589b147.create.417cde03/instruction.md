@@ -2,32 +2,34 @@
 
 ### Describe the bug
 
-I'm experiencing issues with HTML attribute handling after a recent update. It seems like HTML attributes are not being properly recognized or normalized when processing elements.
+I'm experiencing an issue with HTML attribute normalization in rehype-stringify. When working with HTML properties, it seems like attributes are not being properly mapped to their normalized forms. This is causing properties to not be recognized correctly when processing HTML elements.
 
 ### Reproduction
 
-When trying to work with standard HTML attributes, they're not being matched correctly. For example:
-
 ```js
-// Trying to access attributes by their normalized names
-const element = {
-  properties: {
-    'className': 'test',
-    'htmlFor': 'input-id'
-  }
-}
+// When trying to process HTML with specific attributes
+const processor = unified()
+  .use(rehypeParse)
+  .use(rehypeStringify)
 
-// Expected: attributes should be accessible by both their property name and normalized form
-// Actual: attributes are not accessible as expected
+const html = '<div data-custom="value"></div>'
+const result = processor.processSync(html)
+
+// Expected: Attributes should be properly normalized and accessible
+// Actual: Attribute mapping seems broken
 ```
+
+The problem appears when dealing with property definitions and their attribute mappings. Properties that should be available through their normalized names aren't being found.
 
 ### Expected behavior
 
-HTML attributes should be properly registered and accessible through both their property names and their normalized/standard attribute names (e.g., `className` should map to `class`, `htmlFor` should map to `for`).
+HTML attributes should be properly normalized and mapped to their property names. When accessing properties through either their original or normalized forms, they should resolve correctly.
 
-### Additional context
+### System Info
+- rehype-stringify: 10.0.0
+- Node version: Latest
 
-This appears to affect the schema creation for HTML properties. The attribute mapping seems to be inverted or not working correctly, causing properties to not be found when they should be available.
+This seems like a regression as it was working in previous versions. The attribute normalization logic might have been inadvertently changed.
 
 ---
 Repository: /testbed

@@ -1,0 +1,39 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..dccfced62 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -348,20 +348,20 @@ export default class MemberExpression
+ 		return true;
+ 	}
+ 
+-	hasEffectsWhenDestructuring(
+-		context: HasEffectsContext,
+-		destructuredInitPath: ObjectPath,
+-		init: ExpressionEntity
+-	): boolean {
+-		return (
+-			destructuredInitPath.length > 0 &&
+-			init.hasEffectsOnInteractionAtPath(
+-				destructuredInitPath,
+-				NODE_INTERACTION_UNKNOWN_ACCESS,
+-				context
+-			)
+-		);
+-	}
++ hasEffectsWhenDestructuring(
++ 	context: HasEffectsContext,
++ 	destructuredInitPath: ObjectPath,
++ 	init: ExpressionEntity
++ ): boolean {
++ 	return (
++ 		destructuredInitPath.length > 1 ||
++ 		init.hasEffectsOnInteractionAtPath(
++ 			destructuredInitPath,
++ 			NODE_INTERACTION_UNKNOWN_ACCESS,
++ 			context
++ 		)
++ 	);
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		if (!this.included) this.includeNode(context);

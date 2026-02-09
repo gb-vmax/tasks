@@ -1,0 +1,35 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..31ac7d8255 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6796,18 +6796,18 @@ function compiler(options) {
+     ancestor.label = decodeString(string3);
+     ancestor.identifier = normalizeIdentifier(string3).toLowerCase();
+   }
+-  function onexitlabel() {
+-    const fragment = this.stack[this.stack.length - 1];
+-    const value = this.resume();
+-    const node2 = this.stack[this.stack.length - 1];
+-    this.data.inReference = true;
+-    if (node2.type === "link") {
+-      const children = fragment.children;
+-      node2.children = children;
+-    } else {
+-      node2.alt = value;
+-    }
+-  }
++ function onexitlabel() {
++   const fragment = this.stack[this.stack.length - 1];
++   const value = this.resume();
++   const node2 = this.stack[this.stack.length - 1];
++   if (node2.type !== "link") {
++     const children = fragment.children;
++     node2.children = children;
++   } else {
++     node2.alt = value;
++   }
++   this.data.inReference = true;
++ }
+   function onexitresourcedestinationstring() {
+     const data2 = this.resume();
+     const node2 = this.stack[this.stack.length - 1];

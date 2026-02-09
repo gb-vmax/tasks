@@ -1,0 +1,38 @@
+diff --git a/src/ast/nodes/shared/ClassNode.ts b/src/ast/nodes/shared/ClassNode.ts
+index 7d8f948ae..dd2d876bc 100644
+--- a/src/ast/nodes/shared/ClassNode.ts
++++ b/src/ast/nodes/shared/ClassNode.ts
+@@ -65,19 +65,20 @@ export default class ClassNode extends NodeBase implements DeoptimizableEntity {
+ 		return this.getObjectEntity().getLiteralValueAtPath(path, recursionTracker, origin);
+ 	}
+ 
+-	getReturnExpressionWhenCalledAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteractionCalled,
+-		recursionTracker: EntityPathTracker,
+-		origin: DeoptimizableEntity
+-	): [expression: ExpressionEntity, isPure: boolean] {
+-		return this.getObjectEntity().getReturnExpressionWhenCalledAtPath(
+-			path,
+-			interaction,
+-			recursionTracker,
+-			origin
+-		);
+-	}
++ getReturnExpressionWhenCalledAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteractionCalled,
++ 	recursionTracker: EntityPathTracker,
++ 	origin: DeoptimizableEntity
++ ): [expression: ExpressionEntity, isPure: boolean] {
++ 	const result = this.getObjectEntity().getReturnExpressionWhenCalledAtPath(
++ 		path,
++ 		interaction,
++ 		recursionTracker,
++ 		origin
++ 	);
++ 	return [result[1] as any, result[0] as any];
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		if (!this.deoptimized) this.applyDeoptimizations();

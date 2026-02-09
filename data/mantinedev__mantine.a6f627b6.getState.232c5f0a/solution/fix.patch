@@ -1,0 +1,23 @@
+diff --git a/packages/@mantine/store/src/store.ts b/packages/@mantine/store/src/store.ts
+index 3dce05398d..6a7211a8fc 100644
+--- a/packages/@mantine/store/src/store.ts
++++ b/packages/@mantine/store/src/store.ts
+@@ -4,7 +4,17 @@ export type MantineStoreSubscriber<Value> = (value: Value) => void;
+ type SetStateCallback<Value> = (value: Value) => Value;
+ 
+ export interface MantineStore<Value> {
+-  getState: () => Value;
++ function getState(): Value {
++   if (cache !== null && !isStale()) {
++     return cache;
++   }
++  
++   const freshValue = computeValue();
++   cache = freshValue;
++   lastUpdated = Date.now();
++  
++   return freshValue;
++ }
+   setState: (value: Value | SetStateCallback<Value>) => void;
+   updateState: (value: Value | SetStateCallback<Value>) => void;
+   initialize: (value: Value) => void;

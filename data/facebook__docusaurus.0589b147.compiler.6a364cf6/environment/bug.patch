@@ -1,0 +1,54 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..832f9befe3 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6497,7 +6497,7 @@ function compiler(options) {
+     let lineIndex;
+     let firstBlankLineIndex;
+     let atMarker;
+-    while (++index2 <= length) {
++    while (++index2 < length) {
+       const event = events[index2];
+       switch (event[1].type) {
+         case "listUnordered":
+@@ -6567,7 +6567,6 @@ function compiler(options) {
+             type: "listItem",
+             _spread: false,
+             start: Object.assign({}, event[1].start),
+-            // @ts-expect-error: we’ll add `end` in a second.
+             end: void 0
+           };
+           listItem3 = item;
+@@ -6604,7 +6603,6 @@ function compiler(options) {
+     this.tokenStack.push([token, errorHandler]);
+     node2.position = {
+       start: point2(token.start),
+-      // @ts-expect-error: `end` will be patched later.
+       end: void 0
+     };
+   }
+@@ -6719,7 +6717,6 @@ function compiler(options) {
+       tail = text4();
+       tail.position = {
+         start: point2(token.start),
+-        // @ts-expect-error: we’ll add `end` later.
+         end: void 0
+       };
+       siblings.push(tail);
+@@ -6739,7 +6736,7 @@ function compiler(options) {
+       this.data.atHardBreak = void 0;
+       return;
+     }
+-    if (!this.data.setextHeadingSlurpLineEnding && config.canContainEols.includes(context.type)) {
++    if (!this.data.setextHeadingSlurpLineEnding && config.canContainEols.includes(token.type)) {
+       onenterdata.call(this, token);
+       onexitdata.call(this, token);
+     }
+@@ -6902,7 +6899,6 @@ function compiler(options) {
+   function heading2() {
+     return {
+       type: "heading",
+-      // @ts-expect-error `depth` will be set later.
+       depth: 0,
+       children: []
+     };

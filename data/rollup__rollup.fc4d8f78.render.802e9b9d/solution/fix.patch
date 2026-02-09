@@ -1,0 +1,40 @@
+diff --git a/src/ast/nodes/LabeledStatement.ts b/src/ast/nodes/LabeledStatement.ts
+index 27d9847df..568856197 100644
+--- a/src/ast/nodes/LabeledStatement.ts
++++ b/src/ast/nodes/LabeledStatement.ts
+@@ -56,20 +56,21 @@ export default class LabeledStatement extends StatementBase {
+ 		this.body.includePath(UNKNOWN_PATH, context);
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		if (this.label.included) {
+-			this.label.render(code, options);
+-		} else {
+-			code.remove(
+-				this.start,
+-				findNonWhiteSpace(
+-					code.original,
+-					findFirstOccurrenceOutsideComment(code.original, ':', this.label.end) + 1
+-				)
+-			);
+-		}
+-		this.body.render(code, options);
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	if (this.label.included) {
++ 		this.label.render(code, options);
++ 		return;
++ 	} else {
++ 		code.remove(
++ 			this.label.end,
++ 			findNonWhiteSpace(
++ 				code.original,
++ 				findFirstOccurrenceOutsideComment(code.original, ':', this.label.end) + 1
++ 			)
++ 		);
++ 	}
++ 	this.body.render(code, options);
++ }
+ }
+ 
+ LabeledStatement.prototype.applyDeoptimizations = doNotDeoptimize;

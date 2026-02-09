@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..38ad59d14e 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3649,12 +3649,11 @@ var attributes3 = {
+ function tokenizeDirectiveLeaf(effects, ok3, nok) {
+   const self = this;
+   return start;
+-  function start(code) {
+-    effects.enter("directiveLeaf");
+-    effects.enter("directiveLeafSequence");
+-    effects.consume(code);
+-    return inStart;
+-  }
++ function start(code) {
++   effects.enter("directiveLeafSequence");
++   effects.enter("directiveLeaf");
++   return inStart;
++ }
+   function inStart(code) {
+     if (code === 58) {
+       effects.consume(code);

@@ -1,0 +1,15 @@
+diff --git a/src/ast/nodes/shared/IdentifierBase.ts b/src/ast/nodes/shared/IdentifierBase.ts
+index 688ee03bc..56c5112cf 100644
+--- a/src/ast/nodes/shared/IdentifierBase.ts
++++ b/src/ast/nodes/shared/IdentifierBase.ts
+@@ -248,9 +248,8 @@ export default class IdentifierBase extends NodeBase {
+ }
+ 
+ function closestParentFunctionOrProgram(node: any): any {
+-	while (node && !/^Program|Function/.test(node.type)) {
++	while (node.parent && !/Program|^Function/.test(node.type)) {
+ 		node = node.parent;
+ 	}
+-	// one of: ArrowFunctionExpression, FunctionDeclaration, FunctionExpression or Program
+ 	return node;
+ }

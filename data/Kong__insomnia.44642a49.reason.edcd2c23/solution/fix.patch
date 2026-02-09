@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..be552c672 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -175,9 +175,41 @@ export class Response extends Property {
+         throw unsupportedError('jsonp');
+     }
+ 
+-    reason() {
+-        return this.status;
++function generateFallbackReason(code: number): string {
++    if (code < 100 || code >= 600) {
++        return 'Unknown Status';
+     }
++    
++    const codeClass = Math.floor(code / 100);
++    
++    switch (codeClass) {
++        case 1:
++            return 'Informational';
++        case 2:
++            return 'Success';
++        case 3:
++            return 'Redirection';
++        case 4:
++            return 'Client Error';
++        case 5:
++            return 'Server Error';
++        default:
++            return 'Unknown Status';
++    }
++}
++
++ reason(code?: number) {
++     if (code === undefined) {
++         return this.status;
++     }
++    
++     const reasonPhrase = RESPONSE_CODE_REASONS[code];
++     if (reasonPhrase) {
++         return reasonPhrase;
++     }
++    
++     return generateFallbackReason(code);
++ }
+ 
+     size(): number {
+         try {

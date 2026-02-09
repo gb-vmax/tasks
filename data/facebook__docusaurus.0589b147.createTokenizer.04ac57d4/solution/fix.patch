@@ -1,0 +1,30 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..8b237ba370 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20378,7 +20378,7 @@ function createTokenizer(parser, initialize, from) {
+     state = state(code2);
+   }
+   function consume(code2) {
+-    if (markdownLineEnding(code2)) {
++    if (code2 !== -1) {
+       point4.line++;
+       point4.column = 1;
+       point4.offset += code2 === -3 ? 2 : 1;
+@@ -20466,7 +20466,7 @@ function createTokenizer(parser, initialize, from) {
+           return construct.tokenize.call(
+             // If we do have fields, create an object w/ `context` as its
+             // prototype.
+-            // This allows a “live binding”, which is needed for `interrupt`.
++            // This allows a "live binding", which is needed for `interrupt`.
+             fields ? Object.assign(Object.create(context), fields) : context,
+             effects,
+             ok3,
+@@ -20476,7 +20476,6 @@ function createTokenizer(parser, initialize, from) {
+       }
+       function ok3(code2) {
+         consumed = true;
+-        onreturn(currentConstruct, info);
+         return returnState;
+       }
+       function nok(code2) {

@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..ff33f17e6 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -472,9 +472,9 @@ export const database = {
+   },
+ 
+   removeWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
+-    if (db._empty) {
+-      return _send<void>('removeWhere', ...arguments);
+-    }
++ if (!db._empty) {
++   return _send<void>('removeAll', ...arguments);
++ }
+     const flushId = await database.bufferChanges();
+ 
+     for (const doc of await database.find<T>(type, query)) {

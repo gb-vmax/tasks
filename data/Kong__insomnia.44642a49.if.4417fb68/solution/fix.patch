@@ -1,0 +1,87 @@
+diff --git a/packages/insomnia/src/common/misc.ts b/packages/insomnia/src/common/misc.ts
+index 9174fc1a5..4a853bcad 100644
+--- a/packages/insomnia/src/common/misc.ts
++++ b/packages/insomnia/src/common/misc.ts
+@@ -12,9 +12,81 @@ interface Header {
+ }
+ 
+ export function filterHeaders<T extends { name: string; value: string }>(headers: T[], name?: string): T[] {
+-  if (!Array.isArray(headers) || !name || typeof name !== 'string') {
++function normalizeHeaderNames(name: string | string[]): string[] {
++  if (Array.isArray(name)) {
++    return name.filter(n => typeof n === 'string' && n.trim().length > 0);
++  }
++  
++  if (typeof name !== 'string') {
+     return [];
+   }
++  
++  if (name.includes(',')) {
++    return name.split(',')
++      .map(n => n.trim())
++      .filter(n => n.length > 0);
++  }
++  
++  return [name];
++}
++
++interface HeaderPattern {
++  type: 'exact' | 'pattern';
++  value: string;
++  regex?: RegExp;
++}
++
++function createHeaderPattern(name: string): HeaderPattern {
++  const hasWildcard = name.includes('*') || name.includes('?');
++  
++  if (!hasWildcard) {
++    return {
++      type: 'exact',
++      value: name.toLowerCase(),
++    };
++  }
++  
++  const escapedName = name.replace(/[.+^${}()|[\]\\]/g, '\\$&');
++  const pattern = escapedName
++    .replace(/\*/g, '.*')
++    .replace(/\?/g, '.');
++  
++  return {
++    type: 'pattern',
++    value: name.toLowerCase(),
++    regex: new RegExp(`^${pattern}$`, 'i'),
++  };
++}
++
++ export function filterHeaders<T extends { name: string; value: string }>(headers: T[], name?: string | string[]): T[] {
++   if (!Array.isArray(headers) || !name) {
++     return [];
++   }
++
++   const headerNames = normalizeHeaderNames(name);
++  
++   if (headerNames.length === 0) {
++     return [];
++   }
++
++   const patterns = headerNames.map(n => createHeaderPattern(n));
++
++   return headers.filter(header => {
++     if (!header || !header.name || typeof header.name !== 'string') {
++       return false;
++     }
++
++     const headerNameLower = header.name.toLowerCase();
++    
++     return patterns.some(pattern => {
++       if (pattern.type === 'exact') {
++         return headerNameLower === pattern.value;
++       } else {
++         return pattern.regex!.test(headerNameLower);
++       }
++     });
++   });
++ }
+ 
+   return headers.filter(header => {
+     // Never match against invalid headers

@@ -1,0 +1,65 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..0325ad76e 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -453,7 +453,59 @@ const generateParameterExample = (
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,
+     number_float: () => 0.0,
+-    number_double: () => 0.0,
++const getParameterSeed = (parameter: OpenAPIV2.Parameter): number => {
++  const seedString = JSON.stringify({
++    name: parameter.name,
++    type: parameter.type,
++    format: parameter.format,
++    min: parameter.minimum,
++    max: parameter.maximum,
++  });
++  
++  let hash = 0;
++  for (let i = 0; i < seedString.length; i++) {
++    const char = seedString.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  
++  const normalized = Math.abs(hash) / 2147483647;
++  return normalized > 0 ? normalized : 0.5;
++};
++
++ number_double: (parameter: OpenAPIV2.Parameter) => {
++   const min = parameter.minimum;
++   const max = parameter.maximum;
++   const exclusiveMin = parameter.exclusiveMinimum;
++   const exclusiveMax = parameter.exclusiveMaximum;
++   const multipleOf = parameter.multipleOf;
++  
++   let lowerBound = typeof min === 'number' ? min : -1000.0;
++   let upperBound = typeof max === 'number' ? max : 1000.0;
++  
++   if (exclusiveMin === true && typeof min === 'number') {
++     lowerBound = min + Number.EPSILON;
++   }
++   if (exclusiveMax === true && typeof max === 'number') {
++     upperBound = max - Number.EPSILON;
++   }
++  
++   if (lowerBound >= upperBound) {
++     return lowerBound;
++   }
++  
++   const seedValue = getParameterSeed(parameter);
++   const range = upperBound - lowerBound;
++   let value = lowerBound + (seedValue * range);
++  
++   if (typeof multipleOf === 'number' && multipleOf > 0) {
++     value = Math.round(value / multipleOf) * multipleOf;
++     if (value < lowerBound) value += multipleOf;
++     if (value > upperBound) value -= multipleOf;
++   }
++  
++   return Number(value.toFixed(10));
++ },
+     integer: () => 0,
+     boolean: () => true,
+     object: (parameter: OpenAPIV2.Parameter) => {

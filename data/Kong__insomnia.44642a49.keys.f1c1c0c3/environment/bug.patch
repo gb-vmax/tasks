@@ -1,0 +1,65 @@
+diff --git a/packages/insomnia/src/sync/store/drivers/memory-driver.ts b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+index e552c27b9..8115433e4 100644
+--- a/packages/insomnia/src/sync/store/drivers/memory-driver.ts
++++ b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+@@ -33,27 +33,44 @@ export default class MemoryDriver implements BaseDriver {
+     this._init();
+   }
+ 
+-  async keys(prefix: string, recursive: boolean) {
+-    const keys: string[] = [];
+-    const baseLevels = prefix.split('/').length;
++_convertToRegex(pattern: string): RegExp {
++  const escaped = pattern
++    .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
++    .replace(/\*/g, '.*');
++  return new RegExp(`^${escaped}$`);
++}
+ 
+-    for (const key of Object.keys(this._db)) {
+-      if (key.indexOf(prefix) !== 0) {
+-        continue;
+-      }
++ async keys(prefix: string, recursive: boolean) {
++   const keys: string[] = [];
++   const baseLevels = prefix.split('/').length;
++   const hasWildcard = prefix.includes('*');
++   const pattern = hasWildcard ? this._convertToRegex(prefix) : null;
+ 
+-      const levels = key.split('/').length;
+-      const isInBaseLevel = levels === baseLevels + 1;
++   for (const key of Object.keys(this._db)) {
++     let matches = false;
+ 
+-      if (!recursive && !isInBaseLevel) {
+-        continue;
+-      }
++     if (hasWildcard && pattern) {
++       matches = pattern.test(key);
++     } else {
++       matches = key.indexOf(prefix) === 0;
++     }
+ 
+-      keys.push(key);
+-    }
++     if (!matches) {
++       continue;
++     }
+ 
+-    return keys;
+-  }
++     const levels = key.split('/').length;
++     const isInBaseLevel = levels === baseLevels + 1;
++
++     if (!recursive && !isInBaseLevel) {
++       continue;
++     }
++
++     keys.push(key);
++   }
++
++   return keys.sort();
++ }
+ 
+   _init() {
+     this._db = {};

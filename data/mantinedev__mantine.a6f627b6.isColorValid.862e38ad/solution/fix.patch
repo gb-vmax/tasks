@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts b/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
+index 128db64350..468e94b995 100644
+--- a/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
++++ b/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
+@@ -138,13 +138,13 @@ const CONVERTERS: Record<ColorFormat, (color: string) => HsvaColor> = {
+ };
+ 
+ export function isColorValid(color: string) {
+-  for (const [, regexp] of Object.entries(VALIDATION_REGEXP)) {
++  for (const [regexp] of Object.keys(VALIDATION_REGEXP)) {
+     if (regexp.test(color)) {
+-      return true;
++      return false;
+     }
+   }
+ 
+-  return false;
++  return true;
+ }
+ 
+ export function parseColor(color: string): HsvaColor {

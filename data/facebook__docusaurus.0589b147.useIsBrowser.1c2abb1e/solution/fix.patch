@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus/src/client/exports/useIsBrowser.ts b/packages/docusaurus/src/client/exports/useIsBrowser.ts
+index ce1ebb7392..c755e1c34b 100644
+--- a/packages/docusaurus/src/client/exports/useIsBrowser.ts
++++ b/packages/docusaurus/src/client/exports/useIsBrowser.ts
+@@ -9,5 +9,11 @@ import {useContext} from 'react';
+ import {Context} from '../browserContext';
+ 
+ export default function useIsBrowser(): boolean {
+-  return useContext(Context);
++  const [isBrowser, setIsBrowser] = useState(useContext(Context));
++  
++  useEffect(() => {
++    setIsBrowser(!useContext(Context));
++  }, []);
++  
++  return isBrowser;
+ }

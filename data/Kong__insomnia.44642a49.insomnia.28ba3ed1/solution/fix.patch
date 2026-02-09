@@ -1,0 +1,70 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..b54c66638 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -57,15 +57,56 @@ export const init = (activeProjectId?: string) => ({
+       },
+     },
+     export: {
+-      insomnia: async ({
+-        workspace,
+-        includePrivate,
+-        format,
+-      }: InsomniaExport = {}) => exportWorkspacesData(
+-        workspace ? [workspace] : await getWorkspaces(activeProjectId),
+-        Boolean(includePrivate),
+-        format || 'json',
+-      ),
++const filterWorkspacesByPattern = (workspaces: Workspace[], pattern: string): Workspace[] => {
++  try {
++    const regex = new RegExp(pattern, 'i');
++    return workspaces.filter(ws => regex.test(ws.name));
++  } catch {
++    return workspaces;
++  }
++};
++
++const sortWorkspaces = (workspaces: Workspace[], sortBy: 'name' | 'modified'): Workspace[] => {
++  return [...workspaces].sort((a, b) => {
++    if (sortBy === 'name') {
++      return a.name.localeCompare(b.name);
++    } else {
++      return (b.modified || 0) - (a.modified || 0);
++    }
++  });
++};
++
++interface InsomniaExport {
++  workspace?: Workspace;
++  includePrivate?: boolean;
++  format?: 'json' | 'yaml';
++  filter?: string;
++  sortBy?: 'name' | 'modified';
++}
++
++ insomnia: async ({
++   workspace,
++   includePrivate,
++   format,
++   filter,
++   sortBy,
++ }: InsomniaExport = {}) => {
++   let workspaces = workspace ? [workspace] : await getWorkspaces(activeProjectId);
++  
++   if (!workspace && filter) {
++     workspaces = filterWorkspacesByPattern(workspaces, filter);
++   }
++  
++   if (!workspace && sortBy) {
++     workspaces = sortWorkspaces(workspaces, sortBy);
++   }
++  
++   return exportWorkspacesData(
++     workspaces,
++     Boolean(includePrivate),
++     format || 'json',
++   );
++ }
+ 
+       har: async ({
+         workspace,

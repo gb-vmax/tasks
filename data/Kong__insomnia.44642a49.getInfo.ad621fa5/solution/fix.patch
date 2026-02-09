@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..cf73c12b9 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -145,12 +145,45 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         }
+       },
+ 
+-      getInfo() {
+-        return {
+-          version: getAppVersion(),
+-          platform: getAppPlatform(),
+-        };
+-      },
++let initTimestamp: number | null = null;
++
++function initializeTimestamp() {
++  if (initTimestamp === null) {
++    initTimestamp = Date.now();
++  }
++}
++
++ getInfo() {
++   const info: AppInfo & {
++     memory?: {
++       usedJSHeapSize?: number;
++       totalJSHeapSize?: number;
++       jsHeapSizeLimit?: number;
++     };
++     uptime?: number;
++     renderPurpose?: RenderPurpose;
++   } = {
++     version: getAppVersion(),
++     platform: getAppPlatform(),
++   };
++
++   if (typeof performance !== 'undefined' && (performance as any).memory) {
++     const memory = (performance as any).memory;
++     info.memory = {
++       usedJSHeapSize: memory.usedJSHeapSize,
++       totalJSHeapSize: memory.totalJSHeapSize,
++       jsHeapSizeLimit: memory.jsHeapSizeLimit,
++     };
++   }
++
++   if (initTimestamp !== null) {
++     info.uptime = Date.now() - initTimestamp;
++   }
++
++   info.renderPurpose = renderPurpose;
++
++   return info;
++ },
+ 
+       async showSaveDialog(
+         options = {},

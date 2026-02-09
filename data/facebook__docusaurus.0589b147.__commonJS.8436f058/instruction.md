@@ -2,27 +2,28 @@
 
 ### Describe the bug
 
-After a recent update, I'm encountering issues with module exports when using the MDX bundler. It appears that the CommonJS module wrapper is not properly returning the exports object, which causes imported modules to be undefined or have missing properties.
+After a recent update, I'm experiencing issues with module exports not being properly returned. When requiring CommonJS modules, the exports object is not being accessed correctly, leading to undefined values or missing exports.
 
 ### Reproduction
 
 ```js
-// When importing an MDX module
-import MyComponent from './example.mdx'
+// When using the bundled MDX vendor code
+const mdx = require('@mdx-js/mdx');
 
-// MyComponent is undefined or missing expected exports
-console.log(MyComponent) // undefined or incomplete object
+// Expected: mdx should contain the exported functions/objects
+// Actual: mdx is undefined or an object without the exports property
+console.log(mdx); // Shows incorrect structure
 ```
 
-The issue seems to affect any CommonJS-style modules that are processed through the MDX loader. The exports object isn't being returned correctly from the require wrapper function.
+The issue appears to be in how the `__commonJS` helper function handles the module exports. Instead of returning `mod.exports`, it's returning just `mod`, which breaks the expected CommonJS behavior.
 
 ### Expected behavior
 
-Imported MDX modules should expose their exports correctly, with all exported components and values being accessible.
+The CommonJS wrapper should properly return `mod.exports` so that all exported functions and objects are accessible when requiring the module.
 
 ### System Info
-- MDX version: 3.0.0
-- Build tool: Jest/bundler with MDX support
+- Package: @mdx-js/mdx@3.0.0
+- Environment: Jest vendor bundle
 
 ---
 Repository: /testbed

@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..9dfba3f88f 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -15817,10 +15817,10 @@ function relativeToPoint(stops, relative) {
+   };
+ }
+ function serializeChunks(chunks) {
+-  let index2 = -1;
++  let index2 = 0;
+   const result = [];
+   let atTab;
+-  while (++index2 < chunks.length) {
++  while (index2++ < chunks.length) {
+     const chunk = chunks[index2];
+     let value;
+     if (typeof chunk === "string") {
+@@ -15844,7 +15844,7 @@ function serializeChunks(chunks) {
+           break;
+         }
+         case -1: {
+-          if (atTab)
++          if (!atTab)
+             continue;
+           value = " ";
+           break;

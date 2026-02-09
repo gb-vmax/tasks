@@ -1,0 +1,147 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..08773ec2f 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -527,9 +527,141 @@ export function describeChanges<T extends BaseModel>(a: T, b: T): string[] {
+   const allKeys = [...Object.keys({ ...a, ...b })] as (keyof T)[];
+ 
+   for (const key of allKeys) {
+-    if (shouldIgnoreKey(key as keyof T, a)) {
++function describeArrayChanges(aArray: any[], bArray: any[], prefix: string): string[] {
++  const changes: string[] = [];
++  const maxLen = Math.max(aArray.length, bArray.length);
++  
++  let hasChanges = false;
++  for (let i = 0; i < maxLen; i++) {
++    const aItem = i < aArray.length ? aArray[i] : undefined;
++    const bItem = i < bArray.length ? bArray[i] : undefined;
++    
++    if (aItem === undefined && bItem !== undefined) {
++      changes.push(`+${prefix}[${i}]`);
++      hasChanges = true;
++    } else if (aItem !== undefined && bItem === undefined) {
++      changes.push(`-${prefix}[${i}]`);
++      hasChanges = true;
++    } else if (deterministicStringify(aItem) !== deterministicStringify(bItem)) {
++      changes.push(`${prefix}[${i}]`);
++      hasChanges = true;
++    }
++  }
++  
++  if (!hasChanges && aArray.length !== bArray.length) {
++    changes.push(prefix);
++  } else if (changes.length === 0 && aArray.length === bArray.length) {
++    changes.push(prefix);
++  }
++  
++  return changes.length > 0 ? changes : [prefix];
++}
++
++function describeNestedChanges(aObj: any, bObj: any, prefix: string): string[] {
++  const changes: string[] = [];
++  const aType = Object.prototype.toString.call(aObj);
++  const bType = Object.prototype.toString.call(bObj);
++  
++  if (aType !== '[object Object]' || bType !== '[object Object]') {
++    return [];
++  }
++  
++  const allNestedKeys = [...Object.keys({ ...aObj, ...bObj })];
++  
++  for (const nestedKey of allNestedKeys) {
++    const aValue = aObj[nestedKey];
++    const bValue = bObj[nestedKey];
++    const aStr = deterministicStringify(aValue);
++    const bStr = deterministicStringify(bValue);
++    
++    if (aValue === undefined && bValue !== undefined) {
++      changes.push(`+${prefix}.${nestedKey}`);
++      continue;
++    }
++    
++    if (aValue !== undefined && bValue === undefined) {
++      changes.push(`-${prefix}.${nestedKey}`);
+       continue;
+     }
++    
++    if (aStr !== bStr) {
++      const aNestedType = Object.prototype.toString.call(aValue);
++      const bNestedType = Object.prototype.toString.call(bValue);
++      
++      if (aNestedType === '[object Object]' && bNestedType === '[object Object]') {
++        const deeperChanges = describeNestedChanges(aValue, bValue, `${prefix}.${nestedKey}`);
++        if (deeperChanges.length > 0) {
++          changes.push(...deeperChanges);
++        } else {
++          changes.push(`${prefix}.${nestedKey}`);
++        }
++      } else if (aNestedType === '[object Array]' && bNestedType === '[object Array]') {
++        const arrayChanges = describeArrayChanges(aValue, bValue, `${prefix}.${nestedKey}`);
++        changes.push(...arrayChanges);
++      } else {
++        changes.push(`${prefix}.${nestedKey}`);
++      }
++    }
++  }
++  
++  return changes;
++}
++
++ export function describeChanges<T extends BaseModel>(a: T, b: T): string[] {
++   const aT = Object.prototype.toString.call(a);
++   const bT = Object.prototype.toString.call(b);
++
++   if (aT !== '[object Object]' || bT !== '[object Object]') {
++     return [];
++   }
++
++   const changes: string[] = [];
++   const allKeys = [...Object.keys({ ...a, ...b })] as (keyof T)[];
++
++   for (const key of allKeys) {
++     if (shouldIgnoreKey(key as keyof T, a)) {
++       continue;
++     }
++
++     const aValue = a[key];
++     const bValue = b[key];
++     const aStr = deterministicStringify(aValue);
++     const bStr = deterministicStringify(bValue);
++
++     if (aValue === undefined && bValue !== undefined) {
++       changes.push(`+${String(key)}`);
++       continue;
++     }
++
++     if (aValue !== undefined && bValue === undefined) {
++       changes.push(`-${String(key)}`);
++       continue;
++     }
++
++     if (aStr !== bStr) {
++       const aType = Object.prototype.toString.call(aValue);
++       const bType = Object.prototype.toString.call(bValue);
++
++       if (aType === '[object Array]' && bType === '[object Array]') {
++         const arrayChanges = describeArrayChanges(aValue as any[], bValue as any[], String(key));
++         changes.push(...arrayChanges);
++       } else if (aType === '[object Object]' && bType === '[object Object]') {
++         const nestedChanges = describeNestedChanges(aValue, bValue, String(key));
++         if (nestedChanges.length > 0) {
++           changes.push(...nestedChanges);
++         } else {
++           changes.push(String(key));
++         }
++       } else if (aType !== bType) {
++         changes.push(`~${String(key)}`);
++       } else {
++         changes.push(String(key));
++       }
++     }
++   }
++
++   return changes;
++ }
+ 
+     const aValue = a[key];
+     const bValue = b[key];

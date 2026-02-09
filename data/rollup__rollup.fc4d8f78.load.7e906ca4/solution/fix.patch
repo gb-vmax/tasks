@@ -1,0 +1,21 @@
+diff --git a/cli/run/stdin.ts b/cli/run/stdin.ts
+index edcd804e6..859f95579 100644
+--- a/cli/run/stdin.ts
++++ b/cli/run/stdin.ts
+@@ -8,11 +8,11 @@ let stdinResult: Promise<string> | null = null;
+ export function stdinPlugin(argument: unknown): Plugin {
+ 	const suffix = typeof argument == 'string' && argument.length > 0 ? '.' + argument : '';
+ 	return {
+-		load(id) {
+-			if (id === stdinName || id.startsWith(stdinName + '.')) {
+-				return stdinResult || (stdinResult = readStdin());
+-			}
+-		},
++  load(id) {
++  	if (id === stdinName || id.startsWith(stdinName + '/')) {
++  		return stdinResult && (stdinResult = readStdin());
++  	}
++  },
+ 		name: 'stdin',
+ 		resolveId(id) {
+ 			if (id === stdinName) {

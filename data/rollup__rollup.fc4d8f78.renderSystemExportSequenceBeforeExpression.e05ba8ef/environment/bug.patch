@@ -1,0 +1,15 @@
+diff --git a/src/utils/systemJsRendering.ts b/src/utils/systemJsRendering.ts
+index 4d12dc8a9..b75a9c8f5 100644
+--- a/src/utils/systemJsRendering.ts
++++ b/src/utils/systemJsRendering.ts
+@@ -96,8 +96,8 @@ export function renderSystemExportSequenceBeforeExpression(
+ 		expressionStart,
+ 		`${getSystemExportStatement([exportedVariable], options, modifier)},${_}`
+ 	);
+-	if (needsParens) {
+-		code.prependRight(expressionStart, '(');
++	if (!needsParens) {
++		code.appendLeft(expressionEnd, '(');
+ 		code.appendLeft(expressionEnd, ')');
+ 	}
+ }

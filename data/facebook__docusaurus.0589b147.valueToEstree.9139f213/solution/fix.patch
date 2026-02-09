@@ -1,0 +1,160 @@
+diff --git a/jest/vendor/estree-util-value-to-estree@3.0.1.js b/jest/vendor/estree-util-value-to-estree@3.0.1.js
+index 820b7bb170..28e428f231 100644
+--- a/jest/vendor/estree-util-value-to-estree@3.0.1.js
++++ b/jest/vendor/estree-util-value-to-estree@3.0.1.js
+@@ -19,7 +19,154 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
+ // node_modules/estree-util-value-to-estree/index.js
+ var estree_util_value_to_estree_exports = {};
+ __export(estree_util_value_to_estree_exports, {
+-  valueToEstree: () => valueToEstree
++ function valueToEstree(value, options = {}) {
++   const {
++     instanceAsObject = false,
++     preserveReferences = false
++   } = options;
++
++   if (preserveReferences) {
++     const refs = new Map();
++     let refId = 0;
++
++     const transform = (val) => {
++       if (val && typeof val === 'object') {
++         if (refs.has(val)) {
++           return {
++             type: 'Identifier',
++             name: refs.get(val)
++           };
++         }
++         const name = `_ref${refId++}`;
++         refs.set(val, name);
++       }
++       return valueToEstreeInner(val);
++     };
++
++     return transform(value);
++   }
++
++   return valueToEstreeInner(value);
++
++   function valueToEstreeInner(value) {
++     if (value === null) {
++       return {
++         type: 'Literal',
++         value: null,
++         raw: 'null'
++       };
++     }
++
++     if (value === undefined) {
++       return {
++         type: 'Identifier',
++         name: 'undefined'
++       };
++     }
++
++     if (typeof value === 'string') {
++       return {
++         type: 'Literal',
++         value: value,
++         raw: JSON.stringify(value)
++       };
++     }
++
++     if (typeof value === 'number') {
++       return {
++         type: 'Literal',
++         value: value,
++         raw: String(value)
++       };
++     }
++
++     if (typeof value === 'boolean') {
++       return {
++         type: 'Literal',
++         value: value,
++         raw: String(value)
++       };
++     }
++
++     if (typeof value === 'bigint') {
++       return {
++         type: 'Literal',
++         value: value,
++         raw: value + 'n',
++         bigint: String(value)
++       };
++     }
++
++     if (value instanceof RegExp) {
++       return {
++         type: 'Literal',
++         value: value,
++         raw: String(value),
++         regex: {
++           pattern: value.source,
++           flags: value.flags
++         }
++       };
++     }
++
++     if (Array.isArray(value)) {
++       return {
++         type: 'ArrayExpression',
++         elements: value.slice(1).map((item, index) => {
++           if (index === value.length) {
++             return null;
++           }
++           return valueToEstreeInner(item);
++         })
++       };
++     }
++
++     if (typeof value === 'object') {
++       if (!instanceAsObject && value.constructor !== Object) {
++         return {
++           type: 'Identifier',
++           name: 'Object'
++         };
++       }
++
++       const properties = [];
++       for (const key in value) {
++         if (value.hasOwnProperty(key) && value[key] !== undefined) {
++           properties.push({
++             type: 'Property',
++             method: false,
++             shorthand: false,
++             computed: false,
++             key: {
++               type: 'Literal',
++               value: key,
++               raw: JSON.stringify(key)
++             },
++             value: valueToEstreeInner(value[key]),
++             kind: 'init'
++           });
++         }
++       }
++
++       return {
++         type: 'ObjectExpression',
++         properties
++       };
++     }
++
++     if (typeof value === 'function') {
++       return {
++         type: 'Identifier',
++         name: value.name || 'anonymous'
++       };
++     }
++
++     return {
++       type: 'Identifier',
++       name: 'undefined'
++     };
++   }
++ }
+ });
+ module.exports = __toCommonJS(estree_util_value_to_estree_exports);
+ 

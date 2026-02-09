@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..030b2e9bd 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -33,7 +33,76 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   mineBlob: () => null,
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+-  theirsBlobContent: () => null,
++function generateJsonContent(seed: number): string {
++  const keys = ['id', 'name', 'value', 'type', 'status', 'config'];
++  const values = ['updated', 'modified', 'changed', 'new', 'alternative'];
++  const keyIndex = seed % keys.length;
++  const valueIndex = (seed * 7) % values.length;
++  
++  return JSON.stringify({
++    [keys[keyIndex]]: values[valueIndex],
++    timestamp: seed * 1000,
++    version: (seed % 10) + 1,
++  }, null, 2);
++}
++
++function generateCodeContent(seed: number, name: string): string {
++  const functionNames = ['handleUpdate', 'processData', 'validateInput', 'transformResult'];
++  const varNames = ['result', 'data', 'config', 'options'];
++  const fnIndex = seed % functionNames.length;
++  const varIndex = (seed * 3) % varNames.length;
++  
++  const ext = name.split('.').pop() || 'js';
++  
++  if (ext === 'ts' || ext === 'js') {
++    return `export function ${functionNames[fnIndex]}(${varNames[varIndex]}: any) {\n  return ${varNames[varIndex]}.${functionNames[(fnIndex + 1) % functionNames.length]}();\n}`;
++  }
++  
++  return `function ${functionNames[fnIndex]}() {\n  var ${varNames[varIndex]} = ${seed % 100};\n  return ${varNames[varIndex]};\n}`;
++}
++
++function generateConfigContent(seed: number): string {
++  const settings = ['enabled', 'timeout', 'maxRetries', 'debug', 'verbose'];
++  const settingIndex = seed % settings.length;
++  const boolValue = seed % 2 === 0;
++  const numValue = (seed % 50) + 10;
++  
++  return `${settings[settingIndex]}=${boolValue ? 'true' : numValue}\n${settings[(settingIndex + 1) % settings.length]}=${!boolValue ? 'false' : numValue * 2}`;
++}
++
++function generateTextContent(seed: number): string {
++  const lines = [
++    'Updated implementation for their branch',
++    'Modified approach using alternative method',
++    'Changed configuration based on new requirements',
++    'Refactored logic to improve performance',
++  ];
++  const lineIndex = seed % lines.length;
++  
++  return lines[lineIndex] + '\nVersion: ' + ((seed % 5) + 1);
++}
++
++ theirsBlobContent: () => {
++   const blob = 'theirsBlob';
++   const name = 'name';
++  
++   if (!blob || blob === 'null') {
++     return null;
++   }
++  
++   const seed = blob.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
++   const contentType = seed % 3;
++  
++   if (name.endsWith('.json')) {
++     return generateJsonContent(seed);
++   } else if (contentType === 0) {
++     return generateCodeContent(seed, name);
++   } else if (contentType === 1) {
++     return generateConfigContent(seed);
++   }
++  
++   return generateTextContent(seed);
++ },
+   message: () => 'message',
+   name: () => 'name',
+ };

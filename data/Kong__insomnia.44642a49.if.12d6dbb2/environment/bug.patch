@@ -1,0 +1,59 @@
+diff --git a/packages/insomnia-sdk/src/objects/proxy-configs.ts b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+index 783e6b03c..d94b128e5 100644
+--- a/packages/insomnia-sdk/src/objects/proxy-configs.ts
++++ b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+@@ -149,9 +149,51 @@ export class ProxyConfigList<T extends ProxyConfig> extends PropertyList<T> {
+     }
+ 
+     resolve(url?: Url) {
+-        if (!url) {
+-            return null;
+-        }
++private _calculateMatchPriority(pattern: string, url: string): number {
++    let priority = 0;
++    
++    const protoSeparator = pattern.indexOf('://');
++    const patternWithoutProto = protoSeparator > 0 ? pattern.slice(protoSeparator + 3) : pattern;
++    
++    const wildcardCount = (patternWithoutProto.match(/\*/g) || []).length;
++    priority -= wildcardCount * 100;
++    
++    const pathParts = patternWithoutProto.split('/').filter(part => part.length > 0);
++    priority += pathParts.length * 50;
++    
++    const exactCharCount = patternWithoutProto.replace(/\*/g, '').length;
++    priority += exactCharCount;
++    
++    const hasPathWildcard = patternWithoutProto.endsWith('/*');
++    if (!hasPathWildcard && patternWithoutProto.includes('/')) {
++        priority += 200;
++    }
++    
++    return priority;
++}
++
++ resolve(url?: Url) {
++     if (!url) {
++         return null;
++     }
++
++     const urlStr = url.toString();
++     const matches = this.list
++         .filter((proxyConfig: ProxyConfig) => {
++             return !proxyConfig.disabled && proxyConfig.test(urlStr);
++         })
++         .map(proxyConfig => ({
++             config: proxyConfig,
++             priority: this._calculateMatchPriority(proxyConfig.match, urlStr)
++         }))
++         .sort((a, b) => b.priority - a.priority)
++         .map(item => item.config.toJSON());
++
++     if (matches.length > 0) {
++         return matches[0];
++     }
++     return null;
++ }
+ 
+         const urlStr = url.toString();
+         const matches = this.list

@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/models/environment.ts b/packages/insomnia/src/models/environment.ts
+index f47088ec4..a2eb76713 100644
+--- a/packages/insomnia/src/models/environment.ts
++++ b/packages/insomnia/src/models/environment.ts
+@@ -48,8 +48,67 @@ export function create(patch: Partial<Environment> = {}) {
+   return db.docCreate<Environment>(type, patch);
+ }
+ 
++function synchronizeDataPropertyOrder(
++  currentData: Record<string, any>,
++  newData: Record<string, any>,
++  currentOrder: Record<string, any> | null
++): Record<string, any> {
++  const order = currentOrder || {};
++  const newDataKeys = Object.keys(newData);
++  const currentDataKeys = Object.keys(currentData);
++  
++  const addedKeys = newDataKeys.filter(key => !currentDataKeys.includes(key));
++  const remainingKeys = newDataKeys.filter(key => currentDataKeys.includes(key));
++  
++  const existingOrderEntries = Object.entries(order)
++    .filter(([key]) => remainingKeys.includes(key))
++    .sort((a, b) => (a[1] as number) - (b[1] as number));
++  
++  const maxExistingOrder = existingOrderEntries.length > 0
++    ? Math.max(...existingOrderEntries.map(([, val]) => val as number))
++    : -1;
++  
++  const updatedOrder: Record<string, any> = {};
++  
++  existingOrderEntries.forEach(([key, orderValue]) => {
++    updatedOrder[key] = orderValue;
++  });
++  
++  addedKeys.forEach((key, index) => {
++    updatedOrder[key] = maxExistingOrder + index + 1;
++  });
++  
++  return updatedOrder;
++}
++
++function isValidHexColor(color: string): boolean {
++  return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color);
++}
++
+ export function update(environment: Environment, patch: Partial<Environment>) {
+-  return db.docUpdate(environment, patch);
++  const processedPatch = { ...patch };
++  
++  if (patch.data !== undefined) {
++    const currentOrder = environment.dataPropertyOrder || {};
++    const currentData = environment.data || {};
++    const newData = patch.data;
++    
++    const updatedOrder = synchronizeDataPropertyOrder(
++      currentData,
++      newData,
++      currentOrder
++    );
++    
++    processedPatch.dataPropertyOrder = updatedOrder;
++  }
++  
++  if (patch.color !== undefined && patch.color !== null) {
++    if (!isValidHexColor(patch.color)) {
++      throw new Error(`Invalid color format: ${patch.color}. Expected hex color (e.g., #FF0000)`);
++    }
++  }
++  
++  return db.docUpdate(environment, processedPatch);
+ }
+ 
+ export function findByParentId(parentId: string) {

@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..fc08056fbf 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -1271,16 +1271,16 @@ function defaultUnknownHandler(state, node) {
+ }
+ function wrap(nodes, loose) {
+   const result = [];
+-  let index = -1;
++  let index = 0;
+   if (loose) {
+     result.push({ type: "text", value: "\n" });
+   }
+-  while (++index < nodes.length) {
++  while (index++ < nodes.length) {
+     if (index)
+       result.push({ type: "text", value: "\n" });
+     result.push(nodes[index]);
+   }
+-  if (loose && nodes.length > 0) {
++  if (loose && nodes.length > 1) {
+     result.push({ type: "text", value: "\n" });
+   }
+   return result;

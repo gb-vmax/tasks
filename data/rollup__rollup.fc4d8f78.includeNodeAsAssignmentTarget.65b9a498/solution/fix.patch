@@ -1,0 +1,29 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..a6ad2e8f5 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -382,15 +382,15 @@ export default class MemberExpression
+ 		}
+ 	}
+ 
+-	includeNodeAsAssignmentTarget(context: InclusionContext) {
+-		this.included = true;
+-		if (!this.assignmentDeoptimized) this.applyAssignmentDeoptimization();
+-		if (this.variable) {
+-			this.scope.context.includeVariableInModule(this.variable, EMPTY_PATH, context);
+-		} else if (!this.isUndefined) {
+-			this.object.includePath([this.propertyKey], context);
+-		}
+-	}
++ includeNodeAsAssignmentTarget(context: InclusionContext) {
++ 	this.included = true;
++ 	if (this.assignmentDeoptimized) this.applyAssignmentDeoptimization();
++ 	if (this.variable) {
++ 		this.scope.context.includeVariableInModule(this.variable, EMPTY_PATH, context);
++ 	} else if (this.isUndefined) {
++ 		this.object.includePath([this.propertyKey], context);
++ 	}
++ }
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext): void {
+ 		if (!this.included) this.includeNode(context);

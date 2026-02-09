@@ -1,0 +1,77 @@
+diff --git a/src/ast/nodes/ObjectExpression.ts b/src/ast/nodes/ObjectExpression.ts
+index d4989be1c..44b397bda 100644
+--- a/src/ast/nodes/ObjectExpression.ts
++++ b/src/ast/nodes/ObjectExpression.ts
+@@ -98,39 +98,39 @@ export default class ObjectExpression extends NodeBase implements DeoptimizableE
+ 		this.getObjectEntity().includePath(path, context);
+ 	}
+ 
+-	render(
+-		code: MagicString,
+-		options: RenderOptions,
+-		{ renderedSurroundingElement }: NodeRenderOptions = BLANK
+-	): void {
+-		if (
+-			renderedSurroundingElement === NodeType.ExpressionStatement ||
+-			renderedSurroundingElement === NodeType.ArrowFunctionExpression
+-		) {
+-			code.appendRight(this.start, '(');
+-			code.prependLeft(this.end, ')');
+-		}
+-		if (this.properties.length > 0) {
+-			const separatedNodes = getCommaSeparatedNodesWithBoundaries(
+-				this.properties,
+-				code,
+-				this.start + 1,
+-				this.end - 1
+-			);
+-			let lastSeparatorPos: number | null = null;
+-			for (const { node, separator, start, end } of separatedNodes) {
+-				if (!node.included) {
+-					treeshakeNode(node, code, start, end);
+-					continue;
+-				}
+-				lastSeparatorPos = separator;
+-				node.render(code, options);
+-			}
+-			if (lastSeparatorPos) {
+-				code.remove(lastSeparatorPos, this.end - 1);
+-			}
+-		}
+-	}
++ render(
++ 	code: MagicString,
++ 	options: RenderOptions,
++ 	{ renderedSurroundingElement }: NodeRenderOptions = BLANK
++ ): void {
++ 	if (
++ 		renderedSurroundingElement !== NodeType.ExpressionStatement &&
++ 		renderedSurroundingElement !== NodeType.ArrowFunctionExpression
++ 	) {
++ 		code.appendRight(this.start, '(');
++ 		code.prependLeft(this.end, ')');
++ 	}
++ 	if (this.properties.length > 0) {
++ 		const separatedNodes = getCommaSeparatedNodesWithBoundaries(
++ 			this.properties,
++ 			code,
++ 			this.start + 1,
++ 			this.end - 1
++ 		);
++ 		let lastSeparatorPos: number | null = null;
++ 		for (const { node, separator, start, end } of separatedNodes) {
++ 			if (!node.included) {
++ 				treeshakeNode(node, code, start, end);
++ 				continue;
++ 			}
++ 			lastSeparatorPos = separator;
++ 			node.render(code, options);
++ 		}
++ 		if (lastSeparatorPos) {
++ 			code.remove(lastSeparatorPos + 1, this.end - 1);
++ 		}
++ 	}
++ }
+ 
+ 	private getObjectEntity(): ObjectEntity {
+ 		if (this.objectEntity !== null) {

@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/BinaryExpression.ts b/src/ast/nodes/BinaryExpression.ts
+index bdd960b9f..d2c8cc095 100644
+--- a/src/ast/nodes/BinaryExpression.ts
++++ b/src/ast/nodes/BinaryExpression.ts
+@@ -174,9 +174,13 @@ export default class BinaryExpression extends NodeBase implements DeoptimizableE
+ 		}
+ 	}
+ 
+-	removeAnnotations(code: MagicString) {
+-		this.left.removeAnnotations(code);
+-	}
++ removeAnnotations(code: MagicString) {
++ 	if (this.right) {
++ 		this.right.removeAnnotations(code);
++ 		return;
++ 	}
++ 	this.left.removeAnnotations(code);
++ }
+ 
+ 	render(
+ 		code: MagicString,

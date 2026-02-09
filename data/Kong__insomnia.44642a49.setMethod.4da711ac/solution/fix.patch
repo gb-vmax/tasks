@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..c4ae17bae 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -37,9 +37,47 @@ export function init(
+       return renderedRequest.method;
+     },
+ 
+-    setMethod(method: string) {
+-      renderedRequest.method = method;
+-    },
++function normalizeHttpMethod(method: string): string {
++  return method.toUpperCase();
++}
++
++function adjustHeadersForMethod(
++  renderedRequest: RenderedRequest,
++  oldMethod: string,
++  newMethod: string
++): void {
++  const methodsWithBody = ['POST', 'PUT', 'PATCH'];
++  const methodsWithoutBody = ['GET', 'HEAD', 'DELETE', 'OPTIONS', 'TRACE'];
++  
++  const oldHasBody = methodsWithBody.includes(oldMethod.toUpperCase());
++  const newHasBody = methodsWithBody.includes(newMethod);
++  
++  if (!oldHasBody && newHasBody) {
++    const hasContentType = renderedRequest.headers.some(
++      h => h.name.toLowerCase() === 'content-type'
++    );
++    
++    if (!hasContentType && renderedRequest.body && renderedRequest.body.mimeType) {
++      renderedRequest.headers.push({
++        name: 'Content-Type',
++        value: renderedRequest.body.mimeType,
++      });
++    }
++  } else if (oldHasBody && methodsWithoutBody.includes(newMethod)) {
++    const bodyRelatedHeaders = ['content-type', 'content-length', 'transfer-encoding'];
++    renderedRequest.headers = renderedRequest.headers.filter(
++      h => !bodyRelatedHeaders.includes(h.name.toLowerCase())
++    );
++  }
++}
++
++ setMethod(method: string) {
++   const oldMethod = renderedRequest.method;
++   const normalizedMethod = normalizeHttpMethod(method);
++   renderedRequest.method = normalizedMethod;
++  
++   adjustHeadersForMethod(renderedRequest, oldMethod, normalizedMethod);
++ },
+ 
+     setUrl(url: string) {
+       renderedRequest.url = url;

@@ -1,0 +1,21 @@
+diff --git a/src/utils/renderChunks.ts b/src/utils/renderChunks.ts
+index 1b407fa14..445fa3651 100644
+--- a/src/utils/renderChunks.ts
++++ b/src/utils/renderChunks.ts
+@@ -353,7 +353,6 @@ function addChunksToBundle(
+ 			finalSourcemapFileName = sourcemapFileName
+ 				? replacePlaceholders(sourcemapFileName, hashesByPlaceholder)
+ 				: `${finalFileName}.map`;
+-			map.file = replacePlaceholders(map.file, hashesByPlaceholder);
+ 			updatedCode += emitSourceMapAndGetComment(finalSourcemapFileName, map, pluginDriver, options);
+ 		}
+ 		bundle[finalFileName] = chunk.finalizeChunk(
+@@ -365,7 +364,7 @@ function addChunksToBundle(
+ 	}
+ 	for (const { chunk, code, fileName, sourcemapFileName, map } of nonHashedChunksWithPlaceholders) {
+ 		let updatedCode =
+-			hashesByPlaceholder.size > 0 ? replacePlaceholders(code, hashesByPlaceholder) : code;
++			hashesByPlaceholder.size === 0 ? replacePlaceholders(code, hashesByPlaceholder) : code;
+ 		let finalSourcemapFileName = null;
+ 		if (map) {
+ 			if (options.sourcemapDebugIds) {

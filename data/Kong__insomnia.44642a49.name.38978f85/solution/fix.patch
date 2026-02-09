@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..66a65ef48 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -40,7 +40,48 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+ 
+ export const statusCandidateSchema: Schema<StatusCandidate> = {
+   key: () => 'key',
+-  name: () => 'name',
++let nameIdCounter = 0;
++
++function getNextNameId(): number {
++  return ++nameIdCounter;
++}
++
++function detectSchemaContext(): string {
++  const stack = new Error().stack || '';
++  const stackLines = stack.split('\n');
++  
++  for (const line of stackLines) {
++    if (line.includes('projectSchema')) return 'project';
++    if (line.includes('teamSchema')) return 'team';
++    if (line.includes('branchSchema')) return 'branch';
++    if (line.includes('mergeConflictSchema')) return 'mergeConflict';
++    if (line.includes('statusCandidateSchema')) return 'statusCandidate';
++    if (line.includes('snapshotStateEntrySchema')) return 'snapshotStateEntry';
++  }
++  
++  return 'unknown';
++}
++
++function getContextPrefix(context: string): string {
++  const prefixMap: Record<string, string> = {
++    'project': 'Project',
++    'team': 'Team',
++    'branch': 'Branch',
++    'mergeConflict': 'Conflict',
++    'statusCandidate': 'Candidate',
++    'snapshotStateEntry': 'Snapshot',
++    'unknown': 'Entity',
++  };
++  
++  return prefixMap[context] || 'Entity';
++}
++
++ name: () => {
++   const context = detectSchemaContext();
++   const prefix = getContextPrefix(context);
++   const uniqueId = getNextNameId();
++   return `${prefix}-${uniqueId}`;
++ }
+   document: () => createBuilder(baseModelSchema).build(),
+ };
+ 

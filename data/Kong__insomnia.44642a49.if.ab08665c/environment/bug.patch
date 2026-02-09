@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..f674ae347 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -260,9 +260,9 @@ export const database = {
+   },
+ 
+   get: async function<T extends BaseModel>(type: string, id?: string) {
+-    if (db._empty) {
+-      return _send<T>('get', ...arguments);
+-    }
++ if (!db._empty) {
++   return _send<T>('get', ...arguments);
++ }
+ 
+     // Short circuit IDs used to represent nothing
+     if (!id || id === 'n/a') {

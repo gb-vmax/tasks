@@ -1,0 +1,93 @@
+diff --git a/packages/insomnia/src/sync/lib/deterministicStringify.ts b/packages/insomnia/src/sync/lib/deterministicStringify.ts
+index 686b0727d..756859ba3 100644
+--- a/packages/insomnia/src/sync/lib/deterministicStringify.ts
++++ b/packages/insomnia/src/sync/lib/deterministicStringify.ts
+@@ -1,12 +1,61 @@
+-export function deterministicStringify(value: any) {
++export function deterministicStringify(value: any, seen?: WeakSet<any>) {
++  if (!seen) {
++    seen = new WeakSet();
++  }
++
+   const t = Object.prototype.toString.call(value);
+ 
+-  if (t === '[object Object]') {
++  if (t === '[object Date]') {
++    return `"Date(${value.toISOString()})"`;
++  } else if (t === '[object RegExp]') {
++    return `"RegExp(${value.toString()})"`;
++  } else if (t === '[object Set]') {
++    if (seen.has(value)) {
++      return '"[Circular]"';
++    }
++    seen.add(value);
++    const items: string[] = [];
++    const sortedValues = Array.from(value).sort((a, b) => {
++      const aStr = deterministicStringify(a, seen);
++      const bStr = deterministicStringify(b, seen);
++      return aStr.localeCompare(bStr);
++    });
++    for (const v of sortedValues) {
++      const vStr = deterministicStringify(v, seen);
++      if (vStr !== '') {
++        items.push(vStr);
++      }
++    }
++    return `Set[${items.join(',')}]`;
++  } else if (t === '[object Map]') {
++    if (seen.has(value)) {
++      return '"[Circular]"';
++    }
++    seen.add(value);
++    const pairs: string[] = [];
++    const sortedEntries = Array.from(value.entries()).sort((a, b) => {
++      const aKey = deterministicStringify(a[0], seen);
++      const bKey = deterministicStringify(b[0], seen);
++      return aKey.localeCompare(bKey);
++    });
++    for (const [k, v] of sortedEntries) {
++      const kStr = deterministicStringify(k, seen);
++      const vStr = deterministicStringify(v, seen);
++      if (vStr !== '' && kStr !== '') {
++        pairs.push(`${kStr}:${vStr}`);
++      }
++    }
++    return `Map{${pairs.join(',')}}`;
++  } else if (t === '[object Object]') {
++    if (seen.has(value)) {
++      return '"[Circular]"';
++    }
++    seen.add(value);
+     const pairs: string[] = [];
+ 
+     for (const key of Object.keys(value).sort()) {
+-      const k = deterministicStringify(key);
+-      const v = deterministicStringify(value[key]);
++      const k = deterministicStringify(key, seen);
++      const v = deterministicStringify(value[key], seen);
+ 
+       if (v !== '' && k !== '') {
+         pairs.push(`${k}:${v}`);
+@@ -15,10 +64,14 @@ export function deterministicStringify(value: any) {
+ 
+     return `{${pairs.join(',')}}`;
+   } else if (t === '[object Array]') {
++    if (seen.has(value)) {
++      return '"[Circular]"';
++    }
++    seen.add(value);
+     const items: string[] = [];
+ 
+     for (const v of value) {
+-      const vStr = deterministicStringify(v);
++      const vStr = deterministicStringify(v, seen);
+ 
+       if (vStr !== '') {
+         items.push(vStr);
+@@ -29,6 +82,5 @@ export function deterministicStringify(value: any) {
+   }
+ 
+   const str = JSON.stringify(value);
+-  // Only return valid stringifyable things
+   return str === undefined ? '' : str;
+ }

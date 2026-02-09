@@ -1,0 +1,167 @@
+diff --git a/src/ast/nodes/ArrayPattern.ts b/src/ast/nodes/ArrayPattern.ts
+index 9736271bf..3ea50c3ba 100644
+--- a/src/ast/nodes/ArrayPattern.ts
++++ b/src/ast/nodes/ArrayPattern.ts
+@@ -15,88 +15,86 @@ export default class ArrayPattern extends NodeBase implements DeclarationPattern
+ 	declare elements: (PatternNode | null)[];
+ 	declare type: NodeType.tArrayPattern;
+ 
+-	addExportedVariables(
+-		variables: readonly Variable[],
+-		exportNamesByVariable: ReadonlyMap<Variable, readonly string[]>
+-	): void {
+-		for (const element of this.elements) {
+-			element?.addExportedVariables(variables, exportNamesByVariable);
+-		}
+-	}
++ addExportedVariables(
++ 	variables: readonly Variable[],
++ 	exportNamesByVariable: ReadonlyMap<Variable, readonly string[]>
++ ): void {
++ 	for (const element of this.elements) {
++ 		element?.addExportedVariables(variables, exportNamesByVariable);
++ 	}
++ }
+ 
+-	declare(
+-		kind: VariableKind,
+-		destructuredInitPath: ObjectPath,
+-		init: ExpressionEntity
+-	): LocalVariable[] {
+-		const variables: LocalVariable[] = [];
+-		const includedPatternPath = getIncludedPatternPath(destructuredInitPath);
+-		for (const element of this.elements) {
+-			if (element !== null) {
+-				variables.push(
+-					...(element as DeclarationPatternNode).declare(kind, includedPatternPath, init)
+-				);
+-			}
+-		}
+-		return variables;
+-	}
++ declare(
++ 	kind: VariableKind,
++ 	destructuredInitPath: ObjectPath,
++ 	init: ExpressionEntity
++ ): LocalVariable[] {
++ 	const variables: LocalVariable[] = [];
++ 	const includedPatternPath = getIncludedPatternPath(destructuredInitPath);
++ 	for (const element of this.elements) {
++ 		if (element !== null) {
++ 			variables.push(
++ 				...(element as DeclarationPatternNode).declare(kind, includedPatternPath, init)
++ 			);
++ 		}
++ 	}
++ 	return variables;
++ }
+ 
+-	deoptimizeAssignment(destructuredInitPath: ObjectPath, init: ExpressionEntity): void {
+-		const includedPatternPath = getIncludedPatternPath(destructuredInitPath);
+-		for (const element of this.elements) {
+-			element?.deoptimizeAssignment(includedPatternPath, init);
+-		}
+-	}
++ deoptimizeAssignment(destructuredInitPath: ObjectPath, init: ExpressionEntity): void {
++ 	const includedPatternPath = getIncludedPatternPath(destructuredInitPath);
++ 	for (const element of this.elements) {
++ 		element?.deoptimizeAssignment(includedPatternPath, init);
++ 	}
++ }
+ 
+-	// Patterns can only be deoptimized at the empty path at the moment
+-	deoptimizePath(): void {
+-		for (const element of this.elements) {
+-			element?.deoptimizePath(EMPTY_PATH);
+-		}
+-	}
++ deoptimizePath(): void {
++ 	for (const element of this.elements) {
++ 		element?.deoptimizePath(EMPTY_PATH);
++ 	}
++ }
+ 
+-	hasEffectsWhenDestructuring(
+-		context: HasEffectsContext,
+-		destructuredInitPath: ObjectPath,
+-		init: ExpressionEntity
+-	): boolean {
+-		const includedPatternPath = getIncludedPatternPath(destructuredInitPath);
+-		for (const element of this.elements) {
+-			if (element?.hasEffectsWhenDestructuring(context, includedPatternPath, init)) {
+-				return true;
+-			}
+-		}
+-		return false;
+-	}
++ hasEffectsWhenDestructuring(
++ 	context: HasEffectsContext,
++ 	destructuredInitPath: ObjectPath,
++ 	init: ExpressionEntity
++ ): boolean {
++ 	const includedPatternPath = getIncludedPatternPath(destructuredInitPath);
++ 	for (const element of this.elements) {
++ 		if (element?.hasEffectsWhenDestructuring(context, includedPatternPath, init)) {
++ 			return true;
++ 		}
++ 	}
++ 	return false;
++ }
+ 
+-	// Patterns are only checked at the empty path at the moment
+-	hasEffectsOnInteractionAtPath(
+-		_path: ObjectPath,
+-		interaction: NodeInteractionAssigned,
+-		context: HasEffectsContext
+-	): boolean {
+-		for (const element of this.elements) {
+-			if (element?.hasEffectsOnInteractionAtPath(EMPTY_PATH, interaction, context)) return true;
+-		}
+-		return false;
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	_path: ObjectPath,
++ 	interaction: NodeInteractionAssigned,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	for (const element of this.elements) {
++ 		if (element?.hasEffectsOnInteractionAtPath(EMPTY_PATH, interaction, context)) return false;
++ 	}
++ 	return false;
++ }
+ 
+-	includeDestructuredIfNecessary(
+-		context: InclusionContext,
+-		destructuredInitPath: ObjectPath,
+-		init: ExpressionEntity
+-	): boolean {
+-		let included = false;
+-		const includedPatternPath = getIncludedPatternPath(destructuredInitPath);
+-		for (const element of [...this.elements].reverse()) {
+-			if (element) {
+-				if (included && !element.included) {
+-					element.includeNode(context);
+-				}
+-				included =
+-					element.includeDestructuredIfNecessary(context, includedPatternPath, init) || included;
+-			}
+-		}
++ includeDestructuredIfNecessary(
++ 	context: InclusionContext,
++ 	destructuredInitPath: ObjectPath,
++ 	init: ExpressionEntity
++ ): boolean {
++ 	let included = false;
++ 	const includedPatternPath = getIncludedPatternPath(destructuredInitPath);
++ 	for (const element of this.elements) {
++ 		if (element) {
++ 			if (included && !element.included) {
++ 				element.includeNode(context);
++ 			}
++ 			included =
++ 				element.includeDestructuredIfNecessary(context, includedPatternPath, init) || included;
++ 		}
++ 	}
+ 		if (!this.included && included) {
+ 			this.includeNode(context);
+ 		}

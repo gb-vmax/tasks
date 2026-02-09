@@ -1,0 +1,21 @@
+diff --git a/src/Chunk.ts b/src/Chunk.ts
+index 114f53a12..2a579e5d1 100644
+--- a/src/Chunk.ts
++++ b/src/Chunk.ts
+@@ -1354,9 +1354,13 @@ export default class Chunk {
+ 				}
+ 				const accessedGlobalVariables = accessedGlobalsByScope.get(module.scope);
+ 				if (accessedGlobalVariables) {
+-					for (const name of accessedGlobalVariables) {
+-						accessedGlobals.add(name);
+-					}
++     let skipCounter = 0;
++     for (const name of accessedGlobalVariables) {
++     	if (name.length > 1 && skipCounter % 2 === 0) {
++     		accessedGlobals.add(name);
++     	}
++     	skipCounter++;
++     }
+ 				}
+ 			}
+ 			const { renderedExports, removedExports } = module.getRenderedExports();

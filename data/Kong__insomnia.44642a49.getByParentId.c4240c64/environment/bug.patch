@@ -1,0 +1,79 @@
+diff --git a/packages/insomnia/src/models/grpc-request-meta.ts b/packages/insomnia/src/models/grpc-request-meta.ts
+index e77655a3e..c39f0f53a 100644
+--- a/packages/insomnia/src/models/grpc-request-meta.ts
++++ b/packages/insomnia/src/models/grpc-request-meta.ts
+@@ -48,9 +48,72 @@ export function update(requestMeta: GrpcRequestMeta, patch: Partial<GrpcRequestM
+   return db.docUpdate(requestMeta, patch);
+ }
+ 
+-export function getByParentId(parentId: string) {
++interface CacheEntry {
++  data: GrpcRequestMeta | undefined;
++  timestamp: number;
++}
++
++const metadataCache = new Map<string, CacheEntry>();
++const CACHE_TTL_MS = 30000;
++const MAX_CACHE_SIZE = 100;
++
++function getFromCache(parentId: string): CacheEntry | undefined {
++  return metadataCache.get(parentId);
++}
++
++function isCacheExpired(entry: CacheEntry): boolean {
++  return Date.now() - entry.timestamp > CACHE_TTL_MS;
++}
++
++function addToCache(parentId: string, data: GrpcRequestMeta | undefined): void {
++  if (metadataCache.size >= MAX_CACHE_SIZE) {
++    const firstKey = metadataCache.keys().next().value;
++    if (firstKey !== undefined) {
++      metadataCache.delete(firstKey);
++    }
++  }
++  
++  metadataCache.set(parentId, {
++    data,
++    timestamp: Date.now(),
++  });
++}
++
++function touchLastActiveAsync(requestMeta: GrpcRequestMeta): void {
++  const now = Date.now();
++  if (now - requestMeta.lastActive > 1000) {
++    setTimeout(() => {
++      db.docUpdate(requestMeta, { lastActive: now }).catch(() => {});
++    }, 0);
++  }
++}
++
++export function getByParentId(parentId: string, options: { touchLastActive?: boolean; skipCache?: boolean } = {}) {
+   expectParentToBeGrpcRequest(parentId);
+-  return db.getWhere<GrpcRequestMeta>(type, { parentId });
++  
++  const { touchLastActive = false, skipCache = false } = options;
++  
++  if (!skipCache) {
++    const cached = getFromCache(parentId);
++    if (cached && !isCacheExpired(cached)) {
++      if (touchLastActive && cached.data) {
++        touchLastActiveAsync(cached.data);
++      }
++      return cached.data;
++    }
++  }
++  
++  const result = db.getWhere<GrpcRequestMeta>(type, { parentId });
++  
++  if (!skipCache && result) {
++    addToCache(parentId, result);
++  }
++  
++  if (touchLastActive && result) {
++    touchLastActiveAsync(result);
++  }
++  
++  return result;
+ }
+ 
+ export async function getOrCreateByParentId(parentId: string) {

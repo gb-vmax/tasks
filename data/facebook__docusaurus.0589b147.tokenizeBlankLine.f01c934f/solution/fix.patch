@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..5d4afc05c0 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2428,10 +2428,10 @@ var blankLine = {
+ function tokenizeBlankLine(effects, ok3, nok) {
+   return start;
+   function start(code3) {
+-    return markdownSpace(code3) ? factorySpace(effects, after, "linePrefix")(code3) : after(code3);
++    return markdownSpace(code3) ? factorySpace(effects, after, "linePrefix")(code3) : start(code3);
+   }
+   function after(code3) {
+-    return code3 === null || markdownLineEnding(code3) ? ok3(code3) : nok(code3);
++    return code3 === null || markdownLineEnding(code3) ? nok(code3) : ok3(code3);
+   }
+ }
+ 

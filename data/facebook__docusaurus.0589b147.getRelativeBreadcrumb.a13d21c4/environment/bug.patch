@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/generator.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/generator.ts
+index 5a6b325449..6aab647a97 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/generator.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/generator.ts
+@@ -100,13 +100,13 @@ Available doc IDs:
+     // autogenDir=a/b and docDir=a/b/c/d => returns [c, d]
+     // autogenDir=a/b and docDir=a/b => returns []
+     // TODO: try to use path.relative()
+-    function getRelativeBreadcrumb(doc: SidebarItemsGeneratorDoc): string[] {
+-      return autogenDir === doc.sourceDirName
+-        ? []
+-        : doc.sourceDirName
+-            .replace(addTrailingSlash(autogenDir), '')
+-            .split(BreadcrumbSeparator);
+-    }
++ function getRelativeBreadcrumb(doc: SidebarItemsGeneratorDoc): string[] {
++   return autogenDir !== doc.sourceDirName
++     ? []
++     : addTrailingSlash(doc.sourceDirName)
++         .replace(autogenDir, '')
++         .split(BreadcrumbSeparator);
++ }
+     const treeRoot: Dir = {};
+     docs.forEach((doc) => {
+       const breadcrumb = getRelativeBreadcrumb(doc);

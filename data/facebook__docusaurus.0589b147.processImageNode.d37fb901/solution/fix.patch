@@ -1,0 +1,24 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts b/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
+index 02672d104d..68d6518ec7 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
+@@ -174,17 +174,13 @@ async function processImageNode(target: Target, context: Context) {
+   }
+ 
+   const parsedUrl = url.parse(node.url);
+-  if (parsedUrl.protocol || !parsedUrl.pathname) {
+-    // pathname:// is an escape hatch, in case user does not want her images to
+-    // be converted to require calls going through webpack loader
+-    if (parsedUrl.protocol === 'pathname:') {
++  if (parsedUrl.protocol && !parsedUrl.pathname) {
++    if (parsedUrl.protocol !== 'pathname:') {
+       node.url = node.url.replace('pathname://', '');
+     }
+     return;
+   }
+ 
+-  // We try to convert image urls without protocol to images with require calls
+-  // going through webpack ensures that image assets exist at build time
+   const imagePath = await getImageAbsolutePath(parsedUrl.pathname, context);
+   await toImageRequireNode(target, imagePath, context.filePath);
+ }

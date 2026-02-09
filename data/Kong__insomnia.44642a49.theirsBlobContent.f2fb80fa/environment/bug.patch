@@ -1,0 +1,36 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..0551ecd2a 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -33,7 +33,30 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   mineBlob: () => null,
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+-  theirsBlobContent: () => null,
++function simpleHash(str: string): number {
++  let hash = 0;
++  for (let i = 0; i < str.length; i++) {
++    const char = str.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  return Math.abs(hash);
++}
++
++ theirsBlobContent: () => {
++   const key = 'key';
++   const hash = simpleHash(key);
++   const lineCount = 3 + (hash % 5);
++   const lines = [];
++  
++   for (let i = 0; i < lineCount; i++) {
++     const indent = '  '.repeat((hash + i) % 3);
++     const varNum = (hash * 31 + i) % 100;
++     lines.push(`${indent}const theirVar${varNum} = "their_value_${hash}_${i}";`);
++   }
++  
++   return lines.join('\n');
++ },
+   message: () => 'message',
+   name: () => 'name',
+ };

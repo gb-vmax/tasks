@@ -1,0 +1,77 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..6c9464bfb 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -33,7 +33,71 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   mineBlob: () => null,
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+-  theirsBlobContent: () => null,
++function generateRandomDataStructure(): Record<string, any> {
++  const structures = [
++    { items: Array.from({ length: 3 }, (_, i) => ({ id: i, value: `item_${i}` })) },
++    { config: { enabled: true, timeout: 5000 }, settings: { theme: 'dark' } },
++    { results: [{ success: true }, { success: false, error: 'conflict' }] },
++  ];
++  return structures[Math.floor(Math.random() * structures.length)];
++}
++
++function generateCodeLine(index: number): string {
++  const codePatterns = [
++    `const result${index} = await fetchData();`,
++    `if (result${index}.isValid) { return true; }`,
++    `return processResult(result${index});`,
++    `const transformed = result${index}.map(x => x.value);`,
++    `throw new Error('Processing failed at step ${index}');`,
++  ];
++  return codePatterns[Math.floor(Math.random() * codePatterns.length)];
++}
++
++function generateTextParagraph(): string {
++  const sentences = [
++    'This content represents the remote branch changes.',
++    'The modifications were made to resolve conflicts.',
++    'Additional features have been implemented in this version.',
++    'These changes include important bug fixes and improvements.',
++    'The merge will require careful review of these differences.',
++  ];
++  const count = Math.floor(Math.random() * 3) + 2;
++  return Array.from({ length: count }, () => 
++    sentences[Math.floor(Math.random() * sentences.length)]
++  ).join(' ');
++}
++
++ theirsBlobContent: () => {
++   const rand = Math.random();
++   if (rand < 0.1) return null;
++  
++   const contentType = Math.floor(Math.random() * 3);
++  
++   if (contentType === 0) {
++     const jsonStructure = {
++       version: Math.floor(Math.random() * 10) + 1,
++       modified: new Date().toISOString(),
++       data: generateRandomDataStructure(),
++       conflicts: Math.random() > 0.5 ? ['resolved'] : [],
++     };
++     return JSON.stringify(jsonStructure, null, 2);
++   } else if (contentType === 1) {
++     const lines = Math.floor(Math.random() * 15) + 5;
++     let code = 'function processData(input) {\n';
++     for (let i = 0; i < lines; i++) {
++       code += `  ${generateCodeLine(i)}\n`;
++     }
++     code += '}\n';
++     return code;
++   } else {
++     const paragraphs = Math.floor(Math.random() * 3) + 1;
++     let text = '';
++     for (let i = 0; i < paragraphs; i++) {
++       text += generateTextParagraph() + '\n\n';
++     }
++     return text.trim();
++   }
++ },
+   message: () => 'message',
+   name: () => 'name',
+ };

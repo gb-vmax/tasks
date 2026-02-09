@@ -1,0 +1,121 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..d8fbf0e9c 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -70,16 +70,107 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+     renderPurpose === 'no-render';
+   return {
+     app: {
+-      alert(title: string, message?: string) {
+-        if (!canShowDialogs) {
+-          return Promise.resolve();
+-        }
++interface AlertQueueItem {
++  title: string;
++  message?: string;
++  severity?: 'info' | 'warning' | 'error' | 'success';
++  additive?: boolean;
++  resolve: () => void;
++}
+ 
+-        return showAlert({
+-          title,
+-          message,
+-        });
+-      },
++interface ParsedAlertInfo {
++  title: string;
++  severity?: 'info' | 'warning' | 'error' | 'success';
++  additive: boolean;
++}
++
++let alertQueue: AlertQueueItem[] = [];
++let isProcessingAlerts = false;
++
++function parseAlertTitle(title: string): ParsedAlertInfo {
++  const severityMatch = title.match(/^(info|warning|error|success):(.+)$/i);
++  
++  if (severityMatch) {
++    const severity = severityMatch[1].toLowerCase() as 'info' | 'warning' | 'error' | 'success';
++    const cleanTitle = severityMatch[2].trim();
++    return { title: cleanTitle, severity, additive: true };
++  }
++  
++  const additiveMatch = title.match(/^\[additive\](.+)$/i);
++  if (additiveMatch) {
++    return { title: additiveMatch[1].trim(), additive: true };
++  }
++  
++  return { title, additive: false };
++}
++
++function enqueueAlert(alertItem: Omit<AlertQueueItem, 'resolve'>): Promise<void> {
++  return new Promise<void>((resolve) => {
++    if (!alertItem.additive && alertQueue.length > 0) {
++      const lastItem = alertQueue[alertQueue.length - 1];
++      if (!lastItem.additive) {
++        alertQueue.pop();
++        lastItem.resolve();
++      }
++    }
++    
++    alertQueue.push({
++      ...alertItem,
++      resolve,
++    });
++    
++    processAlertQueue();
++  });
++}
++
++async function processAlertQueue(): Promise<void> {
++  if (isProcessingAlerts || alertQueue.length === 0) {
++    return;
++  }
++  
++  isProcessingAlerts = true;
++  
++  while (alertQueue.length > 0) {
++    const alertItem = alertQueue.shift();
++    if (!alertItem) {
++      break;
++    }
++    
++    try {
++      const alertOptions: any = {
++        title: alertItem.title,
++        message: alertItem.message,
++      };
++      
++      if (alertItem.severity) {
++        alertOptions.severity = alertItem.severity;
++      }
++      
++      await showAlert(alertOptions);
++    } catch (error) {
++      console.error('Error showing alert:', error);
++    } finally {
++      alertItem.resolve();
++    }
++  }
++  
++  isProcessingAlerts = false;
++}
++
++ alert(title: string, message?: string) {
++   if (!canShowDialogs) {
++     return Promise.resolve();
++   }
++
++   const alertInfo = parseAlertTitle(title);
++  
++   return enqueueAlert({
++     title: alertInfo.title,
++     message,
++     severity: alertInfo.severity,
++     additive: alertInfo.additive,
++   });
++ },
+ 
+       dialog(
+         title,

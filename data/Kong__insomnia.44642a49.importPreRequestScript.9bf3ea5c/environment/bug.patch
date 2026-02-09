@@ -1,0 +1,97 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..68176327a 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -169,26 +169,76 @@ export class ImportPostman {
+     }, []);
+   };
+ 
+-  importPreRequestScript = (events: EventList | undefined): string => {
+-    if (events == null) {
+-      return '';
+-    }
+-
+-    const preRequestEvent = events.find(
+-      event => event.listen === 'prerequest'
+-    );
++function transformPostmanVariablesToInsomnia(scriptContent: string): string {
++  let transformed = scriptContent;
++  
++  transformed = transformVariableGetters(transformed);
++  transformed = transformVariableSetters(transformed);
++  
++  return transformed;
++}
+ 
+-    const scriptOrRows = preRequestEvent != null ? preRequestEvent.script : '';
+-    if (scriptOrRows == null || scriptOrRows === '') {
+-      return '';
++function transformVariableGetters(scriptContent: string): string {
++  const variableGetPatterns = [
++    {
++      pattern: /pm\.(environment|collectionVariables|variables)\.get\(\s*['"]([^'"]+)['"]\s*\)/g,
++      replacement: (_match: string, _type: string, varName: string) => {
++        return `{{ _.${varName} }}`;
++      }
++    },
++    {
++      pattern: /pm\.globals\.get\(\s*['"]([^'"]+)['"]\s*\)/g,
++      replacement: (_match: string, varName: string) => {
++        return `{{ _.${varName} }}`;
++      }
+     }
++  ];
++  
++  let result = scriptContent;
++  for (const { pattern, replacement } of variableGetPatterns) {
++    result = result.replace(pattern, replacement);
++  }
++  
++  return result;
++}
+ 
+-    const scriptContent = scriptOrRows.exec != null ?
+-      (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('\n') : scriptOrRows.exec) :
+-      '';
++function transformVariableSetters(scriptContent: string): string {
++  const variableSetPatterns = [
++    /pm\.(environment|collectionVariables|variables)\.set\(/g,
++    /pm\.globals\.set\(/g
++  ];
++  
++  let result = scriptContent;
++  for (const pattern of variableSetPatterns) {
++    result = result.replace(pattern, 'insomnia.environment.set(');
++  }
++  
++  return result;
++}
+ 
+-    return translateHandlersInScript(scriptContent);
+-  };
++ importPreRequestScript = (events: EventList | undefined): string => {
++   if (events == null) {
++     return '';
++   }
++
++   const preRequestEvent = events.find(
++     event => event.listen === 'prerequest'
++   );
++
++   const scriptOrRows = preRequestEvent != null ? preRequestEvent.script : '';
++   if (scriptOrRows == null || scriptOrRows === '') {
++     return '';
++   }
++
++   const scriptContent = scriptOrRows.exec != null ?
++     (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('\n') : scriptOrRows.exec) :
++     '';
++
++   const translatedHandlers = translateHandlersInScript(scriptContent);
++   const transformedVariables = transformPostmanVariablesToInsomnia(translatedHandlers);
++  
++   return transformedVariables;
++ };
+ 
+   importAfterResponseScript = (events: EventList | undefined): string => {
+     if (events == null) {

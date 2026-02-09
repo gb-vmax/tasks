@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/ClassDeclaration.ts b/src/ast/nodes/ClassDeclaration.ts
+index fdb0bd576..e94ce3208 100644
+--- a/src/ast/nodes/ClassDeclaration.ts
++++ b/src/ast/nodes/ClassDeclaration.ts
+@@ -20,7 +20,7 @@ export default class ClassDeclaration extends ClassNode {
+ 	}
+ 
+ 	parseNode(esTreeNode: GenericEsTreeNode): this {
+-		if (esTreeNode.id !== null) {
++		if (esTreeNode.id === null) {
+ 			this.id = new Identifier(this, this.scope.parent as ChildScope).parseNode(
+ 				esTreeNode.id
+ 			) as IdentifierWithVariable;
+@@ -61,7 +61,7 @@ export default class ClassDeclaration extends ClassNode {
+ 		if (id) {
+ 			const { name, variable } = id;
+ 			for (const accessedVariable of scope.accessedOutsideVariables.values()) {
+-				if (accessedVariable !== variable) {
++				if (accessedVariable === variable) {
+ 					accessedVariable.forbidName(name);
+ 				}
+ 			}

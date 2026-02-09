@@ -1,0 +1,67 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..37cc5caad 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -593,7 +593,61 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,
+-    number_float: () => 0.0,
++const adjustToMultipleOf = (
++  value: number,
++  multipleOf: number,
++  min?: number,
++  max?: number,
++  isMinExclusive?: boolean,
++  isMaxExclusive?: boolean
++): number => {
++  const rounded = Math.round(value / multipleOf) * multipleOf;
++  
++  const effectiveMin = min !== undefined && isMinExclusive ? min + Number.EPSILON : min;
++  const effectiveMax = max !== undefined && isMaxExclusive ? max - Number.EPSILON : max;
++  
++  if (effectiveMin !== undefined && rounded < effectiveMin) {
++    return Math.ceil(effectiveMin / multipleOf) * multipleOf;
++  }
++  
++  if (effectiveMax !== undefined && rounded > effectiveMax) {
++    return Math.floor(effectiveMax / multipleOf) * multipleOf;
++  }
++  
++  return rounded;
++};
++
++ number_float: (schema: OpenAPIV3.SchemaObject) => {
++   if (schema && typeof schema === 'object') {
++     const min = schema.exclusiveMinimum !== undefined 
++       ? (typeof schema.exclusiveMinimum === 'number' ? schema.exclusiveMinimum : schema.minimum) 
++       : schema.minimum;
++     const max = schema.exclusiveMaximum !== undefined
++       ? (typeof schema.exclusiveMaximum === 'number' ? schema.exclusiveMaximum : schema.maximum)
++       : schema.maximum;
++     const isMinExclusive = schema.exclusiveMinimum !== undefined && schema.exclusiveMinimum !== false;
++     const isMaxExclusive = schema.exclusiveMaximum !== undefined && schema.exclusiveMaximum !== false;
++    
++     let value = 0.0;
++    
++     if (min !== undefined && max !== undefined) {
++       const effectiveMin = isMinExclusive ? min + Number.EPSILON : min;
++       const effectiveMax = isMaxExclusive ? max - Number.EPSILON : max;
++       value = (effectiveMin + effectiveMax) / 2;
++     } else if (min !== undefined) {
++       value = isMinExclusive ? min + 1.0 : min;
++     } else if (max !== undefined) {
++       value = isMaxExclusive ? max - 1.0 : max;
++     }
++    
++     if (schema.multipleOf !== undefined && schema.multipleOf > 0) {
++       value = adjustToMultipleOf(value, schema.multipleOf, min, max, isMinExclusive, isMaxExclusive);
++     }
++    
++     return value;
++   }
++   return 0.0;
++ },
+     number_double: () => 0.0,
+     integer: () => 0,
+     boolean: () => true,

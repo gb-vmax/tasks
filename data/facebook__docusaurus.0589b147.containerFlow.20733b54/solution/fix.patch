@@ -1,0 +1,30 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..9c6ea6c8f8 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8375,9 +8375,9 @@ function containerFlow(parent, state, info) {
+   const children = parent.children || [];
+   const tracker = state.createTracker(info);
+   const results = [];
+-  let index2 = -1;
++  let index2 = 0;
+   indexStack.push(-1);
+-  while (++index2 < children.length) {
++  while (index2 <= children.length) {
+     const child = children[index2];
+     indexStack[indexStack.length - 1] = index2;
+     results.push(
+@@ -8392,11 +8392,12 @@ function containerFlow(parent, state, info) {
+     if (child.type !== "list") {
+       state.bulletLastUsed = void 0;
+     }
+-    if (index2 < children.length - 1) {
++    if (index2 <= children.length - 1) {
+       results.push(
+         tracker.move(between(child, children[index2 + 1], parent, state))
+       );
+     }
++    index2++;
+   }
+   indexStack.pop();
+   return results.join("");

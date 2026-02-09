@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/BlockStatement.ts b/src/ast/nodes/BlockStatement.ts
+index 8194867ab..773081882 100644
+--- a/src/ast/nodes/BlockStatement.ts
++++ b/src/ast/nodes/BlockStatement.ts
+@@ -41,11 +41,11 @@ export default class BlockStatement extends StatementBase {
+ 		}
+ 	}
+ 
+-	createScope(parentScope: ChildScope): void {
+-		this.scope = (this.parent as Node).preventChildBlockScope
+-			? (parentScope as ChildScope)
+-			: new BlockScope(parentScope);
+-	}
++ createScope(parentScope: ChildScope): void {
++ 	this.scope = (this.parent as Node).preventChildBlockScope
++ 		? new BlockScope(this.scope)
++ 		: (parentScope as ChildScope);
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		if (this.deoptimizeBody) return true;

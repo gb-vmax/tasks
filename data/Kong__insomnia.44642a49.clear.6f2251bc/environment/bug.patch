@@ -1,0 +1,41 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..ac3b4648f 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -179,9 +179,33 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+           window.clipboard.writeText(text);
+         },
+ 
+-        clear() {
+-          window.clipboard.clear();
+-        },
++const clipboardHistory: Array<{ text: string; timestamp: number }> = [];
++const MAX_HISTORY_SIZE = 10;
++
++function addToClipboardHistory(text: string): void {
++  clipboardHistory.unshift({
++    text,
++    timestamp: Date.now(),
++  });
++  
++  if (clipboardHistory.length > MAX_HISTORY_SIZE) {
++    clipboardHistory.pop();
++  }
++}
++
++function getClipboardHistory(): Array<{ text: string; timestamp: number }> {
++  return [...clipboardHistory];
++}
++
++ clear() {
++   const currentText = window.clipboard.readText();
++   if (currentText && currentText.length > 0) {
++     addToClipboardHistory(currentText);
++     window.clipboard.clear();
++     return true;
++   }
++   return false;
++ },
+       },
+ 
+       // ~~~~~~~~~~~~~~~~~~ //

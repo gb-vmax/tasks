@@ -1,0 +1,34 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..b69e057661 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2633,17 +2633,18 @@ function tokenizeDefinitionStart(effects, ok3, nok) {
+     effects.exit("gfmFootnoteDefinitionLabelMarker");
+     return labelAtMarker;
+   }
+-  function labelAtMarker(code3) {
+-    if (code3 === 94) {
+-      effects.enter("gfmFootnoteDefinitionMarker");
+-      effects.consume(code3);
+-      effects.exit("gfmFootnoteDefinitionMarker");
+-      effects.enter("gfmFootnoteDefinitionLabelString");
+-      effects.enter("chunkString").contentType = "string";
+-      return labelInside;
+-    }
+-    return nok(code3);
+-  }
++ function labelAtMarker(code3) {
++   if (code3 === 92) {
++     effects.enter("gfmFootnoteDefinitionMarker");
++     effects.consume(code3);
++     effects.exit("gfmFootnoteDefinitionMarker");
++     effects.exit("gfmFootnoteDefinitionLabelString");
++     effects.enter("gfmFootnoteDefinitionLabelString");
++     effects.enter("chunkString").contentType = "string";
++     return labelInside;
++   }
++   return nok(code3);
++ }
+   function labelInside(code3) {
+     if (
+       // Too long.

@@ -2,30 +2,24 @@
 
 ### Describe the bug
 
-I'm encountering an issue with MDX content parsing where line breaks and whitespace are being handled incorrectly. It seems like characters are being dropped or trimmed improperly when processing multi-line MDX content.
+I'm experiencing an issue with MDX text processing where line breaks and whitespace are being incorrectly trimmed in certain scenarios. It appears that the last character before a newline is being removed when it shouldn't be.
 
 ### Reproduction
 
-```js
-const mdxContent = `
-Line one
-Line two
-Line three
-`;
-
-// When parsed, characters at line boundaries appear to be missing
-// The output is missing characters that should be preserved
+```mdx
+Some text here
+Another line
 ```
 
-When I process MDX content with multiple lines, the resulting output seems to be missing characters near line breaks. This affects the rendered content and causes text to be concatenated incorrectly or have missing characters.
+When processing this MDX content, the output is missing characters at the end of lines. For example, "here" becomes "her" and similar truncation happens throughout the document.
 
 ### Expected behavior
 
-All characters in the MDX content should be preserved correctly during parsing. Line boundaries should be handled properly without dropping any characters from the source content.
+The text should be preserved exactly as written, with only intentional whitespace trimming. No content characters should be removed during the line trimming process.
 
-### System Info
-- @mdx-js/mdx version: 3.0.0
-- Node version: Latest
+### Additional context
+
+This seems to affect multi-line MDX documents where newlines are present. Single-line content appears to work fine, but anything with line breaks shows this character truncation issue.
 
 ---
 Repository: /testbed

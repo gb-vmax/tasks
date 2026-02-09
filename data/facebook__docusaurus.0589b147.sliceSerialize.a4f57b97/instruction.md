@@ -2,28 +2,31 @@
 
 ### Describe the bug
 
-I'm encountering an issue with markdown parsing where the serialization of token slices seems to be broken. When processing markdown content, I'm getting errors or unexpected output that suggests the token stream is being sliced incorrectly.
+I'm encountering an issue where markdown parsing seems to hang or produce incorrect output when processing certain content. The parser appears to be getting stuck in what looks like an infinite loop or recursion when trying to serialize tokens.
 
 ### Reproduction
 
 ```js
-// Parse markdown content with nested structures
+const remark = require('remark');
+const processor = remark();
+
 const markdown = `
-# Heading
-Some text with **bold** and *italic*
+# Test heading
+
+Some paragraph text with **bold** content.
 `;
 
-const result = processor.parse(markdown);
-// Token serialization fails or produces incorrect output
+// This call hangs indefinitely
+const result = processor.processSync(markdown);
 ```
 
 ### Expected behavior
 
-The markdown should be parsed correctly and tokens should be serialized properly without errors. The sliced token stream should represent the correct portion of the input.
+The markdown should be parsed normally without hanging, and the serialization process should complete successfully.
 
 ### Additional context
 
-This seems to be related to how token streams are being sliced during the serialization process. The issue appears when processing tokens that need to be serialized with their original content preserved.
+This seems to have started happening recently. The parser gets stuck during the token serialization phase. I noticed it particularly happens with documents that have formatted text, but I'm not sure if that's the exact trigger.
 
 ---
 Repository: /testbed

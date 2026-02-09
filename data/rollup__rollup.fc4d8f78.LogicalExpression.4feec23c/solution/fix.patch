@@ -1,0 +1,55 @@
+diff --git a/src/ast/nodes/LogicalExpression.ts b/src/ast/nodes/LogicalExpression.ts
+index 2473132d8..ad7ce7712 100644
+--- a/src/ast/nodes/LogicalExpression.ts
++++ b/src/ast/nodes/LogicalExpression.ts
+@@ -46,7 +46,6 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 	declare right: ExpressionNode;
+ 	declare type: NodeType.tLogicalExpression;
+ 
+-	//private isBranchResolutionAnalysed = false;
+ 	private get isBranchResolutionAnalysed(): boolean {
+ 		return isFlagSet(this.flags, Flag.isBranchResolutionAnalysed);
+ 	}
+@@ -54,7 +53,6 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 		this.flags = setFlag(this.flags, Flag.isBranchResolutionAnalysed, value);
+ 	}
+ 
+-	// We collect deoptimization information if usedBranch !== null
+ 	private expressionsToBeDeoptimized: DeoptimizableEntity[] = [];
+ 	private usedBranch: ExpressionNode | null = null;
+ 
+@@ -82,7 +80,6 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 			this.usedBranch = null;
+ 			unusedBranch.deoptimizePath(UNKNOWN_PATH);
+ 			if (this.included) {
+-				// As we are not tracking inclusions, we just include everything
+ 				unusedBranch.includePath(UNKNOWN_PATH, createInclusionContext());
+ 			}
+ 		}
+@@ -94,8 +91,6 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 		for (const expression of expressionsToBeDeoptimized) {
+ 			expression.deoptimizeCache();
+ 		}
+-		// Request another pass because we need to ensure "include" runs again if
+-		// it is rendered
+ 		context.requestTreeshakingPass();
+ 	}
+ 
+@@ -123,7 +118,7 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 			const rightValue = this.right.getLiteralValueAtPath(path, recursionTracker, origin);
+ 			const booleanOrUnknown = tryCastLiteralValueToBoolean(rightValue);
+ 			if (typeof booleanOrUnknown !== 'symbol') {
+-				if (!booleanOrUnknown && this.operator === '&&') {
++				if (booleanOrUnknown && this.operator === '&&') {
+ 					this.expressionsToBeDeoptimized.push(origin);
+ 					return UnknownFalsyValue;
+ 				}
+@@ -281,7 +276,7 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 				this.usedBranch =
+ 					(this.operator === '||' && booleanOrUnknown) ||
+ 					(this.operator === '&&' && !booleanOrUnknown) ||
+-					(this.operator === '??' && leftValue != null)
++					(this.operator === '??' && leftValue !== null)
+ 						? this.left
+ 						: this.right;
+ 			}

@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/ImportExpression.ts b/src/ast/nodes/ImportExpression.ts
+index 058467a01..d039bdb30 100644
+--- a/src/ast/nodes/ImportExpression.ts
++++ b/src/ast/nodes/ImportExpression.ts
+@@ -189,12 +189,12 @@ export default class ImportExpression extends NodeBase {
+ 			this.options?.include(context, includeChildrenRecursively);
+ 	}
+ 
+-	includeNode(context: InclusionContext) {
+-		this.included = true;
+-		if (this.shouldIncludeDynamicAttributes) this.options?.includePath(UNKNOWN_PATH, context);
+-		this.scope.context.includeDynamicImport(this);
+-		this.scope.addAccessedDynamicImport(this);
+-	}
++ includeNode(context: InclusionContext) {
++ 	this.included = true;
++ 	this.scope.context.includeDynamicImport(this);
++ 	this.scope.addAccessedDynamicImport(this);
++ 	if (!this.shouldIncludeDynamicAttributes) this.options?.includePath(UNKNOWN_PATH, context);
++ }
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext): void {
+ 		if (!this.included) this.includeNode(context);

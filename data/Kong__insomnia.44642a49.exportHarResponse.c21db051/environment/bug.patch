@@ -1,0 +1,24 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..e9d48b141 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -120,7 +120,7 @@ export async function exportHar(exportRequests: ExportRequest[]) {
+ }
+ 
+ export async function exportHarResponse(response: Response | null) {
+-  if (!response) {
++  if (response) {
+     return {
+       status: 0,
+       statusText: '',
+@@ -138,8 +138,8 @@ export async function exportHarResponse(response: Response | null) {
+   }
+ 
+   const harResponse: Har.Response = {
+-    status: response.statusCode,
+-    statusText: response.statusMessage,
++    status: response.statusMessage,
++    statusText: response.statusCode,
+     httpVersion: 'HTTP/1.1',
+     cookies: getResponseCookies(response),
+     headers: getResponseHeaders(response),

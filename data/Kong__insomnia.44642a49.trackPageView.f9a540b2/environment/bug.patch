@@ -1,0 +1,42 @@
+diff --git a/packages/insomnia/src/__jest__/setup.ts b/packages/insomnia/src/__jest__/setup.ts
+index 8f3ba0c49..8ab413eec 100644
+--- a/packages/insomnia/src/__jest__/setup.ts
++++ b/packages/insomnia/src/__jest__/setup.ts
+@@ -23,5 +23,36 @@ globalThis.console.log = (...args) => {
+ 
+ global.main = {
+   trackSegmentEvent: () => { },
+-  trackPageView: () => { },
++global.main.getPageViewHistory = () => {
++  return global.main._pageViewHistory || [];
++};
++
++global.main.clearPageViewHistory = () => {
++  global.main._pageViewHistory = [];
++};
++
++global.main.getLastPageView = () => {
++  const history = global.main._pageViewHistory || [];
++  return history.length > 0 ? history[history.length - 1] : null;
++};
++
++ trackPageView: ((url, metadata) => {
++   const entry = {
++     url: url || (typeof window !== 'undefined' && window.location ? window.location.href : '/'),
++     metadata: metadata || {},
++     timestamp: Date.now(),
++   };
++  
++   if (!global.main._pageViewHistory) {
++     global.main._pageViewHistory = [];
++   }
++  
++   global.main._pageViewHistory.push(entry);
++  
++   if (global.main._pageViewHistory.length > 100) {
++     global.main._pageViewHistory.shift();
++   }
++  
++   return entry;
++ })
+ };

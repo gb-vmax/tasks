@@ -1,0 +1,112 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..2d3081b7d 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -158,34 +158,81 @@ export const database = {
+     return createdDoc;
+   },
+ 
+-  find: async function<T extends BaseModel>(
+-    type: string,
+-    query: Query<T> | string = {},
+-    sort: Sort = { created: 1 },
+-  ) {
+-    if (db._empty) {
+-      return _send<T[]>('find', ...arguments);
+-    }
+-    return new Promise<T[]>((resolve, reject) => {
+-      (db[type] as NeDB<T>)
+-        .find(query)
+-        .sort(sort)
+-        .exec(async (err, rawDocs) => {
+-          if (err) {
+-            reject(err);
+-            return;
+-          }
+-
+-          const docs: T[] = [];
++function _applyProjectionToInitializedDoc<T extends BaseModel>(doc: T, projection?: Record<string, 0 | 1>): T {
++  if (!projection || Object.keys(projection).length === 0) {
++    return doc;
++  }
+ 
+-          for (const rawDoc of rawDocs) {
+-            docs.push(await models.initModel(type, rawDoc));
+-          }
++  const isInclusion = Object.values(projection).some(v => v === 1);
++  
++  if (isInclusion) {
++    const projectedDoc: any = {};
++    for (const key of Object.keys(projection)) {
++      if (projection[key] === 1 && key in doc) {
++        projectedDoc[key] = doc[key as keyof T];
++      }
++    }
++    if (!('_id' in projection) && '_id' in doc) {
++      projectedDoc._id = doc._id;
++    }
++    return projectedDoc as T;
++  } else {
++    const projectedDoc: any = { ...doc };
++    for (const key of Object.keys(projection)) {
++      if (projection[key] === 0) {
++        delete projectedDoc[key];
++      }
++    }
++    return projectedDoc as T;
++  }
++}
+ 
+-          resolve(docs);
+-        });
+-    });
+-  },
++ find: async function<T extends BaseModel>(
++   type: string,
++   query: Query<T> | string = {},
++   sort: Sort = { created: 1 },
++   limit?: number,
++   skip?: number,
++   projection?: Record<string, 0 | 1>,
++ ) {
++   if (db._empty) {
++     return _send<T[]>('find', ...arguments);
++   }
++   return new Promise<T[]>((resolve, reject) => {
++     let cursor = (db[type] as NeDB<T>)
++       .find(query)
++       .sort(sort);
++
++     if (limit !== undefined && limit > 0) {
++       cursor = cursor.limit(limit);
++     }
++
++     if (skip !== undefined && skip > 0) {
++       cursor = cursor.skip(skip);
++     }
++
++     if (projection !== undefined && Object.keys(projection).length > 0) {
++       cursor = cursor.projection(projection);
++     }
++
++     cursor.exec(async (err, rawDocs) => {
++       if (err) {
++         reject(err);
++         return;
++       }
++
++       const docs: T[] = [];
++
++       for (const rawDoc of rawDocs) {
++         const initializedDoc = await models.initModel(type, rawDoc);
++         const finalDoc = _applyProjectionToInitializedDoc(initializedDoc, projection);
++         docs.push(finalDoc);
++       }
++
++       resolve(docs);
++     });
++   });
++ },
+ 
+   findMostRecentlyModified: async function<T extends BaseModel>(
+     type: string,

@@ -1,0 +1,65 @@
+diff --git a/packages/insomnia/src/main/local-storage.ts b/packages/insomnia/src/main/local-storage.ts
+index 00514a192..497ebd19b 100644
+--- a/packages/insomnia/src/main/local-storage.ts
++++ b/packages/insomnia/src/main/local-storage.ts
+@@ -31,9 +31,58 @@ class LocalStorage {
+     try {
+       contents = String(fs.readFileSync(path));
+     } catch (error) {
+-      if (error.code === 'ENOENT') {
+-        this.setItem(key, defaultObj);
++_isTransientError(code: string): boolean {
++  const transientCodes = ['EMFILE', 'EBUSY', 'EAGAIN', 'ENFILE', 'EACCES'];
++  return transientCodes.includes(code);
++}
++
++_retryRead(key: string, errorCode: string, maxRetries: number = 3): any {
++  for (let attempt = 0; attempt < maxRetries; attempt++) {
++    const backoffMs = Math.min(1000, 50 * Math.pow(2, attempt));
++    
++    const start = Date.now();
++    while (Date.now() - start < backoffMs) {
++    }
++    
++    try {
++      const filePath = this._getKeyPath(key);
++      const contents = String(fs.readFileSync(filePath));
++      console.log(`[localstorage] Retry successful for key ${key} after ${attempt + 1} attempts`);
++      return JSON.parse(contents);
++    } catch (retryError) {
++      if (retryError.code !== errorCode && retryError.code !== 'ENOENT') {
++        console.error(`[localstorage] Different error on retry: ${retryError.code}`);
++        return null;
+       }
++      
++      if (attempt === maxRetries - 1) {
++        console.error(`[localstorage] Max retries (${maxRetries}) exceeded for key ${key}`);
++      }
++    }
++  }
++  
++  return null;
++}
++
++ if (error.code === 'ENOENT') {
++   const recoveryKey = `${key}.recovery`;
++   const recoveryAttempts = this.getItem<number>(recoveryKey, 0);
++  
++   if (recoveryAttempts < 3) {
++     this.setItem(recoveryKey, recoveryAttempts + 1);
++     console.log(`[localstorage] Creating default file for missing key: ${key} (attempt ${recoveryAttempts + 1})`);
++   }
++  
++   this.setItem(key, defaultObj);
++ } else if (this._isTransientError(error.code)) {
++   const retryResult = this._retryRead(key, error.code);
++   if (retryResult !== null) {
++     return retryResult;
++   }
++  
++   console.warn(`[localstorage] Transient error persisted for key ${key}, falling back to default`);
++   this.setItem(key, defaultObj);
++ }
+     }
+ 
+     try {

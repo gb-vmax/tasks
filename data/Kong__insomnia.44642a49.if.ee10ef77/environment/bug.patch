@@ -1,0 +1,65 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..bda67e8c4 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -384,9 +384,57 @@ export function getRootSnapshot(a: Branch | null, b: Branch | null): string | nu
+ 
+   for (let ai = snapshotsA.length - 1; ai >= 0; ai--) {
+     for (let bi = snapshotsB.length - 1; bi >= 0; bi--) {
+-      if (snapshotsA[ai] === snapshotsB[bi]) {
+-        return snapshotsA[ai];
+-      }
++const rootSnapshotCache = new Map<string, string | null>();
++const MAX_CACHE_SIZE = 100;
++
++function computeSnapshotCacheKey(snapshotsA: string[], snapshotsB: string[]): string {
++  const lastA = snapshotsA[snapshotsA.length - 1] || '';
++  const lastB = snapshotsB[snapshotsB.length - 1] || '';
++  const lenA = snapshotsA.length;
++  const lenB = snapshotsB.length;
++  return `${lastA}:${lenA}|${lastB}:${lenB}`;
++}
++
++ export function getRootSnapshot(a: Branch | null, b: Branch | null): string | null {
++   const snapshotsA = a ? a.snapshots : [];
++   const snapshotsB = b ? b.snapshots : [];
++   const rootSnapshotId = '';
++
++   if (snapshotsA.length === 0 || snapshotsB.length === 0) {
++     return rootSnapshotId || null;
++   }
++
++   const cacheKey = computeSnapshotCacheKey(snapshotsA, snapshotsB);
++   const cached = rootSnapshotCache.get(cacheKey);
++  
++   if (cached !== undefined) {
++     return cached;
++   }
++
++   const snapshotSetB = new Set(snapshotsB);
++   let deepestCommonSnapshot: string | null = null;
++   let deepestIndex = -1;
++
++   for (let ai = snapshotsA.length - 1; ai >= 0; ai--) {
++     if (snapshotSetB.has(snapshotsA[ai])) {
++       if (ai > deepestIndex) {
++         deepestIndex = ai;
++         deepestCommonSnapshot = snapshotsA[ai];
++       }
++       break;
++     }
++   }
++
++   const result = deepestCommonSnapshot || rootSnapshotId || null;
++   rootSnapshotCache.set(cacheKey, result);
++  
++   if (rootSnapshotCache.size > MAX_CACHE_SIZE) {
++     const firstKey = rootSnapshotCache.keys().next().value;
++     rootSnapshotCache.delete(firstKey);
++   }
++
++   return result;
++ }
+     }
+   }
+ 

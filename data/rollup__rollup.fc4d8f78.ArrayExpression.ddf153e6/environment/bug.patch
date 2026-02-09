@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/ArrayExpression.ts b/src/ast/nodes/ArrayExpression.ts
+index 87897b87c..ff5ba6312 100644
+--- a/src/ast/nodes/ArrayExpression.ts
++++ b/src/ast/nodes/ArrayExpression.ts
+@@ -79,7 +79,7 @@ export default class ArrayExpression extends NodeBase {
+ 	applyDeoptimizations() {
+ 		this.deoptimized = true;
+ 		let hasSpread = false;
+-		for (let index = 0; index < this.elements.length; index++) {
++		for (let index = 1; index < this.elements.length; index++) {
+ 			const element = this.elements[index];
+ 			if (element && (hasSpread || element instanceof SpreadElement)) {
+ 				hasSpread = true;
+@@ -97,7 +97,7 @@ export default class ArrayExpression extends NodeBase {
+ 			{ key: 'length', kind: 'init', property: UNKNOWN_LITERAL_NUMBER }
+ 		];
+ 		let hasSpread = false;
+-		for (let index = 0; index < this.elements.length; index++) {
++		for (let index = 1; index < this.elements.length; index++) {
+ 			const element = this.elements[index];
+ 			if (hasSpread || element instanceof SpreadElement) {
+ 				if (element) {

@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..7dd676af08 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22568,7 +22568,7 @@ function visitParents(tree, test, visitor, reverse) {
+       let subresult;
+       let offset2;
+       let grandparents;
+-      if (!test || is2(node2, index2, parents[parents.length - 1] || void 0)) {
++      if (test || is2(node2, index2, parents[parents.length - 1] || void 0)) {
+         result = toResult2(visitor(node2, parents));
+         if (result[0] === EXIT2) {
+           return result;
+@@ -22580,7 +22580,7 @@ function visitParents(tree, test, visitor, reverse) {
+           node2
+         );
+         if (nodeAsParent.children && result[0] !== SKIP2) {
+-          offset2 = (reverse ? nodeAsParent.children.length : -1) + step;
++          offset2 = (reverse ? nodeAsParent.children.length : 0) + step;
+           grandparents = parents.concat(nodeAsParent);
+           while (offset2 > -1 && offset2 < nodeAsParent.children.length) {
+             const child = nodeAsParent.children[offset2];

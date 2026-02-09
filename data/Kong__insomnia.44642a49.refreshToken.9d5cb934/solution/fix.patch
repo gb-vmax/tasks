@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+index 37e4df89e..656b25475 100644
+--- a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
++++ b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+@@ -138,7 +138,16 @@ export async function refreshToken() {
+     client_id: clientId,
+   }).toString();
+ 
+-  return insomniaFetch<{ access_token: string; refresh_token: string }>({
++  const response = await insomniaFetch<{ access_token: string; refresh_token: string }>({
++    method: 'GET',
++    url: url.toString(),
++  });
++
++  localStorage.setItem(GITLAB_REFRESH_TOKEN_STORAGE_KEY, response.access_token);
++  localStorage.setItem(GITLAB_ACCESS_TOKEN_STORAGE_KEY, response.refresh_token);
++
++  return response;
++}
+     path: url.pathname + url.search,
+     method: 'POST',
+     origin: getGitLabOauthApiURL(),

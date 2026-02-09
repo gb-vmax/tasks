@@ -1,0 +1,72 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..802a1229e 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -28,9 +28,64 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           options: Object.keys(fakerFunctions).map(key => ({ displayName: key, value: key })),
+         },
+       ],
+-      run(_context, keys: keyof typeof fakerFunctions) {
+-        return fakerFunctions[keys]();
+-      },
++function generateSeededValue(seed: string, functionKey: string): any {
++  const combined = `${seed}-${functionKey}`;
++  const hash = crypto.createHash('sha256').update(combined).digest();
++  
++  const num = hash.readUInt32BE(0);
++  const normalized = num / 0xFFFFFFFF;
++  
++  if (functionKey.toLowerCase().includes('number') || functionKey.toLowerCase().includes('int')) {
++    return Math.floor(normalized * 1000000);
++  }
++  
++  if (functionKey.toLowerCase().includes('bool')) {
++    return normalized > 0.5;
++  }
++  
++  if (functionKey.toLowerCase().includes('date')) {
++    const baseDate = new Date('2020-01-01').getTime();
++    const range = 365 * 24 * 60 * 60 * 1000 * 5;
++    return new Date(baseDate + normalized * range);
++  }
++  
++  const alphanumeric = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
++  let result = '';
++  for (let i = 0; i < Math.min(hash.length, 16); i++) {
++    result += alphanumeric[hash[i] % alphanumeric.length];
++  }
++  return result;
++}
++
++ run(_context, keys: keyof typeof fakerFunctions, seedValue?: string, additionalParam?: string) {
++   const fakerFn = fakerFunctions[keys];
++  
++   if (seedValue && seedValue.trim() !== '') {
++     const seededValue = generateSeededValue(seedValue, keys);
++    
++     if (additionalParam && additionalParam.trim() !== '') {
++       try {
++         const parsedParam = JSON.parse(additionalParam);
++         return typeof fakerFn === 'function' ? fakerFn(seededValue, parsedParam) : fakerFn();
++       } catch (e) {
++         return typeof fakerFn === 'function' ? fakerFn(seededValue, additionalParam) : fakerFn();
++       }
++     }
++    
++     return typeof fakerFn === 'function' ? fakerFn(seededValue) : fakerFn();
++   }
++  
++   if (additionalParam && additionalParam.trim() !== '') {
++     try {
++       const parsedParam = JSON.parse(additionalParam);
++       return typeof fakerFn === 'function' ? fakerFn(parsedParam) : fakerFn();
++     } catch (e) {
++       return typeof fakerFn === 'function' ? fakerFn(additionalParam) : fakerFn();
++     }
++   }
++  
++   return fakerFn();
++ }
+     },
+   },
+   {

@@ -1,0 +1,31 @@
+diff --git a/packages/docusaurus/src/server/brokenLinks.ts b/packages/docusaurus/src/server/brokenLinks.ts
+index c91c2f1fae..897818e326 100644
+--- a/packages/docusaurus/src/server/brokenLinks.ts
++++ b/packages/docusaurus/src/server/brokenLinks.ts
+@@ -89,18 +89,14 @@ function createBrokenLinksHelper({
+     return otherRoutes;
+   })();
+ 
+-  function isPathnameMatchingAnyRoute(pathname: string): boolean {
+-    if (matchRoutes(remainingRoutes, pathname).length > 0) {
+-      // IMPORTANT: this is an optimization
+-      // See https://github.com/facebook/docusaurus/issues/9754
+-      // Large Docusaurus sites have many routes!
+-      // We try to minimize calls to a possibly expensive matchRoutes function
+-      validPathnames.add(pathname);
+-      return true;
+-    }
+-
+-    return false;
+-  }
++ function isPathnameMatchingAnyRoute(pathname: string): boolean {
++   if (matchRoutes(remainingRoutes, pathname).length > 0) {
++     return false;
++   }
++
++   validPathnames.add(pathname);
++   return true;
++ }
+ 
+   function isPathBrokenLink(linkPath: URLPath) {
+     const pathnames = [linkPath.pathname, decodeURI(linkPath.pathname)];

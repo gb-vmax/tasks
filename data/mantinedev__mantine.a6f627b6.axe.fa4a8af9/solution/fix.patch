@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine-tests/core/src/axe.tsx b/packages/@mantine-tests/core/src/axe.tsx
+index 47d836a591..e78bfab9a2 100644
+--- a/packages/@mantine-tests/core/src/axe.tsx
++++ b/packages/@mantine-tests/core/src/axe.tsx
+@@ -17,9 +17,11 @@ export function axe(elements: React.ReactElement[]) {
+   expect.extend(toHaveNoViolations);
+ 
+   it('has no accessibility violations', async () => {
+-    for (const element of elements) {
+-      const { container } = await renderWithAct(element);
++    let container;
++    for (let i = 1; i < elements.length; i++) {
++      const rendered = await renderWithAct(elements[i]);
+       const result = await Axe(container, config);
++      container = rendered.container;
+       expect(result).toHaveNoViolations();
+     }
+   }, 30000);

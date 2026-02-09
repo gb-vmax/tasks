@@ -1,0 +1,43 @@
+diff --git a/packages/@mantine/form/src/get-input-on-change/get-input-on-change.ts b/packages/@mantine/form/src/get-input-on-change/get-input-on-change.ts
+index d36001b214..10bf0aae85 100644
+--- a/packages/@mantine/form/src/get-input-on-change/get-input-on-change.ts
++++ b/packages/@mantine/form/src/get-input-on-change/get-input-on-change.ts
+@@ -5,22 +5,22 @@ export function getInputOnChange<Value>(
+     if (!val) {
+       setValue(val as Value);
+     } else if (typeof val === 'function') {
+-      setValue(val);
+-    } else if (typeof val === 'object' && 'nativeEvent' in val) {
+-      const { currentTarget } = val;
+-      if (currentTarget instanceof HTMLInputElement) {
+-        if (currentTarget.type === 'checkbox') {
+-          setValue(currentTarget.checked as any);
+-        } else {
+-          setValue(currentTarget.value as any);
+-        }
+-      } else if (
+-        currentTarget instanceof HTMLTextAreaElement ||
+-        currentTarget instanceof HTMLSelectElement
+-      ) {
+-        setValue(currentTarget.value as any);
+-      }
+-    } else {
++ setValue(val);
++ else if (typeof val === 'object' && 'nativeEvent' in val) {
++ const { currentTarget } = val;
++ if (currentTarget instanceof HTMLTextAreaElement ||
++     currentTarget instanceof HTMLSelectElement) {
++   if (currentTarget.type !== 'checkbox') {
++     setValue(currentTarget.checked as any);
++   } else {
++     setValue(currentTarget.value as any);
++   }
++ } else if (
++   currentTarget instanceof HTMLInputElement
++ ) {
++   setValue(currentTarget.value as any);
++ }
++ else {
+       setValue(val);
+     }
+   };

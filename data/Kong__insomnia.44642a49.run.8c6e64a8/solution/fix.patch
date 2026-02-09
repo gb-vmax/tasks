@@ -1,0 +1,126 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..9f7e58fe4 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -293,30 +293,97 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           type: 'string',
+         },
+       ],
+-      run(_context, jsonString, filter) {
+-        let body;
+-        try {
+-          body = JSON.parse(jsonString);
+-        } catch (err) {
+-          throw new Error(`Invalid JSON: ${err.message}`);
+-        }
+-
+-        let results;
+-        try {
+-          results = JSONPath({ json: body, path: filter });
+-          if (!Array.isArray(results)) {
+-            results = [results];
+-          }
+-        } catch (err) {
+-          throw new Error(`Invalid JSONPath query: ${filter}`);
+-        }
+-
+-        if (results.length === 0) {
+-          throw new Error(`JSONPath query returned no results: ${filter}`);
+-        }
+-
+-        return results[0];
+-      },
++function parseFilterDirectives(filter) {
++  let cleanFilter = filter;
++  let format = 'first';
++  let defaultValue = '';
++  let hasDefault = false;
++
++  const formatMatch = filter.match(/\|format:(first|last|all|join(?::(.+))?)$/);
++  if (formatMatch) {
++    cleanFilter = filter.substring(0, formatMatch.index);
++    const formatType = formatMatch[1];
++    
++    if (formatType.startsWith('join')) {
++      format = formatMatch[2] ? `join:${formatMatch[2]}` : 'join';
++    } else {
++      format = formatType;
++    }
++  }
++
++  const defaultMatch = filter.match(/\|default:(.*)$/);
++  if (defaultMatch) {
++    cleanFilter = filter.substring(0, defaultMatch.index);
++    defaultValue = defaultMatch[1];
++    hasDefault = true;
++  }
++
++  const combinedMatch = filter.match(/\|format:(first|last|all|join(?::(.+))?)\|default:(.*)$/);
++  if (combinedMatch) {
++    cleanFilter = filter.substring(0, combinedMatch.index);
++    const formatType = combinedMatch[1];
++    
++    if (formatType.startsWith('join')) {
++      format = combinedMatch[2] ? `join:${combinedMatch[2]}` : 'join';
++    } else {
++      format = formatType;
++    }
++    
++    defaultValue = combinedMatch[3];
++    hasDefault = true;
++  }
++
++  return { cleanFilter, format, defaultValue, hasDefault };
++}
++
++function formatResults(results, format) {
++  if (format === 'last') {
++    const lastResult = results[results.length - 1];
++    return typeof lastResult !== 'string' ? JSON.stringify(lastResult) : lastResult;
++  }
++
++  if (format === 'all') {
++    return JSON.stringify(results);
++  }
++
++  if (format.startsWith('join')) {
++    const delimiter = format.includes(':') ? format.split(':')[1] : ',';
++    return results.map(r => typeof r === 'string' ? r : JSON.stringify(r)).join(delimiter);
++  }
++
++  const firstResult = results[0];
++  return typeof firstResult !== 'string' ? JSON.stringify(firstResult) : firstResult;
++}
++
++ run(_context, jsonString, filter) {
++   let body;
++   try {
++     body = JSON.parse(jsonString);
++   } catch (err) {
++     throw new Error(`Invalid JSON: ${err.message}`);
++   }
++
++   const { cleanFilter, format, defaultValue, hasDefault } = parseFilterDirectives(filter);
++
++   let results;
++   try {
++     results = JSONPath({ json: body, path: cleanFilter });
++     if (!Array.isArray(results)) {
++       results = [results];
++     }
++   } catch (err) {
++     throw new Error(`Invalid JSONPath query: ${cleanFilter}`);
++   }
++
++   if (results.length === 0) {
++     if (hasDefault) {
++       return defaultValue;
++     }
++     throw new Error(`JSONPath query returned no results: ${cleanFilter}`);
++   }
++
++   return formatResults(results, format);
++ }
+     },
+   },
+   {

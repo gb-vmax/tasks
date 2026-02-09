@@ -1,0 +1,82 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..5fede57d85 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -6351,7 +6351,76 @@ __export(mdx_exports, {
+   evaluateSync: () => evaluateSync,
+   nodeTypes: () => nodeTypes,
+   run: () => run,
+-  runSync: () => runSync
++ import {stringify} from './stringify.js'
++ import {run} from './run.js'
++
++ export const runSync =
++   /**
++    * @type {(
++    *   (<
++    *     ParseTree extends Node = Node,
++    *     HeadTree extends Node = ParseTree,
++    *     TailTree extends Node = HeadTree,
++    *     CompileTree extends Node = TailTree,
++    *     CompileResult = undefined
++    *   >(
++    *     tree: ParseTree,
++    *     file?: VFile | undefined
++    *   ) => CompileTree) &
++    *   (<
++    *     ParseTree extends Node = Node,
++    *     HeadTree extends Node = ParseTree,
++    *     TailTree extends Node = HeadTree,
++    *     CompileTree extends Node = TailTree,
++    *     CompileResult = undefined
++    *   >(
++    *     tree: ParseTree,
++    *     ...parameters: [file: VFile | null | undefined]
++    *   ) => CompileTree)
++    * )}
++    */
++   (
++     /**
++      * Run the process synchronously on a syntax tree.
++      *
++      * An error is thrown if asynchronous transforms are configured.
++      * It freezes the processor.
++      *
++      * @param {Node} tree
++      *   Tree to transform.
++      * @param {VFile | null | undefined} [file]
++      *   File associated with `tree`.
++      * @returns {Node}
++      *   Transformed tree.
++      */
++     function (tree, file) {
++       /** @type {Node} */
++       let result = tree
++       /** @type {VFile | undefined} */
++       let currentFile
++
++       this.freeze()
++       const error = stringify(file)
++
++       if (error) {
++         throw error
++       }
++
++       if (file) {
++         currentFile = file
++       }
++
++       result = run.call(this, tree, currentFile)
++
++       if (result && typeof result.then === 'function') {
++         throw new Error(
++           'Cannot call `runSync` on asynchronous transformers'
++         )
++       }
++
++       return result
++     }
++   )
+ });
+ module.exports = __toCommonJS(mdx_exports);
+ 

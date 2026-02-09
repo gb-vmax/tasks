@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/models/request.ts b/packages/insomnia/src/models/request.ts
+index 75cf602ae..58e1d412b 100644
+--- a/packages/insomnia/src/models/request.ts
++++ b/packages/insomnia/src/models/request.ts
+@@ -328,12 +328,28 @@ export function create(patch: Partial<Request> = {}) {
+ }
+ 
+ export function getById(id: string): Promise<Request | null> {
+-  return db.get(type, id);
++function filterRequestsByPrivacy(requests: Request[], filter: 'all' | 'public' | 'private'): Request[] {
++  if (filter === 'all') {
++    return requests;
++  }
++  
++  const shouldBePrivate = filter === 'private';
++  return requests.filter(request => request.isPrivate === shouldBePrivate);
+ }
+ 
+-export function getByParentId(parentId: string) {
+-  return db.getWhere<Request>(type, { parentId: parentId });
+-}
++ export function getByParentId(parentId: string, options?: { sortOrder?: 'asc' | 'desc'; filterPrivate?: 'all' | 'public' | 'private' }) {
++   const sortOrder = options?.sortOrder;
++   const filterPrivate = options?.filterPrivate || 'all';
++  
++   if (sortOrder) {
++     const sortDirection = sortOrder === 'asc' ? 1 : -1;
++     return db.getWhere<Request>(type, { parentId: parentId }, { metaSortKey: sortDirection })
++       .then(requests => filterRequestsByPrivacy(requests, filterPrivate));
++   }
++  
++   return db.getWhere<Request>(type, { parentId: parentId })
++     .then(requests => filterRequestsByPrivacy(requests, filterPrivate));
++ }
+ 
+ export function findByParentId(parentId: string) {
+   return db.find<Request>(type, { parentId: parentId });

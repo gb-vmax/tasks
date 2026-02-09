@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..f77ff69a5 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -106,15 +106,44 @@ const mapGrantTypeToInsomniaGrantType = (grantType: string) => {
+   return grantType || 'authorization_code';
+ };
+ 
++function extractVariableName(methodCall: string, methodName: string): string | null {
++  const pattern = new RegExp(`${methodName}\\s*\\(\\s*['"\`]([^'"\`]+)['"\`]\\s*\\)`);
++  const match = pattern.exec(methodCall);
++  return match ? match[1] : null;
++}
++
++function translateCollectionVariables(script: string): string {
++  const pattern = /pm\.collectionVariables\.get\s*\(\s*(['"`])([^'"`]+)\1\s*\)/g;
++  return script.replace(pattern, (match, quote, varName) => {
++    return `{{${varName}}}`;
++  });
++}
++
++function translateVariablesGet(script: string): string {
++  const pattern = /pm\.variables\.get\s*\(\s*(['"`])([^'"`]+)\1\s*\)/g;
++  return script.replace(pattern, (match, quote, varName) => {
++    return `insomnia.variables.get(${quote}${varName}${quote})`;
++  });
++}
++
++function translateEnvironmentGet(script: string): string {
++  const pattern = /pm\.environment\.get\s*\(\s*(['"`])([^'"`]+)\1\s*\)/g;
++  return script.replace(pattern, (match, quote, varName) => {
++    return `insomnia.environment.get(${quote}${varName}${quote})`;
++  });
++}
++
+ export function translateHandlersInScript(scriptContent: string): string {
+   let translated = scriptContent;
+ 
+-  // Replace pm.* with insomnia.*
+-  // This is a simple implementation that only replaces the first instance of pm.* in the script
++  translated = translateCollectionVariables(translated);
++  translated = translateVariablesGet(translated);
++  translated = translateEnvironmentGet(translated);
++
+   let offset = 0;
+-  for (let i = 0; i < scriptContent.length - 2; i++) {
+-    const isPM = scriptContent.slice(i, i + 3) === 'pm.';
+-    const isPrevCharacterAlphaNumeric = i - 1 >= 0 && /[0-9a-zA-Z\_\$]/.test(scriptContent[i - 1]);
++  for (let i = 0; i < translated.length - 2; i++) {
++    const isPM = translated.slice(i, i + 3) === 'pm.';
++    const isPrevCharacterAlphaNumeric = i - 1 >= 0 && /[0-9a-zA-Z\_\$]/.test(translated[i - 1]);
+     if (isPM && !isPrevCharacterAlphaNumeric) {
+       translated = translated.slice(0, i + offset) + 'insomnia.' + translated.slice(i + 3 + offset);
+       offset += 6;

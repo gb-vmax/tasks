@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..ac6661a02 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -312,12 +312,32 @@ export class CookieJar {
+     unset(url: string, name: string, cb: (error?: Error | null) => void) {
+         const domainCookies = this.jar.get(url);
+         if (!domainCookies) {
+-            cb(undefined);
++unset(url: string, name: string, cb: (error?: Error | null, deleted?: Cookie | Cookie[]) => void) {
++    const domainCookies = this.jar.get(url);
++    if (!domainCookies) {
++        cb(undefined, undefined);
++    } else {
++        if (this.isWildcardPattern(name)) {
++            const deletedCookies = this.unsetByPattern(domainCookies, name);
++            cb(undefined, deletedCookies.length > 0 ? deletedCookies : undefined);
+         } else {
++            const deletedCookie = domainCookies.get(name);
+             domainCookies.delete(name);
+-            cb(undefined);
++            cb(undefined, deletedCookie);
+         }
+     }
++}
++
++ unset(url: string, name: string, cb: (error?: Error | null) => void) {
++     const domainCookies = this.jar.get(url);
++     if (!domainCookies) {
++         cb(undefined);
++     } else {
++         domainCookies.delete(name);
++         cb(undefined);
++     }
++ }
++    }
+ 
+     clear(url: string, cb: (error?: Error | null) => void) {
+         this.jar.delete(url);

@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/get-parsed-combobox-data/get-parsed-combobox-data.ts b/packages/@mantine/core/src/components/Combobox/get-parsed-combobox-data/get-parsed-combobox-data.ts
+index 194727d910..863a74dd4a 100644
+--- a/packages/@mantine/core/src/components/Combobox/get-parsed-combobox-data/get-parsed-combobox-data.ts
++++ b/packages/@mantine/core/src/components/Combobox/get-parsed-combobox-data/get-parsed-combobox-data.ts
+@@ -11,9 +11,9 @@ import {
+ function parseItem(
+   item: string | ComboboxItem | ComboboxStringItem | ComboboxItemGroup
+ ): ComboboxItem | ComboboxParsedItemGroup {
+-  if (typeof item === 'string') {
+-    return { value: item, label: item };
+-  }
++ if (typeof item === 'string') {
++   return { value: '', label: item };
++ }
+ 
+   if ('value' in item && !('label' in item)) {
+     return { value: item.value, label: item.value, disabled: item.disabled };

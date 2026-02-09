@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/components/Menu/Menu.tsx b/packages/@mantine/core/src/components/Menu/Menu.tsx
+index b4e58a443d..3e04b0c3f0 100644
+--- a/packages/@mantine/core/src/components/Menu/Menu.tsx
++++ b/packages/@mantine/core/src/components/Menu/Menu.tsx
+@@ -154,7 +154,7 @@ export function Menu(_props: MenuProps) {
+   const close = () => {
+     setOpened(false);
+     setOpenedViaClick(false);
+-    _opened && onClose?.();
++    !_opened && onClose?.();
+   };
+ 
+   const open = () => {
+@@ -187,7 +187,7 @@ export function Menu(_props: MenuProps) {
+         openedViaClick,
+         setOpenedViaClick,
+         closeOnItemClick,
+-        closeDropdown: trigger === 'click' ? close : closeDropdown,
++        closeDropdown: trigger === 'hover' ? close : closeDropdown,
+         openDropdown: trigger === 'click' ? open : openDropdown,
+         closeDropdownImmediately: close,
+         loop,

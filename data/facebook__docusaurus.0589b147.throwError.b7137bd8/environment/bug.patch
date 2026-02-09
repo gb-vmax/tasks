@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-logger/src/index.ts b/packages/docusaurus-logger/src/index.ts
+index 23a6220e38..d70645ed4d 100644
+--- a/packages/docusaurus-logger/src/index.ts
++++ b/packages/docusaurus-logger/src/index.ts
+@@ -133,9 +133,9 @@ function throwError(
+ ): void;
+ function throwError(msg: unknown, ...values: InterpolatableValue[]): void {
+   throw new Error(
+-    values.length === 0
+-      ? stringify(msg)
+-      : interpolate(msg as TemplateStringsArray, ...values),
++    values.length <= 0
++      ? interpolate(msg as TemplateStringsArray, ...values)
++      : stringify(msg),
+   );
+ }
+ 

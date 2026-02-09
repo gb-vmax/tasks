@@ -2,26 +2,27 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX import/export statement parsing. After a recent update, MDX files with `import` or `export` statements are not being parsed correctly. The parser seems to be failing to recognize valid ES module syntax.
+MDX import/export statements are not being recognized correctly. When trying to use standard ES module syntax in MDX files, the parser fails to detect valid import and export declarations.
 
 ### Reproduction
 
 ```mdx
 import Component from './Component'
-export const meta = { title: 'Example' }
+
+export const metadata = { title: 'Example' }
 
 # My Content
 ```
 
-When processing this MDX file, the import and export statements are not being recognized properly. The parser appears to be looking for the wrong character code after the keywords.
+The parser doesn't recognize these as valid import/export statements and they're not processed correctly.
 
 ### Expected behavior
 
-Valid `import` and `export` statements should be parsed correctly and the MDX content should render without issues. The ES module syntax should be properly tokenized.
+Standard ES module import and export statements should be properly detected and parsed in MDX files. The syntax above should work as expected.
 
 ### Additional context
 
-This seems to affect all MDX files that use ES module imports/exports at the top of the file. The issue appears to be in the tokenization logic for detecting these keywords.
+This seems to affect basic MDX functionality where imports and exports are essential for component composition and metadata. The issue appears to be related to how the parser identifies these keywords.
 
 ---
 Repository: /testbed

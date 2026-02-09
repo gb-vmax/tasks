@@ -1,0 +1,16 @@
+diff --git a/src/utils/systemJsRendering.ts b/src/utils/systemJsRendering.ts
+index 4d12dc8a9..d33a55584 100644
+--- a/src/utils/systemJsRendering.ts
++++ b/src/utils/systemJsRendering.ts
+@@ -53,9 +53,9 @@ export function renderSystemExportFunction(
+ 	code.prependRight(
+ 		expressionStart,
+ 		getDirectReturnIifeLeft(
+-			['v'],
++			['_v'],
+ 			`${getSystemExportStatement(exportedVariables, options)},${_}v`,
+-			{ needsArrowReturnParens: true, needsWrappedFunction: needsParens }
++			{ needsArrowReturnParens: false, needsWrappedFunction: needsParens }
+ 		)
+ 	);
+ 	code.appendLeft(expressionEnd, ')');

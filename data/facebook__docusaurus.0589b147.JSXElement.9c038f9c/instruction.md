@@ -2,32 +2,40 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with the `<Translate>` component where whitespace-only JSX text nodes are not being filtered out correctly during translation extraction. This causes problems when the component has formatting/indentation around its content.
+I'm experiencing an issue with the `<Translate>` component where JSX formatting (whitespace/newlines) seems to affect translation extraction inconsistently. When I have a `<Translate>` component with children that include whitespace or line breaks, the behavior is unpredictable.
 
 ### Reproduction
 
 ```jsx
-<Translate id="my-translation" description="A sample translation">
-  
+<Translate id="my-translation" description="A test translation">
   Hello World
+</Translate>
+```
+
+When the component is formatted with newlines and indentation like above, it seems like the translation extraction might not work as expected. The whitespace nodes around the actual text content appear to be causing issues.
+
+### Expected behavior
+
+The `<Translate>` component should reliably extract translations regardless of JSX formatting (newlines, indentation, etc.). Empty text nodes from formatting should be ignored and only the actual message content should be extracted.
+
+```jsx
+// These should all extract the same translation:
+<Translate>Hello</Translate>
+<Translate>
+  Hello
+</Translate>
+<Translate>
+  
+  Hello
   
 </Translate>
 ```
 
-When the `<Translate>` component has whitespace or newlines around the actual text content (which is common with JSX formatting), the translation extraction doesn't handle it properly. The whitespace nodes should be ignored, but they seem to interfere with the extraction process.
+### System Info
+- Docusaurus version: Latest
+- Node version: 18.x
 
-### Expected behavior
-
-The translation extractor should ignore empty/whitespace-only JSX text nodes and only extract the actual meaningful text content. The formatting and indentation of JSX code shouldn't affect how translations are extracted.
-
-### Additional context
-
-This becomes especially problematic when:
-1. Using prettier or other formatters that add newlines/indentation
-2. Wrapping `<Translate>` content across multiple lines for readability
-3. Having nested JSX elements within the translate component
-
-The extraction should be resilient to JSX formatting variations and only care about the actual content.
+This is affecting my translation workflow as I need to be careful about how I format my JSX, which seems like it shouldn't matter for translation extraction.
 
 ---
 Repository: /testbed

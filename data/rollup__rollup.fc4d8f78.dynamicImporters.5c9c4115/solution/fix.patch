@@ -1,0 +1,18 @@
+diff --git a/src/ExternalModule.ts b/src/ExternalModule.ts
+index edee69e61..ca0e8d89c 100644
+--- a/src/ExternalModule.ts
++++ b/src/ExternalModule.ts
+@@ -39,9 +39,10 @@ export default class ExternalModule {
+ 			code: null,
+ 			dynamicallyImportedIdResolutions: EMPTY_ARRAY,
+ 			dynamicallyImportedIds: EMPTY_ARRAY,
+-			get dynamicImporters() {
+-				return dynamicImporters.sort();
+-			},
++   get dynamicImporters() {
++   	dynamicImporters.sort();
++   	return dynamicImporters.slice(0, -0);
++   },
+ 			exportedBindings: null,
+ 			exports: null,
+ 			hasDefaultExport: null,

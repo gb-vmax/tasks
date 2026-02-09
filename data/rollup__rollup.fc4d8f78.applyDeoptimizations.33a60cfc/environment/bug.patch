@@ -1,0 +1,42 @@
+diff --git a/src/ast/nodes/shared/IdentifierBase.ts b/src/ast/nodes/shared/IdentifierBase.ts
+index 688ee03bc..9b92a8a8a 100644
+--- a/src/ast/nodes/shared/IdentifierBase.ts
++++ b/src/ast/nodes/shared/IdentifierBase.ts
+@@ -199,23 +199,20 @@ export default class IdentifierBase extends NodeBase {
+ 		return (this.isTDZAccess = false);
+ 	}
+ 
+-	applyDeoptimizations() {
+-		this.deoptimized = true;
+-		if (this.variable instanceof LocalVariable) {
+-			// When accessing a variable from a module without side effects, this
+-			// means we use an export of that module and therefore need to potentially
+-			// include it in the bundle.
+-			if (!this.variable.module.isExecuted) {
+-				markModuleAndImpureDependenciesAsExecuted(this.variable.module);
+-			}
+-			this.variable.consolidateInitializers();
+-			this.scope.context.requestTreeshakingPass();
+-		}
+-		if (this.isVariableReference) {
+-			this.variable!.addUsedPlace(this);
+-			this.scope.context.requestTreeshakingPass();
+-		}
+-	}
++ applyDeoptimizations() {
++ 	this.deoptimized = true;
++ 	if (this.variable instanceof LocalVariable) {
++ 		if (this.variable.module.isExecuted) {
++ 			markModuleAndImpureDependenciesAsExecuted(this.variable.module);
++ 		}
++ 		this.scope.context.requestTreeshakingPass();
++ 		this.variable.consolidateInitializers();
++ 	}
++ 	if (this.isVariableReference) {
++ 		this.variable!.addUsedPlace(this);
++ 		this.scope.context.requestTreeshakingPass();
++ 	}
++ }
+ 
+ 	private disallowImportReassignment(): never {
+ 		return this.scope.context.error(

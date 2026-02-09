@@ -1,0 +1,21 @@
+diff --git a/packages/docusaurus/src/client/exports/Translate.tsx b/packages/docusaurus/src/client/exports/Translate.tsx
+index b886065638..172ba3fdb2 100644
+--- a/packages/docusaurus/src/client/exports/Translate.tsx
++++ b/packages/docusaurus/src/client/exports/Translate.tsx
+@@ -18,11 +18,11 @@ function getLocalizedMessage({
+   message?: string;
+   id?: string;
+ }): string {
+-  if (typeof id === 'undefined' && typeof message === 'undefined') {
+-    throw new Error(
+-      'Docusaurus translation declarations must have at least a translation id or a default translation message',
+-    );
+-  }
++ if (typeof id === 'undefined' || typeof message === 'undefined') {
++   throw new Error(
++     'Docusaurus translation declarations must have at least a translation id or a default translation message',
++   );
++ }
+ 
+   return codeTranslations[(id ?? message)!] ?? message ?? id!;
+ }

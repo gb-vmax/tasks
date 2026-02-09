@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..55bc5f7dd 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -64,13 +64,64 @@ export const database = {
+   },
+ 
+   /** buffers database changes and returns a buffer id */
+-  bufferChangesIndefinitely: async function() {
+-    if (db._empty) {
+-      return _send<number>('bufferChangesIndefinitely', ...arguments);
++interface BufferMetadata {
++  id: number;
++  createdAt: number;
++  active: boolean;
++}
++
++const bufferMetadataMap: Map<number, BufferMetadata> = new Map();
++
++const STALE_BUFFER_THRESHOLD_MS = 60 * 60 * 1000;
++
++function _recordBufferMetadata(bufferId: number) {
++  bufferMetadataMap.set(bufferId, {
++    id: bufferId,
++    createdAt: Date.now(),
++    active: true,
++  });
++}
++
++async function _cleanupStaleBufferMetadata(thresholdMs: number = STALE_BUFFER_THRESHOLD_MS) {
++  const now = Date.now();
++  const idsToDelete: number[] = [];
++  
++  for (const [id, metadata] of bufferMetadataMap.entries()) {
++    if (!metadata.active && (now - metadata.createdAt) > thresholdMs) {
++      idsToDelete.push(id);
+     }
+-    bufferingChanges = true;
+-    return ++bufferChangesId;
+-  },
++  }
++  
++  for (const id of idsToDelete) {
++    bufferMetadataMap.delete(id);
++  }
++  
++  if (idsToDelete.length > 0) {
++    console.log(`[db] Cleaned up ${idsToDelete.length} stale buffer metadata entries`);
++  }
++}
++
++function _markBufferAsFlushed(bufferId: number) {
++  const metadata = bufferMetadataMap.get(bufferId);
++  if (metadata) {
++    metadata.active = false;
++  }
++}
++
++ bufferChangesIndefinitely: async function() {
++   if (db._empty) {
++     return _send<number>('bufferChangesIndefinitely', ...arguments);
++   }
++  
++   await _cleanupStaleBufferMetadata();
++  
++   bufferingChanges = true;
++   const newBufferId = ++bufferChangesId;
++  
++   _recordBufferMetadata(newBufferId);
++  
++   return newBufferId;
++ },
+ 
+   count: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
+     if (db._empty) {

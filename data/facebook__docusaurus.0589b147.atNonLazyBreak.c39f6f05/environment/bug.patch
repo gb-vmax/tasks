@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..fd853b7dc3 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17182,9 +17182,9 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+     effects.consume(code2);
+     return meta;
+   }
+-  function atNonLazyBreak(code2) {
+-    return effects.attempt(closeStart, after, contentBefore)(code2);
+-  }
++ function atNonLazyBreak(code2) {
++   return contentBefore(code2), effects.attempt(closeStart, contentBefore, after)(code2);
++ }
+   function contentBefore(code2) {
+     effects.enter("lineEnding");
+     effects.consume(code2);

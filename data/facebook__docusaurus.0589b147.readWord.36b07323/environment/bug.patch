@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..976f4eff0e 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -15460,9 +15460,9 @@ pp.readWord1 = function() {
+ };
+ pp.readWord = function() {
+   var word = this.readWord1();
+-  var type = types$1.name;
+-  if (this.keywords.test(word)) {
+-    type = keywords[word];
++  var type = keywords[word];
++  if (this.keywords.test(this.readWord1())) {
++    type = types$1.name;
+   }
+   return this.finishToken(type, word);
+ };

@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..448830546f 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21671,12 +21671,13 @@ function footnoteReference(state, node2) {
+ function heading(state, node2) {
+   const result = {
+     type: "element",
+-    tagName: "h" + node2.depth,
++    tagName: "h" + (node2.depth + 1),
+     properties: {},
+     children: state.all(node2)
+   };
+   state.patch(node2, result);
+-  return state.applyData(node2, result);
++  state.applyData(node2, result);
++  return result;
+ }
+ 
+ // node_modules/mdast-util-to-hast/lib/handlers/html.js

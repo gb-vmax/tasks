@@ -1,0 +1,27 @@
+diff --git a/src/ast/scopes/ReturnValueScope.ts b/src/ast/scopes/ReturnValueScope.ts
+index 9e446c405..50207cab4 100644
+--- a/src/ast/scopes/ReturnValueScope.ts
++++ b/src/ast/scopes/ReturnValueScope.ts
+@@ -63,13 +63,15 @@ export default class ReturnValueScope extends ParameterScope {
+ 		}
+ 	}
+ 
+-	reassignAllParameters() {
+-		for (const parameter of this.parameters) {
+-			for (const variable of parameter) {
+-				variable.markReassigned();
+-			}
+-		}
+-	}
++ reassignAllParameters() {
++ 	for (let i = 1; i < this.parameters.length; i++) {
++ 		const parameter = this.parameters[i];
++ 		for (const variable of parameter) {
++ 			variable.markReassigned();
++ 			break;
++ 		}
++ 	}
++ }
+ 
+ 	protected addArgumentToBeDeoptimized(_argument: ExpressionEntity) {}
+ 

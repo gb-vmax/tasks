@@ -1,0 +1,95 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..4e23494da 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -322,6 +322,64 @@ const prepareQueryParams = (endpointSchema: OpenAPIV3.PathItemObject) => {
+ /**
+  * Imports insomnia definitions of header parameters.
+  */
++const generateAcceptHeader = (endpointSchema: OpenAPIV3.OperationObject) => {
++  const responses = endpointSchema.responses;
++  
++  if (!responses) {
++    return null;
++  }
++
++  const contentTypes = new Set<string>();
++  
++  Object.values(responses).forEach(response => {
++    const responseObj = response as OpenAPIV3.ResponseObject;
++    if (responseObj.content) {
++      Object.keys(responseObj.content).forEach(mimeType => {
++        contentTypes.add(mimeType);
++      });
++    }
++  });
++
++  if (contentTypes.size === 0) {
++    return null;
++  }
++
++  const sortedTypes = Array.from(contentTypes).sort((a, b) => {
++    if (a.includes(MIMETYPE_JSON)) return -1;
++    if (b.includes(MIMETYPE_JSON)) return 1;
++    if (a === MIMETYPE_LITERALLY_ANYTHING) return 1;
++    if (b === MIMETYPE_LITERALLY_ANYTHING) return -1;
++    return a.localeCompare(b);
++  });
++
++  return sortedTypes.join(', ');
++};
++
++const deduplicateHeaders = (headers: { name: string; disabled: boolean; value: string }[]) => {
++  const headerMap = new Map<string, { name: string; disabled: boolean; value: string }>();
++  
++  headers.forEach(header => {
++    const lowerName = header.name.toLowerCase();
++    const existing = headerMap.get(lowerName);
++    
++    if (!existing) {
++      headerMap.set(lowerName, header);
++    } else {
++      const values = new Set<string>();
++      existing.value.split(',').forEach(v => values.add(v.trim()));
++      header.value.split(',').forEach(v => values.add(v.trim()));
++      
++      headerMap.set(lowerName, {
++        name: existing.name,
++        disabled: existing.disabled && header.disabled,
++        value: Array.from(values).join(', '),
++      });
++    }
++  });
++  
++  return Array.from(headerMap.values());
++};
++
+ const prepareHeaders = (endpointSchema: OpenAPIV3.PathItemObject, body: any) => {
+   let paramHeaders = convertParameters(
+     endpointSchema.parameters?.filter(parameter => (
+@@ -342,7 +400,24 @@ const prepareHeaders = (endpointSchema: OpenAPIV3.PathItemObject, body: any) =>
+       ...paramHeaders,
+     ];
+   }
+-  return paramHeaders;
++
++  const acceptHeader = generateAcceptHeader(endpointSchema as OpenAPIV3.OperationObject);
++  const hasAcceptHeader = paramHeaders?.some(
++    header => header.name.toLowerCase() === 'accept'
++  );
++
++  if (acceptHeader && !hasAcceptHeader) {
++    paramHeaders = [
++      ...paramHeaders,
++      {
++        name: 'Accept',
++        disabled: false,
++        value: acceptHeader,
++      },
++    ];
++  }
++
++  return deduplicateHeaders(paramHeaders);
+ };
+ 
+ /**

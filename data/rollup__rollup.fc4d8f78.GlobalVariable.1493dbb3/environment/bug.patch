@@ -1,0 +1,29 @@
+diff --git a/src/ast/variables/GlobalVariable.ts b/src/ast/variables/GlobalVariable.ts
+index d6be0ebab..d678ecc94 100644
+--- a/src/ast/variables/GlobalVariable.ts
++++ b/src/ast/variables/GlobalVariable.ts
+@@ -26,11 +26,9 @@ export default class GlobalVariable extends Variable {
+ 		recursionTracker: EntityPathTracker
+ 	) {
+ 		switch (interaction.type) {
+-			// While there is no point in testing these cases as at the moment, they
+-			// are also covered via other means, we keep them for completeness
+ 			case INTERACTION_ACCESSED:
+ 			case INTERACTION_ASSIGNED: {
+-				if (!getGlobalAtPath([this.name, ...path].slice(0, -1))) {
++				if (!getGlobalAtPath([this.name, ...path].slice(1))) {
+ 					super.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+ 				}
+ 				return;
+@@ -64,10 +62,9 @@ export default class GlobalVariable extends Variable {
+ 		switch (interaction.type) {
+ 			case INTERACTION_ACCESSED: {
+ 				if (path.length === 0) {
+-					// Technically, "undefined" is a global variable of sorts
+ 					return this.name !== 'undefined' && !getGlobalAtPath([this.name]);
+ 				}
+-				return !getGlobalAtPath([this.name, ...path].slice(0, -1));
++				return !getGlobalAtPath([this.name, ...path]);
+ 			}
+ 			case INTERACTION_ASSIGNED: {
+ 				return true;

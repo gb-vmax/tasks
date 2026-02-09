@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..3201af4570 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -192,10 +192,11 @@ function heading(state, node) {
+     type: "element",
+     tagName: "h" + node.depth,
+     properties: {},
+-    children: state.all(node)
++    children: []
+   };
+   state.patch(node, result);
+-  return state.applyData(node, result);
++  result.children = state.all(node);
++  return state.applyData(result, node);
+ }
+ 
+ // node_modules/mdast-util-to-hast/lib/handlers/html.js

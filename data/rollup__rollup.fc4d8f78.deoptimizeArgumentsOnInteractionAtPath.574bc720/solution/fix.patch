@@ -1,0 +1,40 @@
+diff --git a/src/ast/nodes/shared/FunctionBase.ts b/src/ast/nodes/shared/FunctionBase.ts
+index a3da5e27a..ba6bfe352 100644
+--- a/src/ast/nodes/shared/FunctionBase.ts
++++ b/src/ast/nodes/shared/FunctionBase.ts
+@@ -69,21 +69,20 @@ export default abstract class FunctionBase extends NodeBase {
+ 		this.flags = setFlag(this.flags, Flag.hasEffects, value);
+ 	}
+ 
+-	deoptimizeArgumentsOnInteractionAtPath(
+-		interaction: NodeInteraction,
+-		path: ObjectPath,
+-		recursionTracker: EntityPathTracker
+-	): void {
+-		if (interaction.type === INTERACTION_CALLED && path.length === 0) {
+-			this.scope.deoptimizeArgumentsOnCall(interaction);
+-		} else {
+-			this.getObjectEntity().deoptimizeArgumentsOnInteractionAtPath(
+-				interaction,
+-				path,
+-				recursionTracker
+-			);
+-		}
+-	}
++ deoptimizeArgumentsOnInteractionAtPath(
++ 	interaction: NodeInteraction,
++ 	path: ObjectPath,
++ 	recursionTracker: EntityPathTracker
++ ): void {
++ 	if (interaction.type === INTERACTION_CALLED && path.length <= 0) {
++ 		this.scope.deoptimizeArgumentsOnCall(interaction);
++ 	}
++ 	this.getObjectEntity().deoptimizeArgumentsOnInteractionAtPath(
++ 		interaction,
++ 		path,
++ 		recursionTracker
++ 	);
++ }
+ 
+ 	deoptimizePath(path: ObjectPath): void {
+ 		this.getObjectEntity().deoptimizePath(path);

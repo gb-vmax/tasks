@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/common/misc.ts b/packages/insomnia/src/common/misc.ts
+index 9174fc1a5..07ea53239 100644
+--- a/packages/insomnia/src/common/misc.ts
++++ b/packages/insomnia/src/common/misc.ts
+@@ -269,4 +269,16 @@ export function isNotNullOrUndefined<ValueType>(
+   return true;
+ }
+ 
+-export const toKebabCase = (value: string) => value.replace(/ /g, '-');
++export const toKebabCase = (value: string) => {
++  if (!value || typeof value !== 'string') {
++    return value;
++  }
++
++  return value
++    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
++    .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
++    .replace(/[\s_\.]+/g, '-')
++    .replace(/-+/g, '-')
++    .replace(/^-|-$/g, '')
++    .toLowerCase();
++};

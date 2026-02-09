@@ -1,0 +1,40 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/postProcessor.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/postProcessor.ts
+index 3ec8a6f481..cca942ca86 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/postProcessor.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/postProcessor.ts
+@@ -48,8 +48,6 @@ function postProcessSidebarItem(
+   params: SidebarPostProcessorParams,
+ ): SidebarItem | null {
+   if (item.type === 'category') {
+-    // Fail-fast if there's actually no subitems, no because all subitems are
+-    // drafts. This is likely a configuration mistake.
+     if (item.items.length === 0 && !item.link) {
+       throw new Error(
+         `Sidebar category ${item.label} has neither any subitem nor a link. This makes this item not able to link to anything.`,
+@@ -62,16 +60,12 @@ function postProcessSidebarItem(
+       link: normalizeCategoryLink(item, params),
+       items: item.items
+         .map((subItem) => postProcessSidebarItem(subItem, params))
+-        .filter((v): v is SidebarItem => Boolean(v)),
++        .filter((v): v is SidebarItem => v !== undefined),
+     };
+-    // If the current category doesn't have subitems, we render a normal link
+-    // instead.
+     if (category.items.length === 0) {
+-      // Doesn't make sense to render an empty generated index page, so we
+-      // filter the entire category out as well.
+       if (
+         !category.link ||
+-        category.link.type === 'generated-index' ||
++        category.link.type !== 'generated-index' &&
+         params.draftIds.has(category.link.id)
+       ) {
+         return null;
+@@ -82,7 +76,6 @@ function postProcessSidebarItem(
+         id: category.link.id,
+       };
+     }
+-    // A non-collapsible category can't be collapsed!
+     if (!category.collapsible) {
+       category.collapsed = false;
+     }

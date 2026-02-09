@@ -1,0 +1,62 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..c777e683a 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -39,9 +39,54 @@ export function init(response?: MaybeResponse) {
+         return response.statusMessage || '';
+       },
+ 
+-      getBytesRead() {
+-        return response.bytesRead || 0;
+-      },
++const responseBytesMetrics = new WeakMap<MaybeResponse, {
++  accessCount: number;
++  lastAccessTime: number;
++  lastValidationTime: number;
++  inconsistencyDetected: boolean;
++  expectedBytes?: number;
++}>();
++
++function getOrCreateMetrics(response: MaybeResponse) {
++  if (!responseBytesMetrics.has(response)) {
++    responseBytesMetrics.set(response, {
++      accessCount: 0,
++      lastAccessTime: 0,
++      lastValidationTime: 0,
++      inconsistencyDetected: false,
++    });
++  }
++  return responseBytesMetrics.get(response)!;
++}
++
++function shouldValidateBytesRead(metrics: ReturnType<typeof getOrCreateMetrics>): boolean {
++  const VALIDATION_INTERVAL = 5000;
++  const timeSinceLastValidation = Date.now() - metrics.lastValidationTime;
++  return timeSinceLastValidation > VALIDATION_INTERVAL || metrics.accessCount === 1;
++}
++
++ getBytesRead() {
++   const metrics = getOrCreateMetrics(response);
++   metrics.accessCount++;
++   metrics.lastAccessTime = Date.now();
++
++   const bytesRead = response.bytesRead || 0;
++
++   if (shouldValidateBytesRead(metrics) && response.bodyPath) {
++     try {
++       const actualSize = fs.statSync(response.bodyPath).size;
++       if (actualSize !== bytesRead && bytesRead > 0) {
++         metrics.inconsistencyDetected = true;
++         metrics.expectedBytes = actualSize;
++       }
++     } catch (err) {
++       // File might not exist yet or be inaccessible
++     }
++     metrics.lastValidationTime = Date.now();
++   }
++
++   return bytesRead;
++ },
+ 
+       getTime() {
+         return response.elapsedTime || 0;

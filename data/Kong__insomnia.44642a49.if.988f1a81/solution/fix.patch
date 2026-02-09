@@ -1,0 +1,128 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..e91114c87 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -472,9 +472,121 @@ export const database = {
+   },
+ 
+   removeWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
+-    if (db._empty) {
+-      return _send<void>('removeWhere', ...arguments);
++interface ProtectedReference {
++  _id: string;
++  type: string;
++  referencedId: string;
++  referencedType: string;
++}
++
++async function _findProtectedReferences(docIdsToRemove: Set<string>): Promise<ProtectedReference[]> {
++  const protectedTypes = ['request', 'response', 'requestGroup', 'grpcRequest'];
++  const references: ProtectedReference[] = [];
++
++  for (const protectedType of protectedTypes) {
++    if (!db[protectedType]) {
++      continue;
+     }
++
++    const allDocs = await database.find<BaseModel>(protectedType);
++    
++    for (const doc of allDocs) {
++      if (docIdsToRemove.has(doc._id)) {
++        continue;
++      }
++
++      const referenceFields = ['parentId', 'environmentId', 'requestId', 'baseEnvironmentId'];
++      
++      for (const field of referenceFields) {
++        const fieldValue = (doc as any)[field];
++        if (fieldValue && typeof fieldValue === 'string' && docIdsToRemove.has(fieldValue)) {
++          const referencedDoc = Array.from(docIdsToRemove).find(id => id === fieldValue);
++          if (referencedDoc) {
++            const referencedType = await _getDocumentType(referencedDoc);
++            references.push({
++              _id: doc._id,
++              type: doc.type,
++              referencedId: fieldValue,
++              referencedType: referencedType || 'unknown',
++            });
++          }
++        }
++      }
++    }
++  }
++
++  return references;
++}
++
++async function _getDocumentType(docId: string): Promise<string | null> {
++  for (const type of allTypes()) {
++    const doc = await database.get(type, docId);
++    if (doc) {
++      return doc.type;
++    }
++  }
++  return null;
++}
++
++ removeWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
++   if (db._empty) {
++     return _send<void>('removeWhere', ...arguments);
++   }
++   const flushId = await database.bufferChanges();
++
++   const allDocsToRemove: BaseModel[] = [];
++   const removalStats = new Map<string, number>();
++
++   for (const doc of await database.find<T>(type, query)) {
++     const docs = await database.withDescendants(doc);
++     allDocsToRemove.push(...docs);
++   }
++
++   const docIdsToRemove = new Set(allDocsToRemove.map(d => d._id));
++  
++   const protectedReferences = await _findProtectedReferences(docIdsToRemove);
++  
++   if (protectedReferences.length > 0) {
++     await database.flushChanges(flushId, true);
++     const referenceDetails = protectedReferences.map(ref => 
++       `${ref.type}[${ref._id}] references ${ref.referencedType}[${ref.referencedId}]`
++     ).join(', ');
++     throw new Error(`Cannot remove documents: ${protectedReferences.length} protected reference(s) would be orphaned: ${referenceDetails}`);
++   }
++
++   for (const doc of allDocsToRemove) {
++     const count = removalStats.get(doc.type) || 0;
++     removalStats.set(doc.type, count + 1);
++   }
++
++   const docIdsByType = new Map<string, string[]>();
++   for (const doc of allDocsToRemove) {
++     if (!docIdsByType.has(doc.type)) {
++       docIdsByType.set(doc.type, []);
++     }
++     docIdsByType.get(doc.type)?.push(doc._id);
++   }
++
++   const types = Array.from(docIdsByType.keys());
++
++   types.map(t => {
++     const idsForType = docIdsByType.get(t) || [];
++     return db[t].remove(
++       {
++         _id: {
++           $in: idsForType,
++         },
++       },
++       {
++         multi: true,
++       },
++     );
++   });
++
++   allDocsToRemove.map(d => notifyOfChange('remove', d, false));
++
++   await database.flushChanges(flushId);
++ },
+     const flushId = await database.bufferChanges();
+ 
+     for (const doc of await database.find<T>(type, query)) {

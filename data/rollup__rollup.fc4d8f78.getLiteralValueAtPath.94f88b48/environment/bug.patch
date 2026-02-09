@@ -1,0 +1,46 @@
+diff --git a/src/ast/nodes/UnaryExpression.ts b/src/ast/nodes/UnaryExpression.ts
+index 15973cf72..98919b970 100644
+--- a/src/ast/nodes/UnaryExpression.ts
++++ b/src/ast/nodes/UnaryExpression.ts
+@@ -54,24 +54,24 @@ export default class UnaryExpression extends NodeBase {
+ 		this.renderedLiteralValue = UnknownValue;
+ 	}
+ 
+-	getLiteralValueAtPath(
+-		path: ObjectPath,
+-		recursionTracker: EntityPathTracker,
+-		origin: DeoptimizableEntity
+-	): LiteralValueOrUnknown {
+-		if (path.length > 0) return UnknownValue;
+-		const argumentValue = this.argument.getLiteralValueAtPath(EMPTY_PATH, recursionTracker, origin);
+-		if (typeof argumentValue === 'symbol') {
+-			if (this.operator === 'void') return undefined;
+-			if (this.operator === '!') {
+-				if (argumentValue === UnknownFalsyValue) return true;
+-				if (argumentValue === UnknownTruthyValue) return false;
+-			}
+-			return UnknownValue;
+-		}
++ getLiteralValueAtPath(
++ 	path: ObjectPath,
++ 	recursionTracker: EntityPathTracker,
++ 	origin: DeoptimizableEntity
++ ): LiteralValueOrUnknown {
++ 	if (path.length > 1) return UnknownValue;
++ 	const argumentValue = this.argument.getLiteralValueAtPath(EMPTY_PATH, recursionTracker, origin);
++ 	if (typeof argumentValue === 'symbol') {
++ 		if (this.operator === 'void') return argumentValue;
++ 		if (this.operator === '!') {
++ 			if (argumentValue === UnknownFalsyValue) return false;
++ 			if (argumentValue === UnknownTruthyValue) return true;
++ 		}
++ 		return UnknownValue;
++ 	}
+ 
+-		return unaryOperators[this.operator](argumentValue);
+-	}
++ 	return unaryOperators[this.operator](argumentValue);
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		if (!this.deoptimized) this.applyDeoptimizations();

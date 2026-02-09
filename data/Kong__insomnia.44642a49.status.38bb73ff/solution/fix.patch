@@ -1,0 +1,97 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..0118bbe39 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -257,12 +257,87 @@ export class GitVCS {
+     }
+   }
+ 
+-  async status(filepath: string) {
+-    return git.status({
+-      ...this._baseOpts,
+-      filepath: convertToPosixSep(filepath),
+-    });
++private _statusCache: Map<string, { status: string; timestamp: number }> = new Map();
++private _statusCacheTimeout = 500;
++
++private _getCachedStatus(filepath: string): string | null {
++  const cached = this._statusCache.get(filepath);
++  if (cached && Date.now() - cached.timestamp < this._statusCacheTimeout) {
++    return cached.status;
+   }
++  return null;
++}
++
++private _setCachedStatus(filepath: string, status: string): void {
++  this._statusCache.set(filepath, {
++    status,
++    timestamp: Date.now(),
++  });
++  
++  if (this._statusCache.size > 100) {
++    const sortedEntries = Array.from(this._statusCache.entries())
++      .sort((a, b) => a[1].timestamp - b[1].timestamp);
++    
++    const toDelete = sortedEntries.slice(0, 20);
++    for (const [key] of toDelete) {
++      this._statusCache.delete(key);
++    }
++  }
++}
++
++ async status(filepath: string | string[]) {
++   if (Array.isArray(filepath)) {
++     const results = new Map<string, string>();
++     const filesToCheck: string[] = [];
++     const cachedResults: Array<{ path: string; status: string }> = [];
++
++     for (const file of filepath) {
++       const cached = this._getCachedStatus(file);
++       if (cached !== null) {
++         cachedResults.push({ path: file, status: cached });
++       } else {
++         filesToCheck.push(file);
++       }
++     }
++
++     if (filesToCheck.length > 0) {
++       const statusPromises = filesToCheck.map(async file => {
++         const posixPath = convertToPosixSep(file);
++         const status = await git.status({
++           ...this._baseOpts,
++           filepath: posixPath,
++         });
++         this._setCachedStatus(file, status);
++         return { path: file, status };
++       });
++
++       const freshResults = await Promise.all(statusPromises);
++      
++       for (const { path, status } of freshResults) {
++         results.set(path, status);
++       }
++     }
++
++     for (const { path, status } of cachedResults) {
++       results.set(path, status);
++     }
++
++     return results;
++   }
++
++   const cached = this._getCachedStatus(filepath);
++   if (cached !== null) {
++     return cached;
++   }
++
++   const status = await git.status({
++     ...this._baseOpts,
++     filepath: convertToPosixSep(filepath),
++   });
++  
++   this._setCachedStatus(filepath, status);
++   return status;
++ }
+ 
+   async add(relPath: string) {
+     relPath = convertToPosixSep(relPath);

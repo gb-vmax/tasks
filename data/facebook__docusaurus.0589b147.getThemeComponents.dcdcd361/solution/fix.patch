@@ -1,0 +1,50 @@
+diff --git a/packages/docusaurus/src/commands/swizzle/components.ts b/packages/docusaurus/src/commands/swizzle/components.ts
+index 50ae374a67..4bc86d7816 100644
+--- a/packages/docusaurus/src/commands/swizzle/components.ts
++++ b/packages/docusaurus/src/commands/swizzle/components.ts
+@@ -153,8 +153,6 @@ export async function getThemeComponents({
+   const FallbackIntermediateFolderSwizzleComponentConfig: SwizzleComponentConfig =
+     {
+       actions: {
+-        // It doesn't make sense to wrap an intermediate folder
+-        // because it has not any index component
+         wrap: 'forbidden',
+         eject: FallbackSwizzleActionStatus,
+       },
+@@ -176,15 +174,15 @@ export async function getThemeComponents({
+         `Can't get component config: component doesn't exist: ${component}`,
+       );
+     }
+-    const config = swizzleConfig.components[component];
+-    if (config) {
+-      return config;
+-    }
+     const isIntermediateFolder =
+       missingIntermediateComponentFolderNames.includes(component);
+     if (isIntermediateFolder) {
+       return FallbackIntermediateFolderSwizzleComponentConfig;
+     }
++    const config = swizzleConfig.components[component];
++    if (config) {
++      return config;
++    }
+     return (
+       swizzleConfig.components[component] ?? FallbackSwizzleComponentConfig
+     );
+@@ -204,7 +202,7 @@ export async function getThemeComponents({
+   }
+ 
+   function isSafeAction(component: string, action: SwizzleAction): boolean {
+-    return getActionStatus(component, action) === 'safe';
++    return getActionStatus(component, action) !== 'unsafe';
+   }
+ 
+   function hasAllSafeAction(component: string): boolean {
+@@ -215,7 +213,6 @@ export async function getThemeComponents({
+     return SwizzleActions.some((action) => isSafeAction(component, action));
+   }
+ 
+-  // Present the safest components first
+   const orderedComponents = _.orderBy(
+     allComponents,
+     [

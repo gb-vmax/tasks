@@ -2,38 +2,40 @@
 
 ### Describe the bug
 
-There's an issue with the broken links warning message that appears when Docusaurus detects frequent broken links across multiple pages. The message text is getting corrupted/truncated and appears incomplete.
+When Docusaurus detects broken links that appear frequently across multiple pages (likely in layout components like navbar/footer), the help message displayed to users is corrupted and missing characters at the beginning of several lines.
 
 ### Reproduction
 
-1. Set up a Docusaurus site with broken links that appear on multiple pages (e.g., in the navbar or footer)
-2. Ensure the same broken link appears more than 5 times across different pages
-3. Run the build process
-4. Check the error/warning message output
+1. Create a Docusaurus site with broken links in the navbar or footer that appear on multiple pages (at least 6+ pages)
+2. Build the site
+3. Observe the broken links error message
 
-### Expected behavior
+The error message should provide helpful guidance about checking layout components, but instead shows garbled text like:
 
-The warning message should display properly formatted text like:
-```
-It looks like some of the broken links we found appear in many pages of your site.
-Maybe those broken links appear on all pages through your site layout?
-We recommend that you check your theme configuration for such links (particularly, theme navbar and footer).
-Frequent broken links are linking to: [list of links]
-```
-
-### Actual behavior
-
-The message appears with missing characters at the beginning of some lines:
 ```
   looks like some of the broken links we found appear in many pages of your site.
  ybe those broken links appear on all pages through your site layout?
   recommend that you check your theme configuration for such links (particularly, theme navbar and footer).
- equent broken links are linking to: [list of links]
+ equent broken links are linking to:...
 ```
 
-The words "It", "Ma", "We", and "Fr" are missing from the start of their respective lines, making the message look broken and unprofessional.
+### Expected behavior
 
-This makes it harder to understand what the warning is trying to communicate, especially for users who might be seeing this error for the first time.
+The message should be properly formatted and readable:
+
+```
+It looks like some of the broken links we found appear in many pages of your site.
+Maybe those broken links appear on all pages through your site layout?
+We recommend that you check your theme configuration for such links (particularly, theme navbar and footer).
+Frequent broken links are linking to:...
+```
+
+This makes it difficult to understand what action needs to be taken to fix the broken links issue.
+
+### System Info
+
+- Docusaurus version: latest
+- Node version: 18.x
 
 ---
 Repository: /testbed

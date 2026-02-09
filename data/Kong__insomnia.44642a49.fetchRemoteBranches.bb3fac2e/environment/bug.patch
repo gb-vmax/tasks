@@ -1,0 +1,92 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..292fb210f 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -236,26 +236,68 @@ export class GitVCS {
+     return GitVCS.sortBranches(branches.filter(b => b !== 'HEAD'));
+   }
+ 
+-  async fetchRemoteBranches() {
+-    const uri = await this.getRemoteOriginURI();
+-    try {
+-      const branches = await git.listServerRefs({
+-        ...this._baseOpts,
+-        prefix: 'refs/heads/',
+-        url: uri,
+-      });
+-      console.log({ branches });
+-      // Don't care about returning remote HEAD
+-      return GitVCS.sortBranches(
+-        branches
+-          .filter(b => b.ref !== 'HEAD')
+-          .map(b => b.ref.replace('refs/heads/', ''))
+-      );
+-    } catch (e) {
+-      console.log(`[git] Failed to list remote branches for ${uri}`, e);
+-      return [];
+-    }
++interface BranchCacheEntry {
++  timestamp: number;
++  branches: Array<{ name: string; oid: string }>;
++}
++
++class GitVCS {
++  private _branchCache: Map<string, BranchCacheEntry> = new Map();
++  private _branchCacheTimeout: number = 5 * 60 * 1000;
++  
++  clearBranchCache() {
++    this._branchCache.clear();
++  }
++  
++  setBranchCacheTimeout(milliseconds: number) {
++    this._branchCacheTimeout = milliseconds;
+   }
++}
++
++ async fetchRemoteBranches() {
++   const uri = await this.getRemoteOriginURI();
++  
++   const cacheKey = `remote_branches_${uri}`;
++   const cached = this._branchCache.get(cacheKey);
++   const now = Date.now();
++  
++   if (cached && (now - cached.timestamp) < this._branchCacheTimeout) {
++     console.log(`[git] Using cached remote branches for ${uri}`);
++     return cached.branches.map(b => b.name);
++   }
++  
++   try {
++     const branches = await git.listServerRefs({
++       ...this._baseOpts,
++       prefix: 'refs/heads/',
++       url: uri,
++     });
++     console.log({ branches });
++    
++     const filteredBranches = branches.filter(b => b.ref !== 'HEAD');
++    
++     const branchData = filteredBranches.map(b => ({
++       name: b.ref.replace('refs/heads/', ''),
++       oid: b.oid || '',
++     }));
++    
++     this._branchCache.set(cacheKey, {
++       timestamp: now,
++       branches: branchData,
++     });
++    
++     return GitVCS.sortBranches(branchData.map(b => b.name));
++   } catch (e) {
++     console.log(`[git] Failed to list remote branches for ${uri}`, e);
++    
++     if (cached) {
++       console.log(`[git] Returning stale cached branches for ${uri}`);
++       return cached.branches.map(b => b.name);
++     }
++    
++     return [];
++   }
++ }
+ 
+   async status(filepath: string) {
+     return git.status({

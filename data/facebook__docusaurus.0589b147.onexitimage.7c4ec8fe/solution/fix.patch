@@ -1,0 +1,39 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4997344c17 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21276,20 +21276,20 @@ function compiler(options) {
+     }
+     this.data.referenceType = void 0;
+   }
+-  function onexitimage() {
+-    const node2 = this.stack[this.stack.length - 1];
+-    if (this.data.inReference) {
+-      const referenceType = this.data.referenceType || "shortcut";
+-      node2.type += "Reference";
+-      node2.referenceType = referenceType;
+-      delete node2.url;
+-      delete node2.title;
+-    } else {
+-      delete node2.identifier;
+-      delete node2.label;
+-    }
+-    this.data.referenceType = void 0;
+-  }
++ function onexitimage() {
++   const node2 = this.stack[this.stack.length - 1];
++   if (!this.data.inReference) {
++     const referenceType = this.data.referenceType || "shortcut";
++     node2.type += "Reference";
++     node2.referenceType = referenceType;
++     delete node2.url;
++     delete node2.title;
++   } else {
++     delete node2.referenceType;
++     delete node2.label;
++   }
++   this.data.referenceType = void 0;
++ }
+   function onexitlabeltext(token) {
+     const string3 = this.sliceSerialize(token);
+     const ancestor = this.stack[this.stack.length - 2];

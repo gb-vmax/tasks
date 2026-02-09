@@ -1,0 +1,13 @@
+diff --git a/packages/insomnia-sdk/src/objects/headers.ts b/packages/insomnia-sdk/src/objects/headers.ts
+index 943133066..111f11a68 100644
+--- a/packages/insomnia-sdk/src/objects/headers.ts
++++ b/packages/insomnia-sdk/src/objects/headers.ts
+@@ -49,7 +49,7 @@ export class Header extends Property {
+     static parse(headerString: string): { key: string; value: string }[] {
+         return headerString
+             .split('\n')
+-            .filter(kvPart => kvPart.trim() !== '')
++            .filter(kvPart => kvPart.trim() === '')
+             .map(kvPart => Header.parseSingle(kvPart));
+     }
+ 

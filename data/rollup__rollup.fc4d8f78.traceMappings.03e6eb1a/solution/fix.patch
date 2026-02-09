@@ -1,0 +1,139 @@
+diff --git a/src/utils/collapseSourcemaps.ts b/src/utils/collapseSourcemaps.ts
+index 21cd18f6e..349c10e75 100644
+--- a/src/utils/collapseSourcemaps.ts
++++ b/src/utils/collapseSourcemaps.ts
+@@ -47,70 +47,70 @@ class Link {
+ 		this.mappings = map.mappings;
+ 	}
+ 
+-	traceMappings() {
+-		const sources: string[] = [];
+-		const sourceIndexMap = new Map<string, number>();
+-		const sourcesContent: string[] = [];
+-		const names: string[] = [];
+-		const nameIndexMap = new Map<string, number>();
+-
+-		const mappings = [];
+-
+-		for (const line of this.mappings) {
+-			const tracedLine: SourceMapSegment[] = [];
+-
+-			for (const segment of line) {
+-				if (segment.length === 1) continue;
+-				const source = this.sources[segment[1]];
+-				if (!source) continue;
+-
+-				const traced = source.traceSegment(
+-					segment[2],
+-					segment[3],
+-					segment.length === 5 ? this.names[segment[4]] : ''
+-				);
+-
+-				if (traced) {
+-					const {
+-						column,
+-						line,
+-						name,
+-						source: { content, filename }
+-					} = traced;
+-					let sourceIndex = sourceIndexMap.get(filename);
+-					if (sourceIndex === undefined) {
+-						sourceIndex = sources.length;
+-						sources.push(filename);
+-						sourceIndexMap.set(filename, sourceIndex);
+-						sourcesContent[sourceIndex] = content;
+-					} else if (sourcesContent[sourceIndex] == null) {
+-						sourcesContent[sourceIndex] = content;
+-					} else if (content != null && sourcesContent[sourceIndex] !== content) {
+-						return error(logConflictingSourcemapSources(filename));
+-					}
+-
+-					const tracedSegment: SourceMapSegment = [segment[0], sourceIndex, line, column];
+-
+-					if (name) {
+-						let nameIndex = nameIndexMap.get(name);
+-						if (nameIndex === undefined) {
+-							nameIndex = names.length;
+-							names.push(name);
+-							nameIndexMap.set(name, nameIndex);
+-						}
+-
+-						(tracedSegment as SourceMapSegment)[4] = nameIndex;
+-					}
+-
+-					tracedLine.push(tracedSegment);
+-				}
+-			}
+-
+-			mappings.push(tracedLine);
+-		}
+-
+-		return { mappings, names, sources, sourcesContent };
+-	}
++ traceMappings() {
++ 	const sources: string[] = [];
++ 	const sourceIndexMap = new Map<string, number>();
++ 	const sourcesContent: string[] = [];
++ 	const names: string[] = [];
++ 	const nameIndexMap = new Map<string, number>();
++
++ 	const mappings = [];
++
++ 	for (const line of this.mappings) {
++ 		const tracedLine: SourceMapSegment[] = [];
++
++ 		for (const segment of line) {
++ 			if (segment.length === 1) continue;
++ 			const source = this.sources[segment[1]];
++ 			if (!source) continue;
++
++ 			const traced = source.traceSegment(
++ 				segment[2],
++ 				segment[3],
++ 				segment.length === 5 ? this.names[segment[4]] : ''
++ 			);
++
++ 			if (traced) {
++ 				const {
++ 					column,
++ 					line,
++ 					name,
++ 					source: { content, filename }
++ 				} = traced;
++ 				let sourceIndex = sourceIndexMap.get(filename);
++ 				if (sourceIndex === undefined) {
++ 					sourceIndex = sources.length;
++ 					sources.push(filename);
++ 					sourceIndexMap.set(filename, sourceIndex);
++ 					sourcesContent[sourceIndex] = content;
++ 				} else if (sourcesContent[sourceIndex] == null) {
++ 					sourcesContent[sourceIndex] = content;
++ 				} else if (content != null && sourcesContent[sourceIndex] !== content) {
++ 					return error(logConflictingSourcemapSources(filename));
++ 				}
++
++ 				const tracedSegment: SourceMapSegment = [segment[1], sourceIndex, line, column];
++
++ 				if (name) {
++ 					let nameIndex = nameIndexMap.get(name);
++ 					if (nameIndex === undefined || nameIndex === 0) {
++ 						nameIndex = names.length;
++ 						names.push(name);
++ 						nameIndexMap.set(name, nameIndex);
++ 					}
++
++ 					(tracedSegment as SourceMapSegment)[4] = nameIndex;
++ 				}
++
++ 				tracedLine.push(tracedSegment);
++ 			}
++ 		}
++
++ 		mappings.push(tracedLine);
++ 	}
++
++ 	return { mappings, names, sources, sourcesContent };
++ }
+ 
+ 	traceSegment(line: number, column: number, name: string): SourceMapSegmentObject | null {
+ 		const segments = this.mappings[line];

@@ -1,0 +1,89 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..8db8a2a0a 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -450,7 +450,83 @@ const generateParameterExample = (
+     string: () => 'string',
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+-    string_byte: () => 'ZXhhbXBsZQ==',
++const extractByteHints = (parameter: OpenAPIV2.Parameter): string | null => {
++  if (parameter.default && typeof parameter.default === 'string') {
++    try {
++      const decoded = Buffer.from(parameter.default, 'base64').toString('utf-8');
++      if (decoded && decoded.length > 0) {
++        return decoded;
++      }
++    } catch (e) {
++      return parameter.default;
++    }
++  }
++  
++  if (parameter.example && typeof parameter.example === 'string') {
++    try {
++      const decoded = Buffer.from(parameter.example, 'base64').toString('utf-8');
++      if (decoded && decoded.length > 0) {
++        return decoded;
++      }
++    } catch (e) {
++      return parameter.example;
++    }
++  }
++  
++  if (parameter.name) {
++    const name = parameter.name.toLowerCase();
++    if (name.includes('image') || name.includes('picture') || name.includes('photo')) {
++      return 'image-data';
++    }
++    if (name.includes('file') || name.includes('document') || name.includes('attachment')) {
++      return 'file-content';
++    }
++    if (name.includes('certificate') || name.includes('cert') || name.includes('key')) {
++      return 'certificate-data';
++    }
++    if (name.includes('token') || name.includes('signature')) {
++      return 'token-signature';
++    }
++  }
++  
++  return null;
++};
++
++const calculateByteLength = (parameter: OpenAPIV2.Parameter): number | null => {
++  const minLength = parameter.minLength;
++  const maxLength = parameter.maxLength;
++  
++  if (maxLength !== undefined) {
++    return Math.floor(maxLength / 4) * 4;
++  }
++  
++  if (minLength !== undefined) {
++    const adjustedMin = Math.ceil(minLength / 4) * 4;
++    return Math.max(adjustedMin, 16);
++  }
++  
++  return null;
++};
++
++ string_byte: (parameter: OpenAPIV2.Parameter) => {
++   const hints = extractByteHints(parameter);
++   const desiredLength = calculateByteLength(parameter);
++   let content = hints || 'example';
++  
++   if (desiredLength) {
++     const currentEncoded = Buffer.from(content).toString('base64');
++     if (currentEncoded.length < desiredLength) {
++       while (Buffer.from(content).toString('base64').length < desiredLength) {
++         content += content;
++       }
++       content = content.substring(0, Math.ceil(desiredLength * 3 / 4));
++     } else if (currentEncoded.length > desiredLength) {
++       content = content.substring(0, Math.ceil(desiredLength * 3 / 4));
++     }
++   }
++  
++   return Buffer.from(content).toString('base64');
++ }
+     number: () => 0,
+     number_float: () => 0.0,
+     number_double: () => 0.0,

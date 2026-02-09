@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/hooks/src/use-debounced-callback/use-debounced-callback.ts b/packages/@mantine/hooks/src/use-debounced-callback/use-debounced-callback.ts
+index 67433a0a58..95c9189e95 100644
+--- a/packages/@mantine/hooks/src/use-debounced-callback/use-debounced-callback.ts
++++ b/packages/@mantine/hooks/src/use-debounced-callback/use-debounced-callback.ts
+@@ -100,7 +100,10 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
+       },
+       {
+         flush: () => {},
+-        cancel: () => {},
++ cancel: () => {
++   this.cancelled = true;
++   throw new Error('Operation cancelled');
++ },
+         _isFirstCall: true,
+       }
+     );

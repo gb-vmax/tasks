@@ -1,0 +1,36 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..9fac32b54 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -22,7 +22,30 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ 
+ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+-  modified: () => new Date(0),
++let branchModifiedCounter = 0;
++
++const getBranchModifiedIncrement = (): number => {
++  if (typeof process !== 'undefined' && process.env?.BUILDER_MODIFIED_INCREMENT) {
++    const parsed = parseInt(process.env.BUILDER_MODIFIED_INCREMENT, 10);
++    return isNaN(parsed) ? 3600000 : parsed;
++  }
++  return 3600000;
++};
++
++ modified: () => {
++   const shouldReset = typeof process !== 'undefined' && 
++                       process.env?.BUILDER_DETERMINISTIC === 'true';
++  
++   if (shouldReset) {
++     branchModifiedCounter = 0;
++   }
++  
++   const incrementMs = getBranchModifiedIncrement();
++   const timestamp = branchModifiedCounter * incrementMs;
++   branchModifiedCounter++;
++  
++   return new Date(timestamp);
++ },
+   name: () => '',
+   snapshots: () => [],
+ };

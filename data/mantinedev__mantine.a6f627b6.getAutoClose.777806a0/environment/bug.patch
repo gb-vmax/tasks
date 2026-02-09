@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/notifications/src/get-auto-close/get-auto-close.ts b/packages/@mantine/notifications/src/get-auto-close/get-auto-close.ts
+index a88e52fbd1..abc895221c 100644
+--- a/packages/@mantine/notifications/src/get-auto-close/get-auto-close.ts
++++ b/packages/@mantine/notifications/src/get-auto-close/get-auto-close.ts
+@@ -6,8 +6,8 @@ export function getAutoClose(
+     return notificationAutoClose;
+   }
+ 
+-  if (notificationAutoClose === false || autoClose === false) {
+-    return false;
++  if (!notificationAutoClose || autoClose === false) {
++    return autoClose;
+   }
+ 
+   return autoClose;

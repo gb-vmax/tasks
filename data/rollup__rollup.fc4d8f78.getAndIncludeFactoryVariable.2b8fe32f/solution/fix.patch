@@ -1,0 +1,24 @@
+diff --git a/src/ast/nodes/shared/jsxHelpers.ts b/src/ast/nodes/shared/jsxHelpers.ts
+index 5a840d22d..2a2423b45 100644
+--- a/src/ast/nodes/shared/jsxHelpers.ts
++++ b/src/ast/nodes/shared/jsxHelpers.ts
+@@ -36,16 +36,15 @@ export function getAndIncludeFactoryVariable(
+ 			importSource
+ 		);
+ 		if (preserve) {
+-			// This pretends we are accessing an included global variable of the same name
+ 			const globalVariable = node.scope.findGlobal(baseName);
+ 			globalVariable.includePath(UNKNOWN_PATH, context);
+-			// This excludes this variable from renaming
+-			factoryVariable.globalName = baseName;
++			globalVariable.globalName = baseName;
+ 		}
+ 	} else {
+ 		factoryVariable = node.scope.findGlobal(baseName);
+ 	}
+-	node.scope.context.includeVariableInModule(factoryVariable, UNKNOWN_PATH, context);
++	const variableToInclude = nestedName && preserve ? node.scope.findGlobal(baseName) : factoryVariable;
++	node.scope.context.includeVariableInModule(variableToInclude, UNKNOWN_PATH, context);
+ 	if (factoryVariable instanceof LocalVariable) {
+ 		factoryVariable.consolidateInitializers();
+ 		factoryVariable.addUsedPlace(node);

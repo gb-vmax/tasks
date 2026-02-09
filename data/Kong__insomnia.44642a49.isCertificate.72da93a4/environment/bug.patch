@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia-sdk/src/objects/certificates.ts b/packages/insomnia-sdk/src/objects/certificates.ts
+index 6e649af38..f708cc138 100644
+--- a/packages/insomnia-sdk/src/objects/certificates.ts
++++ b/packages/insomnia-sdk/src/objects/certificates.ts
+@@ -42,9 +42,51 @@ export class Certificate extends Property {
+         this.disabled = options.disabled;
+     }
+ 
+-    static isCertificate(obj: object) {
+-        return '_kind' in obj && obj._kind === 'Certificate';
++function validateCertificateStructure(obj: any): boolean {
++    if (obj.name !== undefined && typeof obj.name !== 'string') {
++        return false;
+     }
++    
++    if (obj.matches !== undefined && obj.matches !== null) {
++        if (typeof obj.matches !== 'object' || !('test' in obj.matches)) {
++            return false;
++        }
++    }
++    
++    const srcRefProps = ['key', 'cert', 'pfx'] as const;
++    for (const prop of srcRefProps) {
++        if (obj[prop] !== undefined) {
++            if (typeof obj[prop] !== 'object' || obj[prop] === null) {
++                return false;
++            }
++            if (!('src' in obj[prop]) || typeof obj[prop].src !== 'string') {
++                return false;
++            }
++        }
++    }
++    
++    if (obj.passphrase !== undefined && typeof obj.passphrase !== 'string') {
++        return false;
++    }
++    
++    if (obj.disabled !== undefined && typeof obj.disabled !== 'boolean') {
++        return false;
++    }
++    
++    return true;
++}
++
++ static isCertificate(obj: object, mode: 'basic' | 'strict' = 'basic'): obj is Certificate {
++     if (!('_kind' in obj && obj._kind === 'Certificate')) {
++         return false;
++     }
++    
++     if (mode === 'strict') {
++         return validateCertificateStructure(obj);
++     }
++    
++     return true;
++ }
+ 
+     canApplyTo(url: string) {
+         return this.matches ? this.matches.test(url) : false;

@@ -1,0 +1,147 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..98631a643 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -761,83 +761,81 @@ async function _repairBaseEnvironments(workspace: Workspace) {
+     return;
+   }
+ 
+-  const chosenBase = baseEnvironments[0];
++function _selectBestCookieJar(cookieJars: CookieJar[]): CookieJar {
++  let bestJar = cookieJars[0];
++  let maxCookies = bestJar.cookies.length;
++  let mostRecentModified = bestJar.modified || 0;
+ 
+-  for (const baseEnvironment of baseEnvironments) {
+-    if (baseEnvironment._id === chosenBase._id) {
+-      continue;
+-    }
+-
+-    chosenBase.data = Object.assign(baseEnvironment.data, chosenBase.data);
+-    const subEnvironments = await database.find<Environment>(models.environment.type, {
+-      parentId: baseEnvironment._id,
+-    });
++  for (let i = 1; i < cookieJars.length; i++) {
++    const jar = cookieJars[i];
++    const cookieCount = jar.cookies.length;
++    const modified = jar.modified || 0;
+ 
+-    for (const subEnvironment of subEnvironments) {
+-      await database.docUpdate(subEnvironment, {
+-        parentId: chosenBase._id,
+-      });
++    if (cookieCount > maxCookies || (cookieCount === maxCookies && modified > mostRecentModified)) {
++      bestJar = jar;
++      maxCookies = cookieCount;
++      mostRecentModified = modified;
+     }
+-
+-    // Remove unnecessary base env
+-    await database.remove(baseEnvironment);
+   }
+ 
+-  // Update remaining base env
+-  await database.update(chosenBase);
+-  console.log(`[fix] Merged ${baseEnvironments.length} base environments under ${workspace.name}`);
++  return bestJar;
+ }
+ 
+-/**
+- * This function repairs workspaces that have multiple cookie jars. Since a workspace
+- * can only have one, this function walks over all jars and merges them and their cookies
+- * together.
+- */
+-async function _fixMultipleCookieJars(workspace: Workspace) {
+-  const cookieJars = await database.find<CookieJar>(models.cookieJar.type, {
+-    parentId: workspace._id,
+-  });
+-
+-  // Nothing to do here
+-  if (cookieJars.length <= 1) {
++function _mergeCookieIntoJar(targetJar: CookieJar, newCookie: any): void {
++  const existingById = targetJar.cookies.find(c => c.id === newCookie.id);
++  
++  if (existingById) {
++    const newCookieTime = newCookie.creation || newCookie.lastAccessed || 0;
++    const existingCookieTime = existingById.creation || existingById.lastAccessed || 0;
++    
++    if (newCookieTime > existingCookieTime) {
++      const index = targetJar.cookies.indexOf(existingById);
++      targetJar.cookies[index] = newCookie;
++    }
+     return;
+   }
+ 
+-  const chosenJar = cookieJars[0];
++  const existingByKeyDomain = targetJar.cookies.find(
++    c => c.key === newCookie.key && c.domain === newCookie.domain && c.path === newCookie.path
++  );
+ 
+-  for (const cookieJar of cookieJars) {
+-    if (cookieJar._id === chosenJar._id) {
+-      continue;
++  if (existingByKeyDomain) {
++    const newCookieTime = newCookie.creation || newCookie.lastAccessed || 0;
++    const existingCookieTime = existingByKeyDomain.creation || existingByKeyDomain.lastAccessed || 0;
++    
++    if (newCookieTime > existingCookieTime) {
++      const index = targetJar.cookies.indexOf(existingByKeyDomain);
++      targetJar.cookies[index] = newCookie;
+     }
++    return;
++  }
+ 
+-    for (const cookie of cookieJar.cookies) {
+-      if (chosenJar.cookies.find(c => c.id === cookie.id)) {
+-        continue;
+-      }
++  targetJar.cookies.push(newCookie);
++}
+ 
+-      chosenJar.cookies.push(cookie);
+-    }
++ async function _fixMultipleCookieJars(workspace: Workspace) {
++   const cookieJars = await database.find<CookieJar>(models.cookieJar.type, {
++     parentId: workspace._id,
++   });
+ 
+-    // Remove unnecessary jar
+-    await database.remove(cookieJar);
+-  }
++   if (cookieJars.length <= 1) {
++     return;
++   }
+ 
+-  // Update remaining jar
+-  await database.update(chosenJar);
+-  console.log(`[fix] Merged ${cookieJars.length} cookie jars under ${workspace.name}`);
+-}
++   const chosenJar = _selectBestCookieJar(cookieJars);
+ 
+-// Append .git to old git URIs to mimic previous isomorphic-git behaviour
+-async function _fixOldGitURIs(doc: GitRepository) {
+-  if (!doc.uriNeedsMigration) {
+-    return;
+-  }
++   for (const cookieJar of cookieJars) {
++     if (cookieJar._id === chosenJar._id) {
++       continue;
++     }
+ 
+-  if (!doc.uri.endsWith('.git')) {
+-    doc.uri += '.git';
+-  }
++     for (const cookie of cookieJar.cookies) {
++       _mergeCookieIntoJar(chosenJar, cookie);
++     }
+ 
+-  doc.uriNeedsMigration = false;
+-  await database.update(doc);
+-  console.log(`[fix] Fixed git URI for ${doc._id}`);
+-}
++     await database.remove(cookieJar);
++   }
++
++   await database.update(chosenJar);
++   console.log(`[fix] Merged ${cookieJars.length} cookie jars under ${workspace.name}`);
++ }

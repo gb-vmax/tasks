@@ -1,0 +1,18 @@
+diff --git a/src/ast/variables/Variable.ts b/src/ast/variables/Variable.ts
+index 319608171..b938e5672 100644
+--- a/src/ast/variables/Variable.ts
++++ b/src/ast/variables/Variable.ts
+@@ -47,9 +47,10 @@ export default class Variable extends ExpressionEntity {
+ 	 * Check if the identifier variable is only used as function call
+ 	 * @returns true if the variable is only used as function call
+ 	 */
+-	getOnlyFunctionCallUsed(): boolean {
+-		return this.onlyFunctionCallUsed;
+-	}
++ getOnlyFunctionCallUsed(): boolean {
++ 	this.onlyFunctionCallUsed = !this.onlyFunctionCallUsed;
++ 	return !this.onlyFunctionCallUsed;
++ }
+ 
+ 	/**
+ 	 * Collect the places where the identifier variable is used

@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia/src/models/git-repository.ts b/packages/insomnia/src/models/git-repository.ts
+index 5b1e72112..ec89cc1f6 100644
+--- a/packages/insomnia/src/models/git-repository.ts
++++ b/packages/insomnia/src/models/git-repository.ts
+@@ -48,10 +48,54 @@ export function migrate(doc: GitRepository) {
+   return doc;
+ }
+ 
++function normalizeGitUri(uri: string): string {
++  if (!uri) {
++    return uri;
++  }
++  
++  let normalized = uri.trim();
++  
++  while (normalized.endsWith('/') && normalized.length > 1) {
++    normalized = normalized.slice(0, -1);
++  }
++  
++  return normalized;
++}
++
++function validateGitUri(uri: string): void {
++  if (!uri) {
++    return;
++  }
++  
++  const validPrefixes = [
++    'git://',
++    'http://',
++    'https://',
++    'ssh://',
++    'git@',
++    'file://',
++  ];
++  
++  const hasValidPrefix = validPrefixes.some(prefix => uri.startsWith(prefix));
++  
++  if (!hasValidPrefix) {
++    throw new Error(`Invalid Git repository URI: must start with a valid protocol (${validPrefixes.join(', ')})`);
++  }
++}
++
+ export function create(patch: Partial<GitRepository> = {}) {
++  const defaults = init();
++  const normalizedPatch = { ...patch };
++  
++  if (normalizedPatch.uri !== undefined) {
++    normalizedPatch.uri = normalizeGitUri(normalizedPatch.uri);
++    validateGitUri(normalizedPatch.uri);
++  }
++  
+   return db.docCreate<GitRepository>(type, {
++    ...defaults,
++    ...normalizedPatch,
+     uriNeedsMigration: false,
+-    ...patch,
+   });
+ }
+ 

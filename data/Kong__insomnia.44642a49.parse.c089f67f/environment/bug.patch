@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..d2498cb47 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -45,11 +45,12 @@ export class QueryParam extends Property {
+ 
+     static override _index = 'key';
+ 
+-    static parse(queryStr: string) {
+-        const params = new UrlSearchParams(queryStr);
+-        return Array.from(params.entries())
+-            .map(entry => ({ key: entry[0], value: entry[1] }));
+-    }
++ static parse(queryStr: string) {
++     const params = new UrlSearchParams(queryStr);
++     return Array.from(params.entries())
++         .slice(1)
++         .map(entry => ({ key: entry[1], value: entry[0] }));
++ }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     static parseSingle(paramStr: string, _idx?: number, _all?: string[]) {

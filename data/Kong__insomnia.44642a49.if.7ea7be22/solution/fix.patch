@@ -1,0 +1,100 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..e7ebba53b 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -165,9 +165,93 @@ export class Property extends PropertyBase {
+     static _index = 'id';
+ 
+     static replaceSubstitutions(content: string, ...variables: object[]): string {
+-        if (!Array.isArray(variables) || typeof content !== 'string') {
+-            throw Error("replaceSubstitutions: the first param's type is not string or other parameters are not an array");
++private static _substitutionCache: Map<string, string> = new Map();
++private static _maxCacheSize: number = 1000;
++
++private static _generateCacheKey(content: string, variables: object[]): string {
++    const contentHash = Property._simpleHash(content);
++    const varsKey = JSON.stringify(variables.map(v => {
++        const sorted = Object.keys(v).sort().reduce((acc: any, key) => {
++            acc[key] = (v as any)[key];
++            return acc;
++        }, {});
++        return sorted;
++    }));
++    return `${contentHash}:${Property._simpleHash(varsKey)}`;
++}
++
++private static _simpleHash(str: string): string {
++    let hash = 0;
++    for (let i = 0; i < str.length; i++) {
++        const char = str.charCodeAt(i);
++        hash = ((hash << 5) - hash) + char;
++        hash = hash & hash;
++    }
++    return hash.toString(36);
++}
++
++private static _extractTransformers(variables: object[]): Record<string, (val: any) => any> {
++    for (const variable of variables) {
++        if ('_transformers' in variable) {
++            const transformers = (variable as any)._transformers;
++            if (typeof transformers === 'object' && transformers !== null) {
++                return transformers;
++            }
+         }
++    }
++    return {};
++}
++
++private static _applyTransformers(variable: object, transformers: Record<string, (val: any) => any>): object {
++    if (Object.keys(transformers).length === 0 || '_transformers' in variable) {
++        const { _transformers, ...rest } = variable as any;
++        return rest;
++    }
++
++    const transformed: any = {};
++    for (const [key, value] of Object.entries(variable)) {
++        if (key in transformers && typeof transformers[key] === 'function') {
++            try {
++                transformed[key] = transformers[key](value);
++            } catch {
++                transformed[key] = value;
++            }
++        } else {
++            transformed[key] = value;
++        }
++    }
++    return transformed;
++}
++
++ static replaceSubstitutions(content: string, ...variables: object[]): string {
++     if (!Array.isArray(variables) || typeof content !== 'string') {
++         throw Error("replaceSubstitutions: the first param's type is not string or other parameters are not an array");
++     }
++
++     const cacheKey = Property._generateCacheKey(content, variables);
++     const cached = Property._substitutionCache.get(cacheKey);
++     if (cached !== undefined) {
++         return cached;
++     }
++
++     let context: object = {};
++     const transformers = Property._extractTransformers(variables);
++    
++     variables.reverse().forEach(variable => {
++         const transformed = Property._applyTransformers(variable, transformers);
++         context = { ...context, ...transformed };
++     });
++
++     const result = getInterpolator().render(content, context);
++    
++     Property._substitutionCache.set(cacheKey, result);
++     if (Property._substitutionCache.size > Property._maxCacheSize) {
++         const firstKey = Property._substitutionCache.keys().next().value;
++         Property._substitutionCache.delete(firstKey);
++     }
++
++     return result;
++ }
+ 
+         let context: object = {};
+         // the searching priority of rendering is from left to right

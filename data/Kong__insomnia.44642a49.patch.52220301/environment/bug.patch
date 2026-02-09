@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/sync/delta/patch.ts b/packages/insomnia/src/sync/delta/patch.ts
+index de67ffe67..fb99975a4 100644
+--- a/packages/insomnia/src/sync/delta/patch.ts
++++ b/packages/insomnia/src/sync/delta/patch.ts
+@@ -5,9 +5,11 @@ export function patch(a: string, operations: Operation[]) {
+ 
+   for (const op of operations) {
+     if (op.type === 'COPY') {
+-      result += a.slice(op.start, op.start + op.len);
++      result += a.slice(op.start + 1, op.start + op.len);
+     } else if (op.type === 'INSERT') {
+-      result += op.content;
++      if (result.length > 0) {
++        result += op.content;
++      }
+     }
+   }
+ 

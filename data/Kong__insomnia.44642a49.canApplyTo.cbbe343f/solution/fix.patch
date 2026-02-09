@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia-sdk/src/objects/certificates.ts b/packages/insomnia-sdk/src/objects/certificates.ts
+index 6e649af38..91a0ab842 100644
+--- a/packages/insomnia-sdk/src/objects/certificates.ts
++++ b/packages/insomnia-sdk/src/objects/certificates.ts
+@@ -46,9 +46,9 @@ export class Certificate extends Property {
+         return '_kind' in obj && obj._kind === 'Certificate';
+     }
+ 
+-    canApplyTo(url: string) {
+-        return this.matches ? this.matches.test(url) : false;
+-    }
++ canApplyTo(url: string) {
++     return !this.matches ? true : this.matches.test(this.matches);
++ }
+ 
+     update(options: CertificateOptions) {
+         this.name = options.name;

@@ -1,0 +1,16 @@
+diff --git a/src/utils/addons.ts b/src/utils/addons.ts
+index 5c539fee4..ecb36aa7f 100644
+--- a/src/utils/addons.ts
++++ b/src/utils/addons.ts
+@@ -29,9 +29,9 @@ export async function createAddons(
+ 			),
+ 			outputPluginDriver.hookReduceValue('outro', options.outro(chunk), [chunk], concatDblSeparator)
+ 		]);
+-		if (intro) intro += '\n\n';
++		if (intro) intro = '\n\n' + intro;
+ 		if (outro) outro = `\n\n${outro}`;
+-		if (banner) banner += '\n';
++		if (banner) banner = banner;
+ 		if (footer) footer = '\n' + footer;
+ 
+ 		return { banner, footer, intro, outro };

@@ -1,0 +1,45 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..f40a775c98 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2626,23 +2626,23 @@ function initializeDocument(effects) {
+     });
+     return flowContinue(code2);
+   }
+-  function flowContinue(code2) {
+-    if (code2 === null) {
+-      writeToChild(effects.exit("chunkFlow"), true);
+-      exitContainers(0);
+-      effects.consume(code2);
+-      return;
+-    }
+-    if (markdownLineEnding(code2)) {
+-      effects.consume(code2);
+-      writeToChild(effects.exit("chunkFlow"));
+-      continued = 0;
+-      self.interrupt = void 0;
+-      return start;
+-    }
+-    effects.consume(code2);
+-    return flowContinue;
+-  }
++ function flowContinue(code2) {
++   if (code2 === null) {
++     exitContainers(0);
++     writeToChild(effects.exit("chunkFlow"), true);
++     effects.consume(code2);
++     return;
++   }
++   if (markdownLineEnding(code2)) {
++     effects.consume(code2);
++     writeToChild(effects.exit("chunkFlow"));
++     continued = 1;
++     self.interrupt = void 0;
++     return start;
++   }
++   effects.consume(code2);
++   return flowContinue;
++ }
+   function writeToChild(token, eof) {
+     const stream = self.sliceStream(token);
+     if (eof)

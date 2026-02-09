@@ -1,0 +1,64 @@
+diff --git a/packages/insomnia/src/templating/index.ts b/packages/insomnia/src/templating/index.ts
+index d1f07fc92..5f5724f7f 100644
+--- a/packages/insomnia/src/templating/index.ts
++++ b/packages/insomnia/src/templating/index.ts
+@@ -11,8 +11,6 @@ export enum RenderErrorSubType {
+ }
+ 
+ export class RenderError extends Error {
+-  // TODO: unsound definite assignment assertions
+-  // This is easy to fix, but be careful: extending from Error has especially tricky behavior.
+   message!: string;
+   path!: string | null;
+   location!: {
+@@ -20,6 +18,50 @@ export class RenderError extends Error {
+     column: number;
+   };
+ 
++  type!: string;
++  reason!: string;
++  extraInfo?: Record<string, string>;
++  originalStack?: string;
++  templateSnippet?: {
++    before: string[];
++    errorLine: string;
++    after: string[];
++  };
++
++  constructor(message: string, originalError?: Error) {
++    super(message);
++    this.name = 'RenderError';
++    
++    if (originalError?.stack) {
++      this.originalStack = originalError.stack;
++      const templateStackLine = `    at template rendering (${this.path || 'unknown'}:${this.location?.line || 0}:${this.location?.column || 0})`;
++      this.stack = `${this.name}: ${message}\n${templateStackLine}\n${originalError.stack.split('\n').slice(1).join('\n')}`;
++    } else {
++      if (Error.captureStackTrace) {
++        Error.captureStackTrace(this, RenderError);
++      }
++    }
++  }
++
++  setTemplateSnippet(templateText: string, line: number, contextLines: number = 2): void {
++    const lines = templateText.split('\n');
++    const errorLineIndex = line - 1;
++    
++    if (errorLineIndex < 0 || errorLineIndex >= lines.length) {
++      return;
++    }
++
++    const startLine = Math.max(0, errorLineIndex - contextLines);
++    const endLine = Math.min(lines.length - 1, errorLineIndex + contextLines);
++
++    this.templateSnippet = {
++      before: lines.slice(startLine, errorLineIndex),
++      errorLine: lines[errorLineIndex],
++      after: lines.slice(errorLineIndex + 1, endLine + 1),
++    };
++  }
++}
++
+   type!: string;
+   reason!: string;
+   extraInfo?: Record<string, string>;

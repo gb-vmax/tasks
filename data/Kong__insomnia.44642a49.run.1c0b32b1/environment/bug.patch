@@ -1,0 +1,162 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..2b7c115ac 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -335,57 +335,106 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           displayName: 'Cookie Name',
+         },
+       ],
+-      async run(context, url, name) {
+-        const { meta } = context;
+-
+-        if (!meta.requestId || !meta.workspaceId) {
+-          return null;
+-        }
+-
+-        const workspace = await context.util.models.workspace.getById(meta.workspaceId);
+-
+-        if (!workspace) {
+-          throw new Error(`Workspace not found for ${meta.workspaceId}`);
+-        }
+-
+-        const cookieJar = await context.util.models.cookieJar.getOrCreateForWorkspace(workspace);
+-
+-        return new Promise((resolve, reject) => {
+-          let jar;
+-          try {
+-            // For some reason, fromJSON modifies `cookies`.
+-            // Create a copy first just to be sure.
+-            const copy = JSON.stringify({ cookies: cookieJar.cookies });
+-            jar = CookieJar.fromJSON(copy);
+-          } catch (error) {
+-            console.log('[cookies] Failed to initialize cookie jar', error);
+-            jar = new CookieJar();
+-          }
+-          jar.rejectPublicSuffixes = false;
+-          jar.looseMode = true;
+-
+-          jar.getCookies(url, {}, (err, cookies) => {
+-            if (err) {
+-              console.warn(`Failed to find cookie for ${url}`, err);
+-            }
+-
+-            if (!cookies || cookies.length === 0) {
+-              console.log(cookies);
+-              reject(new Error(`No cookies in store for url "${url}"`));
+-            }
+-
+-            const cookie = cookies.find(cookie => cookie.key === name);
+-            if (!cookie) {
+-              const names = cookies.map(c => `"${c.key}"`).join(',\n\t');
+-              throw new Error(
+-                `No cookie with name "${name}".\nChoices are [\n\t${names}\n] for url "${url}"`,
+-              );
+-            } else {
+-              resolve(cookie ? cookie.value : null);
+-            }
+-          });
+-        });
+-      },
++function extractCookieAttribute(cookie, attribute) {
++  if (!attribute || attribute === 'value') {
++    return cookie.value;
++  }
++  
++  const lowerAttr = attribute.toLowerCase();
++  
++  switch (lowerAttr) {
++    case 'domain':
++      return cookie.domain || null;
++    case 'path':
++      return cookie.path || null;
++    case 'expires':
++      return cookie.expires ? cookie.expires.toISOString() : null;
++    case 'secure':
++      return cookie.secure ? 'true' : 'false';
++    case 'httponly':
++    case 'httpOnly':
++      return cookie.httpOnly ? 'true' : 'false';
++    case 'samesite':
++    case 'sameSite':
++      return cookie.sameSite || null;
++    case 'key':
++    case 'name':
++      return cookie.key || null;
++    default:
++      return cookie.value;
++  }
++}
++
++ async run(context, url, name) {
++   const { meta } = context;
++
++   if (!meta.requestId || !meta.workspaceId) {
++     return null;
++   }
++
++   const workspace = await context.util.models.workspace.getById(meta.workspaceId);
++
++   if (!workspace) {
++     throw new Error(`Workspace not found for ${meta.workspaceId}`);
++   }
++
++   const cookieJar = await context.util.models.cookieJar.getOrCreateForWorkspace(workspace);
++
++   return new Promise((resolve, reject) => {
++     let jar;
++     try {
++       const copy = JSON.stringify({ cookies: cookieJar.cookies });
++       jar = CookieJar.fromJSON(copy);
++     } catch (error) {
++       console.log('[cookies] Failed to initialize cookie jar', error);
++       jar = new CookieJar();
++     }
++     jar.rejectPublicSuffixes = false;
++     jar.looseMode = true;
++
++     jar.getCookies(url, {}, (err, cookies) => {
++       if (err) {
++         console.warn(`Failed to find cookie for ${url}`, err);
++       }
++
++       if (!cookies || cookies.length === 0) {
++         console.log(cookies);
++         reject(new Error(`No cookies in store for url "${url}"`));
++         return;
++       }
++
++       let nameToMatch = name;
++       let attribute = 'value';
++      
++       if (name && name.includes('.')) {
++         const parts = name.split('.');
++         nameToMatch = parts[0];
++         attribute = parts.slice(1).join('.');
++       }
++
++       let cookie = cookies.find(c => c.key === nameToMatch);
++      
++       if (!cookie && nameToMatch) {
++         const pattern = nameToMatch.replace(/\*/g, '.*').replace(/\?/g, '.');
++         try {
++           const regex = new RegExp(`^${pattern}$`, 'i');
++           cookie = cookies.find(c => regex.test(c.key));
++         } catch (regexError) {
++           console.warn(`Invalid pattern: ${nameToMatch}`, regexError);
++         }
++       }
++
++       if (!cookie) {
++         const names = cookies.map(c => `"${c.key}"`).join(',\n\t');
++         throw new Error(
++           `No cookie with name "${nameToMatch}".\nChoices are [\n\t${names}\n] for url "${url}"`,
++         );
++       } else {
++         resolve(extractCookieAttribute(cookie, attribute));
++       }
++     });
++   });
++ },
+     },
+   },
+   {

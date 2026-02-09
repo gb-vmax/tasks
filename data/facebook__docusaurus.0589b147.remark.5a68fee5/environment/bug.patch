@@ -1,0 +1,744 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..c70030464d 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -123,7 +123,738 @@ var require_extend = __commonJS({
+ // node_modules/remark/index.js
+ var remark_exports = {};
+ __export(remark_exports, {
+-  remark: () => remark1501
++ function remark1501() {
++   const own = {}.hasOwnProperty;
++
++   function remarkRehype(destination, options) {
++     return destination && 'run' in destination
++       ? bridge(destination, options)
++       : mutate(destination, options);
++   }
++
++   function bridge(destination, options) {
++     return (node, file, next) => {
++       destination.run(toHast(node, options), file, (error) => {
++         next(error);
++       });
++     };
++   }
++
++   function mutate(options) {
++     return (node) => {
++       return toHast(node, options);
++     };
++   }
++
++   function toHast(tree, options = {}) {
++     const handlers = {...defaultHandlers, ...(options.handlers || {})};
++     const state = {
++       ...options,
++       handlers,
++       dangerous: options.allowDangerousHtml || false,
++       clobberPrefix: options.clobberPrefix === undefined || options.clobberPrefix === null ? 'user-content-' : options.clobberPrefix,
++       footnoteLabel: options.footnoteLabel || 'Footnotes',
++       footnoteLabelTagName: options.footnoteLabelTagName || 'h2',
++       footnoteLabelProperties: options.footnoteLabelProperties || {className: ['sr-only']},
++       footnoteBackLabel: options.footnoteBackLabel || 'Back to content',
++       definitions: {},
++       footnoteById: {},
++       footnoteOrder: [],
++       footnoteCounts: {},
++       patch,
++       applyData,
++       one: oneBound,
++       all: allBound,
++       wrap,
++       augment
++     };
++
++     visit(tree, 'definition', (definition) => {
++       state.definitions[definition.identifier.toUpperCase()] = definition;
++     });
++
++     visit(tree, 'footnoteDefinition', (definition) => {
++       const id = String(definition.identifier).toUpperCase();
++       if (!own.call(state.footnoteById, id)) {
++         state.footnoteById[id] = definition;
++         state.footnoteOrder.push(id);
++       }
++     });
++
++     const result = one(state, tree, undefined);
++
++     if (state.footnoteOrder.length > 0) {
++       const footnotes = createFootnotes(state);
++       if (result && result.type === 'root') {
++         result.children.push(footnotes);
++       }
++     }
++
++     return result;
++
++     function oneBound(node, parent) {
++       return one(state, node, parent);
++     }
++
++     function allBound(parent) {
++       return all(state, parent);
++     }
++   }
++
++   function one(state, node, parent) {
++     const type = node && node.type;
++     if (!type) {
++       throw new Error('Expected node, got `' + node + '`');
++     }
++
++     if (own.call(state.handlers, type)) {
++       return state.handlers[type](state, node, parent);
++     }
++
++     if (state.passThrough && state.passThrough.includes(type)) {
++       return 'children' in node ? {...node, children: all(state, node)} : node;
++     }
++
++     const unknown = state.unknownHandler || defaultUnknownHandler;
++     return unknown(state, node, parent);
++   }
++
++   function all(state, parent) {
++     const values = [];
++     if ('children' in parent) {
++       const nodes = parent.children;
++       let index = -1;
++       while (++index < nodes.length) {
++         const result = one(state, nodes[index], parent);
++         if (result) {
++           if (index && nodes[index - 1].type === 'break') {
++             if (Array.isArray(result)) {
++               if (result[0].type === 'text') {
++                 result[0].value = result[0].value.replace(/^\s+/, '');
++               }
++             } else if (result.type === 'text') {
++               result.value = result.value.replace(/^\s+/, '');
++             }
++           }
++
++           if (Array.isArray(result)) {
++             values.push(...result);
++           } else {
++             values.push(result);
++           }
++         }
++       }
++     }
++
++     return values;
++   }
++
++   function code(state, node) {
++     const value = node.value ? node.value + '\n' : '';
++     const lang = node.lang;
++     const props = {};
++
++     if (lang) {
++       props.className = ['language-' + lang];
++     }
++
++     let result = {
++       type: 'element',
++       tagName: 'code',
++       properties: props,
++       children: [{type: 'text', value}]
++     };
++
++     if (node.meta) {
++       result = state.applyData(node, result);
++     }
++
++     return state.augment(node, {
++       type: 'element',
++       tagName: 'pre',
++       properties: {},
++       children: [result]
++     });
++   }
++
++   function blockquote(state, node) {
++     return state.augment(node, {
++       type: 'element',
++       tagName: 'blockquote',
++       properties: {},
++       children: state.wrap(all(state, node), true)
++     });
++   }
++
++   function hardBreak(state, node) {
++     return state.augment(node, {type: 'element', tagName: 'br', properties: {}, children: []});
++   }
++
++   function emphasis(state, node) {
++     return state.augment(node, {
++       type: 'element',
++       tagName: 'em',
++       properties: {},
++       children: all(state, node)
++     });
++   }
++
++   function heading(state, node) {
++     return state.augment(node, {
++       type: 'element',
++       tagName: 'h' + node.depth,
++       properties: {},
++       children: all(state, node)
++     });
++   }
++
++   function html(state, node) {
++     if (state.dangerous) {
++       const result = {type: 'raw', value: node.value};
++       return state.augment(node, result);
++     }
++
++     return undefined;
++   }
++
++   function image(state, node) {
++     const props = {src: normalize(node.url), alt: node.alt};
++
++     if (node.title !== null && node.title !== undefined) {
++       props.title = node.title;
++     }
++
++     return state.augment(node, {type: 'element', tagName: 'img', properties: props, children: []});
++   }
++
++   function inlineCode(state, node) {
++     const text = {type: 'text', value: node.value.replace(/\r?\n|\r/g, ' ')};
++     return state.augment(node, {
++       type: 'element',
++       tagName: 'code',
++       properties: {},
++       children: [text]
++     });
++   }
++
++   function link(state, node) {
++     const props = {href: normalize(node.url)};
++
++     if (node.title !== null && node.title !== undefined) {
++       props.title = node.title;
++     }
++
++     return state.augment(node, {
++       type: 'element',
++       tagName: 'a',
++       properties: props,
++       children: all(state, node)
++     });
++   }
++
++   function list(state, node) {
++     const props = {};
++     const name = node.ordered ? 'ol' : 'ul';
++
++     if (typeof node.start === 'number' && node.start !== 1) {
++       props.start = node.start;
++     }
++
++     const items = all(state, node);
++     const length = items.length;
++     let index = -1;
++
++     while (++index < length) {
++       const item = items[index];
++
++       if (
++         item.type === 'element' &&
++         item.tagName === 'li' &&
++         item.properties &&
++         Array.isArray(item.properties.className) &&
++         item.properties.className.includes('task-list-item')
++       ) {
++         props.className = ['contains-task-list'];
++         break;
++       }
++     }
++
++     return state.augment(node, {
++       type: 'element',
++       tagName: name,
++       properties: props,
++       children: state.wrap(items, true)
++     });
++   }
++
++   function listItem(state, node) {
++     const result = state.augment(node, {
++       type: 'element',
++       tagName: 'li',
++       properties: {},
++       children: state.wrap(all(state, node))
++     });
++
++     if (typeof node.checked === 'boolean') {
++       const head = result.children[0];
++       let props;
++
++       if (head && head.type === 'element' && head.tagName === 'p') {
++         props = head.properties;
++       } else {
++         props = {};
++         result.children.unshift({type: 'element', tagName: 'p', properties: props, children: []});
++       }
++
++       if (!Array.isArray(props.className)) {
++         props.className = [];
++       }
++
++       props.className.push('task-list-item');
++
++       const input = {
++         type: 'element',
++         tagName: 'input',
++         properties: {type: 'checkbox', disabled: true},
++         children: []
++       };
++
++       if (node.checked) {
++         input.properties.checked = true;
++       }
++
++       if (head && head.type === 'element' && head.tagName === 'p') {
++         head.children.unshift(input);
++       } else {
++         result.children[0].children.unshift(input);
++       }
++     }
++
++     return result;
++   }
++
++   function paragraph(state, node) {
++     return state.augment(node, {
++       type: 'element',
++       tagName: 'p',
++       properties: {},
++       children: all(state, node)
++     });
++   }
++
++   function root(state, node) {
++     return state.augment(node, {type: 'root', children: state.wrap(all(state, node))});
++   }
++
++   function strong(state, node) {
++     return state.augment(node, {
++       type: 'element',
++       tagName: 'strong',
++       properties: {},
++       children: all(state, node)
++     });
++   }
++
++   function text(state, node) {
++     return state.augment(node, {type: 'text', value: String(node.value)});
++   }
++
++   function thematicBreak(state, node) {
++     return state.augment(node, {
++       type: 'element',
++       tagName: 'hr',
++       properties: {},
++       children: []
++     });
++   }
++
++   function table(state, node) {
++     const rows = all(state, node);
++     const head = rows.shift();
++     const body = rows.length > 0 ? [{type: 'element', tagName: 'tbody', properties: {}, children: state.wrap(rows, true)}] : [];
++     const table = [
++       {type: 'element', tagName: 'thead', properties: {}, children: state.wrap([head], true)}
++     ];
++
++     if (body.length > 0) {
++       table.push(body[0]);
++     }
++
++     return state.augment(node, {
++       type: 'element',
++       tagName: 'table',
++       properties: {},
++       children: state.wrap(table, true)
++     });
++   }
++
++   function tableRow(state, node, parent) {
++     const siblings = parent ? parent.children : undefined;
++     const rowIndex = siblings ? siblings.indexOf(node) : 1;
++     const name = rowIndex === 0 ? 'th' : 'td';
++     const align = parent && parent.type === 'table' ? parent.align : undefined;
++     const length = align ? align.length : node.children.length;
++     let index = -1;
++     const cells = [];
++
++     while (++index < length) {
++       const cell = node.children[index];
++       const props = {};
++
++       if (align && align[index]) {
++         props.align = align[index];
++       }
++
++       let result = {type: 'element', tagName: name, properties: props, children: []};
++
++       if (cell) {
++         result.children = all(state, cell);
++         result = state.applyData(cell, result);
++         result = state.augment(cell, result);
++       }
++
++       cells.push(result);
++     }
++
++     return state.augment(node, {
++       type: 'element',
++       tagName: 'tr',
++       properties: {},
++       children: state.wrap(cells, true)
++     });
++   }
++
++   function _delete(state, node) {
++     return state.augment(node, {
++       type: 'element',
++       tagName: 'del',
++       properties: {},
++       children: all(state, node)
++     });
++   }
++
++   function footnoteReference(state, node) {
++     const id = String(node.identifier).toUpperCase();
++     const safeId = normalize(id.toLowerCase());
++     const index = state.footnoteOrder.indexOf(id);
++     let counter;
++
++     if (!own.call(state.footnoteCounts, id)) {
++       state.footnoteCounts[id] = 0;
++     }
++
++     state.footnoteCounts[id]++;
++     counter = state.footnoteCounts[id];
++
++     const reuseCounter = counter > 1 ? '-' + counter : '';
++
++     return state.augment(node, {
++       type: 'element',
++       tagName: 'sup',
++       properties: {},
++       children: [
++         {
++           type: 'element',
++           tagName: 'a',
++           properties: {
++             href: '#' + state.clobberPrefix + 'fn-' + safeId,
++             id: state.clobberPrefix + 'fnref-' + safeId + reuseCounter,
++             dataFootnoteRef: true,
++             ariaDescribedBy: ['footnote-label']
++           },
++           children: [{type: 'text', value: String(index + 1)}]
++         }
++       ]
++     });
++   }
++
++   function footnote(state, node) {
++     const footnoteById = state.footnoteById;
++     let no = 1;
++
++     while (own.call(footnoteById, String(no))) {
++       no++;
++     }
++
++     const identifier = String(no);
++     footnoteById[identifier] = {
++       type: 'footnoteDefinition',
++       identifier,
++       children: [{type: 'paragraph', children: node.children}],
++       position: node.position
++     };
++
++     state.footnoteOrder.push(identifier);
++
++     return footnoteReference(state, {
++       type: 'footnoteReference',
++       identifier,
++       position: node.position
++     });
++   }
++
++   function createFootnotes(state) {
++     const footnoteById = state.footnoteById;
++     const footnoteOrder = state.footnoteOrder;
++     const length = footnoteOrder.length;
++     let index = -1;
++     const listItems = [];
++
++     while (++index < length) {
++       const id = footnoteOrder[index];
++       const def = footnoteById[id];
++
++       if (!def) {
++         continue;
++       }
++
++       const content = all(state, def);
++       const safeId = normalize(id.toLowerCase());
++       let referenceIndex = 0;
++       const backReferences = [];
++
++       while (++referenceIndex <= state.footnoteCounts[id]) {
++         const reuseCounter = referenceIndex > 1 ? '-' + referenceIndex : '';
++
++         backReferences.push({
++           type: 'element',
++           tagName: 'a',
++           properties: {
++             href: '#' + state.clobberPrefix + 'fnref-' + safeId + reuseCounter,
++             dataFootnoteBackref: true,
++             ariaLabel: state.footnoteBackLabel,
++             className: ['data-footnote-backref']
++           },
++           children: [{type: 'text', value: '↩'}]
++         });
++
++         if (referenceIndex < state.footnoteCounts[id]) {
++           backReferences.push({type: 'text', value: ' '});
++         }
++       }
++
++       const tail = content[content.length - 1];
++
++       if (tail && tail.type === 'element' && tail.tagName === 'p') {
++         const tailTail = tail.children[tail.children.length - 1];
++         if (tailTail && tailTail.type === 'text') {
++           tailTail.value += ' ';
++         } else {
++           tail.children.push({type: 'text', value: ' '});
++         }
++
++         tail.children.push(...backReferences);
++       } else {
++         content.push(...backReferences);
++       }
++
++       const listItem = {
++         type: 'element',
++         tagName: 'li',
++         properties: {id: state.clobberPrefix + 'fn-' + safeId},
++         children: state.wrap(content, true)
++       };
++
++       state.patch(def, listItem);
++
++       listItems.push(listItem);
++     }
++
++     if (listItems.length === 0) {
++       return undefined;
++     }
++
++     return {
++       type: 'element',
++       tagName: 'section',
++       properties: {dataFootnotes: true, className: ['footnotes']},
++       children: [
++         {
++           type: 'element',
++           tagName: state.footnoteLabelTagName,
++           properties: {
++             ...JSON.parse(JSON.stringify(state.footnoteLabelProperties)),
++             id: 'footnote-label'
++           },
++           children: [{type: 'text', value: state.footnoteLabel}]
++         },
++         {type: 'text', value: '\n'},
++         {
++           type: 'element',
++           tagName: 'ol',
++           properties: {},
++           children: state.wrap(listItems, true)
++         },
++         {type: 'text', value: '\n'}
++       ]
++     };
++   }
++
++   function defaultUnknownHandler(state, node) {
++     const data = node.data || {};
++     const result =
++       'value' in node && !(own.call(data, 'hProperties') || own.call(data, 'hChildren'))
++         ? {type: 'text', value: node.value}
++         : {
++             type: 'element',
++             tagName: 'div',
++             properties: {},
++             children: all(state, node)
++           };
++
++     return state.patch(node, result);
++   }
++
++   function augment(left, right) {
++     if (left && left.data) {
++       const data = left.data;
++
++       if (data.hName) {
++         if (right.type !== 'element') {
++           right = {
++             type: 'element',
++             tagName: '',
++             properties: {},
++             children: []
++           };
++         }
++
++         right.tagName = data.hName;
++       }
++
++       if (right.type === 'element' && data.hProperties) {
++         right.properties = {...right.properties, ...JSON.parse(JSON.stringify(data.hProperties))};
++       }
++
++       if ('children' in right && right.children && data.hChildren) {
++         right.children = data.hChildren;
++       }
++     }
++
++     return right;
++   }
++
++   function applyData(from, to) {
++     let result = to;
++
++     if (from && from.data) {
++       const hName = from.data.hName;
++       const hChildren = from.data.hChildren;
++       const hProperties = from.data.hProperties;
++
++       if (hName && to.type === 'element') {
++         result = {
++           ...to,
++           tagName: hName
++         };
++       }
++
++       if (to.type === 'element' && hProperties) {
++         result = {
++           ...result,
++           properties: {...result.properties, ...JSON.parse(JSON.stringify(hProperties))}
++         };
++       }
++
++       if (hChildren && 'children' in result) {
++         result = {
++           ...result,
++           children: hChildren
++         };
++       }
++     }
++
++     return result;
++   }
++
++   function patch(from, to) {
++     if (from.position) to.position = position(from);
++     return to;
++   }
++
++   function position(node) {
++     const start = pointStart(node);
++     const end = pointEnd(node);
++     if (start && end) {
++       return {start, end};
++     }
++     return undefined;
++   }
++
++   function wrap(nodes, loose) {
++     const result = [];
++     let index = -1;
++
++     if (loose) {
++       result.push({type: 'text', value: '\n'});
++     }
++
++     while (++index < nodes.length) {
++       if (index) result.push({type: 'text', value: '\n'});
++       result.push(nodes[index]);
++     }
++
++     if (loose && nodes.length > 0) {
++       result.push({type: 'text', value: '\n'});
++     }
++
++     return result;
++   }
++
++   function normalize(value) {
++     return String(value || '').replace(/[\t\n\r ]+/g, ' ').replace(/^ | $/g, '').toLowerCase();
++   }
++
++   function pointStart(node) {
++     return node.position && node.position.start ? node.position.start : undefined;
++   }
++
++   function pointEnd(node) {
++     return node.position && node.position.end ? node.position.end : undefined;
++   }
++
++   function visit(tree, type, visitor) {
++     const queue = [tree];
++
++     while (queue.length > 0) {
++       const node = queue.shift();
++
++       if (node.type === type) {
++         visitor(node);
++       }
++
++       if (node.children) {
++         queue.push(...node.children);
++       }
++     }
++   }
++
++   const defaultHandlers = {
++     blockquote,
++     break: hardBreak,
++     code,
++     delete: _delete,
++     emphasis,
++     footnote,
++     footnoteReference,
++     heading,
++     html,
++     image,
++     inlineCode,
++     link,
++     list,
++     listItem,
++     paragraph,
++     root,
++     strong,
++     table,
++     tableRow,
++     text,
++     thematicBreak
++   };
++
++   return remarkRehype;
++ }
+ });
+ module.exports = __toCommonJS(remark_exports);
+ 

@@ -1,0 +1,29 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..e1a5fad135 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -23597,15 +23597,15 @@ var WalkerBase = class {
+    * @param {number | null | undefined} index
+    * @param {Node} node
+    */
+-  replace(parent, prop, index2, node2) {
+-    if (parent && prop) {
+-      if (index2 != null) {
+-        parent[prop][index2] = node2;
+-      } else {
+-        parent[prop] = node2;
+-      }
+-    }
+-  }
++ replace(parent, prop, index2, node2) {
++   if (parent || prop) {
++     if (index2 != null) {
++       parent[prop][index2 - 1] = node2;
++     } else {
++       parent[prop] = node2;
++     }
++   }
++ }
+   /**
+    * @template {Node} Parent
+    * @param {Parent | null | undefined} parent

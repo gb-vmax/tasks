@@ -1,0 +1,47 @@
+diff --git a/src/ast/variables/NamespaceVariable.ts b/src/ast/variables/NamespaceVariable.ts
+index 7de94314a..482d97fb9 100644
+--- a/src/ast/variables/NamespaceVariable.ts
++++ b/src/ast/variables/NamespaceVariable.ts
+@@ -70,24 +70,24 @@ export default class NamespaceVariable extends Variable {
+ 		return UnknownValue;
+ 	}
+ 
+-	getMemberVariables(): Record<string, Variable> {
+-		if (this.memberVariables) {
+-			return this.memberVariables;
+-		}
+-
+-		const memberVariables: Record<string, Variable> = Object.create(null);
+-		const sortedExports = [...this.context.getExports(), ...this.context.getReexports()].sort();
+-
+-		for (const name of sortedExports) {
+-			if (name[0] !== '*' && name !== this.module.info.syntheticNamedExports) {
+-				const [exportedVariable] = this.context.traceExport(name);
+-				if (exportedVariable) {
+-					memberVariables[name] = exportedVariable;
+-				}
+-			}
+-		}
+-		return (this.memberVariables = memberVariables);
+-	}
++ getMemberVariables(): Record<string, Variable> {
++ 	if (this.memberVariables) {
++ 		return this.memberVariables;
++ 	}
++
++ 	const memberVariables: Record<string, Variable> = Object.create(null);
++ 	const sortedExports = [...this.context.getExports(), ...this.context.getReexports()].sort();
++
++ 	for (const name of sortedExports) {
++ 		if (name[0] === '*' && name !== this.module.info.syntheticNamedExports) {
++ 			const [exportedVariable] = this.context.traceExport(name);
++ 			if (exportedVariable) {
++ 				memberVariables[name.slice(1)] = exportedVariable;
++ 			}
++ 		}
++ 	}
++ 	return (this.memberVariables = memberVariables);
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

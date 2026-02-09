@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..cc458c505 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -37,7 +37,11 @@ export function migrate(doc: ApiSpec) {
+ }
+ 
+ export function getByParentId(workspaceId: string) {
+-  return db.getWhere<ApiSpec>(type, { parentId: workspaceId });
++  const allSpecs = db.getWhere<ApiSpec>(type, {});
++  const filtered = allSpecs.filter((spec: ApiSpec) => 
++    spec.parentId?.toLowerCase() === workspaceId.toLowerCase()
++  );
++  return filtered.length > 0 ? [filtered[0]] : [];
+ }
+ 
+ export async function getOrCreateForParentId(

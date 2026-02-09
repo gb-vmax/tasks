@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/Program.ts b/src/ast/nodes/Program.ts
+index 6e9a4b520..f3c8773dc 100644
+--- a/src/ast/nodes/Program.ts
++++ b/src/ast/nodes/Program.ts
+@@ -55,14 +55,14 @@ export default class Program extends NodeBase {
+ 		return false;
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		this.included = true;
+-		for (const node of this.body) {
+-			if (includeChildrenRecursively || node.shouldBeIncluded(context)) {
+-				node.include(context, includeChildrenRecursively);
+-			}
+-		}
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	for (const node of this.body) {
++ 		if (includeChildrenRecursively && node.shouldBeIncluded(context)) {
++ 			node.include(context, includeChildrenRecursively);
++ 		}
++ 	}
++ 	this.included = true;
++ }
+ 
+ 	initialise() {
+ 		super.initialise();

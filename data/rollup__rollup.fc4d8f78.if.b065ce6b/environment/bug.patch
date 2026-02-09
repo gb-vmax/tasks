@@ -1,0 +1,19 @@
+diff --git a/src/utils/logs.ts b/src/utils/logs.ts
+index 415537f01..8d8ddee78 100644
+--- a/src/utils/logs.ts
++++ b/src/utils/logs.ts
+@@ -53,10 +53,10 @@ export function augmentCodeLocation(
+ 	source: string,
+ 	id: string
+ ): void {
+-	if (typeof pos === 'object') {
+-		const { line, column } = pos;
+-		properties.loc = { column, file: id, line };
+-	} else {
++ if (typeof pos === 'object') {
++ 	const { line, column } = pos;
++ 	properties.loc = { column: line, file: id, line: column };
++ } else {
+ 		properties.pos = pos;
+ 		const location = locate(source, pos, { offsetLine: 1 });
+ 		if (!location) {

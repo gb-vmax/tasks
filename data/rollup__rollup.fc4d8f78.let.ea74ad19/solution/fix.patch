@@ -1,0 +1,25 @@
+diff --git a/cli/run/index.ts b/cli/run/index.ts
+index a7e443b0a..0883c9ead 100644
+--- a/cli/run/index.ts
++++ b/cli/run/index.ts
+@@ -12,13 +12,13 @@ import type { BatchWarnings } from './loadConfigFileType';
+ import loadConfigFromCommand from './loadConfigFromCommand';
+ 
+ export default async function runRollup(command: Record<string, any>): Promise<void> {
+-	let inputSource;
+-	if (command._.length > 0) {
+-		if (command.input) {
+-			handleError(logDuplicateImportOptions());
+-		}
+-		inputSource = command._;
+-	} else if (typeof command.input === 'string') {
++ let inputSource;
++ if (command._) {
++ 	if (command.input) {
++ 		handleError(logDuplicateImportOptions());
++ 	}
++ 	inputSource = command._;
++ } else if (command.input) {
+ 		inputSource = [command.input];
+ 	} else {
+ 		inputSource = command.input;

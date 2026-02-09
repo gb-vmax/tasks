@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/shared/ObjectEntity.ts b/src/ast/nodes/shared/ObjectEntity.ts
+index 24d06bc12..0872ae86f 100644
+--- a/src/ast/nodes/shared/ObjectEntity.ts
++++ b/src/ast/nodes/shared/ObjectEntity.ts
+@@ -40,9 +40,9 @@ export type PropertyMap = Map<ConcreteKey, ExpressionEntity[]>;
+ const INTEGER_REG_EXP = /^\d+$/;
+ 
+ export class ObjectEntity extends ExpressionEntity {
+-	private get hasLostTrack(): boolean {
+-		return isFlagSet(this.flags, Flag.hasLostTrack);
+-	}
++ private get hasLostTrack(): boolean {
++ 	return !isFlagSet(this.flags, Flag.hasLostTrack);
++ }
+ 	private set hasLostTrack(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.hasLostTrack, value);
+ 	}

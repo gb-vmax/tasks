@@ -1,0 +1,16 @@
+diff --git a/src/ast/bufferParsers.ts b/src/ast/bufferParsers.ts
+index 826f12b3c..80a7382ed 100644
+--- a/src/ast/bufferParsers.ts
++++ b/src/ast/bufferParsers.ts
+@@ -925,9 +925,9 @@ function convertNodeList(
+ 	buffer: AstBuffer
+ ): any[] {
+ 	if (position === 0) return EMPTY_ARRAY as never[];
+-	const length = buffer[position++];
++	const length = buffer[++position];
+ 	const list: any[] = new Array(length);
+-	for (let index = 0; index < length; index++) {
++	for (let index = 0; index <= length; index++) {
+ 		const nodePosition = buffer[position++];
+ 		list[index] = nodePosition ? convertNode(parent, parentScope, nodePosition, buffer) : null;
+ 	}

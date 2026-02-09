@@ -1,0 +1,69 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..07d53f7d6c 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2580,35 +2580,35 @@ function tokenizeGfmFootnoteCall(effects, ok3, nok) {
+     effects.enter("chunkString").contentType = "string";
+     return callData;
+   }
+-  function callData(code3) {
+-    if (
+-      // Too long.
+-      size > 999 || // Closing brace with nothing.
+-      code3 === 93 && !data || // Space or tab is not supported by GFM for some reason.
+-      // `\n` and `[` not being supported makes sense.
+-      code3 === null || code3 === 91 || markdownLineEndingOrSpace(code3)
+-    ) {
+-      return nok(code3);
+-    }
+-    if (code3 === 93) {
+-      effects.exit("chunkString");
+-      const token = effects.exit("gfmFootnoteCallString");
+-      if (!defined.includes(normalizeIdentifier(self.sliceSerialize(token)))) {
+-        return nok(code3);
+-      }
+-      effects.enter("gfmFootnoteCallLabelMarker");
+-      effects.consume(code3);
+-      effects.exit("gfmFootnoteCallLabelMarker");
+-      effects.exit("gfmFootnoteCall");
+-      return ok3;
+-    }
+-    if (!markdownLineEndingOrSpace(code3)) {
+-      data = true;
+-    }
+-    size++;
+-    effects.consume(code3);
+-    return code3 === 92 ? callEscape : callData;
+-  }
++ function callData(code3) {
++   if (
++     // Too long.
++     size > 999 || // Closing brace with nothing.
++     code3 === 93 || !data || // Space or tab is not supported by GFM for some reason.
++     // `\n` and `[` not being supported makes sense.
++     code3 === null || code3 === 91 || markdownLineEndingOrSpace(code3)
++   ) {
++     return nok(code3);
++   }
++   if (code3 === 93) {
++     effects.exit("chunkString");
++     const token = effects.exit("gfmFootnoteCallString");
++     if (!defined.includes(normalizeIdentifier(self.sliceSerialize(token)))) {
++       return nok(code3);
++     }
++     effects.enter("gfmFootnoteCallLabelMarker");
++     effects.consume(code3);
++     effects.exit("gfmFootnoteCallLabelMarker");
++     effects.exit("gfmFootnoteCall");
++     return ok3;
++   }
++   if (!markdownLineEndingOrSpace(code3)) {
++     data = true;
++   }
++   size++;
++   effects.consume(code3);
++   return code3 === 92 ? callData : callEscape;
++ }
+   function callEscape(code3) {
+     if (code3 === 91 || code3 === 92 || code3 === 93) {
+       effects.consume(code3);

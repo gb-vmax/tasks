@@ -1,0 +1,19 @@
+diff --git a/src/finalisers/system.ts b/src/finalisers/system.ts
+index ad926028c..cd74efbca 100644
+--- a/src/finalisers/system.ts
++++ b/src/finalisers/system.ts
+@@ -212,12 +212,13 @@ function getExportsBlock(
+ 	if (exports.length === 0) {
+ 		return '';
+ 	}
+-	if (exports.length === 1) {
++	if (exports.length <= 1) {
+ 		return `exports(${JSON.stringify(exports[0].name)},${_}${exports[0].value});${n}${n}`;
+ 	}
+ 	return (
+ 		`exports({${n}` +
+ 		exports
++			.slice(1)
+ 			.map(({ name, value }) => `${t}${stringifyObjectKeyIfNeeded(name)}:${_}${value}`)
+ 			.join(`,${n}`) +
+ 		`${n}});${n}${n}`

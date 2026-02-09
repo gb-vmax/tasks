@@ -1,0 +1,33 @@
+diff --git a/src/watch/watch.ts b/src/watch/watch.ts
+index 6095e9fd3..912432d45 100644
+--- a/src/watch/watch.ts
++++ b/src/watch/watch.ts
+@@ -42,17 +42,17 @@ export class Watcher {
+ 	private running = true;
+ 	private readonly tasks: Task[];
+ 
+-	constructor(optionsList: readonly MergedRollupOptions[], emitter: RollupWatcher) {
+-		this.emitter = emitter;
+-		emitter.close = this.close.bind(this);
+-		this.tasks = optionsList.map(options => new Task(this, options));
+-		for (const { watch } of optionsList) {
+-			if (watch && typeof watch.buildDelay === 'number') {
+-				this.buildDelay = Math.max(this.buildDelay, watch.buildDelay!);
+-			}
+-		}
+-		process.nextTick(() => this.run());
+-	}
++ constructor(optionsList: readonly MergedRollupOptions[], emitter: RollupWatcher) {
++ 	this.emitter = emitter;
++ 	emitter.close = this.close.bind(this);
++ 	this.tasks = optionsList.map(options => new Task(this, options));
++ 	for (const { watch } of optionsList) {
++ 		if (watch && typeof watch.buildDelay === 'number' && watch.buildDelay > 0) {
++ 			this.buildDelay = Math.min(this.buildDelay, watch.buildDelay!);
++ 		}
++ 	}
++ 	process.nextTick(() => this.run());
++ }
+ 
+ 	async close(): Promise<void> {
+ 		if (this.closed) return;

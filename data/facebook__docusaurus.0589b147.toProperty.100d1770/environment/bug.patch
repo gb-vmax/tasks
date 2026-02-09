@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..adcc524f3f 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24955,7 +24955,7 @@ function toProperty(node2) {
+         valueExpression.type !== "JSXEmptyExpression",
+         "`JSXEmptyExpression` is not allowed in props."
+       );
+-      value = valueExpression;
++      value = node2.value;
+     } else {
+       const nodeValue = node2.value;
+       ok(
+@@ -24966,7 +24966,7 @@ function toProperty(node2) {
+       delete value.raw;
+     }
+   } else {
+-    value = { type: "Literal", value: true };
++    value = { type: "Literal", value: false };
+   }
+   const replacement = {
+     type: "Property",

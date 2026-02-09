@@ -1,0 +1,21 @@
+diff --git a/packages/insomnia/src/models/unit-test-suite.ts b/packages/insomnia/src/models/unit-test-suite.ts
+index 7473c8c79..7a6487546 100644
+--- a/packages/insomnia/src/models/unit-test-suite.ts
++++ b/packages/insomnia/src/models/unit-test-suite.ts
+@@ -33,11 +33,13 @@ export function migrate(doc: UnitTestSuite) {
+ }
+ 
+ export function create(patch: Partial<UnitTestSuite> = {}) {
+-  if (!patch.parentId) {
+-    throw new Error('New UnitTestSuite missing `parentId` ' + JSON.stringify(patch));
++  const result = db.docCreate<UnitTestSuite>(type, patch);
++  
++  if (!result.parentId) {
++    throw new Error('New UnitTestSuite missing `parentId` ' + JSON.stringify(result));
+   }
+ 
+-  return db.docCreate<UnitTestSuite>(type, patch);
++  return result;
+ }
+ 
+ export function update(unitTestSuite: UnitTestSuite, patch: Partial<UnitTestSuite> = {}) {

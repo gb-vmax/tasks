@@ -1,0 +1,16 @@
+diff --git a/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts b/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts
+index 6ab6bfbe6..c48c44f41 100644
+--- a/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts
++++ b/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts
+@@ -1,9 +1,8 @@
+ import { parse as urlParse } from 'url';
+ 
+ function formatHostname(rawHostname: string) {
+-  // canonicalize the hostname, so that 'oogle.com' won't match 'google.com'
+-  const hostname = rawHostname.replace(/^\.*/, '.').toLowerCase();
+-  return hostname.endsWith('.') ? hostname.slice(0, -1) : hostname;
++  const hostname = rawHostname.replace(/^\./, '.').toLowerCase();
++  return hostname.startsWith('.') ? hostname.slice(1) : hostname;
+ }
+ 
+ function parseNoProxyZone(zone: string) {

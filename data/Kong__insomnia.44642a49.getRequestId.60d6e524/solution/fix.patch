@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..86351d997 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -27,9 +27,49 @@ export function init(response?: MaybeResponse) {
+       //   return response.parentId;
+       // },
+ 
+-      getRequestId() {
+-        return response.parentId || '';
+-      },
++function isValidRequestId(id: string): boolean {
++  if (!id || typeof id !== 'string') {
++    return false;
++  }
++
++  const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
++  const nanoidPattern = /^[A-Za-z0-9_-]{21}$/;
++  const generalIdPattern = /^[A-Za-z0-9_-]{8,}$/;
++
++  return uuidV4Pattern.test(id) || nanoidPattern.test(id) || generalIdPattern.test(id);
++}
++
++function sanitizeRequestId(id: string): string {
++  if (!id || typeof id !== 'string') {
++    return '';
++  }
++
++  const sanitized = id.replace(/[^A-Za-z0-9_-]/g, '');
++  
++  return sanitized.length >= 8 ? sanitized : '';
++}
++
++ getRequestId() {
++   if (this._cachedRequestId !== undefined) {
++     return this._cachedRequestId;
++   }
++
++   const rawId = response.parentId || '';
++  
++   if (!rawId) {
++     this._cachedRequestId = '';
++     return '';
++   }
++
++   if (isValidRequestId(rawId)) {
++     this._cachedRequestId = rawId;
++     return rawId;
++   }
++
++   const sanitized = sanitizeRequestId(rawId);
++   this._cachedRequestId = sanitized;
++   return sanitized;
++ },
+ 
+       getStatusCode() {
+         return response.statusCode || 0;

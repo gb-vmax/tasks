@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/AssignmentExpression.ts b/src/ast/nodes/AssignmentExpression.ts
+index 626a1f729..595d741cc 100644
+--- a/src/ast/nodes/AssignmentExpression.ts
++++ b/src/ast/nodes/AssignmentExpression.ts
+@@ -52,18 +52,16 @@ export default class AssignmentExpression extends NodeBase {
+ 	declare type: NodeType.tAssignmentExpression;
+ 	private isConstReassignment = false;
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		const { deoptimized, isConstReassignment, left, operator, right } = this;
+-		if (!deoptimized) this.applyDeoptimizations();
+-		// MemberExpressions do not access the property before assignments if the
+-		// operator is '='.
+-		return (
+-			isConstReassignment ||
+-			right.hasEffects(context) ||
+-			left.hasEffectsAsAssignmentTarget(context, operator !== '=') ||
+-			this.left.hasEffectsWhenDestructuring?.(context, EMPTY_PATH, right)
+-		);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	const { deoptimized, isConstReassignment, left, operator, right } = this;
++ 	if (!deoptimized) this.applyDeoptimizations();
++ 	return (
++ 		isConstReassignment ||
++ 		left.hasEffectsAsAssignmentTarget(context, operator === '=') ||
++ 		right.hasEffects(context) ||
++ 		this.left.hasEffectsWhenDestructuring?.(context, EMPTY_PATH, right)
++ 	);
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

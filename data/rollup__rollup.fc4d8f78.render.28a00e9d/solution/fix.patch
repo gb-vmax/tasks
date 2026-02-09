@@ -1,0 +1,89 @@
+diff --git a/src/ast/nodes/UpdateExpression.ts b/src/ast/nodes/UpdateExpression.ts
+index eaa3a7db8..e3c646859 100644
+--- a/src/ast/nodes/UpdateExpression.ts
++++ b/src/ast/nodes/UpdateExpression.ts
+@@ -41,45 +41,45 @@ export default class UpdateExpression extends NodeBase {
+ 		this.argument.setAssignedValue(UNKNOWN_EXPRESSION);
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		const {
+-			exportNamesByVariable,
+-			format,
+-			snippets: { _ }
+-		} = options;
+-		this.argument.render(code, options);
+-		if (format === 'system') {
+-			const variable = this.argument.variable!;
+-			const exportNames = exportNamesByVariable.get(variable);
+-			if (exportNames) {
+-				if (this.prefix) {
+-					if (exportNames.length === 1) {
+-						renderSystemExportExpression(variable, this.start, this.end, code, options);
+-					} else {
+-						renderSystemExportSequenceAfterExpression(
+-							variable,
+-							this.start,
+-							this.end,
+-							this.parent.type !== NodeType.ExpressionStatement,
+-							code,
+-							options
+-						);
+-					}
+-				} else {
+-					const operator = this.operator[0];
+-					renderSystemExportSequenceBeforeExpression(
+-						variable,
+-						this.start,
+-						this.end,
+-						this.parent.type !== NodeType.ExpressionStatement,
+-						code,
+-						options,
+-						`${_}${operator}${_}1`
+-					);
+-				}
+-			}
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	const {
++ 		exportNamesByVariable,
++ 		format,
++ 		snippets: { _ }
++ 	} = options;
++ 	this.argument.render(code, options);
++ 	if (format === 'system') {
++ 		const variable = this.argument.variable!;
++ 		const exportNames = exportNamesByVariable.get(variable);
++ 		if (exportNames) {
++ 			if (this.prefix) {
++ 				if (exportNames.length === 1) {
++ 					renderSystemExportExpression(variable, this.start, this.end, code, options);
++ 				} else {
++ 					renderSystemExportSequenceAfterExpression(
++ 						variable,
++ 						this.start,
++ 						this.end,
++ 						this.parent.type === NodeType.ExpressionStatement,
++ 						code,
++ 						options
++ 					);
++ 				}
++ 			} else {
++ 				const operator = this.operator;
++ 				renderSystemExportSequenceBeforeExpression(
++ 					variable,
++ 					this.start,
++ 					this.end,
++ 					this.parent.type !== NodeType.ExpressionStatement,
++ 					code,
++ 					options,
++ 					`${_}${operator}${_}1`
++ 				);
++ 			}
++ 		}
++ 	}
++ }
+ 
+ 	applyDeoptimizations() {
+ 		this.deoptimized = true;

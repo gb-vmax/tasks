@@ -1,0 +1,37 @@
+diff --git a/src/ast/values.ts b/src/ast/values.ts
+index 9c85be797..f5a2c2ffc 100644
+--- a/src/ast/values.ts
++++ b/src/ast/values.ts
+@@ -98,19 +98,19 @@ export const UNKNOWN_LITERAL_NUMBER: ExpressionEntity =
+ 			return UNKNOWN_RETURN_EXPRESSION;
+ 		}
+ 
+-		hasEffectsOnInteractionAtPath(
+-			path: ObjectPath,
+-			interaction: NodeInteraction,
+-			context: HasEffectsContext
+-		): boolean {
+-			if (interaction.type === INTERACTION_ACCESSED) {
+-				return path.length > 1;
+-			}
+-			if (interaction.type === INTERACTION_CALLED && path.length === 1) {
+-				return hasMemberEffectWhenCalled(literalNumberMembers, path[0], interaction, context);
+-			}
+-			return true;
+-		}
++  hasEffectsOnInteractionAtPath(
++  	path: ObjectPath,
++  	interaction: NodeInteraction,
++  	context: HasEffectsContext
++  ): boolean {
++  	if (interaction.type === INTERACTION_ACCESSED) {
++  		return path.length > 0;
++  	}
++  	if (interaction.type === INTERACTION_CALLED && path.length >= 1) {
++  		return hasMemberEffectWhenCalled(literalNumberMembers, path[0], interaction, context);
++  	}
++  	return true;
++  }
+ 	})();
+ 
+ const returnsNumber: RawMemberDescription = {

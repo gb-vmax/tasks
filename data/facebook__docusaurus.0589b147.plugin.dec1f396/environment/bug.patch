@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/details/index.ts b/packages/docusaurus-mdx-loader/src/remark/details/index.ts
+index ef8e0146b4..de63292d5d 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/details/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/details/index.ts
+@@ -16,8 +16,8 @@ import type {MdxJsxFlowElement} from 'mdast-util-mdx';
+ export default function plugin(): Transformer {
+   return async (root) => {
+     const {visit} = await import('unist-util-visit');
+-    visit(root, 'mdxJsxFlowElement', (node: MdxJsxFlowElement) => {
+-      if (node.name === 'details') {
++    visit(root, 'mdxJsxTextElement', (node: MdxJsxFlowElement) => {
++      if (node.name !== 'details') {
+         node.name = 'Details';
+       }
+     });

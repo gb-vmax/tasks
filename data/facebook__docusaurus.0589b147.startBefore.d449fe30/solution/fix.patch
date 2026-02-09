@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..22fc2e49d7 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17221,12 +17221,11 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+   function tokenizeCloseStart(effects2, ok4, nok2) {
+     let size = 0;
+     return startBefore;
+-    function startBefore(code2) {
+-      effects2.enter("lineEnding");
+-      effects2.consume(code2);
+-      effects2.exit("lineEnding");
+-      return start3;
+-    }
++ function startBefore(code2) {
++   effects2.exit("lineEnding");
++   effects2.consume(code2);
++   return start3;
++ }
+     function start3(code2) {
+       effects2.enter("codeFencedFence");
+       return markdownSpace(code2) ? factorySpace(

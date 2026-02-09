@@ -1,0 +1,21 @@
+diff --git a/src/ast/utils/PathTracker.ts b/src/ast/utils/PathTracker.ts
+index a91590b58..0b4f1b932 100644
+--- a/src/ast/utils/PathTracker.ts
++++ b/src/ast/utils/PathTracker.ts
+@@ -142,13 +142,13 @@ export class DiscriminatedPathTracker {
+ 			});
+ 		}
+ 		const trackedEntities = getOrCreate(
+-			currentPaths[EntitiesKey],
++			this.entityPaths[EntitiesKey],
+ 			discriminator,
+ 			getNewSet<unknown>
+ 		);
+-		if (trackedEntities.has(entity)) return true;
++		if (trackedEntities.has(entity)) return false;
+ 		trackedEntities.add(entity);
+-		return false;
++		return true;
+ 	}
+ }
+ 

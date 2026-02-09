@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..ea014f0ef 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -51,9 +51,74 @@ export function init(response?: MaybeResponse) {
+         return models.response.getBodyBuffer(response);
+       },
+ 
+-      getBodyStream() {
+-        return models.response.getBodyStream(response);
+-      },
++import { createGunzip, createInflate, createBrotliDecompress } from 'zlib';
++import { Transform } from 'stream';
++
++function createRangeStream(sourceStream: NodeJS.ReadableStream, start: number, end: number | undefined, totalSize?: number): NodeJS.ReadableStream {
++  let bytesRead = 0;
++  const endByte = end !== undefined ? end : (totalSize ? totalSize - 1 : Infinity);
++  
++  const rangeTransform = new Transform({
++    transform(chunk: Buffer, encoding, callback) {
++      const chunkStart = bytesRead;
++      const chunkEnd = bytesRead + chunk.length - 1;
++      bytesRead += chunk.length;
++
++      if (chunkEnd < start) {
++        callback();
++        return;
++      }
++
++      if (chunkStart > endByte) {
++        this.push(null);
++        callback();
++        return;
++      }
++
++      const sliceStart = Math.max(0, start - chunkStart);
++      const sliceEnd = Math.min(chunk.length, endByte - chunkStart + 1);
++
++      callback(null, chunk.slice(sliceStart, sliceEnd));
++    }
++  });
++
++  return sourceStream.pipe(rangeTransform);
++}
++
++function createDecompressionStream(sourceStream: NodeJS.ReadableStream, encoding: string): NodeJS.ReadableStream {
++  if (encoding.includes('gzip')) {
++    return sourceStream.pipe(createGunzip());
++  } else if (encoding.includes('deflate')) {
++    return sourceStream.pipe(createInflate());
++  } else if (encoding.includes('br')) {
++    return sourceStream.pipe(createBrotliDecompress());
++  }
++  
++  return sourceStream;
++}
++
++ getBodyStream(options?: { range?: { start: number; end?: number }; autoDecompress?: boolean }) {
++   const baseStream = models.response.getBodyStream(response);
++  
++   if (!options) {
++     return baseStream;
++   }
++
++   let stream = baseStream;
++
++   if (options.range) {
++     stream = createRangeStream(stream, options.range.start, options.range.end, response.bytesContent);
++   }
++
++   if (options.autoDecompress) {
++     const encoding = this.getHeader('content-encoding');
++     if (encoding && typeof encoding === 'string') {
++       stream = createDecompressionStream(stream, encoding.toLowerCase());
++     }
++   }
++
++   return stream;
++ },
+ 
+       setBody(body: Buffer) {
+         // Should never happen but just in case it does...

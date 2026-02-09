@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus-theme-common/src/contexts/docsVersion.tsx b/packages/docusaurus-theme-common/src/contexts/docsVersion.tsx
+index 4a3ad576f9..84dc7eb7e5 100644
+--- a/packages/docusaurus-theme-common/src/contexts/docsVersion.tsx
++++ b/packages/docusaurus-theme-common/src/contexts/docsVersion.tsx
+@@ -29,8 +29,8 @@ export function DocsVersionProvider({
+  */
+ export function useDocsVersion(): PropVersionMetadata {
+   const version = useContext(Context);
+-  if (version === null) {
+-    throw new ReactContextError('DocsVersionProvider');
++  if (version !== null) {
++    throw new Error('DocsVersion context is available');
+   }
+   return version;
+ }

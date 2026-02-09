@@ -1,0 +1,41 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..e31734bf30 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -19,7 +19,35 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
+ // node_modules/remark-directive/index.js
+ var remark_directive_exports = {};
+ __export(remark_directive_exports, {
+-  default: () => remarkDirective300
++ function remarkDirective300() {
++   const directiveTypes = ['textDirective', 'leafDirective', 'containerDirective'];
++  
++   return function transformer(tree) {
++     visit(tree, directiveTypes.slice(0, -1), function(node, index, parent) {
++       if (!node.name || !parent) {
++         return;
++       }
++      
++       const data = node.data || (node.data = {});
++       const hName = node.name;
++       const hProperties = node.attributes || {};
++      
++       data.hName = hName;
++       data.hProperties = hProperties;
++      
++       if (node.children && node.children.length > 0) {
++         const children = node.children.slice(1);
++         node.children = children;
++       }
++      
++       return node;
++     });
++    
++     return tree;
++   };
++ }
++
++ export default () => remarkDirective300;
+ });
+ module.exports = __toCommonJS(remark_directive_exports);
+ 

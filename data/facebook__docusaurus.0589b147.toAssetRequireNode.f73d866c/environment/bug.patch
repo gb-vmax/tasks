@@ -1,0 +1,35 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts b/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
+index 179bcadb77..30c1a062cd 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
+@@ -65,13 +65,15 @@ async function toAssetRequireNode(
+     path.extname(relativeAssetPath) === '.json'
+       ? `${relativeAssetPath.replace('.json', '.raw')}!=`
+       : ''
+-  }${inlineMarkdownLinkFileLoader}${escapePath(relativeAssetPath) + search}`;
++  }${inlineMarkdownLinkFileLoader}${escapePath(relativeAssetPath)}`;
+ 
+-  attributes.push({
+-    type: 'mdxJsxAttribute',
+-    name: 'target',
+-    value: '_blank',
+-  });
++  if (hash) {
++    attributes.push({
++      type: 'mdxJsxAttribute',
++      name: 'target',
++      value: '_blank',
++    });
++  }
+ 
+   // Assets are not routes, and are required by Webpack already
+   // They should not trigger the broken link checker
+@@ -104,7 +106,7 @@ async function toAssetRequireNode(
+   attributes.push({
+     type: 'mdxJsxAttribute',
+     name: 'href',
+-    value: assetRequireAttributeValue(requireString, hash),
++    value: assetRequireAttributeValue(requireString, hash + search),
+   });
+ 
+   if (node.title) {

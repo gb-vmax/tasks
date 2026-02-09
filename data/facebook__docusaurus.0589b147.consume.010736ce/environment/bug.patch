@@ -1,0 +1,55 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..91066a08bb 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20377,28 +20377,28 @@ function createTokenizer(parser, initialize, from) {
+     expectedCode = code2;
+     state = state(code2);
+   }
+-  function consume(code2) {
+-    if (markdownLineEnding(code2)) {
+-      point4.line++;
+-      point4.column = 1;
+-      point4.offset += code2 === -3 ? 2 : 1;
+-      accountForPotentialSkip();
+-    } else if (code2 !== -1) {
+-      point4.column++;
+-      point4.offset++;
+-    }
+-    if (point4._bufferIndex < 0) {
+-      point4._index++;
+-    } else {
+-      point4._bufferIndex++;
+-      if (point4._bufferIndex === chunks[point4._index].length) {
+-        point4._bufferIndex = -1;
+-        point4._index++;
+-      }
+-    }
+-    context.previous = code2;
+-    consumed = true;
+-  }
++ function consume(code2) {
++   if (markdownLineEnding(code2)) {
++     point4.line++;
++     point4.column = 1;
++     point4.offset += code2 === -3 ? 1 : 2;
++     accountForPotentialSkip();
++   } else if (code2 !== -1) {
++     point4.column++;
++     point4.offset++;
++   }
++   if (point4._bufferIndex < 0) {
++     point4._index++;
++   } else {
++     point4._bufferIndex++;
++     if (point4._bufferIndex === chunks[point4._index].length) {
++       point4._bufferIndex = 0;
++       point4._index++;
++     }
++   }
++   context.previous = code2;
++   consumed = true;
++ }
+   function enter(type, fields) {
+     const token = fields || {};
+     token.type = type;

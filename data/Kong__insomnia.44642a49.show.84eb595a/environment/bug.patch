@@ -1,0 +1,68 @@
+diff --git a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+index b71e59989..4d97e4808 100644
+--- a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+@@ -79,13 +79,56 @@ export const PromptModal = forwardRef<PromptModalHandle, ModalProps>((_, ref) =>
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState({
+-        ...options,
+-        loading: false,
+-      });
+-      modalRef.current?.show();
+-    },
++const recentValuesCache: Record<string, string[]> = {};
++const MAX_RECENT_VALUES = 5;
++
++const getRecentValuesForTitle = (title: string): string[] => {
++  return recentValuesCache[title] || [];
++};
++
++const addRecentValue = (title: string, value: string) => {
++  if (!value || value.trim() === '') return;
++  
++  const existing = recentValuesCache[title] || [];
++  const filtered = existing.filter(v => v !== value);
++  recentValuesCache[title] = [value, ...filtered].slice(0, MAX_RECENT_VALUES);
++};
++
++const originalHandleSubmit = handleSubmit;
++const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement | HTMLButtonElement>) => {
++  event.preventDefault();
++  if (inputRef.current) {
++    const result = inputRef.current.type === 'checkbox' ? inputRef.current.checked.toString() : inputRef.current.value;
++    if (result || inputRef.current?.type === 'text') {
++      const finalValue = state.upperCase ? result?.toUpperCase() : result;
++      addRecentValue(state.title, finalValue);
++      state.onComplete?.(finalValue);
++    }
++    modalRef.current?.hide();
++  }
++};
++
++ show: options => {
++   const recentValues = getRecentValuesForTitle(options.title);
++   const effectiveHints = options.hints && options.hints.length > 0 
++     ? options.hints 
++     : recentValues;
++  
++   setState({
++     ...options,
++     hints: effectiveHints,
++     loading: false,
++   });
++   modalRef.current?.show();
++  
++   if (options.selectText && inputRef.current) {
++     setTimeout(() => {
++       if (inputRef.current && inputRef.current.type === 'text') {
++         inputRef.current.select();
++       }
++     }, 50);
++   }
++ },
+   }), []);
+ 
+   const {

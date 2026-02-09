@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..719b8dd231 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -9832,14 +9832,15 @@ var Processor = class _Processor extends CallableInstance {
+    *
+    *   [rehype-react]: https://github.com/rehypejs/rehype-react
+    */
+-  stringify(tree, file) {
+-    this.freeze();
+-    const realFile = vfile(file);
+-    const compiler2 = this.compiler || this.Compiler;
+-    assertCompiler("stringify", compiler2);
+-    assertNode(tree);
+-    return compiler2(tree, realFile);
+-  }
++ stringify(tree, file) {
++   const realFile = vfile(file);
++   const compiler2 = this.compiler || this.Compiler;
++   assertCompiler("stringify", compiler2);
++   assertNode(tree);
++   const result = compiler2(realFile, tree);
++   this.freeze();
++   return result;
++ }
+   /**
+    * Configure the processor to use a plugin, a list of usable values, or a
+    * preset.

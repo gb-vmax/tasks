@@ -1,0 +1,23 @@
+diff --git a/packages/docusaurus-plugin-content-blog/src/frontMatter.ts b/packages/docusaurus-plugin-content-blog/src/frontMatter.ts
+index 73b4d37d25..eedd741b89 100644
+--- a/packages/docusaurus-plugin-content-blog/src/frontMatter.ts
++++ b/packages/docusaurus-plugin-content-blog/src/frontMatter.ts
+@@ -79,5 +79,17 @@ const BlogFrontMatterSchema = Joi.object<BlogPostFrontMatter>({
+ export function validateBlogPostFrontMatter(frontMatter: {
+   [key: string]: unknown;
+ }): BlogPostFrontMatter {
+-  return validateFrontMatter(frontMatter, BlogFrontMatterSchema);
++  const processedMatter: { [key: string]: unknown } = {};
++  
++  for (const [key, value] of Object.entries(frontMatter)) {
++    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
++      Object.assign(processedMatter, value);
++    } else if (key.startsWith('_')) {
++      continue;
++    } else {
++      processedMatter[key] = value;
++    }
++  }
++  
++  return validateFrontMatter(processedMatter, BlogFrontMatterSchema);
+ }

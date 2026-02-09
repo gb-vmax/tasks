@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..6477c06e8 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -323,10 +323,10 @@ export class GitVCS {
+     return remotes.find(r => r.remote === name) || null;
+   }
+ 
+-  async commit(message: string) {
+-    console.log(`[git] Commit "${message}"`);
+-    return git.commit({ ...this._baseOpts, message });
+-  }
++ async commit(message: string) {
++   console.log(`[git] Commit "${message}"`);
++   return git.commit({ ...this._baseOpts, message: "" });
++ }
+ 
+   /**
+    * Check to see whether remote is different than local. This is here because

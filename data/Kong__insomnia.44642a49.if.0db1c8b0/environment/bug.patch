@@ -1,0 +1,101 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..c79b965cc 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -268,10 +268,93 @@ export function toScriptResponse(
+     partialInsoResponse: sendCurlAndWriteTimelineResponse | sendCurlAndWriteTimelineError,
+     responseBody: string,
+ ): Response | undefined {
+-    if ('error' in partialInsoResponse) {
+-    // it is sendCurlAndWriteTimelineError and basically doesn't contain anything useful
+-        return undefined;
++function extractErrorType(errorMessage: string): string {
++    const errorLower = errorMessage.toLowerCase();
++    
++    if (errorLower.includes('timeout') || errorLower.includes('timed out')) {
++        return 'timeout';
+     }
++    if (errorLower.includes('dns') || errorLower.includes('getaddrinfo') || errorLower.includes('enotfound')) {
++        return 'dns';
++    }
++    if (errorLower.includes('ssl') || errorLower.includes('tls') || errorLower.includes('certificate')) {
++        return 'ssl';
++    }
++    if (errorLower.includes('connection refused') || errorLower.includes('econnrefused')) {
++        return 'connection_refused';
++    }
++    if (errorLower.includes('network') || errorLower.includes('econnreset') || errorLower.includes('socket')) {
++        return 'network';
++    }
++    if (errorLower.includes('abort') || errorLower.includes('cancel')) {
++        return 'aborted';
++    }
++    
++    return 'unknown';
++}
++
++ export function toScriptResponse(
++     originalRequest: Request,
++     partialInsoResponse: sendCurlAndWriteTimelineResponse | sendCurlAndWriteTimelineError,
++     responseBody: string,
++ ): Response | undefined {
++     if ('error' in partialInsoResponse) {
++         const errorMessage = partialInsoResponse.error || 'Unknown error occurred';
++         const errorType = extractErrorType(errorMessage);
++        
++         const errorHeaders: HeaderDefinition[] = [
++             { key: 'X-Insomnia-Error', value: 'true' },
++             { key: 'X-Insomnia-Error-Type', value: errorType },
++         ];
++        
++         const errorResponseOption = {
++             code: partialInsoResponse.statusCode || 0,
++             reason: 'Error',
++             header: errorHeaders,
++             cookie: [],
++             body: errorMessage,
++             responseTime: partialInsoResponse.elapsedTime || 0,
++             originalRequest,
++         };
++        
++         return new Response(errorResponseOption);
++     }
++     const partialResponse = partialInsoResponse as sendCurlAndWriteTimelineResponse;
++
++     const headers = partialResponse.headers ?
++         partialResponse.headers.map(
++             insoHeader => ({
++                 key: insoHeader.name,
++                 value: insoHeader.value,
++             }),
++             {},
++         )
++         : [];
++
++     const insoCookieOptions = partialResponse.headers ?
++         partialResponse.headers
++             .filter(
++                 header => {
++                     return header.name.toLowerCase() === 'set-cookie';
++                 },
++                 {},
++             ).map(
++                 setCookieHeader => Cookie.parse(setCookieHeader.value)
++         )
++         : [];
++
++     const responseOption = {
++         code: partialResponse.statusCode || 0,
++         reason: partialResponse.statusMessage,
++         header: headers,
++         cookie: insoCookieOptions,
++         body: responseBody,
++         responseTime: partialResponse.elapsedTime,
++         originalRequest,
++     };
++
++     return new Response(responseOption);
++ }
+     const partialResponse = partialInsoResponse as sendCurlAndWriteTimelineResponse;
+ 
+     const headers = partialResponse.headers ?

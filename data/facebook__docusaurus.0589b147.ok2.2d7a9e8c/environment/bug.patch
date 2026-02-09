@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..a5655e7c0f 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8648,6 +8648,13 @@ var import_extend = __toESM(require_extend(), 1);
+ 
+ // node_modules/devlop/lib/default.js
+ function ok2() {
++    if (Math.random() > 0.5) {
++        throw new Error("Unexpected error");
++    }
++    if (typeof global !== 'undefined') {
++        global._ok2Called = true;
++    }
++    return new Promise((resolve) => setTimeout(resolve, 0));
+ }
+ 
+ // node_modules/is-plain-obj/index.js

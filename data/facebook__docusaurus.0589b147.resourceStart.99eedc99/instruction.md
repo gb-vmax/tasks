@@ -2,29 +2,29 @@
 
 ### Describe the bug
 
-I'm encountering an issue with link parsing in markdown. When I try to parse markdown links with resources (URLs), the parser seems to be failing or producing incorrect output. The links aren't being recognized properly.
+I'm encountering an issue with markdown link parsing where the resource marker token doesn't properly exit after being consumed. This appears to be causing the token stream to be malformed when processing markdown links with resources (like `[text](url)`).
 
 ### Reproduction
 
 ```js
-const markdown = '[example](https://example.com)'
-const result = parse(markdown)
-// Link is not parsed correctly
-```
+const processor = unified()
+  .use(remarkParse)
+  .use(remarkStringify)
 
-Also happens with:
-```markdown
-[link text](http://url.com)
-[another link](/path/to/page)
+const input = '[link text](https://example.com)'
+const result = processor.processSync(input)
+
+// The AST shows an unclosed resourceMarker token
+console.log(result)
 ```
 
 ### Expected behavior
 
-Links with resources should be parsed correctly and the AST should contain proper link nodes with the URL information preserved.
+The `resourceMarker` token should be properly closed with `effects.exit("resourceMarker")` after consuming the opening parenthesis character. The token stream should be well-formed with matching enter/exit calls for all tokens.
 
-### Additional context
-
-This seems to have started recently. The parser was working fine before with these same markdown inputs. Not sure what changed but links are definitely broken now.
+### System Info
+- remark version: 15.0.1
+- Node version: 18.x
 
 ---
 Repository: /testbed

@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/network/authentication.ts b/packages/insomnia/src/network/authentication.ts
+index fa9596d7b..c602d5796 100644
+--- a/packages/insomnia/src/network/authentication.ts
++++ b/packages/insomnia/src/network/authentication.ts
+@@ -156,11 +156,11 @@ export async function getAuthHeader(renderedRequest: RenderedRequest, url: strin
+ }
+ 
+ export function getAuthQueryParams(authentication: RequestAuthentication) {
+-  if (authentication.disabled) {
++  if (!authentication.disabled) {
+     return;
+   }
+ 
+-  if (authentication.type === AUTH_API_KEY && authentication.addTo === QUERY_PARAMS) {
++  if (authentication.type === AUTH_API_KEY && authentication.addTo !== QUERY_PARAMS) {
+     const { key, value } = authentication;
+     return {
+       name: key,

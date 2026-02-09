@@ -1,0 +1,67 @@
+diff --git a/packages/insomnia/src/ui/components/editors/environment-utils.ts b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+index 9533d595b..2624a269f 100644
+--- a/packages/insomnia/src/ui/components/editors/environment-utils.ts
++++ b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+@@ -9,13 +9,60 @@ export const ensureKeyIsValid = (key: string, isRoot: boolean): string | null =>
+     return `"${key}" cannot begin with '$' or contain a '.'`;
+   }
+ 
+-  if (key === NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME && isRoot) {
+-    return `"${NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME}" is a reserved key`;
++interface ReservedKeyConfig {
++  key: string;
++  pattern?: RegExp;
++  message: string;
++}
++
++const RESERVED_KEYS_ROOT: ReservedKeyConfig[] = [
++  { key: '_id', message: '"_id" is reserved for database use' },
++  { key: '_rev', message: '"_rev" is reserved for database use' },
++  { pattern: /^__system_/, message: 'Keys beginning with "__system_" are reserved for system use' }
++];
++
++const RESERVED_KEYS_NESTED: ReservedKeyConfig[] = [
++  { pattern: /^__internal_/, message: 'Keys beginning with "__internal_" are reserved for internal use' }
++];
++
++const checkReservedKeys = (key: string, isRoot: boolean): string | null => {
++  const keysToCheck = isRoot 
++    ? RESERVED_KEYS_ROOT 
++    : RESERVED_KEYS_NESTED;
++
++  for (const config of keysToCheck) {
++    if (config.pattern) {
++      if (key.match(config.pattern)) {
++        return config.message;
++      }
++    } else if (config.key === key) {
++      return config.message;
++    }
+   }
+ 
+   return null;
+ };
+ 
++ export const ensureKeyIsValid = (key: string, isRoot: boolean): string | null => {
++   if (key.match(INVALID_NEDB_KEY_REGEX)) {
++     return `"${key}" cannot begin with '$' or contain a '.'`;
++   }
++
++   const reservedKeyError = checkReservedKeys(key, isRoot);
++   if (reservedKeyError) {
++     return reservedKeyError;
++   }
++
++   if (key === NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME && isRoot) {
++     return `"${NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME}" is a reserved key`;
++   }
++
++   return null;
++ };
++
++  return null;
++};
++
+ /**
+  * Recursively check nested keys in and immediately return when an invalid key found
+  */

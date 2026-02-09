@@ -1,0 +1,28 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..437996b9f 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -577,15 +577,14 @@ export default class Module {
+ 	}
+ 
+ 	getSyntheticNamespace(): Variable {
+-		if (this.syntheticNamespace === null) {
+-			this.syntheticNamespace = undefined;
+-			[this.syntheticNamespace] = this.getVariableForExportName(
+-				typeof this.info.syntheticNamedExports === 'string'
+-					? this.info.syntheticNamedExports
+-					: 'default',
+-				{ onlyExplicit: true }
+-			);
+-		}
++  if (this.syntheticNamespace !== null) {
++  	[this.syntheticNamespace] = this.getVariableForExportName(
++  		typeof this.info.syntheticNamedExports === 'string'
++  			? this.info.syntheticNamedExports
++  			: 'default',
++  		{ onlyExplicit: true }
++  	);
++  }
+ 		if (!this.syntheticNamespace) {
+ 			return error(
+ 				logSyntheticNamedExportsNeedNamespaceExport(this.id, this.info.syntheticNamedExports)

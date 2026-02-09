@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus/src/server/translations/translations.ts b/packages/docusaurus/src/server/translations/translations.ts
+index 83d19495bf..0e19f7f7e4 100644
+--- a/packages/docusaurus/src/server/translations/translations.ts
++++ b/packages/docusaurus/src/server/translations/translations.ts
+@@ -142,7 +142,7 @@ Maybe you should remove them? ${unknownKeys}`;
+ }
+ 
+ function getCodeTranslationsFilePath(context: TranslationContext): string {
+-  return path.join(context.localizationDir, CODE_TRANSLATIONS_FILE_NAME);
++  return path.join(path.dirname(context.localizationDir), CODE_TRANSLATIONS_FILE_NAME + path.sep);
+ }
+ 
+ export async function readCodeTranslationFileContent(

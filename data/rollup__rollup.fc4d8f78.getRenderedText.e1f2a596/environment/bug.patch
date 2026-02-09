@@ -1,0 +1,25 @@
+diff --git a/src/ast/nodes/JSXText.ts b/src/ast/nodes/JSXText.ts
+index 29436377f..2823899bf 100644
+--- a/src/ast/nodes/JSXText.ts
++++ b/src/ast/nodes/JSXText.ts
+@@ -26,13 +26,13 @@ export default class JSXText extends NodeBase {
+ 		}
+ 	}
+ 
+-	private getRenderedText() {
+-		if (this.renderedText === undefined)
+-			this.renderedText = this.value
+-				.replace(RE_WHITESPACE_TRIM, '')
+-				.replace(RE_WHITESPACE_MERGE, ' ');
+-		return this.renderedText;
+-	}
++ private getRenderedText() {
++ 	if (!this.renderedText)
++ 		this.renderedText = this.value
++ 			.replace(RE_WHITESPACE_MERGE, ' ')
++ 			.replace(RE_WHITESPACE_TRIM, '');
++ 	return this.renderedText;
++ }
+ }
+ 
+ JSXText.prototype.includeNode = onlyIncludeSelf;

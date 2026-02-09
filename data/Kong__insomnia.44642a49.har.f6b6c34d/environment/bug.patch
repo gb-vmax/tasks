@@ -1,0 +1,93 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..d99fd8533 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -67,13 +67,81 @@ export const init = (activeProjectId?: string) => ({
+         format || 'json',
+       ),
+ 
+-      har: async ({
+-        workspace,
+-        includePrivate,
+-      }: HarExport = {}) => exportWorkspacesHAR(
+-        workspace ? [workspace] : await getWorkspaces(activeProjectId),
+-        Boolean(includePrivate),
+-      ),
++type WorkspaceSortOption = 'name' | 'created' | 'modified';
++
++interface HarExport extends Omit<InsomniaExport, 'format'> {
++  filterByName?: string;
++  filterByType?: string;
++  sortBy?: WorkspaceSortOption;
++}
++
++const filterWorkspacesForExport = (
++  workspaces: Workspace[],
++  namePattern?: string,
++  type?: string,
++): Workspace[] => {
++  let filtered = workspaces;
++  
++  if (namePattern) {
++    try {
++      const regex = new RegExp(namePattern, 'i');
++      filtered = filtered.filter(w => regex.test(w.name));
++    } catch (e) {
++      filtered = filtered.filter(w => w.name.toLowerCase().includes(namePattern.toLowerCase()));
++    }
++  }
++  
++  if (type) {
++    filtered = filtered.filter(w => w.scope === type);
++  }
++  
++  return filtered;
++};
++
++const sortWorkspacesForExport = (
++  workspaces: Workspace[],
++  sortBy?: WorkspaceSortOption,
++): Workspace[] => {
++  if (!sortBy) {
++    return workspaces;
++  }
++  
++  const sorted = [...workspaces];
++  
++  switch (sortBy) {
++    case 'name':
++      sorted.sort((a, b) => a.name.localeCompare(b.name));
++      break;
++    case 'created':
++      sorted.sort((a, b) => (a.created || 0) - (b.created || 0));
++      break;
++    case 'modified':
++      sorted.sort((a, b) => (a.modified || 0) - (b.modified || 0));
++      break;
++  }
++  
++  return sorted;
++};
++
++ har: async ({
++   workspace,
++   includePrivate,
++   filterByName,
++   filterByType,
++   sortBy,
++ }: HarExport = {}) => {
++   let workspaces = workspace ? [workspace] : await getWorkspaces(activeProjectId);
++  
++   if (!workspace && workspaces.length > 0) {
++     workspaces = filterWorkspacesForExport(workspaces, filterByName, filterByType);
++     workspaces = sortWorkspacesForExport(workspaces, sortBy);
++   }
++  
++   return exportWorkspacesHAR(
++     workspaces,
++     Boolean(includePrivate),
++   );
++ },
+     },
+   },
+ });

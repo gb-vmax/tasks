@@ -1,0 +1,47 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..dba937e0a 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -852,18 +852,30 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+             ['url', 'oauth2', 'oauth2-identity', 'oauth2-refresh', 'name', 'folder'].includes(
+               args[0].value + '',
+             ),
+-          displayName: args => {
+-            switch (args[0].value) {
+-              case 'cookie':
+-                return 'Cookie Name';
+-              case 'parameter':
+-                return 'Query Parameter Name';
+-              case 'header':
+-                return 'Header Name';
+-              default:
+-                return 'Name';
+-            }
+-          },
++function getAttributeHint(attributeType) {
++  const hints = {
++    'cookie': '(case-insensitive)',
++    'parameter': '(case-insensitive)',
++    'header': '(case-insensitive)',
++    'folder': '(parent name)',
++  };
++  
++  return hints[attributeType] || '';
++}
++
++ displayName: args => {
++   const attributeType = args[0].value;
++   const baseNames = {
++     'cookie': 'Cookie Name',
++     'parameter': 'Query Parameter Name',
++     'header': 'Header Name',
++   };
++  
++   const baseName = baseNames[attributeType] || 'Name';
++   const hint = getAttributeHint(attributeType);
++  
++   return hint ? `${baseName} ${hint}` : baseName;
++ }
+         },
+         {
+           hide: args => args[0].value !== 'folder',

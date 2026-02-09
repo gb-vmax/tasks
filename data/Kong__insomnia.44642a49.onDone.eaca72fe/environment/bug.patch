@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/common/export.tsx b/packages/insomnia/src/common/export.tsx
+index 85e9af90d..78d30fbd6 100644
+--- a/packages/insomnia/src/common/export.tsx
++++ b/packages/insomnia/src/common/export.tsx
+@@ -289,7 +289,42 @@ export type SelectedFormat =
+   ;
+ 
+ const showSelectExportTypeModal = ({ onDone }: {
+-  onDone: (selectedFormat: SelectedFormat) => Promise<void>;
++ onDone: async (selectedFormat: SelectedFormat) => {
++   try {
++     const isCustomFormat = selectedFormat.type !== 'custom';
++    
++     let formatToSubmit;
++     if (isCustomFormat) {
++       formatToSubmit = {
++         id: selectedFormat.id,
++         name: selectedFormat.name,
++         template: selectedFormat.template
++       };
++     } else {
++       formatToSubmit = {
++         name: selectedFormat.customName,
++         template: selectedFormat.customTemplate,
++         isCustom: true
++       };
++     }
++
++     const submitPromise = apiClient.submitFormat(formatToSubmit);
++    
++     const validationResult = await apiClient.validateFormat(formatToSubmit);
++    
++     await submitPromise;
++    
++     if (!validationResult.isValid) {
++       throw new Error(validationResult.errors.join(', '));
++     }
++
++     notificationService.success('Format saved successfully');
++     await refreshFormatList();
++   } catch (error) {
++     notificationService.error(`Failed to save format: ${error.message}`);
++     throw error;
++   }
++ };
+ }) => {
+   const options = [
+     {

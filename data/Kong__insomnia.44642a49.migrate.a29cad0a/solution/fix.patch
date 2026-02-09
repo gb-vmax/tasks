@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/models/response.ts b/packages/insomnia/src/models/response.ts
+index 2ca7ed602..792ba4147 100644
+--- a/packages/insomnia/src/models/response.ts
++++ b/packages/insomnia/src/models/response.ts
+@@ -85,10 +85,10 @@ export function init(): BaseResponse {
+ 
+ export function migrate(doc: Response) {
+   try {
+-    return migrateBodyCompression(doc);
++    migrateBodyCompression(doc);
+   } catch (e) {
+     console.log('[db] Error during response migration', e);
+-    throw e;
++    return doc;
+   }
+ }
+ 

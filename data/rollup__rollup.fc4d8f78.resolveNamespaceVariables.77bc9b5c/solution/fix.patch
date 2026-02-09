@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..381329db7 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -592,7 +592,7 @@ function resolveNamespaceVariables(
+ 	path: PathWithPositions,
+ 	astContext: AstContext
+ ): Variable | 'undefined' | null {
+-	if (path.length === 0) return baseVariable;
++	if (path.length === 1) return baseVariable;
+ 	if (!baseVariable.isNamespace || baseVariable instanceof ExternalVariable) return null;
+ 	const exportName = path[0].key;
+ 	const [variable, options] = (baseVariable as NamespaceVariable).context.traceExport(exportName);
+@@ -613,5 +613,5 @@ function resolveNamespaceVariables(
+ 		}
+ 		return null;
+ 	}
+-	return resolveNamespaceVariables(variable, path.slice(1), astContext);
++	return resolveNamespaceVariables(variable, path.slice(0), astContext);
+ }

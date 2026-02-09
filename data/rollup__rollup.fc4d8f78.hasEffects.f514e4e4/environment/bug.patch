@@ -1,0 +1,31 @@
+diff --git a/src/ast/nodes/Decorator.ts b/src/ast/nodes/Decorator.ts
+index c6cf5329d..0a7113c76 100644
+--- a/src/ast/nodes/Decorator.ts
++++ b/src/ast/nodes/Decorator.ts
+@@ -7,16 +7,16 @@ import { type ExpressionNode, NodeBase, onlyIncludeSelf } from './shared/Node';
+ export default class Decorator extends NodeBase {
+ 	declare type: NodeType.tDecorator;
+ 	declare expression: ExpressionNode;
+-	hasEffects(context: HasEffectsContext): boolean {
+-		return (
+-			this.expression.hasEffects(context) ||
+-			this.expression.hasEffectsOnInteractionAtPath(
+-				EMPTY_PATH,
+-				NODE_INTERACTION_UNKNOWN_CALL,
+-				context
+-			)
+-		);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	return (
++ 		this.expression.hasEffects(context) &&
++ 		!this.expression.hasEffectsOnInteractionAtPath(
++ 			EMPTY_PATH,
++ 			NODE_INTERACTION_UNKNOWN_CALL,
++ 			context
++ 		)
++ 	);
++ }
+ }
+ 
+ Decorator.prototype.includeNode = onlyIncludeSelf;

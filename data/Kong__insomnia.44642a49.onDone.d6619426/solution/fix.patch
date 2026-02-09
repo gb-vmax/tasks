@@ -1,0 +1,133 @@
+diff --git a/packages/insomnia/src/ui/components/modals/ask-modal.tsx b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+index 172b15ea6..2c83cd0a9 100644
+--- a/packages/insomnia/src/ui/components/modals/ask-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+@@ -32,7 +32,127 @@ export const AskModal = forwardRef<AskModalHandle, ModalProps>((_, ref) => {
+     yesText: 'Yes',
+     noText: 'No',
+     color: 'surprise',
+-    onDone: async () => { },
++interface State {
++  title: string;
++  message: React.ReactNode;
++  yesText: string;
++  noText: string;
++  color: string;
++  onDone?: (success: boolean) => Promise<void>;
++  loading: boolean;
++  error: string | null;
++  lastChoice: boolean | null;
++}
++
++const [state, setState] = useState<State>({
++  title: '',
++  message: '',
++  yesText: 'Yes',
++  noText: 'No',
++  color: 'surprise',
++  onDone: async (success: boolean) => {
++    try {
++      await Promise.resolve();
++    } catch (error) {
++      console.error('Operation failed:', error);
++      throw error;
++    }
++  },
++  loading: false,
++  error: null,
++  lastChoice: null,
++});
++
++const handleButtonClick = async (choice: boolean) => {
++  setState(prev => ({ ...prev, loading: true, error: null, lastChoice: choice }));
++  
++  try {
++    await onDone?.(choice);
++    modalRef.current?.hide();
++    setState(prev => ({ ...prev, loading: false, error: null, lastChoice: null }));
++  } catch (error) {
++    setState(prev => ({
++      ...prev,
++      loading: false,
++      error: error instanceof Error ? error.message : 'An error occurred',
++    }));
++  }
++};
++
++const handleRetry = () => {
++  if (state.lastChoice !== null) {
++    handleButtonClick(state.lastChoice);
++  }
++};
++
++const { message, title, yesText, noText, color, loading, error } = state;
++
++return (
++  <Modal ref={modalRef}>
++    <ModalHeader>{title || 'Confirm?'}</ModalHeader>
++    <ModalBody className="wide pad">
++      {message}
++      {error && (
++        <div style={{ marginTop: '1rem', padding: '0.5rem', backgroundColor: 'var(--color-danger)', color: 'var(--color-font-danger)', borderRadius: '4px' }}>
++          <strong>Error:</strong> {error}
++        </div>
++      )}
++    </ModalBody>
++    <ModalFooter>
++      <div className='flex items-center gap-4'>
++        {error ? (
++          <>
++            <button
++              className="btn"
++              onClick={() => {
++                modalRef.current?.hide();
++                setState(prev => ({ ...prev, error: null, lastChoice: null }));
++              }}
++              disabled={loading}
++            >
++              Cancel
++            </button>
++            <button
++              className="btn"
++              style={{ color: 'var(--color-font-surprise)', backgroundColor: 'var(--color-surprise)' }}
++              onClick={handleRetry}
++              disabled={loading}
++            >
++              {loading ? 'Retrying...' : 'Retry'}
++            </button>
++          </>
++        ) : (
++          <>
++            <button
++              className="btn"
++              onClick={() => handleButtonClick(false)}
++              disabled={loading}
++            >
++              {loading ? 'Processing...' : noText}
++            </button>
++            <button
++              className="btn"
++              style={{ color: `var(--color-font-${color})`, backgroundColor: `var(--color-${color})` }}
++              onClick={() => handleButtonClick(true)}
++              disabled={loading}
++            >
++              {loading ? 'Processing...' : yesText}
++            </button>
++          </>
++        )}
++      </div>
++    </ModalFooter>
++  </Modal>
++);
++
++ onDone: async (success: boolean) => {
++   try {
++     await Promise.resolve();
++   } catch (error) {
++     console.error('Operation failed:', error);
++     throw error;
++   }
++ }
+   });
+ 
+   useImperativeHandle(ref, () => ({

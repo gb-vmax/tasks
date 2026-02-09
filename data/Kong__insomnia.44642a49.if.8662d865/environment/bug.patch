@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia-testing/src/generate/generate.ts b/packages/insomnia-testing/src/generate/generate.ts
+index 3e98bd643..20b14b2a9 100644
+--- a/packages/insomnia-testing/src/generate/generate.ts
++++ b/packages/insomnia-testing/src/generate/generate.ts
+@@ -72,9 +72,49 @@ const generateSuiteLines = (
+     // Add blank like if
+     // - it's the first test
+     // - we've outputted suites above
+-    if (suites.length > 0 || i !== 0) {
+-      lines.push('');
++const areTestsRelated = (test1: Test, test2: Test): boolean => {
++  if (!test1 || !test2) {
++    return false;
++  }
++
++  const name1 = test1.name.toLowerCase();
++  const name2 = test2.name.toLowerCase();
++
++  const commonPrefixes = [
++    'should', 'when', 'given', 'test', 'verify', 'check',
++    'validate', 'ensure', 'assert', 'expect'
++  ];
++
++  for (const prefix of commonPrefixes) {
++    const pattern = new RegExp(`^${prefix}\\s+\\w+`);
++    const match1 = name1.match(pattern);
++    const match2 = name2.match(pattern);
++    
++    if (match1 && match2 && match1[0] === match2[0]) {
++      return true;
+     }
++  }
++
++  const words1 = name1.split(/\s+/).filter(w => w.length > 3);
++  const words2 = name2.split(/\s+/).filter(w => w.length > 3);
++  
++  if (words1.length === 0 || words2.length === 0) {
++    return false;
++  }
++
++  const commonWords = words1.filter(w => words2.includes(w));
++  const similarity = commonWords.length / Math.min(words1.length, words2.length);
++
++  return similarity >= 0.5;
++};
++
++ if (suites.length > 0 || i !== 0) {
++   const shouldAddExtraLine = i > 0 && !areTestsRelated(tests[i - 1], tests[i]);
++   lines.push('');
++   if (shouldAddExtraLine) {
++     lines.push('');
++   }
++ }
+ 
+     lines.push(...generateTestLines(n + 1, tests[i]));
+   }

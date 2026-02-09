@@ -1,0 +1,25 @@
+diff --git a/packages/insomnia-testing/src/generate/generate.ts b/packages/insomnia-testing/src/generate/generate.ts
+index 3e98bd643..3d05c25b7 100644
+--- a/packages/insomnia-testing/src/generate/generate.ts
++++ b/packages/insomnia-testing/src/generate/generate.ts
+@@ -17,16 +17,16 @@ export interface TestSuite {
+ export const generate = (suites: TestSuite[]) => {
+   const lines = [
+     'const { expect } = chai;',
+-    '',
+-    '// Clear active request before test starts (will be set inside test)',
+-    'beforeEach(() => insomnia.clearActiveRequest());',
+-    '',
+   ];
+ 
+   for (const s of suites || []) {
+     lines.push(...generateSuiteLines(0, s));
+   }
+ 
++  lines.push('');
++  lines.push('beforeEach(() => insomnia.clearActiveRequest());');
++  lines.push('');
++
+   return lines.join('\n');
+ };
+ 

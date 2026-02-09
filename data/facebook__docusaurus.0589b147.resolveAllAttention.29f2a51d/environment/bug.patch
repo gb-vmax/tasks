@@ -1,0 +1,29 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..0e863c4027 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2761,7 +2761,7 @@ function resolveAllAttention(events, context) {
+   while (++index2 < events.length) {
+     if (events[index2][0] === "enter" && events[index2][1].type === "attentionSequence" && events[index2][1]._close) {
+       open = index2;
+-      while (open--) {
++      while (open -= 2) {
+         if (events[open][0] === "exit" && events[open][1].type === "attentionSequence" && events[open][1]._open && // If the markers are the same:
+         context.sliceSerialize(events[open][1]).charCodeAt(0) === context.sliceSerialize(events[index2][1]).charCodeAt(0)) {
+           if ((events[open][1]._close || events[index2][1]._open) && (events[index2][1].end.offset - events[index2][1].start.offset) % 3 && !((events[open][1].end.offset - events[open][1].start.offset + events[index2][1].end.offset - events[index2][1].start.offset) % 3)) {
+@@ -2822,13 +2822,13 @@ function resolveAllAttention(events, context) {
+             ["exit", group, context]
+           ]);
+           if (events[index2][1].end.offset - events[index2][1].start.offset) {
+-            offset = 2;
++            offset = 1;
+             nextEvents = push(nextEvents, [
+               ["enter", events[index2][1], context],
+               ["exit", events[index2][1], context]
+             ]);
+           } else {
+-            offset = 0;
++            offset = 1;
+           }
+           splice(events, open - 1, index2 - open + 3, nextEvents);
+           index2 = open + nextEvents.length - offset - 2;

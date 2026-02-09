@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with directive containers in remark-directive where the parser doesn't handle empty content correctly. When a directive container has no content after the opening fence, the parsing behavior seems incorrect.
+I'm encountering an issue with directive containers in remark-directive where empty containers (containers with no content) are not being parsed correctly. When a directive container fence is immediately followed by EOF or a line ending without any content, the parser seems to be handling it incorrectly.
 
 ### Reproduction
 
@@ -11,20 +11,22 @@ I'm experiencing an issue with directive containers in remark-directive where th
 :::
 ```
 
-When parsing this directive container with no content between the opening and closing fences, the parser appears to handle the case incorrectly. The issue also occurs with attributes:
+Or with attributes:
 
 ```markdown
-:::note{.warning}
+:::note{.info}
 :::
 ```
 
+When parsing these empty directive containers, the behavior is unexpected - it seems like the parser is not properly recognizing the closing fence when there's no content between the opening and closing fences.
+
 ### Expected behavior
 
-Empty directive containers should be parsed correctly and exit properly when encountering `null` or line endings after the opening fence. The parser should recognize when there's no content and handle it gracefully.
+Empty directive containers should be valid and parse correctly, creating a container node with no children. The opening fence followed immediately by a closing fence (with or without content in between) should be handled gracefully.
 
-### System Info
-- remark-directive version: 3.0.0
-- Node version: Latest
+### Additional context
+
+This appears to affect directive containers specifically. Other directive types (text and leaf directives) don't seem to have this issue. The problem manifests when the container has no content lines between the opening and closing fences.
 
 ---
 Repository: /testbed

@@ -2,40 +2,29 @@
 
 ### Describe the bug
 
-After a recent update, the default locale configuration is generating incorrect values for `htmlLang` and `path` properties. Instead of using the actual locale code, these fields are being populated with the locale label and text direction respectively.
+I'm experiencing an issue with the default locale configuration generation. When using the i18n system, the `htmlLang` and `path` properties in the locale config are being set to incorrect values instead of the actual locale code.
 
 ### Reproduction
 
-When initializing i18n with a default locale configuration:
-
 ```js
-const config = getDefaultLocaleConfig('en');
-console.log(config);
-// Expected output:
-// {
-//   label: 'English',
-//   direction: 'ltr',
-//   htmlLang: 'en',
-//   calendar: 'gregory',
-//   path: 'en'
-// }
+const locale = 'fr';
+const config = getDefaultLocaleConfig(locale);
 
-// Actual output:
-// {
-//   label: 'English',
-//   direction: 'ltr',
-//   htmlLang: 'English',  // Should be 'en'
-//   calendar: 'gregory',
-//   path: 'ltr'           // Should be 'en'
-// }
+console.log(config.htmlLang); // Expected: 'fr', but getting the locale label instead
+console.log(config.path); // Expected: 'fr', but getting the language direction instead
 ```
+
+When I create a locale config for a language like French ('fr') or Arabic ('ar'), the resulting configuration object has:
+- `htmlLang` set to the locale label (e.g., 'Français' or 'العربية') instead of the locale code
+- `path` set to the language direction ('ltr' or 'rtl') instead of the locale code
 
 ### Expected behavior
 
-- `htmlLang` should contain the locale code (e.g., 'en', 'fr', 'de') for proper HTML lang attribute
-- `path` should contain the locale code for URL routing, not the text direction
+The `htmlLang` property should be set to the locale code (e.g., 'fr', 'ar', 'en') for proper HTML lang attribute values.
 
-This breaks HTML validation and URL routing for localized sites. The lang attribute in HTML should be a valid language tag, not a human-readable label.
+The `path` property should be set to the locale code for correct URL path generation.
+
+Both should use the original `locale` parameter, not derived values from other functions.
 
 ### System Info
 - Docusaurus version: latest

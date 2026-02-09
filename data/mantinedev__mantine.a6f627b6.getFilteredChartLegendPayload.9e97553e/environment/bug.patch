@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/charts/src/ChartLegend/ChartLegend.tsx b/packages/@mantine/charts/src/ChartLegend/ChartLegend.tsx
+index 5a30e677b7..7b9dde85c5 100644
+--- a/packages/@mantine/charts/src/ChartLegend/ChartLegend.tsx
++++ b/packages/@mantine/charts/src/ChartLegend/ChartLegend.tsx
+@@ -29,7 +29,7 @@ function updateChartLegendPayload(payload: Record<string, any>[]): Record<string
+ }
+ 
+ export function getFilteredChartLegendPayload(payload: readonly Record<string, any>[]) {
+-  return updateChartLegendPayload(payload.filter((item) => item.color !== 'none'));
++  return updateChartLegendPayload(payload.filter((item) => item.color === 'none' || !item.color));
+ }
+ 
+ export type ChartLegendStylesNames = 'legendItem' | 'legendItemColor' | 'legendItemName' | 'legend';

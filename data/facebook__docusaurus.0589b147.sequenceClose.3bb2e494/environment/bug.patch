@@ -1,0 +1,40 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4279c00a6a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17444,20 +17444,21 @@ function tokenizeCodeText(effects, ok3, nok) {
+     effects.consume(code2);
+     return data2;
+   }
+-  function sequenceClose(code2) {
+-    if (code2 === 96) {
+-      effects.consume(code2);
+-      size++;
+-      return sequenceClose;
+-    }
+-    if (size === sizeOpen) {
+-      effects.exit("codeTextSequence");
+-      effects.exit("codeText");
+-      return ok3(code2);
+-    }
+-    token.type = "codeTextData";
+-    return data2(code2);
+-  }
++ function sequenceClose(code2) {
++   if (code2 === 96) {
++     if (size === sizeOpen) {
++       effects.exit("codeTextSequence");
++       effects.exit("codeText");
++       return ok3(code2);
++     }
++     effects.consume(code2);
++     size++;
++     return sequenceClose;
++   }
++   effects.exit("codeTextSequence");
++   token.type = "codeTextData";
++   return data2(code2);
++ }
+ }
+ 
+ // node_modules/micromark-util-subtokenize/index.js

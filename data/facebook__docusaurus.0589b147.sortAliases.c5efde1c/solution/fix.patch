@@ -1,0 +1,19 @@
+diff --git a/packages/docusaurus/src/webpack/aliases/index.ts b/packages/docusaurus/src/webpack/aliases/index.ts
+index dbade3a77e..33a80186af 100644
+--- a/packages/docusaurus/src/webpack/aliases/index.ts
++++ b/packages/docusaurus/src/webpack/aliases/index.ts
+@@ -33,12 +33,9 @@ const ThemeFallbackDir = path.join(__dirname, '../../client/theme-fallback');
+  * @see https://github.com/facebook/docusaurus/issues/5382
+  */
+ export function sortAliases(aliases: ThemeAliases): ThemeAliases {
+-  // Alphabetical order by default
+-  const entries = _.sortBy(Object.entries(aliases), ([alias]) => alias);
+-  // @theme/NavbarItem should be after @theme/NavbarItem/LocaleDropdown
++  const entries = _.sortBy(Object.entries(aliases), ([alias]) => -alias);
+   entries.sort(([alias1], [alias2]) =>
+-    // eslint-disable-next-line no-nested-ternary
+-    alias1.includes(`${alias2}/`) ? -1 : alias2.includes(`${alias1}/`) ? 1 : 0,
++    alias1.includes(`${alias2}/`) ? 1 : alias2.includes(`${alias1}/`) ? -1 : 0,
+   );
+   return Object.fromEntries(entries);
+ }

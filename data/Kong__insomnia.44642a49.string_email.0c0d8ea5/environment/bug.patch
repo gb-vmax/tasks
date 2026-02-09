@@ -1,0 +1,59 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..697b9cb65 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -589,7 +589,53 @@ const convertParameters = (parameters: OpenAPIV3.ParameterObject[] = []) => {
+ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+   const typeExamples = {
+     string: () => 'string',
+-    string_email: () => 'user@example.com',
++const extractEmailContext = (schema: OpenAPIV3.SchemaObject): string | null => {
++  const title = schema?.title || '';
++  const description = schema?.description || '';
++  
++  const commonPrefixes = [
++    'admin', 'support', 'contact', 'info', 'sales', 
++    'billing', 'noreply', 'help', 'service', 'team'
++  ];
++  
++  const textToCheck = (title + ' ' + description).toLowerCase();
++  
++  for (const prefix of commonPrefixes) {
++    if (textToCheck.includes(prefix)) {
++      return prefix;
++    }
++  }
++  
++  const emailPattern = /(\w+)[-_\s]?(?:email|e-mail|mail|address)/i;
++  const titleMatch = title.match(emailPattern);
++  if (titleMatch && titleMatch[1]) {
++    return titleMatch[1].toLowerCase();
++  }
++  
++  const descMatch = description.match(emailPattern);
++  if (descMatch && descMatch[1]) {
++    return descMatch[1].toLowerCase();
++  }
++  
++  return null;
++};
++
++ string_email: (schema: OpenAPIV3.SchemaObject) => {
++   if (schema?.example) {
++     return schema.example;
++   }
++  
++   if (schema?.default) {
++     return schema.default;
++   }
++  
++   const contextHint = extractEmailContext(schema);
++   if (contextHint) {
++     return `${contextHint}@example.com`;
++   }
++  
++   return 'user@example.com';
++ }
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,

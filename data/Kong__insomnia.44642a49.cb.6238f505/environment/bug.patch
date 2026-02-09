@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..514c71b82 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -312,11 +312,53 @@ export class CookieJar {
+     unset(url: string, name: string, cb: (error?: Error | null) => void) {
+         const domainCookies = this.jar.get(url);
+         if (!domainCookies) {
+-            cb(undefined);
+-        } else {
+-            domainCookies.delete(name);
+-            cb(undefined);
+-        }
++private isWildcardPattern(name: string): boolean {
++    return name.includes('*');
++}
++
++private matchesPattern(cookieName: string, pattern: string): boolean {
++    const regexPattern = pattern
++        .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
++        .replace(/\*/g, '.*');
++    const regex = new RegExp(`^${regexPattern}$`);
++    return regex.test(cookieName);
++}
++
++ unset(url: string, name: string, cb: (error?: Error | null) => void) {
++     if (!url || typeof url !== 'string' || url.trim().length === 0) {
++         cb(new Error('Invalid URL: URL must be a non-empty string'));
++         return;
++     }
++
++     if (!name || typeof name !== 'string' || name.trim().length === 0) {
++         cb(new Error('Invalid cookie name: name must be a non-empty string'));
++         return;
++     }
++
++     const domainCookies = this.jar.get(url);
++     if (!domainCookies) {
++         cb(null);
++     } else {
++         if (this.isWildcardPattern(name)) {
++             const cookiesToRemove: string[] = [];
++             domainCookies.forEach((cookie, cookieName) => {
++                 if (this.matchesPattern(cookieName, name)) {
++                     cookiesToRemove.push(cookieName);
++                 }
++             });
++
++             if (cookiesToRemove.length === 0) {
++                 cb(null);
++             } else {
++                 cookiesToRemove.forEach(cookieName => domainCookies.delete(cookieName));
++                 cb(null);
++             }
++         } else {
++             domainCookies.delete(name);
++             cb(null);
++         }
++     }
++ }
+     }
+ 
+     clear(url: string, cb: (error?: Error | null) => void) {

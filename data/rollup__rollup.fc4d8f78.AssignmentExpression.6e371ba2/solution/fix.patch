@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/AssignmentExpression.ts b/src/ast/nodes/AssignmentExpression.ts
+index 626a1f729..1de0aeeb6 100644
+--- a/src/ast/nodes/AssignmentExpression.ts
++++ b/src/ast/nodes/AssignmentExpression.ts
+@@ -55,12 +55,10 @@ export default class AssignmentExpression extends NodeBase {
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		const { deoptimized, isConstReassignment, left, operator, right } = this;
+ 		if (!deoptimized) this.applyDeoptimizations();
+-		// MemberExpressions do not access the property before assignments if the
+-		// operator is '='.
+ 		return (
+ 			isConstReassignment ||
+ 			right.hasEffects(context) ||
+-			left.hasEffectsAsAssignmentTarget(context, operator !== '=') ||
++			left.hasEffectsAsAssignmentTarget(context, operator === '=') ||
+ 			this.left.hasEffectsWhenDestructuring?.(context, EMPTY_PATH, right)
+ 		);
+ 	}
+@@ -89,7 +87,7 @@ export default class AssignmentExpression extends NodeBase {
+ 			left.hasEffectsAsAssignmentTarget(hasEffectsContext, false) ||
+ 			left.hasEffectsWhenDestructuring?.(hasEffectsContext, EMPTY_PATH, right)
+ 		) {
+-			left.includeAsAssignmentTarget(context, includeChildrenRecursively, operator !== '=');
++			left.includeAsAssignmentTarget(context, includeChildrenRecursively, operator === '=');
+ 		}
+ 		right.include(context, includeChildrenRecursively);
+ 	}

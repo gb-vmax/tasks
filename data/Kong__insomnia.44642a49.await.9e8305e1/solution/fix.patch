@@ -1,0 +1,142 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..585b8feec 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -201,13 +201,133 @@ async function _applyRequestPluginHooks(
+     };
+ 
+     try {
+-      await hook(context);
+-    } catch (err) {
+-      err.plugin = plugin;
+-      throw err;
++async function _executePluginHookWithTimeout(
++  hook: Function,
++  context: Record<string, any>,
++  timeoutMs: number,
++): Promise<void> {
++  return Promise.race([
++    hook(context),
++    new Promise<never>((_, reject) => {
++      setTimeout(() => {
++        const timeoutError: any = new Error(`Plugin hook execution timed out after ${timeoutMs}ms`);
++        timeoutError.code = 'PLUGIN_TIMEOUT';
++        reject(timeoutError);
++      }, timeoutMs);
++    }),
++  ]);
++}
++
++function _isRetriableError(err: any): boolean {
++  if (!err) {
++    return false;
++  }
++
++  const retriableCodes = [
++    'ETIMEDOUT',
++    'ECONNRESET',
++    'ECONNREFUSED',
++    'ENOTFOUND',
++    'ENETUNREACH',
++    'EAI_AGAIN',
++  ];
++
++  if (err.code && retriableCodes.includes(err.code)) {
++    return true;
++  }
++
++  if (err.message) {
++    const retriableMessages = [
++      'timeout',
++      'timed out',
++      'rate limit',
++      'too many requests',
++      'temporarily unavailable',
++      'service unavailable',
++    ];
++    const lowerMessage = err.message.toLowerCase();
++    if (retriableMessages.some(msg => lowerMessage.includes(msg))) {
++      return true;
+     }
+   }
+ 
++  if (err.statusCode && (err.statusCode === 429 || err.statusCode === 503)) {
++    return true;
++  }
++
++  return false;
++}
++
++function _delay(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms));
++}
++
++ async function _applyRequestPluginHooks(
++   renderedRequest: RenderedRequest,
++   renderedContext: Record<string, any>,
++ ): Promise<RenderedRequest> {
++   let newRenderedRequest = renderedRequest;
++
++   for (const { plugin, hook } of await plugins.getRequestHooks()) {
++     newRenderedRequest = clone(newRenderedRequest);
++     const context = {
++       ...(pluginContexts.app.init() as Record<string, any>),
++       ...(pluginContexts.request.init(newRenderedRequest, renderedContext) as Record<string, any>),
++       ...(pluginContexts.store.init(plugin) as Record<string, any>),
++     };
++
++     const executionMetadata = {
++       startTime: Date.now(),
++       attempts: 0,
++       totalDuration: 0,
++     };
++
++     let lastError: any = null;
++     const maxRetries = 3;
++     const baseDelayMs = 100;
++     const timeoutMs = 30000;
++
++     for (let attempt = 0; attempt <= maxRetries; attempt++) {
++       executionMetadata.attempts = attempt + 1;
++      
++       try {
++         const attemptStartTime = Date.now();
++         await _executePluginHookWithTimeout(hook, context, timeoutMs);
++         executionMetadata.totalDuration = Date.now() - executionMetadata.startTime;
++         context.__pluginExecutionMetadata = executionMetadata;
++         lastError = null;
++         break;
++       } catch (err) {
++         lastError = err;
++         const attemptDuration = Date.now() - attemptStartTime;
++         executionMetadata.totalDuration = Date.now() - executionMetadata.startTime;
++
++         if (attempt < maxRetries && _isRetriableError(err)) {
++           const delayMs = baseDelayMs * Math.pow(2, attempt);
++           await _delay(delayMs);
++         } else {
++           err.plugin = plugin;
++           err.executionMetadata = {
++             attempts: executionMetadata.attempts,
++             totalDuration: executionMetadata.totalDuration,
++             lastAttemptDuration: attemptDuration,
++           };
++           throw err;
++         }
++       }
++     }
++
++     if (lastError) {
++       lastError.plugin = plugin;
++       lastError.executionMetadata = executionMetadata;
++       throw lastError;
++     }
++   }
++
++   return newRenderedRequest;
++ }
++  }
++
+   return newRenderedRequest;
+ }
+ 

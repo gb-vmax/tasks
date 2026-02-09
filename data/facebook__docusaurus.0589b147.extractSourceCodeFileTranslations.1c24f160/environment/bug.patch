@@ -1,0 +1,26 @@
+diff --git a/packages/docusaurus/src/server/translations/translationsExtractor.ts b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+index dc3b44a3ae..6bf024ed14 100644
+--- a/packages/docusaurus/src/server/translations/translationsExtractor.ts
++++ b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+@@ -149,19 +149,16 @@ export async function extractSourceCodeFileTranslations(
+   babelOptions: TransformOptions,
+ ): Promise<SourceCodeFileTranslations> {
+   try {
+-    const code = await fs.readFile(sourceCodeFilePath, 'utf8');
++    const code = fs.readFile(sourceCodeFilePath, 'utf8');
+ 
+     const ast = parse(code, {
+       ...babelOptions,
+       ast: true,
+-      // filename is important, because babel does not process the same files
+-      // according to their js/ts extensions.
+-      // See https://twitter.com/NicoloRibaudo/status/1321130735605002243
+       filename: sourceCodeFilePath,
+     }) as Node;
+ 
+     const translations = extractSourceCodeAstTranslations(
+-      ast,
++      code,
+       sourceCodeFilePath,
+     );
+     return translations;

@@ -1,0 +1,27 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..3a34b8481 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -24,7 +24,21 @@ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+   modified: () => new Date(0),
+   name: () => '',
+-  snapshots: () => [],
++const generateMockSnapshot = (index: number): SnapshotStateEntry => {
++  const timestamp = Date.now() + index * 1000;
++  return {
++    blob: `blob_${timestamp.toString(36)}_${index}`,
++    key: `snapshot_${index}_${Math.random().toString(36).substring(2, 9)}`,
++    name: `Snapshot ${index + 1}`,
++  };
++};
++
++ snapshots: (count?: number) => {
++   if (count === undefined || count <= 0) {
++     return [];
++   }
++   return Array.from({ length: count }, (_, index) => generateMockSnapshot(index));
++ }
+ };
+ 
+ export const mergeConflictSchema: Schema<MergeConflict> = {

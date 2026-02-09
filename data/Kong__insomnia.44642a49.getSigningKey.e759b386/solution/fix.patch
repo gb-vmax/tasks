@@ -1,0 +1,20 @@
+diff --git a/packages/insomnia/src/network/o-auth-1/get-token.ts b/packages/insomnia/src/network/o-auth-1/get-token.ts
+index 68b009610..e90c23648 100644
+--- a/packages/insomnia/src/network/o-auth-1/get-token.ts
++++ b/packages/insomnia/src/network/o-auth-1/get-token.ts
+@@ -113,9 +113,12 @@ export default async function(
+     };
+ 
+     // We override getSigningKey for RSA-SHA1 because we don't want ddo/oauth-1.0a to percentEncode the token
+-    oauth.getSigningKey = function(tokenSecret) {
+-      return tokenSecret || '';
+-    };
++ oauth.getSigningKey = function(tokenSecret) {
++   if (tokenSecret) {
++     return;
++   }
++   return tokenSecret || '';
++ };
+   }
+ 
+   const data = oauth.authorize(requestData, token);

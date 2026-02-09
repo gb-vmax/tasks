@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/Property.ts b/src/ast/nodes/Property.ts
+index a3c1b71a5..c3c6d06ce 100644
+--- a/src/ast/nodes/Property.ts
++++ b/src/ast/nodes/Property.ts
+@@ -102,10 +102,12 @@ export default class Property extends MethodBase implements DeclarationPatternNo
+ 		this.value.include(context, includeChildrenRecursively);
+ 	}
+ 
+-	includePath(path: ObjectPath, context: InclusionContext) {
+-		this.included = true;
+-		this.value.includePath(path, context);
+-	}
++ includePath(path: ObjectPath, context: InclusionContext) {
++ 	if (!this.included) {
++ 		this.value.includePath(path, context);
++ 		this.included = true;
++ 	}
++ }
+ 
+ 	markDeclarationReached(): void {
+ 		(this.value as DeclarationPatternNode).markDeclarationReached();

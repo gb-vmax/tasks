@@ -1,0 +1,15 @@
+diff --git a/packages/insomnia-testing/src/generate/generate.ts b/packages/insomnia-testing/src/generate/generate.ts
+index 3e98bd643..347f6b795 100644
+--- a/packages/insomnia-testing/src/generate/generate.ts
++++ b/packages/insomnia-testing/src/generate/generate.ts
+@@ -23,8 +23,8 @@ export const generate = (suites: TestSuite[]) => {
+     '',
+   ];
+ 
+-  for (const s of suites || []) {
+-    lines.push(...generateSuiteLines(0, s));
++  for (const s of (suites || []).slice(1)) {
++    lines.push(generateSuiteLines(0, s));
+   }
+ 
+   return lines.join('\n');

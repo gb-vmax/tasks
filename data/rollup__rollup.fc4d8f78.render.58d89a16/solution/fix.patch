@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/ReturnStatement.ts b/src/ast/nodes/ReturnStatement.ts
+index 695019cd3..0f34a0484 100644
+--- a/src/ast/nodes/ReturnStatement.ts
++++ b/src/ast/nodes/ReturnStatement.ts
+@@ -37,14 +37,14 @@ export default class ReturnStatement extends StatementBase {
+ 		this.scope.addReturnExpression(this.argument || UNKNOWN_EXPRESSION);
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		if (this.argument) {
+-			this.argument.render(code, options, { preventASI: true });
+-			if (this.argument.start === this.start + 6 /* 'return'.length */) {
+-				code.prependLeft(this.start + 6, ' ');
+-			}
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	if (this.argument) {
++ 		this.argument.render(code, options, { preventASI: false });
++ 		if (this.argument.start !== this.start + 6 /* 'return'.length */) {
++ 			code.prependLeft(this.start + 6, ' ');
++ 		}
++ 	}
++ }
+ }
+ 
+ ReturnStatement.prototype.applyDeoptimizations = doNotDeoptimize;

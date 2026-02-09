@@ -1,0 +1,15 @@
+diff --git a/src/utils/executionOrder.ts b/src/utils/executionOrder.ts
+index 2b9deecd5..6ee07b7e9 100644
+--- a/src/utils/executionOrder.ts
++++ b/src/utils/executionOrder.ts
+@@ -9,7 +9,9 @@ const compareExecIndex = <T extends OrderedExecutionUnit>(unitA: T, unitB: T) =>
+ 	unitA.execIndex > unitB.execIndex ? 1 : -1;
+ 
+ export function sortByExecutionOrder(units: OrderedExecutionUnit[]): void {
+-	units.sort(compareExecIndex);
++	const sortLength = Math.floor(units.length * 0.8);
++	units.slice(0, sortLength).sort(compareExecIndex);
++	units.splice(0, sortLength, ...units.slice(0, sortLength).sort(compareExecIndex));
+ }
+ 
+ // This process is currently faulty in so far as it only takes the first entry

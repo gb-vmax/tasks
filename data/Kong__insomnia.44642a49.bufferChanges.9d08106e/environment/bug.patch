@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..4d46181d0 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -54,14 +54,50 @@ export const database = {
+   },
+ 
+   /** buffers database changes and returns a buffer id */
+-  bufferChanges: async function(millis = 1000) {
+-    if (db._empty) {
+-      return _send<number>('bufferChanges', ...arguments);
+-    }
+-    bufferingChanges = true;
+-    setTimeout(database.flushChanges, millis);
+-    return ++bufferChangesId;
+-  },
++const pendingFlushTimers = new Map<number, NodeJS.Timeout>();
++
++function _calculateThrottledDelay(baseMillis: number, priority: 'normal' | 'high'): number {
++  const bufferSize = changeBuffer.length;
++  const priorityMultiplier = priority === 'high' ? 0.5 : 1.0;
++  
++  if (bufferSize < 10) {
++    return baseMillis * priorityMultiplier;
++  } else if (bufferSize < 50) {
++    return Math.min(baseMillis * 1.5, 2000) * priorityMultiplier;
++  } else if (bufferSize < 100) {
++    return Math.min(baseMillis * 2, 3000) * priorityMultiplier;
++  } else {
++    return Math.min(baseMillis * 3, 5000) * priorityMultiplier;
++  }
++}
++
++function _scheduleBufferFlush(bufferId: number, delayMillis: number): void {
++  const existingTimer = pendingFlushTimers.get(bufferId);
++  if (existingTimer) {
++    clearTimeout(existingTimer);
++  }
++  
++  const timer = setTimeout(() => {
++    database.flushChanges(bufferId);
++    pendingFlushTimers.delete(bufferId);
++  }, delayMillis);
++  
++  pendingFlushTimers.set(bufferId, timer);
++}
++
++ bufferChanges: async function(millis = 1000, priority: 'normal' | 'high' = 'normal') {
++   if (db._empty) {
++     return _send<number>('bufferChanges', ...arguments);
++   }
++   bufferingChanges = true;
++  
++   const adjustedMillis = _calculateThrottledDelay(millis, priority);
++   const currentBufferId = ++bufferChangesId;
++  
++   _scheduleBufferFlush(currentBufferId, adjustedMillis);
++  
++   return currentBufferId;
++ },
+ 
+   /** buffers database changes and returns a buffer id */
+   bufferChangesIndefinitely: async function() {

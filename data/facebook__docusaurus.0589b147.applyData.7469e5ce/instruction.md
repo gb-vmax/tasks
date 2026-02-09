@@ -2,31 +2,36 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with the remark-rehype transformation where `hChildren` property is being applied even when it's `null` or `undefined`. This causes the children array to be unexpectedly replaced with `null`/`undefined` values instead of preserving the existing children.
+I'm experiencing an issue with data transformation when using custom properties on nodes. When applying `hProperties` to transform a node, the properties are not being correctly assigned to the result element.
 
 ### Reproduction
 
 ```js
 const node = {
-  type: 'element',
-  tagName: 'div',
-  properties: {},
-  children: [{ type: 'text', value: 'existing content' }],
+  type: 'paragraph',
   data: {
-    hChildren: null  // or undefined
-  }
+    hProperties: {
+      className: 'custom-class',
+      id: 'my-id'
+    }
+  },
+  children: []
 }
 
-// After transformation, children becomes null instead of preserving existing content
+// Transform the node
+const result = applyData(node, { type: 'element', tagName: 'p', properties: {}, children: [] })
+
+// Expected: result.properties should contain className and id
+// Actual: properties may not be applied correctly
 ```
 
 ### Expected behavior
 
-When `hChildren` is `null` or `undefined`, the existing children should be preserved. The children array should only be replaced when `hChildren` has an actual value.
+When a node has `hProperties` in its data, those properties should be merged into the resulting element's properties object. The transformation should correctly handle the properties regardless of the element type.
 
 ### Additional context
 
-This seems to affect any markdown-to-HTML transformations where data properties are being applied but `hChildren` is explicitly set to falsy values. The current behavior doesn't check for null/undefined before assignment.
+This seems to affect nodes that are being transformed with custom HTML properties. The issue appears when trying to add custom classes or attributes to elements during the markdown-to-HTML conversion process.
 
 ---
 Repository: /testbed

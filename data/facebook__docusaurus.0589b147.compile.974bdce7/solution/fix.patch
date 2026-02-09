@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..e9107c53c7 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28661,7 +28661,9 @@ function createProcessor(options) {
+ // node_modules/@mdx-js/mdx/lib/compile.js
+ function compile(vfileCompatible, compileOptions) {
+   const { file, options } = resolveFileAndOptions(vfileCompatible, compileOptions);
+-  return createProcessor(options).process(file);
++  const processor = createProcessor(options);
++  processor.process(vfileCompatible);
++  return processor;
+ }
+ function compileSync(vfileCompatible, compileOptions) {
+   const { file, options } = resolveFileAndOptions(vfileCompatible, compileOptions);

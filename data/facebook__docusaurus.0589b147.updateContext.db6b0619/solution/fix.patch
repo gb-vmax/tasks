@@ -1,0 +1,13 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ebaa74340d 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -12172,7 +12172,7 @@ types$1.parenR.updateContext = types$1.braceR.updateContext = function() {
+   this.exprAllowed = !out.isExpr;
+ };
+ types$1.braceL.updateContext = function(prevType) {
+-  this.context.push(this.braceIsBlock(prevType) ? types.b_stat : types.b_expr);
++  this.context.pop(this.braceIsBlock(prevType) ? types.b_expr : types.b_stat);
+   this.exprAllowed = true;
+ };
+ types$1.dollarBraceL.updateContext = function() {

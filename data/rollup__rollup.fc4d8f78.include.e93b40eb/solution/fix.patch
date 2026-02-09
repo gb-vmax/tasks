@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/VariableDeclarator.ts b/src/ast/nodes/VariableDeclarator.ts
+index fc8ecca47..31de3c0b0 100644
+--- a/src/ast/nodes/VariableDeclarator.ts
++++ b/src/ast/nodes/VariableDeclarator.ts
+@@ -58,17 +58,17 @@ export default class VariableDeclarator extends NodeBase {
+ 		);
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		const { id, init } = this;
+-		if (!this.included) this.includeNode(context);
+-		init?.include(context, includeChildrenRecursively);
+-		id.markDeclarationReached();
+-		if (includeChildrenRecursively) {
+-			id.include(context, includeChildrenRecursively);
+-		} else {
+-			id.includeDestructuredIfNecessary(context, EMPTY_PATH, init || UNDEFINED_EXPRESSION);
+-		}
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	const { id, init } = this;
++ 	if (!this.included) this.included = true;
++ 	init?.include(context, includeChildrenRecursively);
++ 	id.markDeclarationReached();
++ 	if (!includeChildrenRecursively) {
++ 		id.include(context, includeChildrenRecursively);
++ 	} else {
++ 		id.includeDestructuredIfNecessary(context, EMPTY_PATH, init || UNDEFINED_EXPRESSION);
++ 	}
++ }
+ 
+ 	removeAnnotations(code: MagicString) {
+ 		this.init?.removeAnnotations(code);

@@ -1,0 +1,199 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..5a13d44f6 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -353,14 +353,188 @@ const parseSecurity = (
+   security?: OpenAPIV3.SecurityRequirementObject[],
+   securitySchemes?: OpenAPIV3.SecuritySchemeObject,
+ ) => {
+-  if (!security || !securitySchemes) {
+-    return {
+-      authentication: {},
+-      headers: [],
+-      parameters: [],
+-    };
++const getSecuritySchemePriority = (schemeDetails: any): number => {
++  const priorityMap: Record<string, number> = {
++    [SECURITY_TYPE.OAUTH]: 100,
++    [`${SECURITY_TYPE.HTTP}_${HTTP_AUTH_SCHEME.BEARER}`]: 90,
++    [`${SECURITY_TYPE.HTTP}_${HTTP_AUTH_SCHEME.BASIC}`]: 70,
++    [SECURITY_TYPE.API_KEY]: 50,
++  };
++
++  if (schemeDetails.type === SECURITY_TYPE.HTTP) {
++    return priorityMap[`${SECURITY_TYPE.HTTP}_${schemeDetails.scheme}`] || 60;
+   }
+ 
++  return priorityMap[schemeDetails.type] || 40;
++};
++
++const getExplicitPriority = (schemeName: string | number, securitySchemes?: OpenAPIV3.SecuritySchemeObject): number => {
++  if (!securitySchemes || typeof schemeName !== 'string') {
++    return 0;
++  }
++
++  const scheme = securitySchemes[schemeName];
++  if (scheme && typeof scheme === 'object' && 'x-security-priority' in scheme) {
++    const priority = (scheme as any)['x-security-priority'];
++    return typeof priority === 'number' ? priority : 0;
++  }
++
++  return 0;
++};
++
++const prioritizeSecuritySchemes = (
++  schemes: Array<{
++    schemeName?: string | number;
++    schemeDetails: any;
++    securityScopes: string[];
++  }>,
++  securitySchemes?: OpenAPIV3.SecuritySchemeObject
++): Array<{
++  schemeName?: string | number;
++  schemeDetails: any;
++  securityScopes: string[];
++}> => {
++  return schemes.slice().sort((a, b) => {
++    const explicitPriorityA = getExplicitPriority(a.schemeName!, securitySchemes);
++    const explicitPriorityB = getExplicitPriority(b.schemeName!, securitySchemes);
++
++    if (explicitPriorityA !== explicitPriorityB) {
++      return explicitPriorityB - explicitPriorityA;
++    }
++
++    const typePriorityA = getSecuritySchemePriority(a.schemeDetails);
++    const typePriorityB = getSecuritySchemePriority(b.schemeDetails);
++
++    if (typePriorityA !== typePriorityB) {
++      return typePriorityB - typePriorityA;
++    }
++
++    const scopeCountA = a.securityScopes?.length || 0;
++    const scopeCountB = b.securityScopes?.length || 0;
++    return scopeCountB - scopeCountA;
++  });
++};
++
++const selectPrimaryAuthScheme = (
++  prioritizedSchemes: Array<{
++    schemeDetails: any;
++    securityScopes: string[];
++  }>,
++  apiKeySecuritySchemas: number
++) => {
++  return prioritizedSchemes.find(
++    scheme =>
++      SUPPORTED_SECURITY_TYPES.includes(scheme.schemeDetails.type) &&
++      (scheme.schemeDetails.type === SECURITY_TYPE.OAUTH
++        || (apiKeySecuritySchemas === 1 && scheme.schemeDetails.type === SECURITY_TYPE.API_KEY)
++        || SUPPORTED_HTTP_AUTH_SCHEMES.includes(scheme.schemeDetails.scheme)),
++  );
++};
++
++ const parseSecurity = (
++   security?: OpenAPIV3.SecurityRequirementObject[],
++   securitySchemes?: OpenAPIV3.SecuritySchemeObject,
++ ) => {
++   if (!security || !securitySchemes) {
++     return {
++       authentication: {},
++       headers: [],
++       parameters: [],
++     };
++   }
++
++   const supportedSchemes = security
++     .flatMap(securityPolicy => {
++       return Object.keys(securityPolicy).map((securityRequirement: string | number) => {
++         return {
++           schemeName: securityRequirement,
++           schemeDetails: securitySchemes[securityRequirement],
++           securityScopes: securityPolicy[securityRequirement],
++         };
++       });
++     })
++     .filter(({ schemeDetails }) => (
++       schemeDetails && SUPPORTED_SECURITY_TYPES.includes(schemeDetails.type)
++     ));
++
++   const prioritizedSchemes = prioritizeSecuritySchemes(supportedSchemes, securitySchemes);
++
++   const apiKeySchemes = prioritizedSchemes.filter(scheme => (
++     scheme.schemeDetails.type === SECURITY_TYPE.API_KEY
++   ));
++   const apiKeyHeaders = apiKeySchemes
++     .filter(scheme => scheme.schemeDetails.in === 'header')
++     .map(scheme => {
++       const variableName = toCamelCase(scheme.schemeDetails.name);
++       return {
++         name: scheme.schemeDetails.name,
++         disabled: false,
++         value: `{{ _.${variableName} }}`,
++       };
++     });
++   const apiKeyCookies = apiKeySchemes
++     .filter(scheme => scheme.schemeDetails.in === 'cookie')
++     .map(scheme => {
++       const variableName = toCamelCase(scheme.schemeDetails.name);
++       return `${scheme.schemeDetails.name}={{ _.${variableName} }}`;
++     });
++   const apiKeyCookieHeader = {
++     name: 'Cookie',
++     disabled: false,
++     value: apiKeyCookies.join('; '),
++   };
++   const apiKeyParams = apiKeySchemes
++     .filter(scheme => scheme.schemeDetails.in === 'query')
++     .map(scheme => {
++       const variableName = toCamelCase(scheme.schemeDetails.name);
++       return {
++         name: scheme.schemeDetails.name,
++         disabled: false,
++         value: `{{ _.${variableName} }}`,
++       };
++     });
++
++   const apiKeySecuritySchemas = apiKeyHeaders.length + apiKeyCookies.length + apiKeyParams.length;
++
++   if (apiKeyCookies.length > 0) {
++     apiKeyHeaders.push(apiKeyCookieHeader);
++   }
++
++   const authentication = (() => {
++     const authScheme = selectPrimaryAuthScheme(
++       prioritizedSchemes,
++       apiKeySecuritySchemas
++     );
++
++     if (!authScheme) {
++       return {};
++     }
++
++     switch (authScheme.schemeDetails.type) {
++       case SECURITY_TYPE.HTTP:
++         return parseHttpAuth(
++           (authScheme.schemeDetails as OpenAPIV3.HttpSecurityScheme).scheme,
++         );
++
++       case SECURITY_TYPE.OAUTH:
++         return parseOAuth2(authScheme.schemeDetails as OpenAPIV3.OAuth2SecurityScheme, authScheme.securityScopes);
++
++       case SECURITY_TYPE.API_KEY:
++         return parseApiKeyAuth(authScheme.schemeDetails as OpenAPIV3.ApiKeySecurityScheme);
++
++       default:
++         return {};
++     }
++   })();
++
++   const isApiKeyAuth = authentication?.type?.toLowerCase() === SECURITY_TYPE.API_KEY.toLowerCase();
++   return {
++     authentication: authentication,
++     headers: isApiKeyAuth ? [] : apiKeyHeaders,
++     parameters: isApiKeyAuth ? [] : apiKeyParams,
++   };
++ };
++
+   const supportedSchemes = security
+     .flatMap(securityPolicy => {
+       return Object.keys(securityPolicy).map((securityRequirement: string | number) => {

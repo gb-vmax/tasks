@@ -2,36 +2,35 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with HTML entity encoding when rendering text content inside `<style>` tags. It seems like the `<` character is not being properly escaped, which can break the HTML output.
+I'm encountering an issue with HTML entity encoding in text nodes. When rendering text content inside elements, the wrong characters are being escaped/encoded. Specifically, it seems like `>` characters are being encoded when they shouldn't be, and `<` characters are not being encoded when they should be.
 
 ### Reproduction
 
 ```js
-const html = toHtml({
+const tree = {
   type: 'element',
-  tagName: 'style',
+  tagName: 'div',
   children: [
     {
       type: 'text',
-      value: 'body { content: "<test>"; }'
+      value: 'Hello <world>'
     }
   ]
-});
+}
 
-console.log(html);
-// Expected: <style>body { content: "&lt;test&gt;"; }</style>
-// Actual: <style>body { content: "<test>"; }</style>
+// Expected output: Hello &lt;world>
+// Actual output: Hello <world> (or incorrect encoding)
 ```
 
-The `<` character inside the style tag is not being escaped, which can cause parsing issues in some browsers or when the HTML is processed further.
+When text contains `<` characters, they should be encoded as `&lt;` to prevent them from being interpreted as HTML tags. However, the output doesn't seem to be escaping these characters properly.
 
 ### Expected behavior
 
-Text content within `<style>` tags should have special characters like `<` properly escaped to their HTML entity equivalents (`&lt;`) to prevent potential parsing issues.
+Text content containing `<` and `&` should be properly encoded as HTML entities (`&lt;` and `&amp;` respectively) to ensure they display correctly and don't break the HTML structure.
 
 ### Additional context
 
-This also seems to affect `<script>` tags in a similar way. The entity encoding appears to be inconsistent for these special elements.
+This appears to affect regular text nodes but not `<script>` or `<style>` tags (which is correct - those should preserve their raw content).
 
 ---
 Repository: /testbed

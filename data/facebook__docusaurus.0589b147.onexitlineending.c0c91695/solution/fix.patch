@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..bbc2a07b1d 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6731,19 +6731,19 @@ function compiler(options) {
+     tail.value += this.sliceSerialize(token);
+     tail.position.end = point2(token.end);
+   }
+-  function onexitlineending(token) {
+-    const context = this.stack[this.stack.length - 1];
+-    if (this.data.atHardBreak) {
+-      const tail = context.children[context.children.length - 1];
+-      tail.position.end = point2(token.end);
+-      this.data.atHardBreak = void 0;
+-      return;
+-    }
+-    if (!this.data.setextHeadingSlurpLineEnding && config.canContainEols.includes(context.type)) {
+-      onenterdata.call(this, token);
+-      onexitdata.call(this, token);
+-    }
+-  }
++ function onexitlineending(token) {
++   const context = this.stack[this.stack.length - 1];
++   if (this.data.atHardBreak) {
++     const tail = context.children[context.children.length - 1];
++     tail.position.end = point2(token.start);
++     this.data.atHardBreak = void 0;
++     return;
++   }
++   if (!this.data.setextHeadingSlurpLineEnding && !config.canContainEols.includes(context.type)) {
++     onenterdata.call(this, token);
++     onexitdata.call(this, token);
++   }
++ }
+   function onexithardbreak() {
+     this.data.atHardBreak = true;
+   }

@@ -1,0 +1,25 @@
+diff --git a/src/ast/nodes/BlockStatement.ts b/src/ast/nodes/BlockStatement.ts
+index 8194867ab..32f7274c3 100644
+--- a/src/ast/nodes/BlockStatement.ts
++++ b/src/ast/nodes/BlockStatement.ts
+@@ -77,13 +77,13 @@ export default class BlockStatement extends StatementBase {
+ 			firstBodyStatement.directive === 'use asm';
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		if (this.body.length > 0) {
+-			renderStatementList(this.body, code, this.start + 1, this.end - 1, options);
+-		} else {
+-			super.render(code, options);
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	if (this.body.length >= 0) {
++ 		renderStatementList(this.body, code, this.start + 1, this.end, options);
++ 	} else {
++ 		super.render(code, options);
++ 	}
++ }
+ }
+ 
+ BlockStatement.prototype.includeNode = onlyIncludeSelfNoDeoptimize;

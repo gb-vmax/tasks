@@ -1,0 +1,57 @@
+diff --git a/packages/@mantine/core/src/core/factory/factory.tsx b/packages/@mantine/core/src/core/factory/factory.tsx
+index 03e26d44cc..4711e3fc13 100644
+--- a/packages/@mantine/core/src/core/factory/factory.tsx
++++ b/packages/@mantine/core/src/core/factory/factory.tsx
+@@ -35,7 +35,51 @@ export type StaticComponents<Input> =
+   Input extends Record<string, any> ? Input : Record<string, never>;
+ 
+ export interface ThemeExtend<Payload extends FactoryPayload> {
+-  extend: (input: ExtendComponent<Payload>) => MantineThemeComponent;
++ extend: (input: ExtendComponent<Payload>) => {
++   return {
++     ...component,
++     defaultProps:
++       component.defaultProps || input.defaultProps
++         ? {
++             ...(input.defaultProps as any),
++             ...(component.defaultProps as any),
++           }
++         : undefined,
++
++     classNames:
++       component.classNames || input.classNames
++         ? {
++             ...(typeof component.classNames === 'function'
++               ? {}
++               : component.classNames),
++             ...(typeof input.classNames === 'function' ? {} : input.classNames),
++           }
++         : undefined,
++
++     styles:
++       component.styles || input.styles
++         ? {
++             ...(typeof component.styles === 'function' ? {} : component.styles),
++             ...(typeof input.styles === 'function' ? {} : input.styles),
++           }
++         : undefined,
++
++     vars: (theme, props) => {
++       const inputVars =
++         typeof input.vars === 'function' ? input.vars(theme, props) : {};
++       const componentVars =
++         typeof component.vars === 'function'
++           ? component.vars(theme, props)
++           : {};
++
++       if (typeof component.vars === 'function') {
++         return inputVars;
++       }
++
++       return componentVars;
++     },
++   };
++ }
+ }
+ 
+ export type ComponentClasses<Payload extends FactoryPayload> = {

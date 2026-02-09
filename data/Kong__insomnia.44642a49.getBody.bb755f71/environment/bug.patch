@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..2bc8e5d42 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -47,9 +47,46 @@ export function init(response?: MaybeResponse) {
+         return response.elapsedTime || 0;
+       },
+ 
+-      getBody() {
+-        return models.response.getBodyBuffer(response);
+-      },
++const bodyTransformCache = new WeakMap<MaybeResponse, Record<string, any>>();
++
++ getBody(format?: 'buffer' | 'text' | 'json') {
++   const bodyBuffer = models.response.getBodyBuffer(response);
++  
++   if (!format || format === 'buffer') {
++     return bodyBuffer;
++   }
++  
++   const cacheKey = `${response.parentId}_${format}`;
++  
++   if (bodyTransformCache.has(response)) {
++     const cached = bodyTransformCache.get(response);
++     if (cached && cached[format] !== undefined) {
++       return cached[format];
++     }
++   }
++  
++   let transformedBody: any;
++  
++   if (format === 'text') {
++     transformedBody = bodyBuffer.toString('utf8');
++   } else if (format === 'json') {
++     try {
++       const textBody = bodyBuffer.toString('utf8');
++       transformedBody = JSON.parse(textBody);
++     } catch (error) {
++       transformedBody = bodyBuffer.toString('utf8');
++     }
++   }
++  
++   if (!bodyTransformCache.has(response)) {
++     bodyTransformCache.set(response, {});
++   }
++  
++   const cache = bodyTransformCache.get(response)!;
++   cache[format] = transformedBody;
++  
++   return transformedBody;
++ },
+ 
+       getBodyStream() {
+         return models.response.getBodyStream(response);

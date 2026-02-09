@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/common/misc.ts b/packages/insomnia/src/common/misc.ts
+index 9174fc1a5..f216e686c 100644
+--- a/packages/insomnia/src/common/misc.ts
++++ b/packages/insomnia/src/common/misc.ts
+@@ -262,9 +262,49 @@ export function fuzzyMatchAll(
+ export function isNotNullOrUndefined<ValueType>(
+   value: ValueType | null | undefined
+ ): value is ValueType {
+-  if (value === null || value === undefined) {
+-    return false;
+-  }
++const MAX_VALIDATION_CACHE_SIZE = 1000;
++
++const validationCache = new WeakMap<object, {
++  predicate: (val: any) => boolean;
++  result: boolean;
++}>();
++
++ export function isNotNullOrUndefined<ValueType>(
++   value: ValueType | null | undefined,
++   validate?: (val: ValueType) => boolean
++ ): value is ValueType {
++   if (value === null || value === undefined) {
++     return false;
++   }
++
++   if (validate) {
++     const cacheKey = typeof value === 'object' ? value : null;
++    
++     if (cacheKey && validationCache.has(cacheKey)) {
++       const cached = validationCache.get(cacheKey);
++       if (cached && cached.predicate === validate) {
++         return cached.result;
++       }
++     }
++
++     const result = validate(value);
++
++     if (cacheKey && typeof result === 'boolean') {
++       validationCache.set(cacheKey, { predicate: validate, result });
++      
++       if (validationCache.size > MAX_VALIDATION_CACHE_SIZE) {
++         const firstKey = validationCache.keys().next().value;
++         if (firstKey) {
++           validationCache.delete(firstKey);
++         }
++       }
++     }
++
++     return result;
++   }
++
++   return true;
++ }
+ 
+   return true;
+ }

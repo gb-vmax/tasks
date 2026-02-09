@@ -2,36 +2,38 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX compilation where the compiler seems to be executing callback functions prematurely or incorrectly. The behavior appears to be related to how closers/exit handlers are being called during the parsing process.
+I'm experiencing an issue with MDX compilation where callbacks are not being executed properly during the parsing phase. It seems like the closer function is being invoked immediately instead of returning a function that should be called later.
 
 ### Reproduction
 
-When compiling MDX content with nested structures (like JSX components with children), the compilation either fails silently or produces incorrect output. It seems like the exit callbacks are being invoked at the wrong time or with incorrect parameters.
+When compiling MDX content with custom handlers, the closing callbacks don't get triggered as expected. Here's a minimal example:
 
 ```js
-const mdx = `
-# Hello
+import { compile } from '@mdx-js/mdx'
 
-<Component>
-  <NestedComponent>
-    Content here
-  </NestedComponent>
-</Component>
+const mdxContent = `
+# Hello World
+
+Some content here
 `
 
-// Compilation produces unexpected results
-const result = compile(mdx)
+const result = await compile(mdxContent, {
+  // Custom handlers that should be called on token close
+  remarkPlugins: [/* plugins with exit handlers */]
+})
 ```
+
+The compilation completes but the exit handlers are either called at the wrong time or with undefined tokens, leading to unexpected behavior in the output.
 
 ### Expected behavior
 
-The MDX compiler should properly handle nested component structures and call exit handlers at the appropriate times when closing tags/nodes. The compiled output should correctly represent the nested structure.
+The closer function should return a function that gets called later during token processing, not execute immediately. Exit handlers should receive the proper token data when invoked.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0
 - Node version: 18.x
 
-This seems like it might be related to how the token stack is being managed during the compilation process. The issue appears to affect any MDX content with nested elements.
+This seems to have broken recently - the logic for when to call the `and` callback also appears inverted.
 
 ---
 Repository: /testbed

@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-After a recent update, MDX processing appears to be broken. When trying to compile MDX files, the process seems to hang or fail silently without producing any output. This is affecting our entire documentation build pipeline.
+I'm encountering a syntax error when trying to use MDX in my project. The parser seems to be failing during the tree traversal phase, causing the entire build to fail.
 
 ### Reproduction
 
@@ -12,24 +12,22 @@ import { compile } from '@mdx-js/mdx'
 const mdxContent = `
 # Hello World
 
-This is a test MDX file with some content.
-
-<CustomComponent />
+This is a simple MDX document.
 `
 
-// This hangs or fails to complete
+// This throws a syntax error
 const result = await compile(mdxContent)
 ```
 
 ### Expected behavior
 
-The MDX content should compile successfully and return the compiled output. The compilation should complete without hanging.
+The MDX content should compile successfully without any syntax errors. The compiler should properly traverse the AST and generate valid output.
 
-### System Info
-- @mdx-js/mdx version: 3.0.0
-- Node version: 18.x
+### Additional context
 
-This started happening after updating the vendor files. Rolling back to the previous version resolves the issue, so it seems to be related to recent changes in the tree traversal logic.
+This appears to be related to the internal tree visiting logic. The error occurs during compilation and prevents any MDX content from being processed. It looks like there might be an issue with the AST traversal implementation where the code is not properly closed or structured.
+
+The build was working fine before, but now it consistently fails with a parsing/syntax error whenever trying to compile any MDX content.
 
 ---
 Repository: /testbed

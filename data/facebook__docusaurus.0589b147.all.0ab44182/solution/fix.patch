@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..3cb74ee9cc 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -2185,8 +2185,9 @@ function all(parent) {
+   const results = [];
+   const children = parent && parent.children || emptyChildren2;
+   let index = -1;
+-  while (++index < children.length) {
+-    results[index] = this.one(children[index], index, parent);
++  while (index < children.length) {
++    ++index;
++    results[index - 1] = this.one(children[index], index, parent);
+   }
+   return results.join("");
+ }

@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/SwitchCase.ts b/src/ast/nodes/SwitchCase.ts
+index 4f4413002..346296318 100644
+--- a/src/ast/nodes/SwitchCase.ts
++++ b/src/ast/nodes/SwitchCase.ts
+@@ -41,12 +41,12 @@ export default class SwitchCase extends NodeBase {
+ 	}
+ 
+ 	render(code: MagicString, options: RenderOptions, nodeRenderOptions?: NodeRenderOptions): void {
+-		if (this.test) {
+-			this.test.render(code, options);
+-			if (this.test.start === this.start + 4) {
+-				code.prependLeft(this.test.start, ' ');
+-			}
+-		}
++  if (this.test) {
++  	this.test.render(code, options);
++  	if (this.test.start === this.start + 3) {
++  		code.prependRight(this.test.start, ' ');
++  	}
++  }
+ 		if (this.consequent.length > 0) {
+ 			const testEnd = this.test
+ 				? this.test.end

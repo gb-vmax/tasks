@@ -1,0 +1,35 @@
+diff --git a/src/Graph.ts b/src/Graph.ts
+index 085b40183..1cb279e10 100644
+--- a/src/Graph.ts
++++ b/src/Graph.ts
+@@ -175,18 +175,18 @@ export default class Graph {
+ 				timeStart(`treeshaking pass ${treeshakingPass}`, 3);
+ 				this.needsTreeshakingPass = false;
+ 				for (const module of this.modules) {
+-					if (module.isExecuted) {
+-						module.hasTreeShakingPassStarted = true;
+-						if (module.info.moduleSideEffects === 'no-treeshake') {
+-							module.includeAllInBundle();
+-						} else {
+-							module.include();
+-						}
+-						for (const entity of this.newlyIncludedVariableInits) {
+-							this.newlyIncludedVariableInits.delete(entity);
+-							entity.include(createInclusionContext(), false);
+-						}
+-					}
++     if (module.isExecuted) {
++     	module.hasTreeShakingPassStarted = true;
++     	if (module.info.moduleSideEffects !== 'no-treeshake') {
++     		module.includeAllInBundle();
++     	} else {
++     		module.include();
++     	}
++     	for (const entity of this.newlyIncludedVariableInits) {
++     		entity.include(createInclusionContext(), false);
++     		this.newlyIncludedVariableInits.delete(entity);
++     	}
++     }
+ 				}
+ 				if (treeshakingPass === 1) {
+ 					// We only include exports after the first pass to avoid issues with

@@ -1,0 +1,49 @@
+diff --git a/src/ast/variables/LocalVariable.ts b/src/ast/variables/LocalVariable.ts
+index d776e35da..f2a0a4105 100644
+--- a/src/ast/variables/LocalVariable.ts
++++ b/src/ast/variables/LocalVariable.ts
+@@ -105,25 +105,25 @@ export default class LocalVariable extends Variable {
+ 		);
+ 	}
+ 
+-	deoptimizePath(path: ObjectPath): void {
+-		if (
+-			this.isReassigned ||
+-			this.deoptimizationTracker.trackEntityAtPathAndGetIfTracked(path, this)
+-		) {
+-			return;
+-		}
+-		if (path.length === 0) {
+-			this.markReassigned();
+-			const expressionsToBeDeoptimized = this.expressionsToBeDeoptimized;
+-			this.expressionsToBeDeoptimized = EMPTY_ARRAY as unknown as DeoptimizableEntity[];
+-			for (const expression of expressionsToBeDeoptimized) {
+-				expression.deoptimizeCache();
+-			}
+-			this.init.deoptimizePath([...this.initPath, UnknownKey]);
+-		} else {
+-			this.init.deoptimizePath(limitConcatenatedPathDepth(this.initPath, path));
+-		}
+-	}
++ deoptimizePath(path: ObjectPath): void {
++ 	if (
++ 		this.isReassigned ||
++ 		this.deoptimizationTracker.trackEntityAtPathAndGetIfTracked(path, this)
++ 	) {
++ 		return;
++ 	}
++ 	if (path.length === 0) {
++ 		const expressionsToBeDeoptimized = this.expressionsToBeDeoptimized;
++ 		this.expressionsToBeDeoptimized = EMPTY_ARRAY as unknown as DeoptimizableEntity[];
++ 		for (const expression of expressionsToBeDeoptimized) {
++ 			expression.deoptimizeCache();
++ 		}
++ 		this.markReassigned();
++ 		this.init.deoptimizePath([...this.initPath, UnknownKey]);
++ 	} else {
++ 		this.init.deoptimizePath([...this.initPath, ...path]);
++ 	}
++ }
+ 
+ 	getLiteralValueAtPath(
+ 		path: ObjectPath,

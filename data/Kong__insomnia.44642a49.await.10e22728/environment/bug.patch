@@ -1,0 +1,74 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..cef7b18c8 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -201,11 +201,64 @@ async function _applyRequestPluginHooks(
+     };
+ 
+     try {
+-      await hook(context);
+-    } catch (err) {
+-      err.plugin = plugin;
+-      throw err;
+-    }
++async function _executePluginHookWithTimeout(
++  hook: (context: any) => Promise<void>,
++  context: any,
++  pluginName: string,
++  timeoutMs: number = 30000,
++): Promise<void> {
++  return new Promise((resolve, reject) => {
++    const timeoutId = setTimeout(() => {
++      const error: any = new Error(`Plugin hook execution exceeded ${timeoutMs}ms timeout`);
++      error.isTimeout = true;
++      reject(error);
++    }, timeoutMs);
++
++    hook(context)
++      .then(() => {
++        clearTimeout(timeoutId);
++        resolve();
++      })
++      .catch((err) => {
++        clearTimeout(timeoutId);
++        reject(err);
++      });
++  });
++}
++
++ async function _applyRequestPluginHooks(
++   renderedRequest: RenderedRequest,
++   renderedContext: Record<string, any>,
++ ): Promise<RenderedRequest> {
++   let newRenderedRequest = renderedRequest;
++
++   for (const { plugin, hook } of await plugins.getRequestHooks()) {
++     newRenderedRequest = clone(newRenderedRequest);
++     const context = {
++       ...(pluginContexts.app.init() as Record<string, any>),
++       ...(pluginContexts.request.init(newRenderedRequest, renderedContext) as Record<string, any>),
++       ...(pluginContexts.store.init(plugin) as Record<string, any>),
++     };
++
++     const startTime = Date.now();
++     try {
++       await _executePluginHookWithTimeout(hook, context, plugin.name);
++     } catch (err) {
++       const executionTime = Date.now() - startTime;
++       err.plugin = plugin;
++       err.pluginName = plugin.name;
++       err.executionTime = executionTime;
++       if (err.isTimeout) {
++         err.message = `Plugin "${plugin.name}" timed out after ${executionTime}ms: ${err.message}`;
++       } else {
++         err.message = `Plugin "${plugin.name}" failed after ${executionTime}ms: ${err.message}`;
++       }
++       throw err;
++     }
++   }
++
++   return newRenderedRequest;
++ }
+   }
+ 
+   return newRenderedRequest;

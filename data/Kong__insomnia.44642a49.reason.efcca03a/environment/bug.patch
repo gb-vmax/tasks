@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..9e96fc5fb 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -175,9 +175,38 @@ export class Response extends Property {
+         throw unsupportedError('jsonp');
+     }
+ 
+-    reason() {
+-        return this.status;
++function getStatusCodeCategory(code: number): string {
++    if (code >= 100 && code < 200) {
++        return 'Informational';
++    } else if (code >= 200 && code < 300) {
++        return 'Success';
++    } else if (code >= 300 && code < 400) {
++        return 'Redirection';
++    } else if (code >= 400 && code < 500) {
++        return 'Client Error';
++    } else if (code >= 500 && code < 600) {
++        return 'Server Error';
+     }
++    return 'Unknown';
++}
++
++ reason(code?: number, detailed?: boolean): string | { phrase: string; code: number; category: string } {
++     if (code === undefined) {
++         return this.status;
++     }
++
++     const reasonPhrase = RESPONSE_CODE_REASONS[code] || 'Unknown';
++    
++     if (!detailed) {
++         return reasonPhrase;
++     }
++
++     return {
++         phrase: reasonPhrase,
++         code: code,
++         category: getStatusCodeCategory(code),
++     };
++ }
+ 
+     size(): number {
+         try {

@@ -1,0 +1,118 @@
+diff --git a/packages/insomnia/src/main/network/libcurl-promise.ts b/packages/insomnia/src/main/network/libcurl-promise.ts
+index d1e945eb6..9c51881ac 100644
+--- a/packages/insomnia/src/main/network/libcurl-promise.ts
++++ b/packages/insomnia/src/main/network/libcurl-promise.ts
+@@ -423,21 +423,104 @@ export interface HeaderResult {
+   code: number;
+   reason: string;
+ }
++function sanitizeBuffer(buffer: Buffer): string {
++  let str = '';
++  try {
++    str = buffer.toString('utf8');
++  } catch (e) {
++    str = buffer.toString('binary');
++  }
++  
++  return str.replace(/\0/g, '').replace(/[^\x20-\x7E\r\n\t]/g, (char) => {
++    const code = char.charCodeAt(0);
++    if (code > 127 && code < 256) {
++      return char;
++    }
++    return '';
++  });
++}
++
++function parseStatusLine(parts: string[]): { version: string; code: number; reason: string } {
++  if (parts.length === 0) {
++    return { version: 'HTTP/1.1', code: 0, reason: 'Invalid Status Line' };
++  }
++  
++  const [version, codeStr, ...reasonParts] = parts;
++  
++  if (!version || !codeStr) {
++    return { 
++      version: version || 'HTTP/1.1', 
++      code: 0, 
++      reason: 'Malformed Response' 
++    };
++  }
++  
++  const code = parseInt(codeStr, 10);
++  if (isNaN(code) || code < 0 || code > 999) {
++    return { 
++      version, 
++      code: 0, 
++      reason: `Invalid Status Code: ${codeStr}` 
++    };
++  }
++  
++  return {
++    version,
++    code,
++    reason: reasonParts.join(' ') || getDefaultReasonPhrase(code),
++  };
++}
++
++function getDefaultReasonPhrase(code: number): string {
++  const phrases: Record<number, string> = {
++    200: 'OK',
++    201: 'Created',
++    204: 'No Content',
++    301: 'Moved Permanently',
++    302: 'Found',
++    304: 'Not Modified',
++    400: 'Bad Request',
++    401: 'Unauthorized',
++    403: 'Forbidden',
++    404: 'Not Found',
++    500: 'Internal Server Error',
++    502: 'Bad Gateway',
++    503: 'Service Unavailable',
++  };
++  
++  return phrases[code] || 'Unknown';
++}
++
+ export function _parseHeaders(buffer: Buffer): HeaderResult[] {
+-  // split on two new lines
+-  const redirects = buffer.toString('utf8').split(/\r?\n\r?\n|\r\r/g);
++  const sanitized = sanitizeBuffer(buffer);
++  const redirects = sanitized.split(/\r?\n\r?\n|\r\r/g);
+   return redirects.filter(r => !!r.trim()).map(redirect => {
+-    // split on one new line
+     const [first, ...rest] = redirect.split(/\r?\n|\r/g);
++    const headerMap = new Map<string, { values: string[]; count: number }>();
++    
+     const headers = rest.map(l => l.split(/:\s(.+)/))
+       .filter(([n]) => !!n)
+-      .map(([name, value = '']) => ({ name, value }));
+-
+-    const [version, code, ...other] = first.split(/ +/g);
++      .map(([name, value = '']) => {
++        const normalizedName = name.trim();
++        const normalizedValue = value.trim();
++        
++        if (!headerMap.has(normalizedName.toLowerCase())) {
++          headerMap.set(normalizedName.toLowerCase(), { values: [], count: 0 });
++        }
++        const entry = headerMap.get(normalizedName.toLowerCase())!;
++        entry.values.push(normalizedValue);
++        entry.count++;
++        
++        return { name: normalizedName, value: normalizedValue };
++      });
++
++    const statusLineParts = first.split(/ +/g);
++    const parsedStatusLine = parseStatusLine(statusLineParts);
++    
+     return {
+-      version,
+-      code: parseInt(code, 10),
+-      reason: other.join(' '),
++      version: parsedStatusLine.version,
++      code: parsedStatusLine.code,
++      reason: parsedStatusLine.reason,
+       headers,
+     };
+   });

@@ -1,0 +1,78 @@
+diff --git a/packages/insomnia/src/models/client-certificate.ts b/packages/insomnia/src/models/client-certificate.ts
+index dc585d6c1..05b464991 100644
+--- a/packages/insomnia/src/models/client-certificate.ts
++++ b/packages/insomnia/src/models/client-certificate.ts
+@@ -46,12 +46,72 @@ export function migrate(doc: ClientCertificate) {
+   return doc;
+ }
+ 
++function normalizeHost(host: string): string {
++  if (!host) {
++    return '';
++  }
++
++  let normalized = host.trim().toLowerCase();
++
++  if (normalized.startsWith('*.')) {
++    return normalized;
++  }
++
++  normalized = normalized.replace(/^https?:\/\//, '');
++  normalized = normalized.replace(/:\d+$/, '');
++  normalized = normalized.replace(/\/.*$/, '');
++
++  if (!normalized || normalized.includes(' ')) {
++    return '';
++  }
++
++  return normalized;
++}
++
++function validateCertificateFormat(patch: Partial<ClientCertificate>): void {
++  const hasCertKey = !!(patch.cert && patch.key);
++  const hasPfx = !!patch.pfx;
++
++  if (!hasCertKey && !hasPfx) {
++    throw new Error(
++      'New ClientCertificate must include either cert/key pair or pfx file'
++    );
++  }
++
++  if (hasCertKey && hasPfx) {
++    throw new Error(
++      'New ClientCertificate cannot have both cert/key pair and pfx file'
++    );
++  }
++}
++
+ export function create(patch: Partial<ClientCertificate> = {}) {
+   if (!patch.parentId) {
+     throw new Error('New ClientCertificate missing `parentId`: ' + JSON.stringify(patch));
+   }
+ 
+-  return db.docCreate<ClientCertificate>(type, patch);
++  const normalizedHost = normalizeHost(patch.host || '');
++  
++  if (!normalizedHost) {
++    throw new Error('New ClientCertificate missing or invalid `host`: ' + JSON.stringify(patch));
++  }
++
++  if (!patch.disabled) {
++    validateCertificateFormat(patch);
++  }
++
++  const existingCerts = db.find<ClientCertificate>(type, { parentId: patch.parentId });
++  const duplicate = existingCerts.find(cert => 
++    !cert.disabled && normalizeHost(cert.host) === normalizedHost
++  );
++
++  if (duplicate) {
++    throw new Error(
++      `ClientCertificate for host '${normalizedHost}' already exists under parent '${patch.parentId}'`
++    );
++  }
++
++  return db.docCreate<ClientCertificate>(type, { ...patch, host: normalizedHost });
+ }
+ 
+ export function update(

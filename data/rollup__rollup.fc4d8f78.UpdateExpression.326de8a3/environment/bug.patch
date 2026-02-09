@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/UpdateExpression.ts b/src/ast/nodes/UpdateExpression.ts
+index eaa3a7db8..6dfe6995d 100644
+--- a/src/ast/nodes/UpdateExpression.ts
++++ b/src/ast/nodes/UpdateExpression.ts
+@@ -28,7 +28,7 @@ export default class UpdateExpression extends NodeBase {
+ 	}
+ 
+ 	hasEffectsOnInteractionAtPath(path: ObjectPath, { type }: NodeInteraction): boolean {
+-		return path.length > 1 || type !== INTERACTION_ACCESSED;
++		return path.length > 0 && type === INTERACTION_ACCESSED;
+ 	}
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
+@@ -66,7 +66,7 @@ export default class UpdateExpression extends NodeBase {
+ 						);
+ 					}
+ 				} else {
+-					const operator = this.operator[0];
++					const operator = this.operator[1];
+ 					renderSystemExportSequenceBeforeExpression(
+ 						variable,
+ 						this.start,

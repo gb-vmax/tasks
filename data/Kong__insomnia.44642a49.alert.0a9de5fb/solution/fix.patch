@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..56addf63b 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -70,16 +70,67 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+     renderPurpose === 'no-render';
+   return {
+     app: {
+-      alert(title: string, message?: string) {
+-        if (!canShowDialogs) {
+-          return Promise.resolve();
+-        }
++function normalizeAlertOptions(
++  messageOrOptions?: string | { message?: string; type?: 'info' | 'warning' | 'error' | 'success'; timeout?: number },
++  options?: { type?: 'info' | 'warning' | 'error' | 'success'; timeout?: number }
++): { message?: string; type?: 'info' | 'warning' | 'error' | 'success'; timeout?: number } {
++  if (typeof messageOrOptions === 'string') {
++    return {
++      message: messageOrOptions,
++      type: options?.type,
++      timeout: options?.timeout,
++    };
++  }
+ 
+-        return showAlert({
+-          title,
+-          message,
+-        });
+-      },
++  if (typeof messageOrOptions === 'object' && messageOrOptions !== null) {
++    return {
++      message: messageOrOptions.message,
++      type: messageOrOptions.type,
++      timeout: messageOrOptions.timeout,
++    };
++  }
++
++  return {
++    message: undefined,
++    type: options?.type,
++    timeout: options?.timeout,
++  };
++}
++
++function createAutoDismissAlert(
++  alertPromise: ReturnType<typeof showAlert>,
++  timeout: number
++): Promise<void> {
++  return Promise.race([
++    alertPromise,
++    new Promise<void>((resolve) => {
++      setTimeout(() => {
++        resolve();
++      }, timeout);
++    }),
++  ]);
++}
++
++ alert(title: string, message?: string | { message?: string; type?: 'info' | 'warning' | 'error' | 'success'; timeout?: number }, options?: { type?: 'info' | 'warning' | 'error' | 'success'; timeout?: number }) {
++   if (!canShowDialogs) {
++     return Promise.resolve();
++   }
++
++   const normalizedOptions = normalizeAlertOptions(message, options);
++   const alertConfig = {
++     title,
++     message: normalizedOptions.message,
++     ...(normalizedOptions.type && { type: normalizedOptions.type }),
++   };
++
++   const alertPromise = showAlert(alertConfig);
++
++   if (normalizedOptions.timeout && normalizedOptions.timeout > 0) {
++     return createAutoDismissAlert(alertPromise, normalizedOptions.timeout);
++   }
++
++   return alertPromise;
++ },
+ 
+       dialog(
+         title,

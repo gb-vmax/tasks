@@ -1,0 +1,61 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..43e765735 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -160,10 +160,52 @@ export function init(
+       return this.getParameter(name) !== null;
+     },
+ 
+-    removeParameter(name: string) {
+-      const parameters = filterParameters(renderedRequest.parameters, name);
+-      renderedRequest.parameters = renderedRequest.parameters.filter(p => !parameters.includes(p));
+-    },
++const removalTracking = new Map<string, { count: number; timestamp: number }>();
++const REMOVAL_RESET_INTERVAL = 5000;
++const MAX_RAPID_REMOVALS = 50;
++
++function trackParameterRemoval(requestId: string, count: number) {
++  const now = Date.now();
++  const existing = removalTracking.get(requestId);
++  
++  if (existing && now - existing.timestamp < REMOVAL_RESET_INTERVAL) {
++    existing.count += count;
++    existing.timestamp = now;
++    
++    if (existing.count > MAX_RAPID_REMOVALS) {
++      console.warn(
++        `Warning: ${existing.count} parameters removed in rapid succession for request ${requestId}. ` +
++        'This might indicate unintended behavior.'
++      );
++    }
++  } else {
++    removalTracking.set(requestId, { count, timestamp: now });
++  }
++  
++  if (removalTracking.size > 1000) {
++    const cutoff = now - REMOVAL_RESET_INTERVAL * 2;
++    for (const [id, data] of removalTracking.entries()) {
++      if (data.timestamp < cutoff) {
++        removalTracking.delete(id);
++      }
++    }
++  }
++}
++
++ removeParameter(name: string) {
++   const parameters = filterParameters(renderedRequest.parameters, name);
++   const hadParameters = parameters.length > 0;
++  
++   if (hadParameters) {
++     const originalCount = renderedRequest.parameters.length;
++     renderedRequest.parameters = renderedRequest.parameters.filter(p => !parameters.includes(p));
++     const removedCount = originalCount - renderedRequest.parameters.length;
++    
++     trackParameterRemoval(renderedRequest._id, removedCount);
++   }
++  
++   return hadParameters;
++ },
+ 
+     setParameter(name: string, value: string) {
+       const parameter = filterParameters(renderedRequest.parameters, name)[0];

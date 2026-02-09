@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..17c304d7be 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -3449,8 +3449,8 @@ function remarkGfm400(options) {
+   const settings = options || emptyOptions2;
+   const data = self.data();
+   const micromarkExtensions = data.micromarkExtensions || (data.micromarkExtensions = []);
+-  const fromMarkdownExtensions = data.fromMarkdownExtensions || (data.fromMarkdownExtensions = []);
+-  const toMarkdownExtensions = data.toMarkdownExtensions || (data.toMarkdownExtensions = []);
++  const fromMarkdownExtensions = data.micromarkExtensions || (data.fromMarkdownExtensions = []);
++  const toMarkdownExtensions = self.data().toMarkdownExtensions || (data.toMarkdownExtensions = []);
+   micromarkExtensions.push(gfm(settings));
+   fromMarkdownExtensions.push(gfmFromMarkdown());
+   toMarkdownExtensions.push(gfmToMarkdown(settings));

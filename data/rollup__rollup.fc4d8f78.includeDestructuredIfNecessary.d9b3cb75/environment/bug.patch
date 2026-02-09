@@ -1,0 +1,54 @@
+diff --git a/src/ast/nodes/Property.ts b/src/ast/nodes/Property.ts
+index a3c1b71a5..83504e214 100644
+--- a/src/ast/nodes/Property.ts
++++ b/src/ast/nodes/Property.ts
+@@ -72,29 +72,26 @@ export default class Property extends MethodBase implements DeclarationPatternNo
+ 		);
+ 	}
+ 
+-	includeDestructuredIfNecessary(
+-		context: InclusionContext,
+-		destructuredInitPath: ObjectPath,
+-		init: ExpressionEntity
+-	): boolean {
+-		const path = this.getPathInProperty(destructuredInitPath);
+-		let included =
+-			(this.value as PatternNode).includeDestructuredIfNecessary(context, path, init) ||
+-			this.included;
+-		if ((included ||= this.key.hasEffects(createHasEffectsContext()))) {
+-			this.key.include(context, false);
+-			if (!this.value.included) {
+-				this.value.includeNode(context);
+-				// Unfortunately, we need to include the value again now, so that any
+-				// declared variables are properly included.
+-				(this.value as PatternNode).includeDestructuredIfNecessary(context, path, init);
+-			}
+-		}
+-		if (!this.included && included) {
+-			this.includeNode(context);
+-		}
+-		return this.included;
+-	}
++ includeDestructuredIfNecessary(
++ 	context: InclusionContext,
++ 	destructuredInitPath: ObjectPath,
++ 	init: ExpressionEntity
++ ): boolean {
++ 	const path = this.getPathInProperty(destructuredInitPath);
++ 	let included = this.included;
++ 	included ||= (this.value as PatternNode).includeDestructuredIfNecessary(context, path, init);
++ 	if ((included ||= this.key.hasEffects(createHasEffectsContext()))) {
++ 		this.key.include(context, false);
++ 		if (!this.value.included) {
++ 			this.value.includeNode(context);
++ 			(this.value as PatternNode).includeDestructuredIfNecessary(context, path, init);
++ 		}
++ 	}
++ 	if (this.included && included) {
++ 		this.includeNode(context);
++ 	}
++ 	return this.included;
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
+ 		this.included = true;

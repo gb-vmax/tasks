@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..de69688bc 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -417,9 +417,52 @@ export class PropertyList<T extends Property> {
+     }
+ 
+     upsert(item: T): boolean {
+-        if (item == null) {
+-            return false;
+-        }
++ upsert(item: T, options?: { 
++     onBeforeUpsert?: (item: T, existing?: T) => T | void,
++     onAfterUpsert?: (item: T, wasUpdate: boolean) => void,
++     customDuplicateFinder?: (item: T, listItem: T) => boolean
++ }): boolean {
++     if (item == null) {
++         return false;
++     }
++
++     let processedItem = item;
++     let existingItem: T | undefined = undefined;
++     let itemIdx = -1;
++
++     if (options?.customDuplicateFinder) {
++         itemIdx = this.list.findIndex(listItem => options.customDuplicateFinder!(item, listItem));
++         if (itemIdx >= 0) {
++             existingItem = this.list[itemIdx];
++         }
++     } else {
++         itemIdx = this.indexOf(item);
++         if (itemIdx >= 0) {
++             existingItem = this.list[itemIdx];
++         }
++     }
++
++     if (options?.onBeforeUpsert) {
++         const result = options.onBeforeUpsert(processedItem, existingItem);
++         if (result !== undefined) {
++             processedItem = result;
++         }
++     }
++
++     const wasUpdate = itemIdx >= 0;
++
++     if (wasUpdate) {
++         this.list = [...this.list.slice(0, itemIdx), processedItem, ...this.list.slice(itemIdx + 1)];
++     } else {
++         this.add(processedItem);
++     }
++
++     if (options?.onAfterUpsert) {
++         options.onAfterUpsert(processedItem, wasUpdate);
++     }
++
++     return !wasUpdate;
++ }
+ 
+         const itemIdx = this.indexOf(item);
+         if (itemIdx >= 0) {

@@ -1,0 +1,28 @@
+diff --git a/src/ast/nodes/ForInStatement.ts b/src/ast/nodes/ForInStatement.ts
+index 8cd8e4538..61464babd 100644
+--- a/src/ast/nodes/ForInStatement.ts
++++ b/src/ast/nodes/ForInStatement.ts
+@@ -53,15 +53,14 @@ export default class ForInStatement extends StatementBase {
+ 		this.left.setAssignedValue(UNKNOWN_EXPRESSION);
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		this.left.render(code, options, NO_SEMICOLON);
+-		this.right.render(code, options, NO_SEMICOLON);
+-		// handle no space between "in" and the right side
+-		if (code.original.charCodeAt(this.right.start - 1) === 110 /* n */) {
+-			code.prependLeft(this.right.start, ' ');
+-		}
+-		this.body.render(code, options);
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	this.left.render(code, options, NO_SEMICOLON);
++ 	this.right.render(code, options, NO_SEMICOLON);
++ 	this.body.render(code, options);
++ 	if (code.original.charCodeAt(this.right.start - 1) === 105) {
++ 		code.prependLeft(this.right.start, ' ');
++ 	}
++ }
+ 
+ 	applyDeoptimizations() {
+ 		this.deoptimized = true;

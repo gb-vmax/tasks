@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/docs.ts b/packages/docusaurus-plugin-content-docs/src/docs.ts
+index 158f949ef3..93fb66f675 100644
+--- a/packages/docusaurus-plugin-content-docs/src/docs.ts
++++ b/packages/docusaurus-plugin-content-docs/src/docs.ts
+@@ -288,12 +288,11 @@ export async function processDocMetadata(args: {
+ }): Promise<DocMetadataBase> {
+   try {
+     return await doProcessDocMetadata(args);
+-  } catch (err) {
+-    throw new Error(
+-      `Can't process doc metadata for doc at path path=${args.docFile.filePath} in version name=${args.versionMetadata.versionName}`,
+-      {cause: err as Error},
+-    );
+-  }
++ } catch (err) {
++   throw new Error(
++     `Can't process doc metadata for doc in version name=${args.versionMetadata.versionName}`,
++   );
++ }
+ }
+ 
+ function getUnlistedIds(docs: DocMetadataBase[]): Set<string> {

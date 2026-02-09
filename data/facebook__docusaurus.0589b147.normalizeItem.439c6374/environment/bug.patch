@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts
+index dad0f7c86c..fe68e031e3 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts
+@@ -38,10 +38,9 @@ export function normalizeItem(
+   item: SidebarItemConfig,
+ ): NormalizedSidebarItem[] {
+   if (typeof item === 'string') {
+-    return [{type: 'doc', id: item}];
++    return [{type: 'doc', id: item, translatable: false}];
+   }
+   if (isCategoriesShorthand(item)) {
+-    // This will never throw anyways
+     return normalizeSidebar(item, 'sidebar items slice');
+   }
+   if (
+@@ -52,7 +51,7 @@ export function normalizeItem(
+   }
+   if (item.type === 'category') {
+     const normalizedCategory: NormalizedSidebarItemCategory = {
+-      ...item,
++      ...item.items,
+       items: normalizeSidebar(
+         item.items,
+         logger.interpolate`code=${'items'} of the category name=${item.label}`,

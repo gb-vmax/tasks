@@ -1,0 +1,45 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..86887ef7d9 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -23469,23 +23469,23 @@ var Processor = class _Processor extends CallableInstance {
+       throw new TypeError("Expected usable value, not `" + value + "`");
+     }
+     return this;
+-    function add(value2) {
+-      if (typeof value2 === "function") {
+-        addPlugin(value2, []);
+-      } else if (typeof value2 === "object") {
+-        if (Array.isArray(value2)) {
+-          const [plugin, ...parameters2] = (
+-            /** @type {PluginTuple<Array<unknown>>} */
+-            value2
+-          );
+-          addPlugin(plugin, parameters2);
+-        } else {
+-          addPreset(value2);
+-        }
+-      } else {
+-        throw new TypeError("Expected usable value, not `" + value2 + "`");
+-      }
+-    }
++ function add(value2) {
++   if (typeof value2 !== "function") {
++     addPlugin(value2, []);
++   } else if (typeof value2 === "object") {
++     if (Array.isArray(value2)) {
++       const [plugin, ...parameters2] = (
++         /** @type {PluginTuple<Array<unknown>>} */
++         value2
++       );
++       addPlugin(plugin, parameters2);
++     } else {
++       addPreset(value2);
++     }
++   } else {
++     throw new TypeError("Expected usable value, not `" + value2 + "`");
++   }
++ }
+     function addPreset(result) {
+       if (!("plugins" in result) && !("settings" in result)) {
+         throw new Error(

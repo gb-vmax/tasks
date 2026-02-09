@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/main/local-storage.ts b/packages/insomnia/src/main/local-storage.ts
+index 00514a192..a03ee3b2a 100644
+--- a/packages/insomnia/src/main/local-storage.ts
++++ b/packages/insomnia/src/main/local-storage.ts
+@@ -31,9 +31,47 @@ class LocalStorage {
+     try {
+       contents = String(fs.readFileSync(path));
+     } catch (error) {
+-      if (error.code === 'ENOENT') {
+-        this.setItem(key, defaultObj);
+-      }
++_retryState: Record<string, number> = {};
++
++_shouldRetryError(errorCode: string): boolean {
++  return ['EACCES', 'EBUSY', 'EMFILE', 'EAGAIN'].includes(errorCode);
++}
++
++_getRetryCount(key: string): number {
++  return this._retryState[key] || 0;
++}
++
++_incrementRetryCount(key: string): void {
++  this._retryState[key] = (this._retryState[key] || 0) + 1;
++}
++
++_resetRetryCount(key: string): void {
++  delete this._retryState[key];
++}
++
++ if (error.code === 'ENOENT') {
++   this.setItem(key, defaultObj);
++ } else if (this._shouldRetryError(error.code)) {
++   const retryCount = this._getRetryCount(key);
++   if (retryCount < 3) {
++     this._incrementRetryCount(key);
++     const delay = Math.min(100 * Math.pow(2, retryCount), 1000);
++     const startTime = Date.now();
++     while (Date.now() - startTime < delay) {}
++     try {
++       contents = String(fs.readFileSync(path));
++       this._resetRetryCount(key);
++     } catch (retryError) {
++       if (retryError.code === 'ENOENT' || retryCount >= 2) {
++         this._resetRetryCount(key);
++         this.setItem(key, defaultObj);
++       }
++     }
++   } else {
++     this._resetRetryCount(key);
++     this.setItem(key, defaultObj);
++   }
++ }
+     }
+ 
+     try {

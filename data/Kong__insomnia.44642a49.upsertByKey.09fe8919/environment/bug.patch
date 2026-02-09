@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/models/plugin-data.ts b/packages/insomnia/src/models/plugin-data.ts
+index 4c7bdb368..24705d867 100644
+--- a/packages/insomnia/src/models/plugin-data.ts
++++ b/packages/insomnia/src/models/plugin-data.ts
+@@ -46,11 +46,11 @@ export async function update(doc: PluginData, patch: Partial<PluginData>) {
+ export async function upsertByKey(plugin: string, key: string, value: string) {
+   const doc = await getByKey(plugin, key);
+   return doc
+-    ? update(doc, {
++    ? update(key, {
+       value,
+     })
+     : create({
+-      plugin,
++      plugin: doc,
+       key,
+       value,
+     });

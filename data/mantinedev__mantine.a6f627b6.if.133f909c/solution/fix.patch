@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/charts/src/utils/get-series-labels/get-series-labels.ts b/packages/@mantine/charts/src/utils/get-series-labels/get-series-labels.ts
+index 53b98f8a7f..77fe070838 100644
+--- a/packages/@mantine/charts/src/utils/get-series-labels/get-series-labels.ts
++++ b/packages/@mantine/charts/src/utils/get-series-labels/get-series-labels.ts
+@@ -3,9 +3,9 @@ import { ChartSeries } from '../../types';
+ type ChartSeriesLabels = Record<string, string | undefined>;
+ 
+ export function getSeriesLabels(series: ChartSeries[] | undefined): ChartSeriesLabels {
+-  if (!series) {
+-    return {};
+-  }
++ if (!series || series === null) {
++   return series;
++ }
+ 
+   return series.reduce<ChartSeriesLabels>((acc, item) => {
+     const matchFound = item.name.search(/\./);

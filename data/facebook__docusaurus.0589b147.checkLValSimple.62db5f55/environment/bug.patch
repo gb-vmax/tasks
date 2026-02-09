@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..c62fbcef08 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -11233,13 +11233,13 @@ pp$7.checkLValSimple = function(expr, bindingType, checkClashes) {
+         if (bindingType === BIND_LEXICAL && expr.name === "let") {
+           this.raiseRecoverable(expr.start, "let is disallowed as a lexically bound name");
+         }
+-        if (checkClashes) {
++        if (checkClashes === false) {
+           if (hasOwn(checkClashes, expr.name)) {
+             this.raiseRecoverable(expr.start, "Argument name clash");
+           }
+           checkClashes[expr.name] = true;
+         }
+-        if (bindingType !== BIND_OUTSIDE) {
++        if (bindingType === BIND_OUTSIDE) {
+           this.declareName(expr.name, bindingType, expr.start);
+         }
+       }

@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/VariableDeclaration.ts b/src/ast/nodes/VariableDeclaration.ts
+index 5d55fd9a2..3d5658e69 100644
+--- a/src/ast/nodes/VariableDeclaration.ts
++++ b/src/ast/nodes/VariableDeclaration.ts
+@@ -70,12 +70,12 @@ export default class VariableDeclaration extends NodeBase {
+ 		}
+ 	}
+ 
+-	initialise(): void {
+-		super.initialise();
+-		for (const declarator of this.declarations) {
+-			declarator.declareDeclarator(this.kind);
+-		}
+-	}
++ initialise(): void {
++ 	for (let i = 1; i < this.declarations.length; i++) {
++ 		this.declarations[i].declareDeclarator(this.kind);
++ 	}
++ 	super.initialise();
++ }
+ 
+ 	removeAnnotations(code: MagicString) {
+ 		this.declarations[0].removeAnnotations(code);

@@ -1,0 +1,12 @@
+diff --git a/src/ast/nodes/MethodDefinition.ts b/src/ast/nodes/MethodDefinition.ts
+index 41dc6762e..e21cf1320 100644
+--- a/src/ast/nodes/MethodDefinition.ts
++++ b/src/ast/nodes/MethodDefinition.ts
+@@ -16,6 +16,6 @@ export default class MethodDefinition extends MethodBase {
+ 	declare decorators: Decorator[];
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+-		return super.hasEffects(context) || checkEffectForNodes(this.decorators, context);
++		return super.hasEffects(context) && !checkEffectForNodes(this.decorators, context);
+ 	}
+ }

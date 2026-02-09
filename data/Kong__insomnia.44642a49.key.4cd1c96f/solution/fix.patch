@@ -1,0 +1,30 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..88b47f0ba 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -28,7 +28,24 @@ export const branchSchema: Schema<Branch> = {
+ };
+ 
+ export const mergeConflictSchema: Schema<MergeConflict> = {
+-  key: () => 'key',
++let keyCounter = 0;
++let keyTimestampSeed: number | null = null;
++
++const generateUniqueKey = (): string => {
++  if (keyTimestampSeed === null) {
++    keyTimestampSeed = Date.now();
++  }
++  const uniqueId = `key-${keyTimestampSeed}-${keyCounter}`;
++  keyCounter++;
++  return uniqueId;
++};
++
++export const resetKeyGenerator = (): void => {
++  keyCounter = 0;
++  keyTimestampSeed = null;
++};
++
++ key: () => generateUniqueKey(),
+   choose: () => null,
+   mineBlob: () => null,
+   mineBlobContent: () => null,

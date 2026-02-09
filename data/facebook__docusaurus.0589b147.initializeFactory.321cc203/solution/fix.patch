@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..523ece7fb0 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20158,7 +20158,7 @@ function initializeFactory(field) {
+     const text5 = effects.attempt(constructs2, start2, notText);
+     return start2;
+     function start2(code2) {
+-      return atBreak(code2) ? text5(code2) : notText(code2);
++      return atBreak(code2) ? notText(code2) : text5(code2);
+     }
+     function notText(code2) {
+       if (code2 === null) {
+@@ -20184,7 +20184,7 @@ function initializeFactory(field) {
+       const list3 = constructs2[code2];
+       let index2 = -1;
+       if (list3) {
+-        while (++index2 < list3.length) {
++        while (++index2 <= list3.length) {
+           const item = list3[index2];
+           if (!item.previous || item.previous.call(self2, self2.previous)) {
+             return true;

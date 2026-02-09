@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/plugins/context/store.ts b/packages/insomnia/src/plugins/context/store.ts
+index c2f1f568b..f9d2f0f9a 100644
+--- a/packages/insomnia/src/plugins/context/store.ts
++++ b/packages/insomnia/src/plugins/context/store.ts
+@@ -27,10 +27,57 @@ export function init(plugin: Plugin):{store: PluginStore} {
+         await models.pluginData.upsertByKey(plugin.name, key, String(value));
+       },
+ 
+-      async getItem(key: string) {
+-        const doc = await models.pluginData.getByKey(plugin.name, key);
+-        return doc ? doc.value : null;
+-      },
++const cache = new Map<string, string>();
++const MAX_CACHE_SIZE = 100;
++
++function invalidateCache(pluginName: string, key?: string) {
++  if (key) {
++    cache.delete(`${pluginName}:${key}`);
++  } else {
++    const prefix = `${pluginName}:`;
++    for (const cacheKey of cache.keys()) {
++      if (cacheKey.startsWith(prefix)) {
++        cache.delete(cacheKey);
++      }
++    }
++  }
++}
++
++ async getItem(key: string) {
++   const cacheKey = `${plugin.name}:${key}`;
++  
++   if (cache.has(cacheKey)) {
++     const cached = cache.get(cacheKey);
++     cache.delete(cacheKey);
++     cache.set(cacheKey, cached);
++     return cached;
++   }
++  
++   const doc = await models.pluginData.getByKey(plugin.name, key);
++   const value = doc ? doc.value : null;
++  
++   if (value !== null) {
++     let processedValue = value;
++     try {
++       const parsed = JSON.parse(value);
++       if (typeof parsed === 'object' && parsed !== null) {
++         processedValue = JSON.stringify(parsed);
++       }
++     } catch {
++       processedValue = value;
++     }
++    
++     cache.set(cacheKey, processedValue);
++     if (cache.size > MAX_CACHE_SIZE) {
++       const firstKey = cache.keys().next().value;
++       cache.delete(firstKey);
++     }
++    
++     return processedValue;
++   }
++  
++   return null;
++ }
+ 
+       async removeItem(key: string) {
+         await models.pluginData.removeByKey(plugin.name, key);

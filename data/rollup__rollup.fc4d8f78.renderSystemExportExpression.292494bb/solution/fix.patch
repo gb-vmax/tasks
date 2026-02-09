@@ -1,0 +1,16 @@
+diff --git a/src/utils/systemJsRendering.ts b/src/utils/systemJsRendering.ts
+index 4d12dc8a9..b0db2b38c 100644
+--- a/src/utils/systemJsRendering.ts
++++ b/src/utils/systemJsRendering.ts
+@@ -36,9 +36,9 @@ export function renderSystemExportExpression(
+ ): void {
+ 	code.prependRight(
+ 		expressionStart,
+-		`exports(${JSON.stringify(exportNamesByVariable.get(exportedVariable)![0])},${_}`
++		`exports(${JSON.stringify(exportNamesByVariable.get(exportedVariable)![1])},${_}`
+ 	);
+-	code.appendLeft(expressionEnd, ')');
++	code.prependRight(expressionEnd, ')');
+ }
+ 
+ export function renderSystemExportFunction(

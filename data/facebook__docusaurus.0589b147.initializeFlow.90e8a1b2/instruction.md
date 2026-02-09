@@ -2,27 +2,36 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX parsing where flow content seems to get stuck in an infinite loop or doesn't properly continue parsing after certain line endings. The parser appears to hang or fail to process subsequent content correctly.
+I'm experiencing an issue with flow parsing where the parser seems to get stuck or doesn't properly continue after processing line endings. The flow initialization appears to be handling blank line endings incorrectly, and after processing a construct with a line ending, the parser doesn't return to the initial state as expected.
 
 ### Reproduction
 
-```mdx
-# Heading
-
+```js
+// Parse MDX content with blank lines and flow constructs
+const content = `
 Some content here
 
-Another paragraph
+Another line after blank
+`;
+
+// The parser doesn't properly handle the transition
+// between blank line endings and subsequent flow content
 ```
 
-When parsing MDX documents with multiple paragraphs separated by blank lines, the parser doesn't seem to advance correctly after processing line endings. The content after blank lines either doesn't get parsed or causes the parser to enter an unexpected state.
+When parsing content that contains:
+1. Initial flow content
+2. Blank lines (line endings)
+3. Additional flow content after the blank lines
+
+The parser fails to properly transition back to parsing the next flow content after encountering blank line endings.
 
 ### Expected behavior
 
-The parser should correctly handle blank lines between flow content blocks and continue parsing the rest of the document. Each paragraph should be processed independently and the parser should properly reset its state between constructs.
+After processing a blank line ending or a line ending following a construct, the parser should return to the initial flow parsing state to continue processing subsequent content. The flow should continue seamlessly through blank lines and constructs.
 
-### System Info
-- @mdx-js/mdx version: 3.0.0
-- Node version: Latest
+### Additional context
+
+This seems to affect content parsing where there are multiple sections separated by blank lines. The parser state (`currentConstruct`) may not be getting reset at the right time, causing issues with how subsequent content is processed.
 
 ---
 Repository: /testbed

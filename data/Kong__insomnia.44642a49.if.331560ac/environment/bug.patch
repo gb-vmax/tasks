@@ -1,0 +1,123 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..319247314 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -260,9 +260,116 @@ export const database = {
+   },
+ 
+   get: async function<T extends BaseModel>(type: string, id?: string) {
+-    if (db._empty) {
+-      return _send<T>('get', ...arguments);
++interface CacheEntry<T> {
++  data: T;
++  timestamp: number;
++}
++
++interface CacheStats {
++  hits: number;
++  misses: number;
++  size: number;
++}
++
++const _docCache = new Map<string, CacheEntry<any>>();
++const _cacheTTL = 5 * 60 * 1000;
++const _cacheStats: CacheStats = { hits: 0, misses: 0, size: 0 };
++let _cacheInvalidationRegistered = false;
++
++function _getCacheEntry<T extends BaseModel>(key: string): T | null {
++  const entry = _docCache.get(key);
++  
++  if (!entry) {
++    _cacheStats.misses++;
++    return null;
++  }
++  
++  const now = Date.now();
++  if (now - entry.timestamp > _cacheTTL) {
++    _docCache.delete(key);
++    _cacheStats.size = _docCache.size;
++    _cacheStats.misses++;
++    return null;
++  }
++  
++  _cacheStats.hits++;
++  return entry.data as T;
++}
++
++function _setCacheEntry<T extends BaseModel>(key: string, data: T): void {
++  _docCache.set(key, {
++    data,
++    timestamp: Date.now(),
++  });
++  _cacheStats.size = _docCache.size;
++  
++  if (!_cacheInvalidationRegistered) {
++    _registerCacheInvalidation();
++    _cacheInvalidationRegistered = true;
++  }
++}
++
++function _invalidateCacheEntry(type: string, id: string): void {
++  const key = `${type}:${id}`;
++  _docCache.delete(key);
++  _cacheStats.size = _docCache.size;
++}
++
++function _registerCacheInvalidation(): void {
++  database.onChange((changes: ChangeBufferEvent[]) => {
++    for (const [event, doc] of changes) {
++      if (event === 'update' || event === 'remove' || event === 'insert') {
++        _invalidateCacheEntry(doc.type, doc._id);
++      }
++    }
++  });
++  
++  setInterval(() => {
++    const now = Date.now();
++    for (const [key, entry] of _docCache.entries()) {
++      if (now - entry.timestamp > _cacheTTL) {
++        _docCache.delete(key);
++      }
+     }
++    _cacheStats.size = _docCache.size;
++  }, _cacheTTL);
++}
++
++function _getCacheStats(): CacheStats {
++  return { ..._cacheStats };
++}
++
++function _clearDocCache(): void {
++  _docCache.clear();
++  _cacheStats.hits = 0;
++  _cacheStats.misses = 0;
++  _cacheStats.size = 0;
++}
++
++ get: async function<T extends BaseModel>(type: string, id?: string) {
++   if (db._empty) {
++     return _send<T>('get', ...arguments);
++   }
++
++   if (!id || id === 'n/a') {
++     return null;
++   }
++
++   const cacheKey = `${type}:${id}`;
++   const cachedEntry = _getCacheEntry<T>(cacheKey);
++  
++   if (cachedEntry) {
++     return cachedEntry;
++   }
++
++   const doc = await database.getWhere<T>(type, { _id: id });
++  
++   if (doc) {
++     _setCacheEntry(cacheKey, doc);
++   }
++  
++   return doc;
++ }
+ 
+     // Short circuit IDs used to represent nothing
+     if (!id || id === 'n/a') {

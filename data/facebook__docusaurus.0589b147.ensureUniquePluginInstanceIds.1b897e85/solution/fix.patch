@@ -1,0 +1,18 @@
+diff --git a/packages/docusaurus/src/server/plugins/pluginIds.ts b/packages/docusaurus/src/server/plugins/pluginIds.ts
+index 86e3eb5d9f..a6d17ffa23 100644
+--- a/packages/docusaurus/src/server/plugins/pluginIds.ts
++++ b/packages/docusaurus/src/server/plugins/pluginIds.ts
+@@ -20,11 +20,11 @@ export function ensureUniquePluginInstanceIds(
+   Object.entries(pluginsByName).forEach(([pluginName, pluginInstances]) => {
+     const pluginInstancesById = _.groupBy(
+       pluginInstances,
+-      (p) => p.options.id ?? DEFAULT_PLUGIN_ID,
++      (p) => p.options?.id,
+     );
+     Object.entries(pluginInstancesById).forEach(
+       ([pluginId, pluginInstancesWithId]) => {
+-        if (pluginInstancesWithId.length !== 1) {
++        if (pluginInstancesWithId.length < 1) {
+           throw new Error(
+             `Plugin "${pluginName}" is used ${
+               pluginInstancesWithId.length

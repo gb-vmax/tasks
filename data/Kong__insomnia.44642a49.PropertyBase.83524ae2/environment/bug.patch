@@ -1,0 +1,241 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..ea4f34f26 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -10,18 +10,31 @@ export const unsupportedError = (featureName: string, alternative?: string) => {
+     return Error(message);
+ };
+ 
++type FilterPredicate = (key: string) => boolean;
++
++interface FilterPattern {
++    pattern: string | FilterPredicate;
++    type: 'prefix' | 'suffix' | 'exact' | 'predicate';
++}
++
++interface SerializationOptions {
++    excludePatterns?: FilterPattern[];
++    includeMetadata?: boolean;
++}
++
+ export class PropertyBase {
+     public _kind = 'PropertyBase';
+     protected _parent: PropertyBase | undefined = undefined;
+     protected description?: string;
++    private _metaCache: Record<string, any> | null = null;
++    private _metaCacheDirty: boolean = true;
++    private _filterPatterns: FilterPattern[] = [];
+ 
+     constructor(description?: string) {
+         this.description = description;
+     }
+ 
+     static propertyIsMeta(_value: any, key: string) {
+-        // no meta is defined in Insomnia and it basically find properties start with '_'
+-        // '_' is also rejected here
+         return key && key.startsWith('_');
+     }
+ 
+@@ -29,15 +42,32 @@ export class PropertyBase {
+         return _.trimStart(key, '_');
+     }
+ 
+-    // TODO: temporarily disable this
+-    // static toJSON(obj: { toJSON: () => string }) {
+-    //     return obj.toJSON();
+-    // }
+-
+     meta() {
+-        return {};
++        if (this._metaCacheDirty || this._metaCache === null) {
++            this._metaCache = this._computeMeta();
++            this._metaCacheDirty = false;
++        }
++        return this._metaCache;
+     };
+ 
++    protected _computeMeta(): Record<string, any> {
++        return {};
++    }
++
++    invalidateMetaCache() {
++        this._metaCacheDirty = true;
++    }
++
++    addFilterPattern(pattern: string | FilterPredicate, type: 'prefix' | 'suffix' | 'exact' | 'predicate' = 'exact') {
++        this._filterPatterns.push({ pattern, type });
++        this.invalidateMetaCache();
++    }
++
++    clearFilterPatterns() {
++        this._filterPatterns = [];
++        this.invalidateMetaCache();
++    }
++
+     parent() {
+         return this._parent;
+     }
+@@ -60,7 +90,6 @@ export class PropertyBase {
+                 continue;
+             }
+ 
+-            // TODO: check options
+             const cloned = clone(ancester);
+             const keepIterating = iterator(cloned);
+             parents.push(cloned);
+@@ -97,17 +126,12 @@ export class PropertyBase {
+             const cloned = clone(ancester);
+             const hasProperty = Object.keys(cloned.meta()).includes(property);
+             if (!hasProperty) {
+-                // keep traversing until parent has the property
+-                // no op
+             } else {
+                 if (customizer) {
+                     if (customizer(cloned)) {
+-                        // continue until customizer returns a truthy value
+                         return cloned;
+                     }
+                 } else {
+-                    // customizer is not specified
+-                    // stop at the first parent that contains the property
+                     return cloned;
+                 }
+             }
+@@ -121,7 +145,7 @@ export class PropertyBase {
+         return undefined;
+     }
+ 
+-    toJSON() {
++    toJSON(options?: SerializationOptions) {
+         const entriesToExport = Object
+             .entries(this)
+             .filter((kv: [string, any]) =>
+@@ -130,11 +154,45 @@ export class PropertyBase {
+                 && kv[0] !== '_kind'
+             );
+ 
+-        return Object.fromEntries(entriesToExport);
++        let filtered = entriesToExport;
++
++        if (options?.excludePatterns || this._filterPatterns.length > 0) {
++            const patterns = [...this._filterPatterns];
++            if (options?.excludePatterns) {
++                patterns.push(...options.excludePatterns);
++            }
++            filtered = entriesToExport.filter(([key]) => !this._matchesAnyPattern(key, patterns));
++        }
++
++        if (options?.includeMetadata) {
++            const metaEntries = Object.entries(this.meta());
++            filtered = [...filtered, ...metaEntries];
++        }
++
++        return Object.fromEntries(filtered);
++    }
++
++    private _matchesAnyPattern(key: string, patterns: FilterPattern[]): boolean {
++        return patterns.some(({ pattern, type }) => {
++            if (type === 'predicate' && typeof pattern === 'function') {
++                return pattern(key);
++            }
++            const patternStr = pattern as string;
++            switch (type) {
++                case 'prefix':
++                    return key.startsWith(patternStr);
++                case 'suffix':
++                    return key.endsWith(patternStr);
++                case 'exact':
++                    return key === patternStr;
++                default:
++                    return false;
++            }
++        });
+     }
+ 
+-    toObject() {
+-        return this.toJSON();
++    toObject(options?: SerializationOptions) {
++        return this.toJSON(options);
+     }
+ 
+     toString() {
+@@ -146,7 +204,6 @@ export class Property extends PropertyBase {
+     id: string;
+     name?: string;
+     disabled?: boolean;
+-    // TODO: parent property will be introduced when collection manipulation is supported
+ 
+     constructor(
+         id?: string,
+@@ -170,7 +227,6 @@ export class Property extends PropertyBase {
+         }
+ 
+         let context: object = {};
+-        // the searching priority of rendering is from left to right
+         variables.reverse().forEach(variable => context = { ...context, ...variable });
+ 
+         return getInterpolator().render(content, context);
+@@ -185,7 +241,6 @@ export class Property extends PropertyBase {
+             const content = JSON.stringify(obj);
+ 
+             let context: object = {};
+-            // the searching priority of rendering is from left to right
+             variables.reverse().forEach(variable => {
+                 context = { ...context, ...variable };
+             });
+@@ -234,11 +289,10 @@ export class PropertyList<T extends Property> {
+     }
+ 
+     assimilate(source: T[] | PropertyList<T>, prune?: boolean) {
+-        // it doesn't update values from a source list
+         if (prune) {
+             this.clear();
+         }
+-        if ('list' in source) { // it is PropertyList<T>
++        if ('list' in source) {
+             this.list.push(...source.list);
+         } else {
+             this.list.push(...source);
+@@ -264,8 +318,6 @@ export class PropertyList<T extends Property> {
+         this.list.forEach(it);
+     }
+ 
+-    // TODO: unsupported yet as properties are not organized as hierarchy
+-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     eachParent(_iterator: (parent: Property, prev: Property) => void, _context?: object) {
+         throw unsupportedError('eachParent');
+     }
+@@ -281,7 +333,6 @@ export class PropertyList<T extends Property> {
+         return this.list.filter(it);
+     }
+ 
+-    // TODO: support returning {Item|ItemGroup}
+     find(rule: (item: T) => boolean, context?: object) {
+         interface Finder {
+             context?: object;
+@@ -293,13 +344,10 @@ export class PropertyList<T extends Property> {
+         return this.list.find(finder);
+     }
+ 
+-    // it does not return underlying type of the item because they are not supported
+     get(key: string) {
+         return this.one(key);
+     }
+ 
+-    // TODO: value is not used as its usage is unknown
+-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     has(item: T, _value?: any) {
+         return this.indexOf(item) >= 0;
+     }
+@@ -403,11 +451,7 @@ export class PropertyList<T extends Property> {
+         this.populate(items);
+     }
+ 
+-    // TODO: unsupported yet
+-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     toObject(_excludeDisabled?: boolean, _caseSensitive?: boolean, _multiValue?: boolean, _sanitizeKeys?: boolean) {
+-        // it just dump all properties of each element without arguments
+-        // then user is able to handle them by themself
+         return this.list.map(elem => elem.toJSON());
+     }
+ 

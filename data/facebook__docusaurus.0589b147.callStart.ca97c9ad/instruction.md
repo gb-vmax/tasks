@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-Footnote references in GFM (GitHub Flavored Markdown) are not being parsed correctly. When using the standard footnote syntax `[^1]`, the parser fails to recognize it as a valid footnote reference.
+Footnote references in GFM (GitHub Flavored Markdown) are not being parsed correctly. When trying to use footnotes with the `[^label]` syntax, they're not being recognized and the markdown is rendered as plain text instead of being converted to footnote references.
 
 ### Reproduction
 
@@ -12,14 +12,15 @@ Here is some text with a footnote reference[^1].
 [^1]: This is the footnote content.
 ```
 
-When parsing the above markdown, the footnote reference `[^1]` is not being converted properly. The parser seems to reject the caret character instead of accepting it.
+Expected: The `[^1]` should be parsed as a footnote reference and rendered appropriately.
 
-### Expected behavior
+Actual: The footnote syntax is not recognized and appears as literal text in the output.
 
-The parser should recognize `[^note]` as a valid footnote reference syntax and convert it to the appropriate HTML output. The caret character (`^`) after the opening bracket should be treated as the marker for a footnote call.
+This seems to affect all footnote references regardless of the label used. The parser appears to be rejecting valid footnote syntax.
 
 ### System Info
 - remark-gfm version: 4.0.0
+- Node version: Latest
 
 ---
 Repository: /testbed

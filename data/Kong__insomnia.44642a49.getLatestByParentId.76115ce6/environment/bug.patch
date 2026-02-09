@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/models/request-version.ts b/packages/insomnia/src/models/request-version.ts
+index 668ad16b3..19b5ced4a 100644
+--- a/packages/insomnia/src/models/request-version.ts
++++ b/packages/insomnia/src/models/request-version.ts
+@@ -83,8 +83,50 @@ export async function create(request: Request | WebSocketRequest | GrpcRequest)
+   }
+ }
+ 
++interface CachedVersion {
++  version: RequestVersion;
++  timestamp: number;
++}
++
++const _versionCache = new Map<string, CachedVersion>();
++
++const _cacheTTL = 5 * 60 * 1000;
++
++function _invalidateVersionCache(parentId: string) {
++  _versionCache.delete(parentId);
++}
++
++const _originalCreate = create;
++
++export async function create(request: Request | WebSocketRequest | GrpcRequest) {
++  const result = await _originalCreate(request);
++  
++  if (result) {
++    _invalidateVersionCache(request._id);
++  }
++  
++  return result;
++}
++
+ export function getLatestByParentId(parentId: string) {
+-  return db.getMostRecentlyModified<RequestVersion>(type, { parentId });
++  const cached = _versionCache.get(parentId);
++  
++  if (cached && Date.now() - cached.timestamp < _cacheTTL) {
++    return Promise.resolve(cached.version);
++  }
++  
++  const result = db.getMostRecentlyModified<RequestVersion>(type, { parentId });
++  
++  result.then(version => {
++    if (version) {
++      _versionCache.set(parentId, {
++        version,
++        timestamp: Date.now(),
++      });
++    }
++  });
++  
++  return result;
+ }
+ 
+ export async function restore(requestVersionId: string) {

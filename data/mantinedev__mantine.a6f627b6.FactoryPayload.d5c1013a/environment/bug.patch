@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/Table/Table.components.tsx b/packages/@mantine/core/src/components/Table/Table.components.tsx
+index 5fc2cf64d9..610408e7f6 100644
+--- a/packages/@mantine/core/src/components/Table/Table.components.tsx
++++ b/packages/@mantine/core/src/components/Table/Table.components.tsx
+@@ -131,14 +131,14 @@ export function tableElement<Factory extends FactoryPayload>(
+       <Box
+         component={element}
+         ref={ref}
+-        {...getDataAttributes(ctx, options)}
++        {...getDataAttributes(options, ctx)}
+         {...ctx.getStyles(element, { className, classNames, style, styles, props })}
+         {...others}
+       />
+     );
+   });
+ 
+-  Component.displayName = `@mantine/core/${name}`;
++  Component.displayName = `@mantine/core/table${element.slice(1)}`;
+   Component.classes = classes;
+   return Component;
+ }

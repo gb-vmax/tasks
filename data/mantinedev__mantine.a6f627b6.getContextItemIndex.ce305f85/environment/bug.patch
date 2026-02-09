@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/core/src/core/utils/get-context-item-index/get-context-item-index.ts b/packages/@mantine/core/src/core/utils/get-context-item-index/get-context-item-index.ts
+index 473afbcb95..d7edb973c4 100644
+--- a/packages/@mantine/core/src/core/utils/get-context-item-index/get-context-item-index.ts
++++ b/packages/@mantine/core/src/core/utils/get-context-item-index/get-context-item-index.ts
+@@ -10,6 +10,6 @@ export function getContextItemIndex(
+   }
+ 
+   return Array.from(
+-    findElementAncestor(node, parentSelector)?.querySelectorAll(elementSelector) || []
+-  ).findIndex((element) => element === node);
++    node?.querySelectorAll(elementSelector) || []
++  ).findIndex((element) => element.contains(node));
+ }

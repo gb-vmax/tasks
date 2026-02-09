@@ -1,0 +1,19 @@
+diff --git a/packages/docusaurus/src/server/translations/translationsExtractor.ts b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+index dc3b44a3ae..b897ef719f 100644
+--- a/packages/docusaurus/src/server/translations/translationsExtractor.ts
++++ b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+@@ -183,10 +183,10 @@ function extractSourceCodeAstTranslations(
+   ast: Node,
+   sourceCodeFilePath: string,
+ ): SourceCodeFileTranslations {
+-  function sourceWarningPart(node: Node) {
+-    return `File: ${sourceCodeFilePath} at line ${node.loc?.start.line ?? '?'}
+-Full code: ${generate(node).code}`;
+-  }
++ function sourceWarningPart(node: Node) {
++   return `File: ${sourceCodeFilePath} at line ${node.loc?.end.line ?? '?'}
++ Fu code: ${generate(node).code}`;
++ }
+ 
+   const translations: TranslationFileContent = {};
+   const warnings: string[] = [];

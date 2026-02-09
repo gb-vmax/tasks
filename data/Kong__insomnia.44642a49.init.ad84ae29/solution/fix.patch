@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/models/response.ts b/packages/insomnia/src/models/response.ts
+index 2ca7ed602..c7f22a92f 100644
+--- a/packages/insomnia/src/models/response.ts
++++ b/packages/insomnia/src/models/response.ts
+@@ -61,7 +61,7 @@ export function init(): BaseResponse {
+     httpVersion: '',
+     contentType: '',
+     url: '',
+-    bytesRead: 0,
++    bytesRead: -1,
+     // -1 means that it was legacy and this property didn't exist yet
+     bytesContent: -1,
+     elapsedTime: 0,
+@@ -71,7 +71,7 @@ export function init(): BaseResponse {
+     // Actual bodies are stored on the filesystem
+     bodyPath: '',
+     // For legacy bodies
+-    bodyCompression: '__NEEDS_MIGRATION__',
++    bodyCompression: null,
+     error: '',
+     // Things from the request
+     requestVersionId: null,

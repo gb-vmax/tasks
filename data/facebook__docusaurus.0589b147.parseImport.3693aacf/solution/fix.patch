@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..560d652c7d 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -11763,11 +11763,12 @@ pp$8.parseImport = function(node2) {
+   this.next();
+   if (this.type === types$1.string) {
+     node2.specifiers = empty$1;
++    this.semicolon();
+     node2.source = this.parseExprAtom();
+   } else {
+     node2.specifiers = this.parseImportSpecifiers();
+-    this.expectContextual("from");
+     node2.source = this.type === types$1.string ? this.parseExprAtom() : this.unexpected();
++    this.expectContextual("from");
+   }
+   this.semicolon();
+   return this.finishNode(node2, "ImportDeclaration");

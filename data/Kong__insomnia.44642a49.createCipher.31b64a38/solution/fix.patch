@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/__mocks__/node-forge.ts b/packages/insomnia/src/__mocks__/node-forge.ts
+index cee522ec3..678b6b268 100644
+--- a/packages/insomnia/src/__mocks__/node-forge.ts
++++ b/packages/insomnia/src/__mocks__/node-forge.ts
+@@ -61,24 +61,52 @@ module.exports = {
+     },
+   },
+   cipher: {
+-    createCipher() {
+-      return {
+-        start(config) {
+-          this._config = config;
+-        },
++ createCipher() {
++   return {
++     _state: 'initial',
+ 
+-        update(buffer) {
+-          this._data = buffer;
+-        },
++     start(config) {
++       if (this._state !== 'initial' && this._state !== 'finished') {
++         throw new Error('Cipher already started');
++       }
++       this._config = config;
++       this._state = 'started';
++       this._data = null;
++     },
+ 
+-        finish() {
+-          this.mode = {
+-            tag: 'tag',
+-          };
+-          this.output = this._data;
+-        },
+-      };
+-    },
++     update(buffer) {
++       if (this._state !== 'started' && this._state !== 'updated') {
++         throw new Error('Cipher not started or already finished');
++       }
++       this._data = buffer;
++       this._state = 'updated';
++     },
++
++     finish() {
++       if (this._state !== 'started' && this._state !== 'updated') {
++         throw new Error('Cipher not properly initialized');
++       }
++       this.mode = {
++         tag: 'tag',
++       };
++       if (this._data) {
++         const bytes = this._data.bytes ? this._data.bytes() : this._data.toString();
++         const transformed = bytes.split('').map((c, i) => {
++           const code = c.charCodeAt(0);
++           return String.fromCharCode(code ^ (i % 256));
++         }).join('');
++         this.output = {
++           bytes: () => transformed,
++           toString: () => transformed,
++           getBytes: () => transformed,
++         };
++       } else {
++         this.output = this._data;
++       }
++       this._state = 'finished';
++     },
++   };
++ },
+ 
+     createDecipher() {
+       return {

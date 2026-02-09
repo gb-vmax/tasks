@@ -1,0 +1,138 @@
+diff --git a/packages/insomnia/src/models/environment.ts b/packages/insomnia/src/models/environment.ts
+index f47088ec4..74c780d51 100644
+--- a/packages/insomnia/src/models/environment.ts
++++ b/packages/insomnia/src/models/environment.ts
+@@ -36,8 +36,132 @@ export function init() {
+   };
+ }
+ 
++function migrateToV1(doc: Environment): Environment {
++  const migrated = { ...doc };
++
++  if (typeof migrated.isPrivate === 'undefined') {
++    migrated.isPrivate = false;
++  }
++
++  if (!migrated.data || typeof migrated.data !== 'object') {
++    migrated.data = {};
++  }
++
++  if (migrated.dataPropertyOrder && typeof migrated.dataPropertyOrder === 'object') {
++    const dataKeys = Object.keys(migrated.data);
++    const orderKeys = Object.keys(migrated.dataPropertyOrder);
++    const obsoleteKeys = orderKeys.filter(key => !dataKeys.includes(key));
++    
++    if (obsoleteKeys.length > 0) {
++      const cleanedOrder = { ...migrated.dataPropertyOrder };
++      obsoleteKeys.forEach(key => delete cleanedOrder[key]);
++      migrated.dataPropertyOrder = cleanedOrder;
++    }
++  }
++
++  const deprecatedPrefixes = ['_deprecated_', '__old_', '_legacy_'];
++  const keysToRemove: string[] = [];
++  
++  for (const key in migrated.data) {
++    if (deprecatedPrefixes.some(prefix => key.startsWith(prefix))) {
++      keysToRemove.push(key);
++    }
++  }
++
++  if (keysToRemove.length > 0) {
++    migrated.data = { ...migrated.data };
++    keysToRemove.forEach(key => delete migrated.data[key]);
++    
++    if (migrated.dataPropertyOrder) {
++      migrated.dataPropertyOrder = { ...migrated.dataPropertyOrder };
++      keysToRemove.forEach(key => delete migrated.dataPropertyOrder![key]);
++    }
++  }
++
++  return migrated;
++}
++
++function migrateToV2(doc: Environment): Environment {
++  const migrated = { ...doc };
++
++  if (migrated.color) {
++    const colorValue = migrated.color.trim().toLowerCase();
++    if (colorValue && !isValidColor(colorValue)) {
++      migrated.color = null;
++    }
++  }
++
++  if (!migrated.metaSortKey || typeof migrated.metaSortKey !== 'number') {
++    migrated.metaSortKey = Date.now();
++  }
++
++  const dataKeys = Object.keys(migrated.data);
++  if (dataKeys.length > 0 && !migrated.dataPropertyOrder) {
++    migrated.dataPropertyOrder = {};
++    dataKeys.forEach((key, index) => {
++      migrated.dataPropertyOrder![key] = index;
++    });
++  } else if (migrated.dataPropertyOrder) {
++    const orderKeys = Object.keys(migrated.dataPropertyOrder);
++    const missingKeys = dataKeys.filter(key => !(key in migrated.dataPropertyOrder!));
++    
++    if (missingKeys.length > 0) {
++      const maxOrder = Math.max(0, ...Object.values(migrated.dataPropertyOrder).map(v => typeof v === 'number' ? v : 0));
++      migrated.dataPropertyOrder = { ...migrated.dataPropertyOrder };
++      missingKeys.forEach((key, index) => {
++        migrated.dataPropertyOrder![key] = maxOrder + index + 1;
++      });
++    }
++  }
++
++  return migrated;
++}
++
++function isValidColor(color: string): boolean {
++  if (color.startsWith('#')) {
++    const hex = color.slice(1);
++    return /^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(hex);
++  }
++  
++  const validCssColors = [
++    'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown',
++    'black', 'white', 'gray', 'grey', 'cyan', 'magenta', 'lime', 'navy',
++    'teal', 'aqua', 'maroon', 'olive', 'silver', 'fuchsia'
++  ];
++  
++  if (validCssColors.includes(color)) {
++    return true;
++  }
++  
++  if (color.startsWith('rgb(') || color.startsWith('rgba(') || 
++      color.startsWith('hsl(') || color.startsWith('hsla(')) {
++    return true;
++  }
++  
++  return false;
++}
++
+ export function migrate(doc: Environment) {
+-  return doc;
++  const currentVersion = 2;
++  const docVersion = (doc as any)._schemaVersion || 0;
++
++  if (docVersion >= currentVersion) {
++    return doc;
++  }
++
++  let migratedDoc = { ...doc };
++
++  if (docVersion < 1) {
++    migratedDoc = migrateToV1(migratedDoc);
++  }
++
++  if (docVersion < 2) {
++    migratedDoc = migrateToV2(migratedDoc);
++  }
++
++  (migratedDoc as any)._schemaVersion = currentVersion;
++
++  return migratedDoc;
+ }
+ 
+ export function create(patch: Partial<Environment> = {}) {

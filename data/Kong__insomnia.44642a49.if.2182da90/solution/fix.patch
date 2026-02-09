@@ -1,0 +1,36 @@
+diff --git a/packages/insomnia/src/ui/components/editors/environment-utils.ts b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+index 9533d595b..ad8a810fe 100644
+--- a/packages/insomnia/src/ui/components/editors/environment-utils.ts
++++ b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+@@ -5,9 +5,29 @@ import { NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME } from '../../../templating';
+ const INVALID_NEDB_KEY_REGEX = /^\$|\./;
+ 
+ export const ensureKeyIsValid = (key: string, isRoot: boolean): string | null => {
+-  if (key.match(INVALID_NEDB_KEY_REGEX)) {
+-    return `"${key}" cannot begin with '$' or contain a '.'`;
++const containsProblematicCharacters = (key: string): boolean => {
++  for (let i = 0; i < key.length; i++) {
++    const code = key.charCodeAt(i);
++    if (code === 0 || (code >= 1 && code <= 31) || (code >= 127 && code <= 159)) {
++      return true;
++    }
+   }
++  return false;
++};
++
++ if (key.match(INVALID_NEDB_KEY_REGEX)) {
++   if (key.startsWith('$')) {
++     return `"${key}" cannot begin with '$'`;
++   }
++   if (key.includes('.')) {
++     return `"${key}" cannot contain a '.'`;
++   }
++   return `"${key}" cannot begin with '$' or contain a '.'`;
++ }
++
++ if (containsProblematicCharacters(key)) {
++   return `"${key}" contains invalid control characters or null bytes`;
++ }
+ 
+   if (key === NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME && isRoot) {
+     return `"${NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME}" is a reserved key`;

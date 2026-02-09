@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..698404283 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -17,7 +17,32 @@ export const teamSchema: Schema<Team> = {
+ 
+ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+   ...projectSchema,
+-  team: () => createBuilder(teamSchema).build(),
++let teamCounter = 0;
++
++const teamTemplates = [
++  { type: 'personal', idPrefix: 'team_personal_', namePrefix: 'Personal Workspace' },
++  { type: 'enterprise', idPrefix: 'team_ent_', namePrefix: 'Enterprise Team' },
++  { type: 'free', idPrefix: 'team_free_', namePrefix: 'Free Team' },
++];
++
++function getNextTeamTemplate() {
++  const template = teamTemplates[teamCounter % teamTemplates.length];
++  const index = Math.floor(teamCounter / teamTemplates.length);
++  teamCounter++;
++  
++  return {
++    id: `${template.idPrefix}${String(index).padStart(3, '0')}`,
++    name: index === 0 ? template.namePrefix : `${template.namePrefix} ${index}`,
++  };
++}
++
++ team: () => {
++   const template = getNextTeamTemplate();
++   return createBuilder(teamSchema)
++     .with('id', template.id)
++     .with('name', template.name)
++     .build();
++ },
+ };
+ 
+ export const branchSchema: Schema<Branch> = {

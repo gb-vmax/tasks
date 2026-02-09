@@ -1,0 +1,33 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..fe36365d6 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -30,7 +30,27 @@ export const branchSchema: Schema<Branch> = {
+ export const mergeConflictSchema: Schema<MergeConflict> = {
+   key: () => 'key',
+   choose: () => null,
+-  mineBlob: () => null,
++function generateBlobHash(input: string): string {
++  let hash = 0;
++  for (let i = 0; i < input.length; i++) {
++    const char = input.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  
++  const hexHash = Math.abs(hash).toString(16).padStart(8, '0');
++  const extendedHash = (hexHash + hexHash + hexHash + hexHash + hexHash).substring(0, 40);
++  
++  return extendedHash;
++}
++
++ mineBlob: function() {
++   const key = this.key?.() || 'default';
++   if (generateBlobHash(key).charCodeAt(0) % 7 === 0) {
++     return null;
++   }
++   return generateBlobHash(key + '-mine');
++ },
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,

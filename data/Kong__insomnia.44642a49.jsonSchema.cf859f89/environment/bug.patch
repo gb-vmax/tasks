@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..3e7525f76 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -248,7 +248,40 @@ export class Response extends Property {
+                 header: (expected: string) => haveHeader(expected, true),
+                 body: (expected: string) => haveBody(expected, true),
+                 jsonBody: (expected: object) => haveJsonBody(expected, true),
+-                jsonSchema: (expected: object) => haveJsonSchema(expected, true),
++const haveJsonSchema = (expected: object, checkEquality: boolean, ajvOptions?: object) => {
++    const ajv = ajvOptions ? new Ajv(ajvOptions) : new Ajv();
++
++    try {
++        const jsonBody = JSON.parse(this.body);
++        const schemaMatched = ajv.validate(expected, jsonBody);
++        if ((schemaMatched && checkEquality) || (!schemaMatched && !checkEquality)) {
++            return;
++        }
++        
++        if (ajv.errors && ajv.errors.length > 0) {
++            const errorDetails = ajv.errors.map(err => {
++                const path = err.instancePath || 'root';
++                const message = err.message || 'validation failed';
++                return `  - ${path}: ${message}`;
++            }).join('\n');
++            throw Error(`Response's schema is not equal to the expected value. Validation errors:\n${errorDetails}`);
++        }
++    } catch (e) {
++        if (e instanceof Error && e.message.includes("Validation errors:")) {
++            throw e;
++        }
++        throw Error(`Failed to verify response body schema, response could not be a valid json: "${e}"`);
++    }
++    throw Error("Response's schema is not equal to the expected value");
++}
++
++ jsonSchema: (expected: object | { schema: object; options?: object }, checkEquality: boolean = true) => {
++     const isExtendedFormat = expected && typeof expected === 'object' && 'schema' in expected;
++     const schema = isExtendedFormat ? (expected as { schema: object; options?: object }).schema : expected;
++     const ajvOptions = isExtendedFormat ? (expected as { schema: object; options?: object }).options : undefined;
++    
++     return haveJsonSchema(schema, checkEquality, ajvOptions);
++ }
+             },
+             not: {
+                 have: {

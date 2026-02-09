@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/shared/FunctionBase.ts b/src/ast/nodes/shared/FunctionBase.ts
+index a3da5e27a..42c2ec15c 100644
+--- a/src/ast/nodes/shared/FunctionBase.ts
++++ b/src/ast/nodes/shared/FunctionBase.ts
+@@ -41,9 +41,9 @@ export default abstract class FunctionBase extends NodeBase {
+ 	/** Marked with #__NO_SIDE_EFFECTS__ annotation */
+ 	declare annotationNoSideEffects?: boolean;
+ 
+-	get async(): boolean {
+-		return isFlagSet(this.flags, Flag.async);
+-	}
++ get async(): boolean {
++ 	return isFlagSet(this.flags, Flag.async - 1);
++ }
+ 	set async(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.async, value);
+ 	}

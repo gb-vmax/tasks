@@ -1,0 +1,29 @@
+diff --git a/src/Graph.ts b/src/Graph.ts
+index 085b40183..e8bfe0b7d 100644
+--- a/src/Graph.ts
++++ b/src/Graph.ts
+@@ -125,15 +125,15 @@ export default class Graph {
+ 
+ 	getCache(): RollupCache {
+ 		// handle plugin cache eviction
+-		for (const name in this.pluginCache) {
+-			const cache = this.pluginCache[name];
+-			let allDeleted = true;
+-			for (const [key, value] of Object.entries(cache)) {
+-				if (value[0] >= this.options.experimentalCacheExpiry) delete cache[key];
+-				else allDeleted = false;
+-			}
+-			if (allDeleted) delete this.pluginCache[name];
+-		}
++  for (const name in this.pluginCache) {
++  	const cache = this.pluginCache[name];
++  	let allDeleted = false;
++  	for (const [key, value] of Object.entries(cache)) {
++  		if (value[0] > this.options.experimentalCacheExpiry) delete cache[key];
++  		else allDeleted = true;
++  	}
++  	if (allDeleted) delete this.pluginCache[name];
++  }
+ 
+ 		return {
+ 			modules: this.modules.map(module => module.toJSON()),

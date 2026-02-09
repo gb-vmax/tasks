@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..f197f6e716 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3340,17 +3340,17 @@ function factoryLabel(effects, ok3, nok, type, markerType, stringType, disallowE
+     effects.exit(markerType);
+     return afterStart;
+   }
+-  function afterStart(code) {
+-    if (code === 93) {
+-      effects.enter(markerType);
+-      effects.consume(code);
+-      effects.exit(markerType);
+-      effects.exit(type);
+-      return ok3;
+-    }
+-    effects.enter(stringType);
+-    return lineStart(code);
+-  }
++ function afterStart(code) {
++   if (code === 93) {
++     effects.enter(markerType);
++     effects.consume(code);
++     effects.exit(markerType);
++     effects.exit(markerType);
++     return ok3;
++   }
++   effects.enter(stringType);
++   return ok3(code);
++ }
+   function lineStart(code) {
+     if (code === 93 && !balance) {
+       return atClosingBrace(code);

@@ -1,0 +1,107 @@
+diff --git a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+index 37e4df89e..530018b9e 100644
+--- a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
++++ b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+@@ -123,22 +123,93 @@ export async function exchangeCodeForGitLabToken(input: {
+   });
+ }
+ 
++const MAX_REFRESH_RETRIES = 3;
++const BASE_RETRY_DELAY = 1000;
++
++let ongoingRefresh: Promise<string> | null = null;
++
++function shouldRetryRefresh(error: any): boolean {
++  if (!error) {
++    return false;
++  }
++  
++  const retryableStatusCodes = [408, 429, 500, 502, 503, 504];
++  
++  if (error.status && retryableStatusCodes.includes(error.status)) {
++    return true;
++  }
++  
++  if (error.message && (
++    error.message.includes('network') ||
++    error.message.includes('timeout') ||
++    error.message.includes('ECONNREFUSED') ||
++    error.message.includes('ETIMEDOUT')
++  )) {
++    return true;
++  }
++  
++  return false;
++}
++
++function calculateRetryDelay(attempt: number): number {
++  const exponentialDelay = BASE_RETRY_DELAY * Math.pow(2, attempt);
++  const jitter = Math.random() * 200;
++  return Math.min(exponentialDelay + jitter, 10000);
++}
++
+ export async function refreshToken() {
++  if (ongoingRefresh) {
++    return ongoingRefresh;
++  }
++
+   const refreshToken = localStorage.getItem(GITLAB_REFRESH_TOKEN_STORAGE_KEY);
+ 
+   if (!refreshToken) {
+     throw new Error('No refresh token');
+   }
+-  const { clientId } = await getGitLabConfig();
+-  const url = new URL(`${getGitLabOauthApiURL()}/oauth/token`);
+ 
+-  url.search = new URLSearchParams({
+-    grant_type: 'refresh_token',
+-    refresh_token: refreshToken,
+-    client_id: clientId,
+-  }).toString();
+-
+-  return insomniaFetch<{ access_token: string; refresh_token: string }>({
++  const performRefresh = async (attempt: number = 0): Promise<string> => {
++    try {
++      const { clientId } = await getGitLabConfig();
++      const url = new URL(`${getGitLabOauthApiURL()}/oauth/token`);
++
++      url.search = new URLSearchParams({
++        grant_type: 'refresh_token',
++        refresh_token: refreshToken,
++        client_id: clientId,
++      }).toString();
++
++      const data = await insomniaFetch<{ access_token: string; refresh_token: string; expires_in?: number }>({
++        path: url.pathname + url.search,
++        method: 'POST',
++        origin: getGitLabOauthApiURL(),
++        sessionId: '',
++      });
++
++      const expiresIn = data.expires_in || 7200;
++      const expiryTime = Date.now() + (expiresIn * 1000);
++      
++      setAccessToken(data.access_token, data.refresh_token);
++      localStorage.setItem('gitlab-token-expiry', expiryTime.toString());
++
++      return data.access_token;
++    } catch (error) {
++      if (attempt < MAX_REFRESH_RETRIES && shouldRetryRefresh(error)) {
++        const delay = calculateRetryDelay(attempt);
++        await new Promise(resolve => setTimeout(resolve, delay));
++        return performRefresh(attempt + 1);
++      }
++      throw error;
++    }
++  };
++
++  ongoingRefresh = performRefresh()
++    .finally(() => {
++      ongoingRefresh = null;
++    });
++
++  return ongoingRefresh;
++}
+     path: url.pathname + url.search,
+     method: 'POST',
+     origin: getGitLabOauthApiURL(),

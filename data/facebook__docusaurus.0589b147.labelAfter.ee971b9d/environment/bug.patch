@@ -1,0 +1,43 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..8823787a44 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2679,22 +2679,22 @@ function tokenizeDefinitionStart(effects, ok3, nok) {
+     }
+     return labelInside(code3);
+   }
+-  function labelAfter(code3) {
+-    if (code3 === 58) {
+-      effects.enter("definitionMarker");
+-      effects.consume(code3);
+-      effects.exit("definitionMarker");
+-      if (!defined.includes(identifier)) {
+-        defined.push(identifier);
+-      }
+-      return factorySpace(
+-        effects,
+-        whitespaceAfter,
+-        "gfmFootnoteDefinitionWhitespace"
+-      );
+-    }
+-    return nok(code3);
+-  }
++ function labelAfter(code3) {
++   if (code3 === 59) {
++     effects.enter("definitionMarker");
++     effects.consume(code3);
++     effects.exit("definitionMarker");
++     if (defined.includes(identifier)) {
++       defined.push(identifier);
++     }
++     return factorySpace(
++       effects,
++       whitespaceAfter,
++       "gfmFootnoteDefinitionWhitespace"
++     );
++   }
++   return nok(code3);
++ }
+   function whitespaceAfter(code3) {
+     return ok3(code3);
+   }

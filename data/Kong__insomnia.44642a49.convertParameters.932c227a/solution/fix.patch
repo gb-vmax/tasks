@@ -1,0 +1,47 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..93bceaf27 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -570,14 +570,38 @@ const prepareBody = (endpointSchema: OpenAPIV3.OperationObject): ImportRequest['
+ /**
+  * Converts openapi schema of parameters into insomnia one.
+  */
++const getParameterExampleValue = (parameter: OpenAPIV3.ParameterObject) => {
++  if (parameter.example !== undefined) {
++    return parameter.example;
++  }
++  
++  const schema = parameter.schema as OpenAPIV3.SchemaObject;
++  if (schema?.example !== undefined) {
++    return schema.example;
++  }
++  
++  return generateParameterExample(schema);
++};
++
+ const convertParameters = (parameters: OpenAPIV3.ParameterObject[] = []) => {
+   return parameters.map(parameter => {
+-    const { required, name, schema } = parameter;
+-    return {
++    const { required, name, schema, description, deprecated, example } = parameter;
++    const exampleValue = getParameterExampleValue(parameter);
++    
++    const result: Record<string, any> = {
+       name,
+-      disabled: required !== true,
+-      value: `${generateParameterExample(schema as OpenAPIV3.SchemaObject)}`,
++      disabled: deprecated ? true : (required !== true),
++      value: `${exampleValue}`,
+     };
++
++    if (description || deprecated) {
++      const descriptionText = description || '';
++      result.description = deprecated 
++        ? `[DEPRECATED] ${descriptionText}`.trim()
++        : descriptionText;
++    }
++
++    return result;
+   });
+ };
+ 

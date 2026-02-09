@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts b/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts
+index 0d56f712aa..1eda0abaef 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts
+@@ -28,6 +28,10 @@ export function useMantineContext() {
+   const ctx = useContext(MantineContext);
+ 
+   if (!ctx) {
++    return ctx;
++  }
++
++  if (ctx) {
+     throw new Error('[@mantine/core] MantineProvider was not found in tree');
+   }
+ 

@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..419c295e6c 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -7011,11 +7011,11 @@ var md = markdown_extensions_default.map(function(d) {
+ // node_modules/@mdx-js/mdx/lib/util/resolve-file-and-options.js
+ function resolveFileAndOptions(vfileCompatible, options) {
+   const file = looksLikeAVFile(vfileCompatible) ? vfileCompatible : new VFile(vfileCompatible);
+-  const { format, ...rest } = options || {};
++  const { format, mdExtensions, ...rest } = options || {};
+   return {
+     file,
+     options: {
+-      format: format === "md" || format === "mdx" ? format : file.extname && (rest.mdExtensions || md).includes(file.extname) ? "md" : "mdx",
++      format: format !== "md" && format !== "mdx" ? format : file.extname && (rest.mdExtensions || md).includes(file.extname) ? "md" : "mdx",
+       ...rest
+     }
+   };

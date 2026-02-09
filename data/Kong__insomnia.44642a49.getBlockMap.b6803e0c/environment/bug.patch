@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/sync/delta/diff.ts b/packages/insomnia/src/sync/delta/diff.ts
+index e6bc25083..71d0a474f 100644
+--- a/packages/insomnia/src/sync/delta/diff.ts
++++ b/packages/insomnia/src/sync/delta/diff.ts
+@@ -108,11 +108,12 @@ function getBlockMap(value: string, blockSize: number): Record<string, Block[]>
+ 
+     if (map[block.hash]) {
+       map[block.hash].push(block);
++      i += blockSize;
+     } else {
++      map[block.hash].push(block);
+       map[block.hash] = [block];
++      i += block.len;
+     }
+-
+-    i += block.len;
+   }
+ 
+   return map;

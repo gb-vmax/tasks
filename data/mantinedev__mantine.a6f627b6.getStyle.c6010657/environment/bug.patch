@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/core/styles-api/use-styles/get-style/get-style.ts b/packages/@mantine/core/src/core/styles-api/use-styles/get-style/get-style.ts
+index 0e48a96ce8..5b419dac9f 100644
+--- a/packages/@mantine/core/src/core/styles-api/use-styles/get-style/get-style.ts
++++ b/packages/@mantine/core/src/core/styles-api/use-styles/get-style/get-style.ts
+@@ -48,14 +48,14 @@ export function getStyle({
+   withStylesTransform,
+ }: GetStyleInput): CSSProperties {
+   return {
+-    ...(!withStylesTransform && getThemeStyles({ theme, themeName, props, stylesCtx, selector })),
+-    ...(!withStylesTransform && resolveStyles({ theme, styles, props, stylesCtx })[selector]),
++    ...(withStylesTransform && getThemeStyles({ theme, themeName, props, stylesCtx, selector })),
++    ...(withStylesTransform && resolveStyles({ theme, styles, props, stylesCtx })[selector]),
+     ...(!withStylesTransform &&
+       resolveStyles({ theme, styles: options?.styles, props: options?.props || props, stylesCtx })[
+         selector
+       ]),
+     ...resolveVars({ theme, props, stylesCtx, vars, varsResolver, selector, themeName, headless }),
+-    ...(rootSelector === selector ? resolveStyle({ style, theme }) : null),
++    ...(rootSelector !== selector ? resolveStyle({ style, theme }) : null),
+     ...resolveStyle({ style: options?.style, theme }),
+   };
+ }

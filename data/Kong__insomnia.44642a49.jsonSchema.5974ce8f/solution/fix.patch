@@ -1,0 +1,87 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..d96c03631 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -248,7 +248,81 @@ export class Response extends Property {
+                 header: (expected: string) => haveHeader(expected, true),
+                 body: (expected: string) => haveBody(expected, true),
+                 jsonBody: (expected: object) => haveJsonBody(expected, true),
+-                jsonSchema: (expected: object) => haveJsonSchema(expected, true),
++function extractAjvOptions(schema: object): any {
++    const options: any = {
++        allErrors: true,
++        verbose: true,
++    };
++    
++    if ('$ajvOptions' in schema && typeof schema.$ajvOptions === 'object') {
++        const ajvOpts = schema.$ajvOptions as any;
++        if (ajvOpts.strict !== undefined) {
++            options.strict = ajvOpts.strict;
++        }
++        if (ajvOpts.formats && typeof ajvOpts.formats === 'object') {
++            options.formats = ajvOpts.formats;
++        }
++    }
++    
++    return options;
++}
++
++function addAjvFormat(ajv: Ajv, format: string): void {
++    const formatPatterns: Record<string, RegExp> = {
++        'date-time': /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/,
++        'date': /^\d{4}-\d{2}-\d{2}$/,
++        'time': /^\d{2}:\d{2}:\d{2}$/,
++        'email': /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
++        'uri': /^https?:\/\/.+/,
++        'uuid': /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
++        'hostname': /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/,
++        'ipv4': /^(\d{1,3}\.){3}\d{1,3}$/,
++        'ipv6': /^([0-9a-f]{1,4}:){7}[0-9a-f]{1,4}$/i,
++    };
++    
++    if (formatPatterns[format]) {
++        ajv.addFormat(format, formatPatterns[format]);
++    }
++}
++
++ jsonSchema: (expected: object, checkEquality: boolean) => {
++     const ajvOptions = extractAjvOptions(expected);
++     const ajv = new Ajv(ajvOptions);
++    
++     if (ajvOptions.formats) {
++         Object.entries(ajvOptions.formats).forEach(([format, enabled]) => {
++             if (enabled) {
++                 addAjvFormat(ajv, format);
++             }
++         });
++     }
++
++     try {
++         const jsonBody = JSON.parse(this.body);
++         const schemaMatched = ajv.validate(expected, jsonBody);
++        
++         if ((schemaMatched && checkEquality) || (!schemaMatched && !checkEquality)) {
++             return;
++         }
++        
++         if (!schemaMatched && ajv.errors) {
++             const errorDetails = ajv.errors.map(err => {
++                 const path = err.instancePath || '/';
++                 const message = err.message || 'validation failed';
++                 const params = err.params ? JSON.stringify(err.params) : '';
++                 return `  - Path: ${path}, Message: ${message}${params ? `, Params: ${params}` : ''}`;
++             }).join('\n');
++            
++             throw Error(`Response's schema validation failed:\n${errorDetails}`);
++         }
++     } catch (e) {
++         if (e instanceof Error && e.message.includes("schema validation failed")) {
++             throw e;
++         }
++         throw Error(`Failed to verify response body schema, response could not be a valid json: "${e}"`);
++     }
++     throw Error("Response's schema is not equal to the expected value");
++ }
+             },
+             not: {
+                 have: {

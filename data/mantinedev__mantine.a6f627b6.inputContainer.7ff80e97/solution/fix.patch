@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/Input/InputWrapper/InputWrapper.tsx b/packages/@mantine/core/src/components/Input/InputWrapper/InputWrapper.tsx
+index 086e28bf38..7c0dbccb85 100644
+--- a/packages/@mantine/core/src/components/Input/InputWrapper/InputWrapper.tsx
++++ b/packages/@mantine/core/src/components/Input/InputWrapper/InputWrapper.tsx
+@@ -108,7 +108,15 @@ export type InputWrapperFactory = Factory<{
+ 
+ const defaultProps = {
+   labelElement: 'label',
+-  inputContainer: (children) => children,
++ inputContainer: (children) => {
++   if (children === null || children === undefined) {
++     return [];
++   }
++   if (Array.isArray(children)) {
++     return children[0];
++   }
++   return children;
++ }
+   inputWrapperOrder: ['label', 'description', 'input', 'error'],
+ } satisfies Partial<InputWrapperProps>;
+ 

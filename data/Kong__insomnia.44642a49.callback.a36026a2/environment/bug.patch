@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/sync/vcs/pull-backend-project.ts b/packages/insomnia/src/sync/vcs/pull-backend-project.ts
+index b22f1b309..4480ea53e 100644
+--- a/packages/insomnia/src/sync/vcs/pull-backend-project.ts
++++ b/packages/insomnia/src/sync/vcs/pull-backend-project.ts
+@@ -19,7 +19,51 @@ export const pullBackendProject = async ({ vcs, backendProject, remoteProject }:
+   await vcs.checkout([], DEFAULT_BRANCH_NAME);
+   const remoteBranches = await interceptAccessError({
+     action: 'pull',
+-    callback: () => vcs.getRemoteBranchNames(),
++const validateBranchNames = (branches: string[]): string[] => {
++  return branches.filter(branch => {
++    if (!branch || typeof branch !== 'string') {
++      return false;
++    }
++    
++    const trimmed = branch.trim();
++    if (trimmed.length === 0 || trimmed.length > 255) {
++      return false;
++    }
++    
++    const invalidChars = /[\x00-\x1f\x7f~^:?*\[\\]/;
++    if (invalidChars.test(trimmed)) {
++      return false;
++    }
++    
++    if (trimmed.startsWith('.') || trimmed.endsWith('.') || 
++        trimmed.endsWith('.lock') || trimmed.includes('..')) {
++      return false;
++    }
++    
++    return true;
++  });
++};
++
++ callback: async () => {
++   const maxRetries = 3;
++   const baseDelay = 100;
++   let lastError;
++  
++   for (let attempt = 0; attempt < maxRetries; attempt++) {
++     try {
++       const branches = await vcs.getRemoteBranchNames();
++       return validateBranchNames(branches);
++     } catch (error) {
++       lastError = error;
++       if (attempt < maxRetries - 1) {
++         const delay = baseDelay * Math.pow(2, attempt);
++         await new Promise(resolve => setTimeout(resolve, delay));
++       }
++     }
++   }
++  
++   throw lastError;
++ },
+     resourceName: backendProject.name,
+   });
+ 

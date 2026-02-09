@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..382438e8d 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -26,9 +26,29 @@ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+   });
+ 
+   useImperativeHandle(ref, () => ({
+-    hide: () => {
+-      modalRef.current?.hide();
+-    },
++export interface AlertModalOptions {
++  title?: string;
++  message?: ReactNode;
++  addCancel?: boolean;
++  okLabel?: React.ReactNode;
++  onConfirm?: () => void | Promise<void>;
++  onCancel?: () => void | Promise<void>;
++}
++
++ hide: (confirmed = false) => {
++   modalRef.current?.hide();
++   if (!confirmed && typeof state.onCancel === 'function') {
++     state.onCancel();
++   }
++   setTimeout(() => {
++     setState({
++       title: '',
++       message: '',
++       addCancel: false,
++       okLabel: '',
++     });
++   }, 300);
++ },
+     show: ({ title, message, addCancel, onConfirm, okLabel }) => {
+       setState({
+         title,

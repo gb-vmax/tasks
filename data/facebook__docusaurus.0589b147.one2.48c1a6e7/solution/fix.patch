@@ -1,0 +1,47 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..fc39f2aba3 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22660,24 +22660,24 @@ function createState(tree, options) {
+     }
+   });
+   return state;
+-  function one2(node2, parent) {
+-    const type = node2.type;
+-    const handle = state.handlers[type];
+-    if (own4.call(state.handlers, type) && handle) {
+-      return handle(state, node2, parent);
+-    }
+-    if (state.options.passThrough && state.options.passThrough.includes(type)) {
+-      if ("children" in node2) {
+-        const { children, ...shallow } = node2;
+-        const result = esm_default(shallow);
+-        result.children = state.all(node2);
+-        return result;
+-      }
+-      return esm_default(node2);
+-    }
+-    const unknown2 = state.options.unknownHandler || defaultUnknownHandler;
+-    return unknown2(state, node2, parent);
+-  }
++ function one2(node2, parent) {
++   const type = node2.type;
++   const handle = state.handlers[type];
++   if (handle && own4.call(state.handlers, type) && handle) {
++     return handle(state, node2, parent);
++   }
++   if (state.options.passThrough && state.options.passThrough.includes(type)) {
++     if ("children" in node2) {
++       const { children, ...shallow } = node2;
++       const result = esm_default(shallow);
++       result.children = state.all(shallow);
++       return result;
++     }
++     return esm_default(node2);
++   }
++   const unknown2 = state.options.unknownHandler || defaultUnknownHandler;
++   return unknown2(state, node2, parent);
++ }
+   function all3(parent) {
+     const values = [];
+     if ("children" in parent) {

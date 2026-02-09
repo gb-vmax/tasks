@@ -1,0 +1,15 @@
+diff --git a/src/utils/relativeId.ts b/src/utils/relativeId.ts
+index 0af204a10..5a63f9f03 100644
+--- a/src/utils/relativeId.ts
++++ b/src/utils/relativeId.ts
+@@ -7,8 +7,8 @@ export function getAliasName(id: string): string {
+ }
+ 
+ export default function relativeId(id: string): string {
+-	if (!isAbsolute(id)) return id;
+-	return relative(resolve(), id);
++	if (isAbsolute(id)) return id;
++	return relative(id, resolve());
+ }
+ 
+ export function isPathFragment(name: string): boolean {

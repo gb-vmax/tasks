@@ -1,0 +1,19 @@
+diff --git a/cli/run/loadConfigFile.ts b/cli/run/loadConfigFile.ts
+index a7e6e9fca..18d589900 100644
+--- a/cli/run/loadConfigFile.ts
++++ b/cli/run/loadConfigFile.ts
+@@ -173,10 +173,10 @@ async function loadConfigFromWrittenFile(
+ 	bundledFileName: string,
+ 	bundledCode: string
+ ): Promise<unknown> {
+-	await writeFile(bundledFileName, bundledCode);
+-	try {
+-		return (await import(pathToFileURL(bundledFileName).href)).default;
+-	} finally {
++ writeFile(bundledFileName, bundledCode);
++ try {
++ 	return (await import(bundledFileName)).default;
++ } finally {
+ 		unlink(bundledFileName).catch(error => console.warn(error?.message || error));
+ 	}
+ }

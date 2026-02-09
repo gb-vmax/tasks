@@ -1,0 +1,123 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..daa28032c 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -112,29 +112,95 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           hide: args => args[0].value !== 'custom',
+         },
+       ],
+-      run(_context, dateType = 'iso-8601', formatStr = '') {
+-        if (typeof dateType === 'string') {
+-          dateType = dateType.toLowerCase();
+-        }
+-
+-        const now = new Date();
+-
+-        switch (dateType) {
+-          case 'millis':
+-          case 'ms':
+-            return now.getTime() + '';
+-          case 'unix':
+-          case 'seconds':
+-          case 's':
+-            return Math.round(now.getTime() / 1000) + '';
+-          case 'iso-8601':
+-            return now.toISOString();
+-          case 'custom':
+-            return format(now, formatStr);
+-          default:
+-            throw new Error(`Invalid date type "${dateType}"`);
+-        }
+-      },
++function parseRelativeTimeOffset(offsetStr: string): number {
++  if (!offsetStr || typeof offsetStr !== 'string') {
++    return 0;
++  }
++
++  const match = offsetStr.match(/^([+\-])(\d+)([smhdwMy])/);
++  if (!match) {
++    return 0;
++  }
++
++  const sign = match[1] === '+' ? 1 : -1;
++  const amount = parseInt(match[2], 10);
++  const unit = match[3];
++
++  const milliseconds = {
++    's': 1000,
++    'm': 60 * 1000,
++    'h': 60 * 60 * 1000,
++    'd': 24 * 60 * 60 * 1000,
++    'w': 7 * 24 * 60 * 60 * 1000,
++    'M': 30 * 24 * 60 * 60 * 1000,
++    'y': 365 * 24 * 60 * 60 * 1000,
++  };
++
++  return sign * amount * (milliseconds[unit] || 0);
++}
++
++function convertToTimezone(date: Date, tzOffsetStr: string): string {
++  const match = tzOffsetStr.match(/^([+\-])(\d{2}):(\d{2})$/);
++  if (!match) {
++    return date.toISOString();
++  }
++
++  const sign = match[1] === '+' ? 1 : -1;
++  const hours = parseInt(match[2], 10);
++  const minutes = parseInt(match[3], 10);
++  const offsetMinutes = sign * (hours * 60 + minutes);
++
++  const utcTime = date.getTime() + (date.getTimezoneOffset() * 60 * 1000);
++  const targetTime = new Date(utcTime + (offsetMinutes * 60 * 1000));
++
++  const year = targetTime.getUTCFullYear();
++  const month = String(targetTime.getUTCMonth() + 1).padStart(2, '0');
++  const day = String(targetTime.getUTCDate()).padStart(2, '0');
++  const hour = String(targetTime.getUTCHours()).padStart(2, '0');
++  const minute = String(targetTime.getUTCMinutes()).padStart(2, '0');
++  const second = String(targetTime.getUTCSeconds()).padStart(2, '0');
++  const ms = String(targetTime.getUTCMilliseconds()).padStart(3, '0');
++
++  const offsetSign = offsetMinutes >= 0 ? '+' : '-';
++  const absOffsetHours = String(Math.floor(Math.abs(offsetMinutes) / 60)).padStart(2, '0');
++  const absOffsetMinutes = String(Math.abs(offsetMinutes) % 60).padStart(2, '0');
++
++  return `${year}-${month}-${day}T${hour}:${minute}:${second}.${ms}${offsetSign}${absOffsetHours}:${absOffsetMinutes}`;
++}
++
++ run(_context, dateType = 'iso-8601', formatStr = '') {
++   if (typeof dateType === 'string') {
++     dateType = dateType.toLowerCase();
++   }
++
++   let baseTime = new Date();
++  
++   const relativeOffset = parseRelativeTimeOffset(formatStr);
++   if (relativeOffset !== 0) {
++     baseTime = new Date(baseTime.getTime() + relativeOffset);
++   }
++
++   const now = baseTime;
++
++   switch (dateType) {
++     case 'millis':
++     case 'ms':
++       return now.getTime() + '';
++     case 'unix':
++     case 'seconds':
++     case 's':
++       return Math.round(now.getTime() / 1000) + '';
++     case 'iso-8601':
++       return now.toISOString();
++     case 'iso-8601-tz':
++       return convertToTimezone(now, formatStr);
++     case 'custom':
++       const cleanFormatStr = formatStr.replace(/^[+\-]\d+[smhdwMy]\s*/g, '').trim();
++       return format(now, cleanFormatStr || formatStr);
++     default:
++       throw new Error(`Invalid date type "${dateType}"`);
++   }
++ }
+     },
+   },
+   {

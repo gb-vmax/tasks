@@ -2,25 +2,34 @@
 
 ### Describe the bug
 
-I'm experiencing an issue where invalid HTML tag objects are not being properly validated. When passing non-object values (like `null` or primitives), the validation function doesn't throw an error as expected, allowing invalid values to pass through.
+I'm experiencing an issue with HTML tag validation in Docusaurus. When passing certain values to the HTML tags API, the validation logic doesn't properly reject invalid inputs. Specifically, `null` values are being accepted when they should throw an error.
 
 ### Reproduction
 
 ```js
 // This should throw an error but doesn't
 const invalidTag = null;
-// validation passes when it shouldn't
-
-// Also happens with other falsy values
-const anotherInvalid = false;
-// no error thrown
+// Expected to throw: "null is not a valid HTML tag object."
+// But validation passes incorrectly
 ```
 
-The validation seems to accept values that aren't actually valid HTML tag objects, which causes issues downstream when trying to render them.
+Also seeing issues with tag objects that have non-string tagName properties:
+
+```js
+const tagWithInvalidName = {
+  tagName: 123  // Should be a string
+};
+// Expected to throw an error about invalid tagName
+// But validation logic seems off
+```
 
 ### Expected behavior
 
-The validation should reject any value that isn't a proper object with a valid `tagName` property. Non-object values like `null`, `undefined`, numbers, strings, or booleans should all throw validation errors immediately.
+The validation should properly reject:
+1. `null` values as invalid HTML tag objects
+2. Tag objects where `tagName` is not a string type
+
+The error messages should be thrown consistently for these invalid cases.
 
 ### System Info
 - Docusaurus version: latest

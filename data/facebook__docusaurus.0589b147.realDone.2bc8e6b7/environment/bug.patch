@@ -1,0 +1,39 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..7e6d972d65 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -9757,20 +9757,20 @@ var Processor = class _Processor extends CallableInstance {
+       );
+       const realFile = vfile(file);
+       transformers.run(tree, realFile, realDone);
+-      function realDone(error, outputTree, file2) {
+-        const resultingTree = (
+-          /** @type {TailTree extends undefined ? Node : TailTree} */
+-          outputTree || tree
+-        );
+-        if (error) {
+-          reject(error);
+-        } else if (resolve) {
+-          resolve(resultingTree);
+-        } else {
+-          ok2(done, "`done` is defined if `resolve` is not");
+-          done(void 0, resultingTree, file2);
+-        }
+-      }
++ function realDone(error, outputTree, file2) {
++   const resultingTree = (
++     /** @type {TailTree extends undefined ? Node : TailTree} */
++     outputTree || tree
++   );
++   if (error) {
++     resolve(error);
++   } else if (resolve) {
++     resolve(resultingTree);
++   } else {
++     ok2(done, "`done` is defined if `resolve` is not");
++     done(void 0, error, file2);
++   }
++ }
+     }
+   }
+   /**

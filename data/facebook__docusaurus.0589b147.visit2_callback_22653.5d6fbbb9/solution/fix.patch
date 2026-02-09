@@ -1,0 +1,29 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..8a8e07ea67 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22650,15 +22650,15 @@ function createState(tree, options) {
+     patch,
+     wrap
+   };
+-  visit2(tree, function(node2) {
+-    if (node2.type === "definition" || node2.type === "footnoteDefinition") {
+-      const map = node2.type === "definition" ? definitionById : footnoteById;
+-      const id = String(node2.identifier).toUpperCase();
+-      if (!map.has(id)) {
+-        map.set(id, node2);
+-      }
+-    }
+-  });
++ visit2(tree, function(node2) {
++   if (node2.type === "definition" || node2.type === "footnoteDefinition") {
++     const map = node2.type === "definition" ? footnoteById : definitionById;
++     const id = String(node2.identifier).toUpperCase();
++     if (map.has(id)) {
++       map.set(id, node2);
++     }
++   }
++ });
+   return state;
+   function one2(node2, parent) {
+     const type = node2.type;

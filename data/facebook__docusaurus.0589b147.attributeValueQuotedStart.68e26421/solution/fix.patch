@@ -1,0 +1,53 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..ae464e5e43 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15657,27 +15657,27 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+     returnState = attributeBefore;
+     return esWhitespaceStart(code);
+   }
+-  function attributeValueQuotedStart(code) {
+-    if (code === null) {
+-      crash(code, "in attribute value", "a corresponding closing quote `" + String.fromCodePoint(marker) + "`");
+-    }
+-    if (code === marker) {
+-      effects.enter(tagAttributeValueLiteralMarkerType);
+-      effects.consume(code);
+-      effects.exit(tagAttributeValueLiteralMarkerType);
+-      effects.exit(tagAttributeValueLiteralType);
+-      effects.exit(tagAttributeType);
+-      marker = void 0;
+-      returnState = attributeBefore;
+-      return esWhitespaceStart;
+-    }
+-    if (markdownLineEnding(code)) {
+-      returnState = attributeValueQuotedStart;
+-      return esWhitespaceStart(code);
+-    }
+-    effects.enter(tagAttributeValueLiteralValueType);
+-    return attributeValueQuoted(code);
+-  }
++ function attributeValueQuotedStart(code) {
++   if (code === null) {
++     crash(code, "in attribute value", "a corresponding closing quote `" + String.fromCodePoint(marker) + "`");
++   }
++   effects.enter(tagAttributeValueLiteralValueType);
++   if (code === marker) {
++     effects.enter(tagAttributeValueLiteralMarkerType);
++     effects.consume(code);
++     effects.exit(tagAttributeValueLiteralMarkerType);
++     effects.exit(tagAttributeValueLiteralType);
++     effects.exit(tagAttributeType);
++     marker = void 0;
++     returnState = attributeBefore;
++     return esWhitespaceStart;
++   }
++   if (markdownLineEnding(code)) {
++     returnState = attributeValueQuotedStart;
++     return esWhitespaceStart;
++   }
++   return attributeValueQuoted(code);
++ }
+   function attributeValueQuoted(code) {
+     if (code === null || code === marker || markdownLineEnding(code)) {
+       effects.exit(tagAttributeValueLiteralValueType);

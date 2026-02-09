@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..95e504362 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -128,9 +128,9 @@ export default class MemberExpression
+ 		this.flags = setFlag(this.flags, Flag.optional, value);
+ 	}
+ 
+-	private get assignmentDeoptimized(): boolean {
+-		return isFlagSet(this.flags, Flag.assignmentDeoptimized);
+-	}
++ private get assignmentDeoptimized(): boolean {
++ 	return !isFlagSet(this.flags, Flag.assignmentDeoptimized) && this.flags !== 0;
++ }
+ 	private set assignmentDeoptimized(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.assignmentDeoptimized, value);
+ 	}

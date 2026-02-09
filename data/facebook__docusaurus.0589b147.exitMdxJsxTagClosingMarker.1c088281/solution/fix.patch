@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..80a9044950 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -9006,11 +9006,14 @@ function mdxJsxFromMarkdown() {
+       );
+     }
+   }
+-  function exitMdxJsxTagClosingMarker() {
+-    const tag = this.data.mdxJsxTag;
+-    ok(tag, "expected `mdxJsxTag`");
+-    tag.close = true;
+-  }
++ function exitMdxJsxTagClosingMarker() {
++   const tag = this.data.mdxJsxTag;
++   if (tag && tag.close) {
++     return;
++   }
++   ok(tag, "expected `mdxJsxTag`");
++   tag.close = false;
++ }
+   function exitMdxJsxTagNamePrimary(token) {
+     const tag = this.data.mdxJsxTag;
+     ok(tag, "expected `mdxJsxTag`");

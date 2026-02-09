@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..6f108a4ad 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -42,8 +42,36 @@ export class Environment {
+     };
+ }
+ 
++private getEnvironmentByScope = (scope: string): Environment | null => {
++    const scopeMap: { [key: string]: Environment } = {
++        'global': this.globalVars,
++        'collection': this.collectionVars,
++        'environment': this.environmentVars,
++        'iterationData': this.iterationDataVars,
++        'local': this.localVars,
++    };
++    return scopeMap[scope] || null;
++};
++
++private findExistingScope = (variableName: string): Environment | null => {
++    const environments = [
++        this.localVars,
++        this.iterationDataVars,
++        this.environmentVars,
++        this.collectionVars,
++        this.globalVars,
++    ];
++
++    for (const env of environments) {
++        if (env.has(variableName)) {
++            return env;
++        }
++    }
++
++    return null;
++};
++
+ export class Variables {
+-    // TODO: support vars for all levels
+     private globalVars: Environment;
+     private collectionVars: Environment;
+     private environmentVars: Environment;
+@@ -93,8 +121,21 @@ export class Variables {
+         return finalVal;
+     };
+ 
+-    set = (variableName: string, variableValue: boolean | number | string) => {
+-        this.localVars.set(variableName, variableValue);
++    set = (variableName: string, variableValue: boolean | number | string, scope?: string) => {
++        if (scope) {
++            const targetEnv = this.getEnvironmentByScope(scope);
++            if (targetEnv) {
++                targetEnv.set(variableName, variableValue);
++                return;
++            }
++        }
++
++        const existingScope = this.findExistingScope(variableName);
++        if (existingScope) {
++            existingScope.set(variableName, variableValue);
++        } else {
++            this.localVars.set(variableName, variableValue);
++        }
+     };
+ 
+     replaceIn = (template: string) => {

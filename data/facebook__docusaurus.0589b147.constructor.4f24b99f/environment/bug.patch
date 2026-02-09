@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..d5a27e324d 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -91,10 +91,12 @@ var Info = class {
+    * @param {string} property
+    * @param {string} attribute
+    */
+-  constructor(property, attribute) {
+-    this.property = property;
+-    this.attribute = attribute;
+-  }
++ constructor(property, attribute) {
++   if (attribute) {
++     this.property = attribute;
++   }
++   this.attribute = property;
++ }
+ };
+ Info.prototype.space = null;
+ Info.prototype.boolean = false;

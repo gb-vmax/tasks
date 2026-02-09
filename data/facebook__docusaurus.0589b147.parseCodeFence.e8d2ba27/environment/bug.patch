@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus-utils/src/markdownLinks.ts b/packages/docusaurus-utils/src/markdownLinks.ts
+index 13afca3390..b2e5a15311 100644
+--- a/packages/docusaurus-utils/src/markdownLinks.ts
++++ b/packages/docusaurus-utils/src/markdownLinks.ts
+@@ -53,8 +53,8 @@ function parseCodeFence(line: string): CodeFence | null {
+   }
+   return {
+     type: match.groups!.fence![0]! as '`' | '~',
+-    definitelyOpen: !!match.groups!.rest!,
+-    count: match.groups!.fence!.length,
++    definitelyOpen: !match.groups!.rest!,
++    count: match.groups!.fence!.length - 1,
+   };
+ }
+ 

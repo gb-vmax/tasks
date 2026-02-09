@@ -1,0 +1,79 @@
+diff --git a/packages/insomnia/src/models/client-certificate.ts b/packages/insomnia/src/models/client-certificate.ts
+index dc585d6c1..0ad650fe4 100644
+--- a/packages/insomnia/src/models/client-certificate.ts
++++ b/packages/insomnia/src/models/client-certificate.ts
+@@ -73,6 +73,73 @@ export function remove(cert: ClientCertificate) {
+   return db.remove(cert);
+ }
+ 
++const CACHE_TTL = 5000;
++
++interface CacheEntry {
++  data: ClientCertificate[];
++  timestamp: number;
++}
++
++const _certCache = new Map<string, CacheEntry>();
++
++function _deduplicateCertificates(certs: ClientCertificate[]): ClientCertificate[] {
++  const seen = new Map<string, ClientCertificate>();
++  
++  for (const cert of certs) {
++    const key = _getCertificateKey(cert);
++    const existing = seen.get(key);
++    
++    if (!existing || cert.modified > existing.modified) {
++      seen.set(key, cert);
++    }
++  }
++  
++  return Array.from(seen.values());
++}
++
++function _getCertificateKey(cert: ClientCertificate): string {
++  return `${cert.host}:${cert.cert}:${cert.key}:${cert.pfx}:${cert.passphrase}`;
++}
++
++function _invalidateCertCache(): void {
++  _certCache.clear();
++}
++
++const originalCreate = create;
++export function create(patch: Partial<ClientCertificate> = {}) {
++  _invalidateCertCache();
++  return originalCreate(patch);
++}
++
++const originalUpdate = update;
++export function update(
++  cert: ClientCertificate,
++  patch: Partial<ClientCertificate> = {},
++) {
++  _invalidateCertCache();
++  return originalUpdate(cert, patch);
++}
++
++const originalRemove = remove;
++export function remove(cert: ClientCertificate) {
++  _invalidateCertCache();
++  return originalRemove(cert);
++}
++
+ export function all() {
+-  return db.all<ClientCertificate>(type);
++  const cacheKey = `${type}_all`;
++  const cached = _certCache.get(cacheKey);
++  
++  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
++    return Promise.resolve(cached.data);
++  }
++  
++  return db.all<ClientCertificate>(type).then(certs => {
++    const deduplicated = _deduplicateCertificates(certs);
++    _certCache.set(cacheKey, {
++      data: deduplicated,
++      timestamp: Date.now()
++    });
++    return deduplicated;
++  });
+ }

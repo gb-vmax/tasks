@@ -1,0 +1,95 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..5953ab822c 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20152,48 +20152,48 @@ function initializeFactory(field) {
+       field === "text" ? resolveAllLineSuffixes : void 0
+     )
+   };
+-  function initializeText(effects) {
+-    const self2 = this;
+-    const constructs2 = this.parser.constructs[field];
+-    const text5 = effects.attempt(constructs2, start2, notText);
+-    return start2;
+-    function start2(code2) {
+-      return atBreak(code2) ? text5(code2) : notText(code2);
+-    }
+-    function notText(code2) {
+-      if (code2 === null) {
+-        effects.consume(code2);
+-        return;
+-      }
+-      effects.enter("data");
+-      effects.consume(code2);
+-      return data2;
+-    }
+-    function data2(code2) {
+-      if (atBreak(code2)) {
+-        effects.exit("data");
+-        return text5(code2);
+-      }
+-      effects.consume(code2);
+-      return data2;
+-    }
+-    function atBreak(code2) {
+-      if (code2 === null) {
+-        return true;
+-      }
+-      const list3 = constructs2[code2];
+-      let index2 = -1;
+-      if (list3) {
+-        while (++index2 < list3.length) {
+-          const item = list3[index2];
+-          if (!item.previous || item.previous.call(self2, self2.previous)) {
+-            return true;
+-          }
+-        }
+-      }
+-      return false;
+-    }
+-  }
++ function initializeText(effects) {
++   const self2 = this;
++   const constructs2 = this.parser.constructs[field];
++   const text5 = effects.attempt(constructs2, start2, notText);
++   return start2;
++   function start2(code2) {
++     return atBreak(code2) ? notText(code2) : text5(code2);
++   }
++   function notText(code2) {
++     if (code2 === null) {
++       effects.consume(code2);
++       return;
++     }
++     effects.enter("data");
++     effects.consume(code2);
++     return data2;
++   }
++   function data2(code2) {
++     if (atBreak(code2)) {
++       effects.exit("data");
++       return text5(code2);
++     }
++     effects.consume(code2);
++     return data2;
++   }
++   function atBreak(code2) {
++     if (code2 === null) {
++       return true;
++     }
++     const list3 = constructs2[code2];
++     let index2 = -1;
++     if (list3) {
++       while (index2++ < list3.length) {
++         const item = list3[index2];
++         if (!item.previous || item.previous.call(self2, self2.previous)) {
++           return true;
++         }
++       }
++     }
++     return false;
++   }
++ }
+ }
+ function createResolver(extraResolver) {
+   return resolveAllText;

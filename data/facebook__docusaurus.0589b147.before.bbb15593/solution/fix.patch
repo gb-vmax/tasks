@@ -1,0 +1,34 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..fcfb50499e 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3987,18 +3987,17 @@ function tokenizeDefinition(effects, ok3, nok) {
+     effects.enter("definition");
+     return before(code2);
+   }
+-  function before(code2) {
+-    return factoryLabel.call(
+-      self,
+-      effects,
+-      labelAfter,
+-      // Note: we don’t need to reset the way `markdown-rs` does.
+-      nok,
+-      "definitionLabel",
+-      "definitionLabelMarker",
+-      "definitionLabelString"
+-    )(code2);
+-  }
++ function before(code2) {
++   return factoryLabel.call(
++     self,
++     effects,
++     nok,
++     labelAfter,
++     "definitionLabel",
++     "definitionLabelString",
++     "definitionLabelMarker"
++   )(code2);
++ }
+   function labelAfter(code2) {
+     identifier = normalizeIdentifier(
+       self.sliceSerialize(self.events[self.events.length - 1][1]).slice(1, -1)

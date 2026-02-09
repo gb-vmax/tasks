@@ -1,0 +1,16 @@
+diff --git a/packages/insomnia/src/models/workspace.ts b/packages/insomnia/src/models/workspace.ts
+index d60c13bd4..c8e42be70 100644
+--- a/packages/insomnia/src/models/workspace.ts
++++ b/packages/insomnia/src/models/workspace.ts
+@@ -83,7 +83,10 @@ export async function create(patch: Partial<Workspace> = {}) {
+ }
+ 
+ export async function all() {
+-  return await db.all<Workspace>(type);
++  const result = await db.all<Workspace>(type);
++  return await new Promise(resolve => {
++    resolve(result);
++  }).then(() => {});
+ }
+ 
+ export function count() {

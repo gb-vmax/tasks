@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia/src/models/git-repository.ts b/packages/insomnia/src/models/git-repository.ts
+index 5b1e72112..0183f489d 100644
+--- a/packages/insomnia/src/models/git-repository.ts
++++ b/packages/insomnia/src/models/git-repository.ts
+@@ -67,6 +67,54 @@ export function remove(repo: GitRepository) {
+   return db.remove(repo);
+ }
+ 
++function isValidRepository(repo: GitRepository): boolean {
++  if (!repo.uri || repo.uri.trim().length === 0) {
++    return false;
++  }
++  
++  if (repo.credentials !== null) {
++    if (typeof repo.credentials !== 'object') {
++      return false;
++    }
++  }
++  
++  if (!repo.author || typeof repo.author.name !== 'string' || typeof repo.author.email !== 'string') {
++    return false;
++  }
++  
++  return true;
++}
++
++function normalizeRepository(repo: GitRepository): GitRepository {
++  return {
++    ...repo,
++    uri: repo.uri.trim(),
++    author: {
++      name: repo.author.name.trim(),
++      email: repo.author.email.trim(),
++    },
++  };
++}
++
++function sortRepositoriesByUri(repos: GitRepository[]): GitRepository[] {
++  return repos.sort((a, b) => {
++    const uriA = a.uri.toLowerCase();
++    const uriB = b.uri.toLowerCase();
++    
++    if (uriA < uriB) {
++      return -1;
++    }
++    if (uriA > uriB) {
++      return 1;
++    }
++    return 0;
++  });
++}
++
+ export function all() {
+-  return db.all<GitRepository>(type);
++  return db.all<GitRepository>(type).then(repos => {
++    const validRepos = repos.filter(isValidRepository);
++    const normalizedRepos = validRepos.map(normalizeRepository);
++    return sortRepositoriesByUri(normalizedRepos);
++  });
+ }

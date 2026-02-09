@@ -2,25 +2,29 @@
 
 ### Describe the bug
 
-I'm encountering an issue with footnote back-references in MDX documents. When a footnote is referenced multiple times in the document, the last back-reference link is missing from the footnote's footer section.
+I'm experiencing an issue with footnote back-references in MDX documents. When a footnote is referenced multiple times in the document, the generated back-reference links are incorrect.
 
 ### Reproduction
 
 ```mdx
-Here is some text with a footnote[^1] and another reference to the same footnote[^1] and one more[^1].
+Here is some text with a footnote[^1].
+
+More text with the same footnote[^1].
+
+Even more text with the same footnote[^1].
 
 [^1]: This is the footnote content.
 ```
 
-When rendering this document, the footnote footer should contain three back-reference links (one for each usage), but only two are being generated.
+When this MDX is processed, the footnote at the bottom should have back-reference links to all three places where it's referenced in the document. However, the number of back-references generated doesn't match the actual number of references.
 
 ### Expected behavior
 
-All footnote references should have corresponding back-reference links in the footnote footer. If a footnote is referenced 3 times in the document, there should be 3 back-reference links in the footer allowing users to jump back to each location where the footnote was used.
+If a footnote is referenced 3 times in the document, there should be 3 back-reference links in the footnote section at the bottom. Each link should point back to the corresponding reference location in the main text.
 
 ### Additional context
 
-This appears to affect the footnote rendering logic. The back-references array seems to be missing the final reference when there are multiple citations of the same footnote.
+This seems to affect documents where footnotes are reused multiple times. Single-use footnotes might work fine, but I haven't tested extensively.
 
 ---
 Repository: /testbed

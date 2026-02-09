@@ -1,0 +1,83 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..2af61eb7c 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -27,10 +27,76 @@ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotSta
+ }
+ 
+ export function generateStateMap(state: SnapshotState | null): SnapshotStateMap {
+-  if (!state) {
+-    return {};
++const STATE_MAP_METADATA = Symbol('stateMapMetadata');
++
++function isValidStateEntry(entry: SnapshotStateEntry): boolean {
++  if (!entry || typeof entry !== 'object') {
++    return false;
++  }
++
++  if (typeof entry.key !== 'string' || entry.key.length === 0) {
++    return false;
+   }
+ 
++  if (typeof entry.blob !== 'string' || entry.blob.length === 0) {
++    return false;
++  }
++
++  if (typeof entry.name !== 'string') {
++    return false;
++  }
++
++  return true;
++}
++
++export function getStateMapMetadata(map: SnapshotStateMap): { duplicates: Array<{ key: string; count: number }> } | null {
++  const metadata = (map as any)[STATE_MAP_METADATA];
++  return metadata || null;
++}
++
++ export function generateStateMap(state: SnapshotState | null): SnapshotStateMap {
++   if (!state) {
++     return {};
++   }
++
++   const map: SnapshotStateMap = {};
++   const duplicates: Array<{ key: string; count: number }> = [];
++   const keyCount: Record<string, number> = {};
++
++   for (const entry of state) {
++     if (!isValidStateEntry(entry)) {
++       continue;
++     }
++
++     const { key } = entry;
++    
++     if (keyCount[key]) {
++       keyCount[key]++;
++     } else {
++       keyCount[key] = 1;
++     }
++
++     map[key] = entry;
++   }
++
++   for (const [key, count] of Object.entries(keyCount)) {
++     if (count > 1) {
++       duplicates.push({ key, count });
++     }
++   }
++
++   if (duplicates.length > 0) {
++     Object.defineProperty(map, STATE_MAP_METADATA, {
++       value: { duplicates },
++       enumerable: false,
++       writable: false,
++       configurable: true,
++     });
++   }
++
++   return map;
++ }
++
+   const map: SnapshotStateMap = {};
+ 
+   for (const entry of state) {

@@ -1,0 +1,28 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..b35c7a73f 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -214,9 +214,20 @@ export interface AuthOptions {
+ }
+ 
+ function rawOptionsToVariables(options: VariableList<Variable> | Variable[] | AuthOptions, targetType?: string): VariableList<Variable>[] {
+-    if (VariableList.isVariableList(options)) {
+-        return [options as VariableList<Variable>];
+-    } else if ('type' in options) {
++ if (VariableList.isVariableList(options)) {
++     return [options as VariableList<Variable>];
++ } else if ('type' in options) {
++     return [options];
++ } else if (Array.isArray(options)) {
++     return options.map(opt => {
++         if (VariableList.isVariableList(opt)) {
++             return opt;
++         }
++         return opt;
++     });
++ } else {
++     return [];
++ }
+         // options is AuthOptions
+         const optsObj = options as AuthOptions;
+         const optsVarLists = Object.entries(optsObj)

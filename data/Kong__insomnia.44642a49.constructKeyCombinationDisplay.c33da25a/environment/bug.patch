@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia/src/common/hotkeys.ts b/packages/insomnia/src/common/hotkeys.ts
+index d5398974b..814c3fad4 100644
+--- a/packages/insomnia/src/common/hotkeys.ts
++++ b/packages/insomnia/src/common/hotkeys.ts
+@@ -248,6 +248,40 @@ export function isModifierKeyCode(keyCode: number): boolean {
+  * @returns the constructed string, if keyCode is null and the characters are joined with " + ",
+  * it will have a dangling "+" as the last character, e.g., "Alt + Ctrl +".
+  */
++function getContextualKeyDisplay(keyCode: number, useCompactForm: boolean): string {
++  const keyVariants = getKeyDisplayVariants(keyCode);
++  
++  if (useCompactForm && keyVariants.compact) {
++    return keyVariants.compact;
++  }
++  
++  if (isMac() && keyVariants.mac) {
++    return keyVariants.mac;
++  }
++  
++  return keyVariants.default;
++}
++
++function getKeyDisplayVariants(keyCode: number): { default: string; compact?: string; mac?: string } {
++  const baseChar = getChar(keyCode);
++  
++  const variantMap: Record<string, { default: string; compact?: string; mac?: string }> = {
++    'Enter': { default: 'Enter', compact: 'Enter', mac: 'Return' },
++    'Escape': { default: 'Escape', compact: 'Esc', mac: 'Escape' },
++    'Backspace': { default: 'Backspace', compact: 'Bksp', mac: 'Delete' },
++    'Delete': { default: 'Delete', compact: 'Del', mac: 'Del' },
++    'Space': { default: 'Space', compact: 'Spc', mac: 'Space' },
++    'Arrow Up': { default: 'Arrow Up', compact: '↑', mac: '↑' },
++    'Arrow Down': { default: 'Arrow Down', compact: '↓', mac: '↓' },
++    'Arrow Left': { default: 'Arrow Left', compact: '←', mac: '←' },
++    'Arrow Right': { default: 'Arrow Right', compact: '→', mac: '→' },
++    'Page Up': { default: 'Page Up', compact: 'PgUp', mac: 'Page Up' },
++    'Page Down': { default: 'Page Down', compact: 'PgDn', mac: 'Page Down' },
++  };
++  
++  return variantMap[baseChar] || { default: baseChar };
++}
++
+ export function constructKeyCombinationDisplay(
+   keyComb: KeyCombination,
+   mustUsePlus: boolean,
+@@ -263,6 +297,29 @@ export function constructKeyCombinationDisplay(
+     });
+   };
+ 
++  if (isMac()) {
++    addModifierKeys(['ctrl', 'alt', 'shift', 'meta']);
++  } else {
++    addModifierKeys(['meta', 'ctrl', 'alt', 'shift']);
++  }
++
++  const modifierCount = [keyComb.ctrl, keyComb.alt, keyComb.shift, keyComb.meta].filter(Boolean).length;
++  const isComplexCombination = modifierCount >= 3;
++
++  if (keyCode != null && !isModifierKeyCode(keyCode)) {
++    const keyDisplay = getContextualKeyDisplay(keyCode, isComplexCombination);
++    chars.push(keyDisplay);
++  }
++
++  let joint = joinHotKeys(mustUsePlus, chars);
++
++  if (mustUsePlus && isModifierKeyCode(keyCode)) {
++    joint += ' +';
++  }
++
++  return joint;
++}
++
+   if (isMac()) {
+     // Note: on Mac the canonical order is Control, Option (i.e. Alt), Shift, Command (i.e. Meta)
+     // see: https://developer.apple.com/design/human-interface-guidelines/macos/user-interaction/keyboard

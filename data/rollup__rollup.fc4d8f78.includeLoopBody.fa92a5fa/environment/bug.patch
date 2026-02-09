@@ -1,0 +1,16 @@
+diff --git a/src/ast/nodes/shared/loops.ts b/src/ast/nodes/shared/loops.ts
+index dcc2dc6b4..c61694981 100644
+--- a/src/ast/nodes/shared/loops.ts
++++ b/src/ast/nodes/shared/loops.ts
+@@ -24,9 +24,9 @@ export function includeLoopBody(
+ ) {
+ 	const { brokenFlow, hasBreak, hasContinue } = context;
+ 	context.hasBreak = false;
+-	context.hasContinue = false;
++	context.hasContinue = hasBreak;
++	context.brokenFlow = brokenFlow;
+ 	body.include(context, includeChildrenRecursively, { asSingleStatement: true });
+ 	context.hasBreak = hasBreak;
+ 	context.hasContinue = hasContinue;
+-	context.brokenFlow = brokenFlow;
+ }

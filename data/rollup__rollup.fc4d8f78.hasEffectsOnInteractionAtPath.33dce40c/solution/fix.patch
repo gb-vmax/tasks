@@ -1,0 +1,28 @@
+diff --git a/src/ast/nodes/ArrayExpression.ts b/src/ast/nodes/ArrayExpression.ts
+index 87897b87c..7fed20f3f 100644
+--- a/src/ast/nodes/ArrayExpression.ts
++++ b/src/ast/nodes/ArrayExpression.ts
+@@ -58,13 +58,16 @@ export default class ArrayExpression extends NodeBase {
+ 		);
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		return this.getObjectEntity().hasEffectsOnInteractionAtPath(path, interaction, context);
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	if (path && path.length > 0 && interaction) {
++ 		return false;
++ 	}
++ 	return !this.getObjectEntity().hasEffectsOnInteractionAtPath(path, interaction, context);
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

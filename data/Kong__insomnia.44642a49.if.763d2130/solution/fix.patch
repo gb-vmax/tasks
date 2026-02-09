@@ -1,0 +1,141 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..0c85c4994 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -481,9 +481,133 @@ export function mergeClientCertificates(
+     // - if the pre-request script request cert is specified, it replaces all original certs
+     // - if not, it returns original certs
+ 
+-    if (!updatedReq.certificate) {
+-        return originalClientCertificates;
+-    } else if (
++function normalizeCertificateHost(certificate: Certificate, fallbackHost: string): string {
++    if (certificate.matches && certificate.matches.length > 0) {
++        const firstMatch = certificate.matches[0];
++        const matchStr = typeof firstMatch === 'string' ? firstMatch : firstMatch.toString();
++        const hostMatch = matchStr.match(/^https?:\/\/([^\/]+)/);
++        if (hostMatch) {
++            return hostMatch[1].toLowerCase();
++        }
++        if (matchStr.includes('://')) {
++            return matchStr.split('://')[1].split('/')[0].toLowerCase();
++        }
++        return matchStr.toLowerCase();
++    }
++    return fallbackHost.toLowerCase();
++}
++
++function certificateMatchesPattern(existingHost: string, newHost: string): boolean {
++    const normalizedExisting = existingHost.toLowerCase();
++    const normalizedNew = newHost.toLowerCase();
++    
++    if (normalizedExisting === normalizedNew) {
++        return true;
++    }
++    
++    const wildcardPattern = normalizedExisting.replace(/\*/g, '.*').replace(/\./g, '\\.');
++    const regex = new RegExp(`^${wildcardPattern}$`);
++    
++    if (regex.test(normalizedNew)) {
++        return true;
++    }
++    
++    const reverseWildcardPattern = normalizedNew.replace(/\*/g, '.*').replace(/\./g, '\\.');
++    const reverseRegex = new RegExp(`^${reverseWildcardPattern}$`);
++    
++    return reverseRegex.test(normalizedExisting);
++}
++
++ export function mergeClientCertificates(
++     originalClientCertificates: ClientCertificate[],
++     updatedReq: Request,
++ ): ClientCertificate[] {
++     if (!updatedReq.certificate) {
++         return originalClientCertificates;
++     } else if (
++         updatedReq.certificate.key == null &&
++         updatedReq.certificate.cert == null &&
++         updatedReq.certificate.pfx == null
++     ) {
++         return originalClientCertificates;
++     }
++
++     const baseCertificate = originalClientCertificates && originalClientCertificates.length > 0 ?
++         {
++             ...initClientCertificate(),
++             ...originalClientCertificates[0],
++         } :
++         {
++             ...initClientCertificate(),
++             _id: '',
++             type: '',
++             parentId: '',
++             modified: 0,
++             created: 0,
++             isPrivate: false,
++             name: '',
++         };
++
++     let newCertificate: ClientCertificate;
++
++     if (updatedReq.certificate.pfx && updatedReq.certificate.pfx?.src !== '') {
++         newCertificate = {
++             ...baseCertificate,
++             key: null,
++             cert: null,
++             passphrase: updatedReq.certificate.passphrase || null,
++             pfx: updatedReq.certificate.pfx?.src,
++             host: updatedReq.url.getHost() || '',
++             name: updatedReq.name || '',
++             disabled: updatedReq.disabled || false,
++         };
++     } else if (
++         updatedReq &&
++         updatedReq.certificate.key &&
++         updatedReq.certificate.cert &&
++         updatedReq.certificate.key?.src !== '' &&
++         updatedReq.certificate.cert?.src !== ''
++     ) {
++         newCertificate = {
++             ...baseCertificate,
++             _id: '',
++             type: '',
++             parentId: '',
++             modified: 0,
++             created: 0,
++             isPrivate: false,
++             name: updatedReq.name || '',
++             host: updatedReq.url.getHost() || '',
++             disabled: updatedReq.disabled || false,
++             key: updatedReq.certificate.key?.src,
++             cert: updatedReq.certificate.cert?.src,
++             passphrase: updatedReq.certificate.passphrase || null,
++             pfx: null,
++         };
++     } else {
++         throw Error('Invalid certificate configuration: "cert+key" and "pfx" can not be set at the same time');
++     }
++
++     const newCertHost = normalizeCertificateHost(updatedReq.certificate, updatedReq.url.getHost() || '');
++    
++     const existingMatchIndex = originalClientCertificates.findIndex(cert => 
++         certificateMatchesPattern(cert.host, newCertHost)
++     );
++
++     if (existingMatchIndex !== -1) {
++         const mergedCertificates = [...originalClientCertificates];
++         mergedCertificates[existingMatchIndex] = {
++             ...mergedCertificates[existingMatchIndex],
++             ...newCertificate,
++             _id: mergedCertificates[existingMatchIndex]._id,
++             type: mergedCertificates[existingMatchIndex].type,
++             parentId: mergedCertificates[existingMatchIndex].parentId,
++         };
++         return mergedCertificates;
++     }
++
++     return [newCertificate, ...originalClientCertificates];
++ }
+         updatedReq.certificate.key == null &&
+         updatedReq.certificate.cert == null &&
+         updatedReq.certificate.pfx == null

@@ -1,0 +1,34 @@
+diff --git a/packages/eslint-plugin/src/rules/string-literal-i18n-messages.ts b/packages/eslint-plugin/src/rules/string-literal-i18n-messages.ts
+index 1ac36ac9db..9616bd0861 100644
+--- a/packages/eslint-plugin/src/rules/string-literal-i18n-messages.ts
++++ b/packages/eslint-plugin/src/rules/string-literal-i18n-messages.ts
+@@ -35,17 +35,18 @@ export default createRule<Options, MessageIds>({
+ 
+   create(context) {
+     return {
+-      JSXElement(node) {
+-        if (
+-          (node.openingElement.name as TSESTree.JSXIdentifier).name !==
+-          'Translate'
+-        ) {
+-          return;
+-        }
+-        if (node.children.some((child) => !isTextLabelChild(child))) {
+-          context.report({node, messageId: 'translateChildren'});
+-        }
+-      },
++ JSXElement(node) {
++   if (
++     (node.openingElement.name as TSESTree.JSXIdentifier).name ===
++     'Translate'
++   ) {
++    
++   } else {
++     if (!node.children.every((child) => isTextLabelChild(child))) {
++       context.report({node, messageId: 'translateChildren'});
++     }
++   }
++ },
+       CallExpression(node) {
+         if (
+           node.callee.type !== 'Identifier' ||

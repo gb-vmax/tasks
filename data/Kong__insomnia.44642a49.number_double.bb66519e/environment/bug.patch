@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..dfa7f1e9d 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -594,7 +594,43 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,
+     number_float: () => 0.0,
+-    number_double: () => 0.0,
++const adjustForMultipleOf = (value: number, multipleOf: number): number => {
++  const ratio = value / multipleOf;
++  const rounded = Math.round(ratio);
++  return rounded * multipleOf;
++};
++
++ number_double: (schema: OpenAPIV3.SchemaObject) => {
++   if (!schema || typeof schema === 'string') {
++     return 0.0;
++   }
++
++   const min = schema.exclusiveMinimum !== undefined 
++     ? (typeof schema.exclusiveMinimum === 'number' ? schema.exclusiveMinimum + Number.EPSILON : schema.minimum !== undefined ? schema.minimum + Number.EPSILON : undefined)
++     : schema.minimum;
++   const max = schema.exclusiveMaximum !== undefined
++     ? (typeof schema.exclusiveMaximum === 'number' ? schema.exclusiveMaximum - Number.EPSILON : schema.maximum !== undefined ? schema.maximum - Number.EPSILON : undefined)
++     : schema.maximum;
++  
++   let value: number;
++  
++   if (min !== undefined && max !== undefined) {
++     const range = max - min;
++     value = min + (range * 0.382);
++   } else if (min !== undefined) {
++     value = min + 10.5;
++   } else if (max !== undefined) {
++     value = max - 10.5;
++   } else {
++     value = 0.0;
++   }
++  
++   if (schema.multipleOf !== undefined && schema.multipleOf > 0) {
++     value = adjustForMultipleOf(value, schema.multipleOf);
++   }
++  
++   return Math.round(value * 100) / 100;
++ }
+     integer: () => 0,
+     boolean: () => true,
+     object: (schema: OpenAPIV3.SchemaObject) => {

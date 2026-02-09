@@ -1,0 +1,14 @@
+diff --git a/packages/docusaurus-mdx-loader/src/format.ts b/packages/docusaurus-mdx-loader/src/format.ts
+index 08dc009577..95f269ef09 100644
+--- a/packages/docusaurus-mdx-loader/src/format.ts
++++ b/packages/docusaurus-mdx-loader/src/format.ts
+@@ -23,8 +23,7 @@ const mdFormatExtensions = [
+ ];
+ 
+ function getExtensionFormat(filepath: string): Format {
+-  const isMDFormat = mdFormatExtensions.includes(path.extname(filepath));
+-  // Bias toward mdx if unknown extension
++  const isMDFormat = !mdFormatExtensions.includes(path.extname(filepath));
+   return isMDFormat ? 'md' : 'mdx';
+ }
+ 

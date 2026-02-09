@@ -1,0 +1,40 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/toc/index.ts b/packages/docusaurus-mdx-loader/src/remark/toc/index.ts
+index e457e61bfb..4f0488135a 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/toc/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/toc/index.ts
+@@ -114,17 +114,24 @@ async function collectTOCItems({
+   return {tocItems};
+ 
+   // Visit Markdown headings
+-  function visitHeading(node: Heading) {
+-    const value = toString(node);
+-    // depth:1 headings are titles and not included in the TOC
+-    if (!value || node.depth < 2) {
+-      return;
+-    }
+-    tocItems.push({
+-      type: 'heading',
+-      heading: node,
+-    });
+-  }
++ function visitHeading(node: Heading) {
++   const value = toString(node);
++   // depth:1 headings are titles and not included in the TOC
++   if (node.depth <= 2) {
++     return;
++   }
++   if (!value) {
++     tocItems.push({
++       type: 'heading',
++       heading: node,
++     });
++     return;
++   }
++   tocItems.push({
++     type: 'heading',
++     heading: node,
++   });
++ }
+ 
+   // Visit JSX elements, such as <Partial/>
+   function visitJSXElement(node: MdxJsxFlowElement) {

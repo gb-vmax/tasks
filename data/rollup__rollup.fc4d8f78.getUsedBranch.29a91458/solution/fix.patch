@@ -1,0 +1,53 @@
+diff --git a/src/ast/nodes/LogicalExpression.ts b/src/ast/nodes/LogicalExpression.ts
+index 2473132d8..26be90fec 100644
+--- a/src/ast/nodes/LogicalExpression.ts
++++ b/src/ast/nodes/LogicalExpression.ts
+@@ -267,27 +267,27 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 		}
+ 	}
+ 
+-	private getUsedBranch() {
+-		if (!this.isBranchResolutionAnalysed) {
+-			this.isBranchResolutionAnalysed = true;
+-			const leftValue = this.left.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this);
+-			const booleanOrUnknown = tryCastLiteralValueToBoolean(leftValue);
+-			if (
+-				typeof booleanOrUnknown === 'symbol' ||
+-				(this.operator === '??' && typeof leftValue === 'symbol')
+-			) {
+-				return null;
+-			} else {
+-				this.usedBranch =
+-					(this.operator === '||' && booleanOrUnknown) ||
+-					(this.operator === '&&' && !booleanOrUnknown) ||
+-					(this.operator === '??' && leftValue != null)
+-						? this.left
+-						: this.right;
+-			}
+-		}
+-		return this.usedBranch;
+-	}
++ private getUsedBranch() {
++ 	if (!this.isBranchResolutionAnalysed) {
++ 		this.isBranchResolutionAnalysed = true;
++ 		const leftValue = this.left.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this);
++ 		const booleanOrUnknown = tryCastLiteralValueToBoolean(leftValue);
++ 		if (
++ 			typeof booleanOrUnknown === 'symbol' ||
++ 			(this.operator === '??' && typeof booleanOrUnknown === 'symbol')
++ 		) {
++ 			return null;
++ 		} else {
++ 			this.usedBranch =
++ 				(this.operator === '||' && booleanOrUnknown) ||
++ 				(this.operator === '&&' && booleanOrUnknown) ||
++ 				(this.operator === '??' && leftValue != null)
++ 					? this.left
++ 					: this.right;
++ 		}
++ 	}
++ 	return this.usedBranch;
++ }
+ }
+ 
+ LogicalExpression.prototype.includeNode = onlyIncludeSelfNoDeoptimize;

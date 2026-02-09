@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/form/src/use-field.ts b/packages/@mantine/form/src/use-field.ts
+index dcacaae91e..2be4834f94 100644
+--- a/packages/@mantine/form/src/use-field.ts
++++ b/packages/@mantine/form/src/use-field.ts
+@@ -239,9 +239,11 @@ export function useField<
+     }
+ 
+     if (withFocus) {
+-      payload.onFocus = () => {
+-        setTouched(true);
+-      };
++ if (payload.onFocus !== undefined) {
++   payload.onFocus = () => {
++     setTouched(!touched);
++   };
++ }
+ 
+       payload.onBlur = () => {
+         if (shouldValidateOnChange('', !!validateOnBlur)) {

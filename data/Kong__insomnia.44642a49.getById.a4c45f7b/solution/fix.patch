@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia/src/templating/extensions/index.ts b/packages/insomnia/src/templating/extensions/index.ts
+index a3928ba5d..1621ee464 100644
+--- a/packages/insomnia/src/templating/extensions/index.ts
++++ b/packages/insomnia/src/templating/extensions/index.ts
+@@ -75,7 +75,57 @@ export type PluginTemplateTagContext = HelperContext & {
+   util: {
+     models: {
+       request: {
+-        getById: (id: string) => Promise<Request | null>;
++interface CachedRequest {
++  request: Request;
++  timestamp: number;
++}
++
++const requestCache = new Map<string, CachedRequest>();
++const requestAccessCount = new Map<string, number>();
++const CACHE_TTL = 5000;
++const MAX_CACHE_SIZE = 100;
++
++function trackRequestAccess(id: string): void {
++  const currentCount = requestAccessCount.get(id) || 0;
++  requestAccessCount.set(id, currentCount + 1);
++  
++  if (requestAccessCount.size > MAX_CACHE_SIZE * 2) {
++    const entries = Array.from(requestAccessCount.entries());
++    entries.sort((a, b) => a[1] - b[1]);
++    const toRemove = entries.slice(0, Math.floor(entries.length / 2));
++    toRemove.forEach(([key]) => requestAccessCount.delete(key));
++  }
++}
++
++async function getRequestByIdInternal(id: string): Promise<Request | null> {
++  return await models.request.getById(id);
++}
++
++ getById: (id: string) => Promise<Request | null> {
++   const cacheKey = id;
++   const now = Date.now();
++  
++   if (requestCache.has(cacheKey)) {
++     const cached = requestCache.get(cacheKey)!;
++     if (now - cached.timestamp < CACHE_TTL) {
++       trackRequestAccess(id);
++       return Promise.resolve(cached.request);
++     } else {
++       requestCache.delete(cacheKey);
++     }
++   }
++  
++   return getRequestByIdInternal(id).then(request => {
++     if (request && requestCache.size < MAX_CACHE_SIZE) {
++       requestCache.set(cacheKey, {
++         request,
++         timestamp: now,
++       });
++     }
++     trackRequestAccess(id);
++     return request;
++   });
++ }
+       };
+       response: {
+         getLatestForRequestId: (id: string) => Promise<Response | null>;

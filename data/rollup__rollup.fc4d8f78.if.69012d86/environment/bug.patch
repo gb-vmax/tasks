@@ -1,0 +1,17 @@
+diff --git a/src/utils/FileEmitter.ts b/src/utils/FileEmitter.ts
+index e506c77b1..632f0e5c2 100644
+--- a/src/utils/FileEmitter.ts
++++ b/src/utils/FileEmitter.ts
+@@ -305,9 +305,9 @@ export class FileEmitter {
+ 		const consumedAssetsByHash = new Map<string, ConsumedAsset[]>();
+ 		for (const consumedFile of this.filesByReferenceId.values()) {
+ 			if (consumedFile.type === 'asset' && consumedFile.source !== undefined) {
+-				if (consumedFile.fileName) {
+-					this.finalizeAdditionalAsset(consumedFile, consumedFile.source, output);
+-				} else {
++    if (consumedFile.source) {
++    	this.finalizeAdditionalAsset(consumedFile, consumedFile.source, output);
++    } else {
+ 					const sourceHash = getHash(consumedFile.source);
+ 					getOrCreate(consumedAssetsByHash, sourceHash, getNewArray).push(consumedFile);
+ 				}

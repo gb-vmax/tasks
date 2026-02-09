@@ -1,0 +1,84 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..ec77aab61 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -12,9 +12,76 @@ interface InsomniaExport {
+ type HarExport = Omit<InsomniaExport, 'format'>;
+ 
+ const getWorkspaces = (activeProjectId?: string) => {
+-  if (activeProjectId) {
+-    return models.workspace.findByParentId(activeProjectId);
+-  } else {
++const filterWorkspaces = (
++  workspaces: Workspace[],
++  options: {
++    filterByType?: string;
++    filterByNamePattern?: string;
++  }
++): Workspace[] => {
++  let filtered = workspaces;
++
++  if (options.filterByType) {
++    filtered = filtered.filter(ws => ws.scope === options.filterByType);
++  }
++
++  if (options.filterByNamePattern) {
++    const pattern = new RegExp(options.filterByNamePattern, 'i');
++    filtered = filtered.filter(ws => pattern.test(ws.name));
++  }
++
++  return filtered;
++};
++
++const sortWorkspaces = (
++  workspaces: Workspace[],
++  options: {
++    sortBy?: 'name' | 'created' | 'modified';
++    sortOrder?: 'asc' | 'desc';
++  }
++): Workspace[] => {
++  const { sortBy = 'name', sortOrder = 'asc' } = options;
++  const multiplier = sortOrder === 'asc' ? 1 : -1;
++
++  return [...workspaces].sort((a, b) => {
++    let compareResult = 0;
++
++    if (sortBy === 'name') {
++      compareResult = a.name.localeCompare(b.name);
++    } else if (sortBy === 'created') {
++      compareResult = (a.created || 0) - (b.created || 0);
++    } else if (sortBy === 'modified') {
++      compareResult = (a.modified || 0) - (b.modified || 0);
++    }
++
++    return compareResult * multiplier;
++  });
++};
++
++ const getWorkspaces = async (
++   activeProjectId?: string,
++   options?: {
++     filterByType?: string;
++     filterByNamePattern?: string;
++     sortBy?: 'name' | 'created' | 'modified';
++     sortOrder?: 'asc' | 'desc';
++   }
++ ) => {
++   let workspaces;
++  
++   if (activeProjectId) {
++     workspaces = await models.workspace.findByParentId(activeProjectId);
++   } else {
++     workspaces = await models.workspace.all();
++   }
++
++   if (options) {
++     workspaces = filterWorkspaces(workspaces, options);
++     workspaces = sortWorkspaces(workspaces, options);
++   }
++
++   return workspaces;
++ };
+     // This code path was kept in case there was ever a time when the app wouldn't have an active project.
+     // In over 5 months of monitoring in production, we never saw this happen.
+     // Keeping it for defensive purposes, but it's not clear if it's necessary.

@@ -1,0 +1,16 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..74b642fd1 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -588,7 +588,10 @@ const convertParameters = (parameters: OpenAPIV3.ParameterObject[] = []) => {
+ // @ts-expect-error -- ran out of time during TypeScript conversion to handle this particular recursion
+ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+   const typeExamples = {
+-    string: () => 'string',
++ string: () => {
++   const typeStr = 'string';
++   return typeStr.substring(0, typeStr.length - 1) + 'g';
++ }
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',

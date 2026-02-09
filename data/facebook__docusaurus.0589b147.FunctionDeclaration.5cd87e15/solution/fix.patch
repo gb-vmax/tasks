@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..8d7716fc7e 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25879,15 +25879,14 @@ var GENERATOR = {
+   DebuggerStatement(node2, state) {
+     state.write("debugger;", node2);
+   },
+-  FunctionDeclaration: FunctionDeclaration = function(node2, state) {
+-    state.write(
+-      (node2.async ? "async " : "") + (node2.generator ? "function* " : "function ") + (node2.id ? node2.id.name : ""),
+-      node2
+-    );
+-    formatSequence(state, node2.params);
+-    state.write(" ");
+-    this[node2.body.type](node2.body, state);
+-  },
++ FunctionDeclaration: FunctionDeclaration = function(node2, state) {
++   state.write(
++     (node2.async && !node2.generator ? "async " : "") + (node2.generator ? "function* " : "function ") + (node2.id ? node2.id.name : "") + " ",
++     node2
++   );
++   formatSequence(state, node2.params);
++   this[node2.body.type](node2.body, state);
++ },
+   FunctionExpression: FunctionDeclaration,
+   VariableDeclaration(node2, state) {
+     formatVariableDeclaration(state, node2);

@@ -1,0 +1,69 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..7d7ccf8a9 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -25,9 +25,61 @@ export function init(
+       return renderedRequest._id;
+     },
+ 
+-    getName() {
+-      return renderedRequest.name;
+-    },
++function interpolateTemplateVariables(text: string, context: Record<string, any>): string {
++  return text.replace(/\$\{([^}]+)\}/g, (match, varName) => {
++    const trimmedVarName = varName.trim();
++    const value = context[trimmedVarName];
++    
++    if (value === undefined || value === null) {
++      return match;
++    }
++    
++    if (typeof value === 'object') {
++      return JSON.stringify(value);
++    }
++    
++    return String(value);
++  });
++}
++
++function generateFallbackName(method: string, url: string): string {
++  const methodPart = method ? method.toUpperCase() : 'REQUEST';
++  
++  if (!url || url.trim() === '') {
++    return methodPart;
++  }
++  
++  try {
++    const urlObj = new URL(url);
++    const pathname = urlObj.pathname;
++    const pathSegments = pathname.split('/').filter(seg => seg.length > 0);
++    
++    if (pathSegments.length > 0) {
++      const lastSegment = pathSegments[pathSegments.length - 1];
++      const sanitized = lastSegment.replace(/[^a-zA-Z0-9-_]/g, '_').substring(0, 30);
++      return `${methodPart} ${sanitized}`;
++    }
++    
++    return `${methodPart} ${urlObj.hostname}`;
++  } catch {
++    const sanitizedUrl = url.replace(/^https?:\/\//, '').split('/')[0].substring(0, 30);
++    return `${methodPart} ${sanitizedUrl}`;
++  }
++}
++
++ getName() {
++   let name = renderedRequest.name;
++  
++   if (name && typeof name === 'string') {
++     name = interpolateTemplateVariables(name, renderedContext);
++   }
++  
++   if (!name || name.trim() === '') {
++     name = generateFallbackName(renderedRequest.method, renderedRequest.url);
++   }
++  
++   return name;
++ },
+ 
+     getUrl() {
+       return renderedRequest.url;

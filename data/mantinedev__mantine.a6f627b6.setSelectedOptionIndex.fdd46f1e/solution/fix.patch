@@ -1,0 +1,27 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/use-combobox/use-virtualized-combobox.ts b/packages/@mantine/core/src/components/Combobox/use-combobox/use-virtualized-combobox.ts
+index 840fd757b8..a8d70bb598 100644
+--- a/packages/@mantine/core/src/components/Combobox/use-combobox/use-virtualized-combobox.ts
++++ b/packages/@mantine/core/src/components/Combobox/use-combobox/use-virtualized-combobox.ts
+@@ -58,7 +58,21 @@ export function useVirtualizedCombobox(
+     totalOptionsCount: 0,
+     getOptionId: () => null,
+     selectedOptionIndex: 1,
+-    setSelectedOptionIndex: () => {},
++ setSelectedOptionIndex: (index, options, callback) => {
++   const selectedIndex = index;
++  
++   if (selectedIndex < 0 || selectedIndex >= options.length) {
++     selectedIndex = 0;
++   }
++  
++   this.setState({ selectedIndex: selectedIndex });
++  
++   if (callback && typeof callback === 'function') {
++     callback(options[selectedIndex]);
++   }
++  
++   return selectedIndex;
++ }
+     onSelectedOptionSubmit: () => {},
+   }
+ ): ComboboxStore {

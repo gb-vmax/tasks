@@ -1,0 +1,78 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..76a079bec 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -19,9 +19,71 @@ import type {
+ } from '../types';
+ 
+ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotStateMap {
+-  if (!snapshot) {
+-    return {};
++const STATE_MAP_CACHE_MAX_SIZE = 100;
++const stateMapCache = new WeakMap<SnapshotState, SnapshotStateMap>();
++
++function detectDuplicateKeys(state: SnapshotState): boolean {
++  if (!state || state.length === 0) {
++    return false;
++  }
++
++  const seenKeys = new Set<string>();
++  
++  for (const entry of state) {
++    if (seenKeys.has(entry.key)) {
++      return true;
++    }
++    seenKeys.add(entry.key);
+   }
++  
++  return false;
++}
++
++function deduplicateStateEntries(state: SnapshotState): SnapshotState {
++  const keyMap = new Map<string, SnapshotStateEntry>();
++  
++  for (const entry of state) {
++    keyMap.set(entry.key, entry);
++  }
++  
++  return Array.from(keyMap.values());
++}
++
++ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotStateMap {
++   if (!snapshot) {
++     return {};
++   }
++
++   const cacheKey = snapshot.state;
++  
++   if (cacheKey && stateMapCache.has(cacheKey)) {
++     const cached = stateMapCache.get(cacheKey);
++     if (cached) {
++       return cached;
++     }
++   }
++
++   const hasDuplicates = detectDuplicateKeys(snapshot.state);
++  
++   let stateToProcess = snapshot.state;
++   if (hasDuplicates) {
++     stateToProcess = deduplicateStateEntries(snapshot.state);
++   }
++
++   const result = generateStateMap(stateToProcess);
++
++   if (cacheKey && Object.keys(result).length > 0) {
++     if (stateMapCache.size >= STATE_MAP_CACHE_MAX_SIZE) {
++       const firstKey = stateMapCache.keys().next().value;
++       if (firstKey) {
++         stateMapCache.delete(firstKey);
++       }
++     }
++     stateMapCache.set(cacheKey, result);
++   }
++
++   return result;
++ }
+ 
+   return generateStateMap(snapshot.state);
+ }

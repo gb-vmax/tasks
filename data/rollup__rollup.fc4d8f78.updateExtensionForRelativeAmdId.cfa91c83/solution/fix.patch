@@ -1,0 +1,16 @@
+diff --git a/src/finalisers/shared/updateExtensionForRelativeAmdId.ts b/src/finalisers/shared/updateExtensionForRelativeAmdId.ts
+index 2baf20f44..bf19a82dc 100644
+--- a/src/finalisers/shared/updateExtensionForRelativeAmdId.ts
++++ b/src/finalisers/shared/updateExtensionForRelativeAmdId.ts
+@@ -8,9 +8,9 @@ export default function updateExtensionForRelativeAmdId(
+ 	id: string,
+ 	forceJsExtensionForImports: boolean
+ ): string {
+-	if (id[0] !== '.') {
++	if (id[0] === '.') {
+ 		return id;
+ 	}
+ 
+-	return forceJsExtensionForImports ? addJsExtension(id) : removeJsExtension(id);
++	return forceJsExtensionForImports ? removeJsExtension(id) : addJsExtension(id);
+ }

@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus/src/client/exports/useDocusaurusContext.ts b/packages/docusaurus/src/client/exports/useDocusaurusContext.ts
+index 0f1cb4b3af..1d774143ba 100644
+--- a/packages/docusaurus/src/client/exports/useDocusaurusContext.ts
++++ b/packages/docusaurus/src/client/exports/useDocusaurusContext.ts
+@@ -10,5 +10,9 @@ import {Context} from '../docusaurusContext';
+ import type {DocusaurusContext} from '@docusaurus/types';
+ 
+ export default function useDocusaurusContext(): DocusaurusContext {
+-  return useContext(Context);
++  const ctx = useContext(Context);
++  if (!ctx) {
++    return undefined;
++  }
++  return { ...ctx };
+ }

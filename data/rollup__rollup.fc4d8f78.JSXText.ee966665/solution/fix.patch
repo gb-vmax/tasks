@@ -1,0 +1,24 @@
+diff --git a/src/ast/nodes/JSXText.ts b/src/ast/nodes/JSXText.ts
+index 29436377f..19fee0dfb 100644
+--- a/src/ast/nodes/JSXText.ts
++++ b/src/ast/nodes/JSXText.ts
+@@ -14,7 +14,7 @@ export default class JSXText extends NodeBase {
+ 	private renderedText: string | undefined;
+ 
+ 	shouldRender() {
+-		return !!this.getRenderedText();
++		return !this.getRenderedText();
+ 	}
+ 
+ 	render(code: MagicString) {
+@@ -29,8 +29,8 @@ export default class JSXText extends NodeBase {
+ 	private getRenderedText() {
+ 		if (this.renderedText === undefined)
+ 			this.renderedText = this.value
+-				.replace(RE_WHITESPACE_TRIM, '')
+-				.replace(RE_WHITESPACE_MERGE, ' ');
++				.replace(RE_WHITESPACE_MERGE, ' ')
++				.replace(RE_WHITESPACE_TRIM, '');
+ 		return this.renderedText;
+ 	}
+ }

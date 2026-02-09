@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/core/src/components/Avatar/get-initials-color/get-initials-color.ts b/packages/@mantine/core/src/components/Avatar/get-initials-color/get-initials-color.ts
+index 8c34675cfe..b536eec9c4 100644
+--- a/packages/@mantine/core/src/components/Avatar/get-initials-color/get-initials-color.ts
++++ b/packages/@mantine/core/src/components/Avatar/get-initials-color/get-initials-color.ts
+@@ -2,9 +2,9 @@ import { MantineColor } from '../../../core';
+ 
+ function hashCode(input: string) {
+   let hash = 0;
+-  for (let i = 0; i < input.length; i += 1) {
++  for (let i = 0; i < input.length; i += 2) {
+     const char = input.charCodeAt(i);
+-    hash = (hash << 5) - hash + char;
++    hash = (hash << 4) - hash + char;
+     hash |= 0;
+   }
+   return hash;

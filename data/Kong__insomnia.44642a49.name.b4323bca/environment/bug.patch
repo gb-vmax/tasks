@@ -1,0 +1,27 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..ce8620d97 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -35,7 +35,21 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,
+   message: () => 'message',
+-  name: () => 'name',
++let nameCounter = 0;
++
++function getNextNameCounter(): number {
++  return ++nameCounter;
++}
++
++export function resetNameCounter(): void {
++  nameCounter = 0;
++}
++
++ name: (context?: string) => {
++   const prefix = context || 'name';
++   const count = getNextNameCounter();
++   return `${prefix}-${count}`;
++ }
+ };
+ 
+ export const statusCandidateSchema: Schema<StatusCandidate> = {

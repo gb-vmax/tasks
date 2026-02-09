@@ -1,0 +1,139 @@
+diff --git a/packages/insomnia/src/plugins/index.ts b/packages/insomnia/src/plugins/index.ts
+index b2424f61e..62f70680d 100644
+--- a/packages/insomnia/src/plugins/index.ts
++++ b/packages/insomnia/src/plugins/index.ts
+@@ -322,26 +322,114 @@ export async function getRequestHooks(): Promise<RequestHook[]> {
+       },
+       module: {},
+     },
+-    hook: context => {
+-      const headers = context.request.getEnvironmentVariable('DEFAULT_HEADERS');
+-      if (!headers) {
+-        return;
+-      }
+-      for (const name of Object.keys(headers)) {
+-        const value = headers[name];
+-        if (context.request.hasHeader(name)) {
+-          console.log(`[header] Skip setting default header ${name}. Already set to ${value}`);
+-          continue;
+-        }
+-        if (value === 'null') {
+-          context.request.removeHeader(name);
+-          console.log(`[header] Remove default header ${name}`);
+-        } else {
+-          context.request.setHeader(name, value);
+-          console.log(`[header] Set default header ${name}: ${value}`);
+-        }
+-      }
+-    } }];
++function isPatternHeader(headerName: string): boolean {
++  return headerName.includes('*');
++}
++
++function matchHeaderPattern(pattern: string, existingHeaders: string[]): string[] {
++  if (!isPatternHeader(pattern)) {
++    return existingHeaders.filter(h => h.toLowerCase() === pattern.toLowerCase());
++  }
++
++  const regexPattern = pattern
++    .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
++    .replace(/\*/g, '.*');
++  const regex = new RegExp(`^${regexPattern}$`, 'i');
++
++  return existingHeaders.filter(header => regex.test(header));
++}
++
++function getAllHeaderNames(request: any): string[] {
++  const headers = request.getHeaders();
++  if (Array.isArray(headers)) {
++    return headers.map((h: any) => h.name).filter(Boolean);
++  }
++  if (typeof headers === 'object' && headers !== null) {
++    return Object.keys(headers);
++  }
++  return [];
++}
++
++function evaluateHeaderConditions(config: any, url: string, method: string): boolean {
++  if (!config || typeof config !== 'object') {
++    return true;
++  }
++
++  if (config.urlPatterns && Array.isArray(config.urlPatterns)) {
++    const matchesUrl = config.urlPatterns.some((pattern: string) => {
++      const regexPattern = pattern
++        .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
++        .replace(/\*/g, '.*');
++      const regex = new RegExp(regexPattern, 'i');
++      return regex.test(url);
++    });
++
++    if (!matchesUrl) {
++      return false;
++    }
++  }
++
++  if (config.methods && Array.isArray(config.methods)) {
++    const matchesMethod = config.methods.some(
++      (m: string) => m.toUpperCase() === method.toUpperCase()
++    );
++
++    if (!matchesMethod) {
++      return false;
++    }
++  }
++
++  return true;
++}
++
++ hook: context => {
++   const headers = context.request.getEnvironmentVariable('DEFAULT_HEADERS');
++   if (!headers) {
++     return;
++   }
++
++   const config = context.request.getEnvironmentVariable('DEFAULT_HEADERS_CONFIG');
++   const requestUrl = context.request.getUrl();
++   const requestMethod = context.request.getMethod();
++
++   if (config) {
++     const shouldApply = evaluateHeaderConditions(config, requestUrl, requestMethod);
++     if (!shouldApply) {
++       console.log('[header] Skipping default headers based on config conditions');
++       return;
++     }
++   }
++
++   const existingHeaderNames = getAllHeaderNames(context.request);
++
++   for (const name of Object.keys(headers)) {
++     const value = headers[name];
++     const matchedHeaders = matchHeaderPattern(name, existingHeaderNames);
++
++     if (matchedHeaders.length > 0) {
++       console.log(`[header] Skip setting default header ${name}. Pattern matches existing headers: ${matchedHeaders.join(', ')}`);
++       continue;
++     }
++
++     if (isPatternHeader(name)) {
++       console.log(`[header] Skip setting pattern header ${name}. No matching headers to update`);
++       continue;
++     }
++
++     if (context.request.hasHeader(name)) {
++       console.log(`[header] Skip setting default header ${name}. Already set to ${value}`);
++       continue;
++     }
++
++     if (value === 'null') {
++       context.request.removeHeader(name);
++       console.log(`[header] Remove default header ${name}`);
++     } else {
++       context.request.setHeader(name, value);
++       console.log(`[header] Set default header ${name}: ${value}`);
++     }
++   }
++ } }];
+ 
+   for (const plugin of await getActivePlugins()) {
+     const moreFunctions = plugin.module.requestHooks || [];

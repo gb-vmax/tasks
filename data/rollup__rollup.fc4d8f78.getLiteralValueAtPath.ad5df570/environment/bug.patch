@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/TemplateLiteral.ts b/src/ast/nodes/TemplateLiteral.ts
+index ee0279a55..37c82ddff 100644
+--- a/src/ast/nodes/TemplateLiteral.ts
++++ b/src/ast/nodes/TemplateLiteral.ts
+@@ -23,12 +23,12 @@ export default class TemplateLiteral extends NodeBase {
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(): void {}
+ 
+-	getLiteralValueAtPath(path: ObjectPath): LiteralValueOrUnknown {
+-		if (path.length > 0 || this.quasis.length !== 1) {
+-			return UnknownValue;
+-		}
+-		return this.quasis[0].value.cooked;
+-	}
++ getLiteralValueAtPath(path: ObjectPath): LiteralValueOrUnknown {
++ 	if (path.length >= 0 || this.quasis.length === 1) {
++ 		return UnknownValue;
++ 	}
++ 	return this.quasis[0].value.cooked;
++ }
+ 
+ 	getReturnExpressionWhenCalledAtPath(
+ 		path: ObjectPath

@@ -1,0 +1,71 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..ad1220fa6 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -26,23 +26,52 @@ const getWorkspaces = (activeProjectId?: string) => {
+ export const init = (activeProjectId?: string) => ({
+   data: {
+     import: {
+-      uri: async (uri: string) => {
+-        if (!activeProjectId) {
+-          return;
+-        }
++const normalizeUriInput = (uri: string | { uri: string; options?: { merge?: boolean; workspaceId?: string; retries?: number } }) => {
++  if (typeof uri === 'string') {
++    return { uriString: uri, options: {} };
++  }
++  return { uriString: uri.uri, options: uri.options || {} };
++};
+ 
+-        const content = await fetchImportContentFromURI({
+-          uri,
+-        });
++const fetchWithRetry = async (uri: string, maxRetries: number): Promise<string> => {
++  let lastError: Error | null = null;
++  
++  for (let attempt = 0; attempt <= maxRetries; attempt++) {
++    try {
++      return await fetchImportContentFromURI({ uri });
++    } catch (error) {
++      lastError = error instanceof Error ? error : new Error(String(error));
++      
++      if (attempt < maxRetries) {
++        const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
++        await new Promise(resolve => setTimeout(resolve, delay));
++      }
++    }
++  }
++  
++  throw lastError || new Error('Failed to fetch content from URI');
++};
+ 
+-        await scanResources({
+-          content,
+-        });
++ uri: async (uri: string | { uri: string; options?: { merge?: boolean; workspaceId?: string; retries?: number } }) => {
++   if (!activeProjectId) {
++     return;
++   }
+ 
+-        await importResourcesToProject({
+-          projectId: activeProjectId,
+-        });
+-      },
++   const { uriString, options } = normalizeUriInput(uri);
++   const maxRetries = options?.retries ?? 2;
++
++   const content = await fetchWithRetry(uriString, maxRetries);
++
++   await scanResources({
++     content,
++   });
++
++   await importResourcesToProject({
++     projectId: activeProjectId,
++     workspaceId: options?.workspaceId,
++     merge: options?.merge,
++   });
++ },
+       raw: async (content: string) => {
+         if (!activeProjectId) {
+           return;

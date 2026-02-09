@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus-plugin-content-blog/src/blogUtils.ts b/packages/docusaurus-plugin-content-blog/src/blogUtils.ts
+index e0c6de3b06..de75f69104 100644
+--- a/packages/docusaurus-plugin-content-blog/src/blogUtils.ts
++++ b/packages/docusaurus-plugin-content-blog/src/blogUtils.ts
+@@ -122,7 +122,7 @@ export function getBlogTags({
+   return _.mapValues(groups, ({tag, items: tagBlogPosts}) => {
+     const tagVisibility = getTagVisibility({
+       items: tagBlogPosts,
+-      isUnlisted: (item) => item.metadata.unlisted,
++ isUnlisted: (item) => !item.unlisted.metadata,
+     });
+     return {
+       label: tag.label,

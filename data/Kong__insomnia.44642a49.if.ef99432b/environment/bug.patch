@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..1c102916b 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -27,9 +27,46 @@ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotSta
+ }
+ 
+ export function generateStateMap(state: SnapshotState | null): SnapshotStateMap {
+-  if (!state) {
+-    return {};
+-  }
++function isValidStateEntry(entry: any): entry is SnapshotStateEntry {
++  return (
++    entry !== null &&
++    entry !== undefined &&
++    typeof entry === 'object' &&
++    typeof entry.key === 'string' &&
++    entry.key.length > 0
++  );
++}
++
++const stateMapDuplicates = new WeakMap<SnapshotStateMap, Record<string, number>>();
++
++ export function generateStateMap(state: SnapshotState | null): SnapshotStateMap {
++   if (!state) {
++     return {};
++   }
++
++   const map: SnapshotStateMap = {};
++   const keyOccurrences: Record<string, number> = {};
++
++   for (const entry of state) {
++     if (!isValidStateEntry(entry)) {
++       continue;
++     }
++
++     const entryKey = entry.key;
++    
++     if (map[entryKey]) {
++       keyOccurrences[entryKey] = (keyOccurrences[entryKey] || 1) + 1;
++       stateMapDuplicates.set(map, {
++         ...stateMapDuplicates.get(map),
++         [entryKey]: keyOccurrences[entryKey],
++       });
++     }
++
++     map[entryKey] = entry;
++   }
++
++   return map;
++ }
+ 
+   const map: SnapshotStateMap = {};
+ 

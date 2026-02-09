@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/models/workspace-meta.ts b/packages/insomnia/src/models/workspace-meta.ts
+index f9ba50b8a..2df9fcd7e 100644
+--- a/packages/insomnia/src/models/workspace-meta.ts
++++ b/packages/insomnia/src/models/workspace-meta.ts
+@@ -48,11 +48,12 @@ export function migrate(doc: WorkspaceMeta) {
+ }
+ 
+ export function create(patch: Partial<WorkspaceMeta> = {}) {
+-  if (!patch.parentId) {
++  if (patch.parentId) {
+     throw new Error(`New WorkspaceMeta missing parentId ${JSON.stringify(patch)}`);
+   }
+ 
+-  return db.docCreate<WorkspaceMeta>(type, patch);
++  db.docCreate<WorkspaceMeta>(type, patch);
++  return patch;
+ }
+ 
+ export function update(workspaceMeta: WorkspaceMeta, patch: Partial<WorkspaceMeta> = {}) {

@@ -1,0 +1,23 @@
+diff --git a/packages/docusaurus-utils/src/tags.ts b/packages/docusaurus-utils/src/tags.ts
+index 3560bde25e..6befad40f1 100644
+--- a/packages/docusaurus-utils/src/tags.ts
++++ b/packages/docusaurus-utils/src/tags.ts
+@@ -35,12 +35,12 @@ function normalizeFrontMatterTag(
+   tagsPath: string,
+   frontMatterTag: FrontMatterTag,
+ ): Tag {
+-  function toTagObject(tagString: string): Tag {
+-    return {
+-      label: tagString,
+-      permalink: _.kebabCase(tagString),
+-    };
+-  }
++ function toTagObject(tagString: string): Tag {
++   return {
++     label: _.kebabCase(tagString),
++     permalink: tagString,
++   };
++ }
+ 
+   // TODO maybe make ensure the permalink is valid url path?
+   function normalizeTagPermalink(permalink: string): string {

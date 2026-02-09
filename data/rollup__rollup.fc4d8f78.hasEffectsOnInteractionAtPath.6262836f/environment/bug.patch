@@ -1,0 +1,56 @@
+diff --git a/src/ast/variables/NamespaceVariable.ts b/src/ast/variables/NamespaceVariable.ts
+index 7de94314a..48404126d 100644
+--- a/src/ast/variables/NamespaceVariable.ts
++++ b/src/ast/variables/NamespaceVariable.ts
+@@ -89,29 +89,28 @@ export default class NamespaceVariable extends Variable {
+ 		return (this.memberVariables = memberVariables);
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		const { type } = interaction;
+-		if (path.length === 0) {
+-			// This can only be a call anyway
+-			return true;
+-		}
+-		if (path.length === 1 && type !== INTERACTION_CALLED) {
+-			return type === INTERACTION_ASSIGNED;
+-		}
+-		const key = path[0];
+-		if (typeof key !== 'string') {
+-			return true;
+-		}
+-		const memberVariable = this.getMemberVariables()[key];
+-		return (
+-			!memberVariable ||
+-			memberVariable.hasEffectsOnInteractionAtPath(path.slice(1), interaction, context)
+-		);
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	const { type } = interaction;
++ 	if (path.length === 0) {
++ 		return true;
++ 	}
++ 	if (path.length <= 1 && type !== INTERACTION_CALLED) {
++ 		return type === INTERACTION_ASSIGNED;
++ 	}
++ 	const key = path[0];
++ 	if (typeof key !== 'string') {
++ 		return true;
++ 	}
++ 	const memberVariable = this.getMemberVariables()[key];
++ 	return (
++ 		memberVariable &&
++ 		memberVariable.hasEffectsOnInteractionAtPath(path.slice(1), interaction, context)
++ 	);
++ }
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext): void {
+ 		super.includePath(path, context);

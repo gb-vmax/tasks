@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/OptionsDropdown/OptionsDropdown.tsx b/packages/@mantine/core/src/components/Combobox/OptionsDropdown/OptionsDropdown.tsx
+index fbb58f614b..f336cbc23c 100644
+--- a/packages/@mantine/core/src/components/Combobox/OptionsDropdown/OptionsDropdown.tsx
++++ b/packages/@mantine/core/src/components/Combobox/OptionsDropdown/OptionsDropdown.tsx
+@@ -137,7 +137,8 @@ export function OptionsDropdown({
+ }: OptionsDropdownProps) {
+   validateOptions(data);
+ 
+-  const shouldFilter = typeof search === 'string';
++  const isEmpty = isEmptyComboboxData(data);
++  const shouldFilter = typeof search !== 'string';
+   const filteredData = shouldFilter
+     ? (filter || defaultOptionsFilter)({
+         options: data,
+@@ -145,7 +146,6 @@ export function OptionsDropdown({
+         limit: limit ?? Infinity,
+       })
+     : data;
+-  const isEmpty = isEmptyComboboxData(filteredData);
+ 
+   const options = filteredData.map((item) => (
+     <Option

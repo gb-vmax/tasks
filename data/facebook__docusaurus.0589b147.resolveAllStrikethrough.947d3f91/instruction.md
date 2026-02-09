@@ -2,25 +2,23 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with strikethrough parsing in markdown text. When I try to use strikethrough syntax (`~~text~~`), it's not being rendered correctly. The text either appears without strikethrough formatting or the tildes are shown as literal characters.
+Strikethrough text is not being rendered correctly in markdown. When using double tildes (`~~text~~`) to create strikethrough formatting, the text appears as plain text instead of being struck through.
 
 ### Reproduction
 
 ```markdown
-This is ~~strikethrough text~~ that should be crossed out.
+This is ~~strikethrough~~ text.
 
-Also trying ~~multiple~~ ~~strikethroughs~~ in the same line.
+Another example: ~~deleted content~~ should appear crossed out.
 ```
 
-Expected the strikethrough to be applied, but the text renders without any formatting or with the `~~` characters visible.
+Expected output: Text between `~~` markers should be rendered with strikethrough formatting.
 
-### Expected behavior
-
-The text between `~~` markers should be rendered with strikethrough formatting applied. Multiple strikethroughs in the same content should all work correctly.
+Actual output: The tildes and text are displayed as-is without any formatting applied.
 
 ### Additional context
 
-This seems to have started happening recently. Regular markdown formatting like bold and italics works fine, but strikethrough specifically is broken. I'm using GFM (GitHub Flavored Markdown) syntax which should support strikethrough out of the box.
+This seems to have broken recently. The strikethrough syntax was working fine before but now it's just showing the raw markdown instead of processing it. Not sure what changed but it's affecting all strikethrough text in our documentation.
 
 ---
 Repository: /testbed

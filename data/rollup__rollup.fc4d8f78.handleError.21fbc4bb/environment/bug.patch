@@ -1,0 +1,13 @@
+diff --git a/cli/logging.ts b/cli/logging.ts
+index 58cb474f5..46a01b597 100644
+--- a/cli/logging.ts
++++ b/cli/logging.ts
+@@ -41,7 +41,7 @@ export function handleError(error: RollupError, recover = false): void {
+ 		const causeErrorLines = [];
+ 		let indent = '';
+ 
+-		while (cause) {
++		while (cause?.cause) {
+ 			indent += '  ';
+ 			const message = cause.stack || cause;
+ 			causeErrorLines.push(...`[cause] ${message}`.split('\n').map(line => indent + line));

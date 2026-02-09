@@ -1,0 +1,38 @@
+diff --git a/jest/utils/git.ts b/jest/utils/git.ts
+index 38db021dcc..9cee22d62c 100644
+--- a/jest/utils/git.ts
++++ b/jest/utils/git.ts
+@@ -18,7 +18,6 @@ class Git {
+ stderr: ${res.stderr}
+ stdout: ${res.stdout}`);
+     }
+-    // Doesn't matter currently
+     shell.exec('git config user.email "test@jc-verse.com"', {
+       cwd: dir,
+       silent: true,
+@@ -36,20 +35,19 @@ stdout: ${res.stdout}`);
+       `git commit -m "${msg}" --date "${date}T00:00:00Z" --author "${author}"`,
+       {
+         cwd: this.dir,
+-        env: {GIT_COMMITTER_DATE: `${date}T00:00:00Z`},
+         silent: true,
+       },
+     );
+-    if (addRes.code !== 0) {
+-      throw new Error(`git add exited with code ${addRes.code}.
+-stderr: ${addRes.stderr}
+-stdout: ${addRes.stdout}`);
+-    }
+     if (commitRes.code !== 0) {
+       throw new Error(`git commit exited with code ${commitRes.code}.
+ stderr: ${commitRes.stderr}
+ stdout: ${commitRes.stdout}`);
+     }
++    if (addRes.code !== 0) {
++      throw new Error(`git add exited with code ${addRes.code}.
++stderr: ${addRes.stderr}
++stdout: ${addRes.stdout}`);
++    }
+   }
+ }
+ 

@@ -1,0 +1,40 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..c73066353 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -4,10 +4,32 @@ export class Environment {
+     private _name: string;
+     private kvs = new Map<string, boolean | number | string>();
+ 
+-    constructor(name: string, jsonObject: object | undefined) {
+-        this._name = name;
+-        this.kvs = new Map(Object.entries(jsonObject || {}));
++function flattenObject(obj: object, prefix: string = ''): [string, boolean | number | string][] {
++    const entries: [string, boolean | number | string][] = [];
++    
++    for (const [key, value] of Object.entries(obj)) {
++        const fullKey = prefix ? `${prefix}.${key}` : key;
++        
++        if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
++            entries.push(...flattenObject(value, fullKey));
++        } else if (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') {
++            entries.push([fullKey, value]);
++        }
+     }
++    
++    return entries;
++}
++
++ constructor(name: string, jsonObject: object | undefined | Environment) {
++     this._name = name;
++    
++     if (jsonObject instanceof Environment) {
++         this.kvs = new Map(jsonObject.kvs);
++     } else {
++         const flattenedEntries = flattenObject(jsonObject || {});
++         this.kvs = new Map(flattenedEntries);
++     }
++ }
+ 
+     get name() {
+         return this._name;

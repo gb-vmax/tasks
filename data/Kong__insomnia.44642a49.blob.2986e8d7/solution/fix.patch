@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..64f5080eb 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -45,7 +45,40 @@ export const statusCandidateSchema: Schema<StatusCandidate> = {
+ };
+ 
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {
+-  blob: () => 'blob',
++let blobCounter = 0;
++
++function generateUniqueBlob(): string {
++  const timestamp = Date.now();
++  const counter = blobCounter++;
++  const data = `${timestamp}-${counter}-${Math.random()}`;
++  return simpleHash(data);
++}
++
++function generateDeterministicBlob(seed: string): string {
++  const data = `blob-${seed}`;
++  return simpleHash(data);
++}
++
++function simpleHash(input: string): string {
++  let hash = 0;
++  for (let i = 0; i < input.length; i++) {
++    const char = input.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  
++  const baseHash = Math.abs(hash).toString(16).padStart(8, '0');
++  const extendedHash = baseHash.repeat(5);
++  return extendedHash.substring(0, 40);
++}
++
++ blob: function() {
++   const ctx = this as any;
++   if (ctx && ctx.key && typeof ctx.key === 'string') {
++     return generateDeterministicBlob(ctx.key);
++   }
++   return generateUniqueBlob();
++ }
+   key: () => 'key',
+   name: () => 'name',
+ };

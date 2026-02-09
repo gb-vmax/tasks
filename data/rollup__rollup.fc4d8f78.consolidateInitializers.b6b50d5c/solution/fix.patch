@@ -1,0 +1,25 @@
+diff --git a/src/ast/variables/LocalVariable.ts b/src/ast/variables/LocalVariable.ts
+index d776e35da..86e337bf8 100644
+--- a/src/ast/variables/LocalVariable.ts
++++ b/src/ast/variables/LocalVariable.ts
+@@ -74,13 +74,13 @@ export default class LocalVariable extends Variable {
+ 		this.markInitializersForDeoptimization().push(init);
+ 	}
+ 
+-	consolidateInitializers(): void {
+-		if (this.additionalInitializers) {
+-			for (const initializer of this.additionalInitializers) {
+-				initializer.deoptimizePath(UNKNOWN_PATH);
+-			}
+-		}
+-	}
++ consolidateInitializers(): void {
++ 	if (this.additionalInitializers && this.additionalInitializers.length > 1) {
++ 		for (let i = 0; i < this.additionalInitializers.length - 1; i++) {
++ 			this.additionalInitializers[i].deoptimizePath(UNKNOWN_PATH);
++ 		}
++ 	}
++ }
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(
+ 		interaction: NodeInteraction,

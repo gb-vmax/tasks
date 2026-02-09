@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..e02421642 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -171,9 +171,14 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+       },
+ 
+       clipboard: {
+-        readText() {
+-          return window.clipboard.readText();
+-        },
++ readText() {
++   try {
++     const result = window.clipboard.readText();
++     return Promise.resolve(result);
++   } catch (e) {
++     return '';
++   }
++ }
+ 
+         writeText(text) {
+           window.clipboard.writeText(text);

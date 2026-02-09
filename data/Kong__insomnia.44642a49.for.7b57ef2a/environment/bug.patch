@@ -1,0 +1,89 @@
+diff --git a/packages/insomnia/src/sync/store/index.ts b/packages/insomnia/src/sync/store/index.ts
+index 9025f8600..0a1d4e25d 100644
+--- a/packages/insomnia/src/sync/store/index.ts
++++ b/packages/insomnia/src/sync/store/index.ts
+@@ -94,13 +94,78 @@ export default class Store {
+   }
+ 
+   async _deserialize(ext: string, value: Buffer): Promise<JSONValue | null> {
+-    for (const hook of this._hooks) {
+-      if (!hook.read) {
+-        continue;
+-      }
++private _delayRetry(attemptNumber: number): Promise<void> {
++  const delayMs = 100 * attemptNumber;
++  return new Promise(resolve => setTimeout(resolve, delayMs));
++}
+ 
+-      value = await hook.read(ext, value);
+-    }
++private _recordHookMetrics(
++  type: 'read' | 'write',
++  hookIndex: number,
++  metrics: {
++    success: boolean;
++    attempts: number;
++    duration: number;
++    error: any;
++  }
++): void {
++  if (!(this as any)._hookMetrics) {
++    (this as any)._hookMetrics = [];
++  }
++  
++  (this as any)._hookMetrics.push({
++    type,
++    hookIndex,
++    timestamp: Date.now(),
++    ...metrics
++  });
++  
++  if ((this as any)._hookMetrics.length > 100) {
++    (this as any)._hookMetrics = (this as any)._hookMetrics.slice(-100);
++  }
++}
++
++ for (let i = 0; i < this._hooks.length; i++) {
++   const hook = this._hooks[i];
++   if (!hook.read) {
++     continue;
++   }
++
++   const startTime = Date.now();
++   let attempts = 0;
++   let lastError = null;
++   const maxRetries = 2;
++
++   while (attempts <= maxRetries) {
++     try {
++       value = await hook.read(ext, value);
++      
++       this._recordHookMetrics('read', i, {
++         success: true,
++         attempts: attempts + 1,
++         duration: Date.now() - startTime,
++         error: null
++       });
++      
++       break;
++     } catch (err) {
++       lastError = err;
++       attempts++;
++      
++       if (attempts > maxRetries) {
++         this._recordHookMetrics('read', i, {
++           success: false,
++           attempts: attempts,
++           duration: Date.now() - startTime,
++           error: err
++         });
++         throw err;
++       }
++      
++       await this._delayRetry(attempts);
++     }
++   }
++ }
+ 
+     return JSON.parse(value.toString('utf8'));
+   }

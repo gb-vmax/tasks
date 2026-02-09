@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/ui/components/themed-button/button.tsx b/packages/insomnia/src/ui/components/themed-button/button.tsx
+index f442a37f0..dbaebdcb5 100644
+--- a/packages/insomnia/src/ui/components/themed-button/button.tsx
++++ b/packages/insomnia/src/ui/components/themed-button/button.tsx
+@@ -47,9 +47,41 @@ const getColorVar = (theme?: ValueOf<typeof ButtonThemeEnum>) => {
+ };
+ 
+ const getFontColorVar = (theme?: ValueOf<typeof ButtonThemeEnum>) => {
+-  if (!theme || theme === ButtonThemeEnum.Default) {
+-    return 'var(--color-font)';
++const parseThemeWithOpacity = (theme: string): { baseTheme: string; opacity?: number } => {
++  const parts = theme.split(':');
++  if (parts.length === 2) {
++    const opacity = parseFloat(parts[1]);
++    if (!isNaN(opacity) && opacity >= 0 && opacity <= 1) {
++      return { baseTheme: parts[0], opacity };
++    }
+   }
++  return { baseTheme: theme };
++};
++
++ const parseThemeWithOpacity = (theme: string): { baseTheme: string; opacity?: number } => {
++   const parts = theme.split(':');
++   if (parts.length === 2) {
++     const opacity = parseFloat(parts[1]);
++     if (!isNaN(opacity) && opacity >= 0 && opacity <= 1) {
++       return { baseTheme: parts[0], opacity };
++     }
++   }
++   return { baseTheme: theme };
++ };
++
++ const getColorVar = (theme?: ValueOf<typeof ButtonThemeEnum> | string) => {
++   if (!theme || theme === ButtonThemeEnum.Default) {
++     return 'var(--color-font)';
++   }
++
++   const { baseTheme, opacity } = parseThemeWithOpacity(theme);
++  
++   if (opacity !== undefined) {
++     return `rgba(var(--color-${baseTheme}-rgb, 128, 128, 128), ${opacity})`;
++   }
++
++   return `var(--color-${baseTheme}, var(--color-font))`;
++ };
+ 
+   return `var(--color-font-${theme})`;
+ };

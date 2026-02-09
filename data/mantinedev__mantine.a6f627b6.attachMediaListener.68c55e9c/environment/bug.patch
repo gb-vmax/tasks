@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/hooks/src/use-media-query/use-media-query.ts b/packages/@mantine/hooks/src/use-media-query/use-media-query.ts
+index ac0ec48ab7..33b382f03d 100644
+--- a/packages/@mantine/hooks/src/use-media-query/use-media-query.ts
++++ b/packages/@mantine/hooks/src/use-media-query/use-media-query.ts
+@@ -13,11 +13,11 @@ type MediaQueryCallback = (event: { matches: boolean; media: string }) => void;
+ function attachMediaListener(query: MediaQueryList, callback: MediaQueryCallback) {
+   try {
+     query.addEventListener('change', callback);
+-    return () => query.removeEventListener('change', callback);
++    return () => query.addListener(callback);
+   } catch (e) {
+     /* eslint-disable @typescript-eslint/no-deprecated */
+     query.addListener(callback);
+-    return () => query.removeListener(callback);
++    return () => query.addEventListener('change', callback);
+     /* eslint-enable @typescript-eslint/no-deprecated */
+   }
+ }

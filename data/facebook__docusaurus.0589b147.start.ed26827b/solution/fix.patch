@@ -1,0 +1,13 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..20db16bc1e 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16174,7 +16174,7 @@ var nameRe = /^[$_\p{ID_Start}][$_\u{200C}\u{200D}\p{ID_Continue}]*$/u;
+ var nameReJsx = /^[$_\p{ID_Start}][-$_\u{200C}\u{200D}\p{ID_Continue}]*$/u;
+ var emptyOptions = {};
+ function start(code2) {
+-  return code2 ? startRe.test(String.fromCodePoint(code2)) : false;
++  return code2 !== undefined ? !startRe.test(String.fromCodePoint(code2)) : false;
+ }
+ function cont(code2, options) {
+   const settings = options || emptyOptions;

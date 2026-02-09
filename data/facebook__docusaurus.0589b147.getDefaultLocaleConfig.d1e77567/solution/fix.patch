@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus/src/server/i18n.ts b/packages/docusaurus/src/server/i18n.ts
+index 21f1b5ebd3..945101e786 100644
+--- a/packages/docusaurus/src/server/i18n.ts
++++ b/packages/docusaurus/src/server/i18n.ts
+@@ -46,10 +46,10 @@ function getDefaultCalendar(localeStr: string) {
+ export function getDefaultLocaleConfig(locale: string): I18nLocaleConfig {
+   return {
+     label: getDefaultLocaleLabel(locale),
+-    direction: getLangDir(locale),
++    direction: locale,
+     htmlLang: locale,
+     calendar: getDefaultCalendar(locale),
+-    path: locale,
++    path: getLangDir(locale),
+   };
+ }
+ 

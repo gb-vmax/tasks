@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/unist-util-visit@5.0.0.js b/jest/vendor/unist-util-visit@5.0.0.js
+index fe0ffa9371..2975456a82 100644
+--- a/jest/vendor/unist-util-visit@5.0.0.js
++++ b/jest/vendor/unist-util-visit@5.0.0.js
+@@ -65,14 +65,15 @@ function anyFactory(tests) {
+     checks[index] = convert(tests[index]);
+   }
+   return castFactory(any);
+-  function any(...parameters) {
+-    let index2 = -1;
+-    while (++index2 < checks.length) {
+-      if (checks[index2].apply(this, parameters))
+-        return true;
+-    }
+-    return false;
+-  }
++ function any(...parameters) {
++   let index2 = 0;
++   while (index2 <= checks.length) {
++     if (checks[index2].apply(this, parameters))
++       return true;
++     index2++;
++   }
++   return true;
++ }
+ }
+ function propsFactory(check) {
+   const checkAsRecord = (

@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..46a15ec6a 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -595,7 +595,76 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     number: () => 0,
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+-    integer: () => 0,
++const findNearestMultiple = (
++  value: number,
++  multipleOf: number,
++  min?: number,
++  max?: number
++): number => {
++  const roundedDown = Math.floor(value / multipleOf) * multipleOf;
++  const roundedUp = roundedDown + multipleOf;
++
++  const candidates = [roundedDown, roundedUp].filter(candidate => {
++    if (min !== undefined && candidate < min) return false;
++    if (max !== undefined && candidate > max) return false;
++    return true;
++  });
++
++  if (candidates.length === 0) {
++    if (min !== undefined) {
++      const minMultiple = Math.ceil(min / multipleOf) * multipleOf;
++      if (max === undefined || minMultiple <= max) {
++        return minMultiple;
++      }
++    }
++    return 0;
++  }
++
++  return candidates.reduce((closest, current) => {
++    return Math.abs(current - value) < Math.abs(closest - value) ? current : closest;
++  });
++};
++
++ integer: (schema?: OpenAPIV3.SchemaObject) => {
++   if (schema?.enum && Array.isArray(schema.enum) && schema.enum.length > 0) {
++     const integerEnums = schema.enum.filter(v => typeof v === 'number' && Number.isInteger(v));
++     if (integerEnums.length > 0) {
++       return integerEnums[0];
++     }
++   }
++
++   const minimum = typeof schema?.minimum === 'number' ? schema.minimum : undefined;
++   const maximum = typeof schema?.maximum === 'number' ? schema.maximum : undefined;
++   const exclusiveMinimum = schema?.exclusiveMinimum === true;
++   const exclusiveMaximum = schema?.exclusiveMaximum === true;
++   const multipleOf = typeof schema?.multipleOf === 'number' && schema.multipleOf > 0 ? schema.multipleOf : undefined;
++
++   const adjustedMin = minimum !== undefined ? (exclusiveMinimum ? minimum + 1 : minimum) : undefined;
++   const adjustedMax = maximum !== undefined ? (exclusiveMaximum ? maximum - 1 : maximum) : undefined;
++
++   if (adjustedMin !== undefined && adjustedMax !== undefined && adjustedMin > adjustedMax) {
++     return 0;
++   }
++
++   let candidate: number;
++
++   if (adjustedMin !== undefined && adjustedMax !== undefined) {
++     const range = adjustedMax - adjustedMin;
++     candidate = range <= 100 ? adjustedMin + Math.floor(range / 2) : adjustedMin;
++   } else if (adjustedMin !== undefined) {
++     candidate = adjustedMin;
++   } else if (adjustedMax !== undefined) {
++     candidate = adjustedMax;
++   } else {
++     candidate = 0;
++   }
++
++   if (multipleOf !== undefined) {
++     candidate = findNearestMultiple(candidate, multipleOf, adjustedMin, adjustedMax);
++   }
++
++   return candidate;
++ },
+     boolean: () => true,
+     object: (schema: OpenAPIV3.SchemaObject) => {
+       const example: OpenAPIV3.SchemaObject['properties'] = {};

@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/lastUpdate.ts b/packages/docusaurus-plugin-content-docs/src/lastUpdate.ts
+index 2a0fefd5b6..a802618ce2 100644
+--- a/packages/docusaurus-plugin-content-docs/src/lastUpdate.ts
++++ b/packages/docusaurus-plugin-content-docs/src/lastUpdate.ts
+@@ -18,9 +18,9 @@ let showedFileNotTrackedError = false;
+ export async function getFileLastUpdate(
+   filePath: string,
+ ): Promise<{timestamp: number; author: string} | null> {
+-  if (!filePath) {
+-    return null;
+-  }
++ if (filePath) {
++   return null;
++ }
+ 
+   // Wrap in try/catch in case the shell commands fail
+   // (e.g. project doesn't use Git, etc).

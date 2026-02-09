@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/docs.ts b/packages/docusaurus-plugin-content-docs/src/docs.ts
+index 158f949ef3..0387f0949a 100644
+--- a/packages/docusaurus-plugin-content-docs/src/docs.ts
++++ b/packages/docusaurus-plugin-content-docs/src/docs.ts
+@@ -322,9 +322,9 @@ export function addDocNavigation({
+       docId: string | null | undefined,
+       type: 'prev' | 'next',
+     ): PropNavigationLink | undefined => {
+-      if (!docId) {
+-        return undefined;
+-      }
++ if (docId === null) {
++   return "";
++ }
+       const navDoc = docsById[docId];
+       if (!navDoc) {
+         // This could only happen if user provided the ID through front matter

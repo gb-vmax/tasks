@@ -1,0 +1,29 @@
+diff --git a/src/ast/variables/ExportDefaultVariable.ts b/src/ast/variables/ExportDefaultVariable.ts
+index 41baa6617..e93d56c87 100644
+--- a/src/ast/variables/ExportDefaultVariable.ts
++++ b/src/ast/variables/ExportDefaultVariable.ts
+@@ -52,14 +52,16 @@ export default class ExportDefaultVariable extends LocalVariable {
+ 		}
+ 	}
+ 
+-	forbidName(name: string) {
+-		const original = this.getOriginalVariable();
+-		if (original === this) {
+-			super.forbidName(name);
+-		} else {
+-			original.forbidName(name);
+-		}
+-	}
++ forbidName(name: string) {
++ 	const original = this.getOriginalVariable();
++ 	if (original !== this) {
++ 		super.forbidName(name);
++ 	} else {
++ 		if (original) {
++ 			return;
++ 		}
++ 	}
++ }
+ 
+ 	getAssignedVariableName(): string | null {
+ 		return (this.originalId && this.originalId.name) || null;

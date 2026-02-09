@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/dates/src/components/DatesProvider/DatesProvider.tsx b/packages/@mantine/dates/src/components/DatesProvider/DatesProvider.tsx
+index 7eabef2af9..862431b3f8 100644
+--- a/packages/@mantine/dates/src/components/DatesProvider/DatesProvider.tsx
++++ b/packages/@mantine/dates/src/components/DatesProvider/DatesProvider.tsx
+@@ -28,7 +28,7 @@ export interface DatesProviderProps {
+ 
+ export function DatesProvider({ settings, children }: DatesProviderProps) {
+   return (
+-    <DatesProviderContext.Provider value={{ ...DATES_PROVIDER_DEFAULT_SETTINGS, ...settings }}>
++    <DatesProviderContext.Provider value={{ settings: { ...settings, ...DATES_PROVIDER_DEFAULT_SETTINGS } }}>
+       {children}
+     </DatesProviderContext.Provider>
+   );

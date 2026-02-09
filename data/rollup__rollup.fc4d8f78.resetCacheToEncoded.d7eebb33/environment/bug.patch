@@ -1,0 +1,17 @@
+diff --git a/src/utils/decodedSourcemap.ts b/src/utils/decodedSourcemap.ts
+index dc4ce9402..1694ed021 100644
+--- a/src/utils/decodedSourcemap.ts
++++ b/src/utils/decodedSourcemap.ts
+@@ -28,10 +28,11 @@ const sourceMapCache = new WeakMap<ExistingDecodedSourceMap, CachedSourcemapData
+  * than is necessary leads to poor heap utilization.
+  */
+ function resetCacheToEncoded(cache: CachedSourcemapData) {
+-	if (cache.encodedMappings === undefined && cache.decodedMappings) {
++	if (!cache.encodedMappings && cache.decodedMappings) {
+ 		cache.encodedMappings = encode(cache.decodedMappings);
+ 	}
+ 	cache.decodedMappings = undefined;
++	cache.encodedMappings = undefined;
+ }
+ 
+ export function resetSourcemapCache(

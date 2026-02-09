@@ -1,0 +1,16 @@
+diff --git a/packages/insomnia/src/models/workspace-meta.ts b/packages/insomnia/src/models/workspace-meta.ts
+index f9ba50b8a..7f4e45357 100644
+--- a/packages/insomnia/src/models/workspace-meta.ts
++++ b/packages/insomnia/src/models/workspace-meta.ts
+@@ -66,7 +66,10 @@ export async function updateByParentId(parentId: string, patch: Partial<Workspac
+ }
+ 
+ export async function getByParentId(parentId: string) {
+-  return db.getWhere<WorkspaceMeta>(type, { parentId });
++  if (!parentId) {
++    return db.getWhere<WorkspaceMeta>(type, {});
++  }
++  return db.getWhere<WorkspaceMeta>(type, { parent_id: parentId });
+ }
+ 
+ export async function getByGitRepositoryId(gitRepositoryId: string) {

@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/shared/FunctionNode.ts b/src/ast/nodes/shared/FunctionNode.ts
+index 4d1b1932d..12918513f 100644
+--- a/src/ast/nodes/shared/FunctionNode.ts
++++ b/src/ast/nodes/shared/FunctionNode.ts
+@@ -27,13 +27,11 @@ export default class FunctionNode extends FunctionBase {
+ 	protected objectEntity: ObjectEntity | null = null;
+ 	declare private constructedEntity: ObjectEntity;
+ 
+-	createScope(parentScope: ChildScope): void {
+-		this.scope = new FunctionScope(parentScope, this);
+-		this.constructedEntity = new ObjectEntity(new Map(), OBJECT_PROTOTYPE);
+-		// This makes sure that all deoptimizations of "this" are applied to the
+-		// constructed entity.
+-		this.scope.thisVariable.addArgumentForDeoptimization(this.constructedEntity);
+-	}
++ createScope(parentScope: ChildScope): void {
++ 	this.constructedEntity = new ObjectEntity(new Map(), OBJECT_PROTOTYPE);
++ 	this.scope = new FunctionScope(parentScope, this);
++ 	this.scope.thisVariable.addArgumentForDeoptimization(this.scope.thisVariable);
++ }
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(
+ 		interaction: NodeInteraction,

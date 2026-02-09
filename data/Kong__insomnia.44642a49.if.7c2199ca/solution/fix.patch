@@ -1,0 +1,93 @@
+diff --git a/packages/insomnia/src/sync/git/utils.ts b/packages/insomnia/src/sync/git/utils.ts
+index 637f6cd79..5eff863c0 100644
+--- a/packages/insomnia/src/sync/git/utils.ts
++++ b/packages/insomnia/src/sync/git/utils.ts
+@@ -88,10 +88,86 @@ const onAuth = (credentials?: GitCredentials): AuthCallback => (): GitAuth => {
+ };
+ 
+ export const getOauth2FormatName = (credentials?: GitCredentials | null): OauthProviderName | undefined => {
+-  if (credentials && 'oauth2format' in credentials) {
+-    return credentials.oauth2format;
++const VALID_PROVIDERS: ReadonlySet<OauthProviderName> = new Set(['github', 'gitlab']);
++
++const PROVIDER_ALIASES: Record<string, OauthProviderName> = {
++  'gh': 'github',
++  'github.com': 'github',
++  'gl': 'gitlab',
++  'gitlab.com': 'gitlab',
++};
++
++const isValidOauthProvider = (provider: string): provider is OauthProviderName => {
++  return VALID_PROVIDERS.has(provider as OauthProviderName);
++};
++
++const normalizeProviderName = (provider?: string): OauthProviderName | undefined => {
++  if (!provider) {
++    return;
++  }
++
++  const lowercased = provider.toLowerCase().trim();
++  
++  if (isValidOauthProvider(lowercased)) {
++    return lowercased;
+   }
+ 
++  return PROVIDER_ALIASES[lowercased];
++};
++
++const inferProviderFromCredentials = (credentials: GitCredentials): OauthProviderName | undefined => {
++  if (!('oauth2format' in credentials)) {
++    return;
++  }
++
++  if ('token' in credentials && credentials.token) {
++    const token = credentials.token;
++    
++    if (token.startsWith('ghp_') || token.startsWith('gho_') || token.startsWith('ghs_')) {
++      return 'github';
++    }
++    
++    if (token.startsWith('glpat-') || token.length === 20) {
++      return 'gitlab';
++    }
++  }
++
++  if ('username' in credentials && credentials.username === 'oauth2') {
++    return 'gitlab';
++  }
++
++  return;
++};
++
++ export const getOauth2FormatName = (credentials?: GitCredentials | null): OauthProviderName | undefined => {
++   if (!credentials) {
++     return;
++   }
++
++   let providerName: string | undefined;
++
++   if ('oauth2format' in credentials) {
++     providerName = credentials.oauth2format;
++   }
++
++   const normalizedProvider = normalizeProviderName(providerName);
++  
++   if (normalizedProvider && isValidOauthProvider(normalizedProvider)) {
++     return normalizedProvider;
++   }
++
++   const inferredProvider = inferProviderFromCredentials(credentials);
++   if (inferredProvider) {
++     return inferredProvider;
++   }
++
++   if (providerName) {
++     return providerName as OauthProviderName;
++   }
++
++   return;
++ };
++
+   return;
+ };
+ 

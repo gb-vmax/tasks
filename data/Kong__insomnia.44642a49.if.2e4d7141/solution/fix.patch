@@ -1,0 +1,144 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..8fb09fffa 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -406,9 +406,137 @@ export const database = {
+   },
+ 
+   insert: async function<T extends BaseModel>(doc: T, fromSync = false, initializeModel = true) {
+-    if (db._empty) {
+-      return _send<T>('insert', ...arguments);
++interface DuplicateCheckResult<T extends BaseModel> {
++  isDuplicate: boolean;
++  action: 'skip' | 'error' | 'update' | 'none';
++  existing?: T;
++}
++
++async function _checkForDuplicates<T extends BaseModel>(doc: T): Promise<DuplicateCheckResult<T>> {
++  const model = models.getModel(doc.type);
++  
++  if (!model || typeof model !== 'object') {
++    return { isDuplicate: false, action: 'none' };
++  }
++
++  const uniqueFields = (model as any).uniqueFields;
++  const duplicateStrategy = (model as any).duplicateStrategy || 'none';
++  
++  if (!uniqueFields || !Array.isArray(uniqueFields) || uniqueFields.length === 0) {
++    return { isDuplicate: false, action: 'none' };
++  }
++
++  const query: Query<T> = {};
++  let hasAllFields = true;
++  
++  for (const field of uniqueFields) {
++    const value = (doc as any)[field];
++    if (value === undefined || value === null) {
++      hasAllFields = false;
++      break;
+     }
++    (query as any)[field] = value;
++  }
++
++  if (!hasAllFields) {
++    return { isDuplicate: false, action: 'none' };
++  }
++
++  const existing = await database.getWhere<T>(doc.type, query);
++  
++  if (existing && existing._id !== doc._id) {
++    return {
++      isDuplicate: true,
++      action: duplicateStrategy,
++      existing
++    };
++  }
++
++  return { isDuplicate: false, action: 'none' };
++}
++
++function _isTransientError(err: any): boolean {
++  if (!err) {
++    return false;
++  }
++
++  const transientMessages = [
++    'EBUSY',
++    'LOCKED',
++    'EAGAIN',
++    'ETIMEDOUT',
++    'ECONNRESET',
++    'lock',
++    'busy'
++  ];
++
++  const errorMessage = (err.message || '').toLowerCase();
++  const errorCode = (err.code || '').toLowerCase();
++  
++  return transientMessages.some(msg => 
++    errorMessage.includes(msg.toLowerCase()) || errorCode.includes(msg.toLowerCase())
++  );
++}
++
++ insert: async function<T extends BaseModel>(doc: T, fromSync = false, initializeModel = true) {
++   if (db._empty) {
++     return _send<T>('insert', ...arguments);
++   }
++  
++   const maxRetries = 3;
++   const baseDelay = 100;
++  
++   for (let attempt = 0; attempt <= maxRetries; attempt++) {
++     try {
++       let docWithDefaults: T | null = null;
++
++       try {
++         if (initializeModel) {
++           docWithDefaults = await models.initModel<T>(doc.type, doc);
++         } else {
++           docWithDefaults = doc;
++         }
++       } catch (err) {
++         throw err;
++       }
++
++       const duplicateHandling = await _checkForDuplicates<T>(docWithDefaults);
++      
++       if (duplicateHandling.isDuplicate) {
++         if (duplicateHandling.action === 'skip') {
++           return duplicateHandling.existing!;
++         } else if (duplicateHandling.action === 'error') {
++           const error: any = new Error(`Duplicate document detected for type ${doc.type}`);
++           error.code = 'DUPLICATE_DOCUMENT';
++           error.existingDoc = duplicateHandling.existing;
++           throw error;
++         } else if (duplicateHandling.action === 'update') {
++           return database.update<T>(Object.assign({}, duplicateHandling.existing, docWithDefaults), fromSync);
++         }
++       }
++
++       return await new Promise<T>((resolve, reject) => {
++         (db[doc.type] as NeDB<T>).insert(docWithDefaults, (err, newDoc: T) => {
++           if (err) {
++             return reject(err);
++           }
++
++           resolve(newDoc);
++           notifyOfChange('insert', newDoc, fromSync);
++         });
++       });
++     } catch (err: any) {
++       if (attempt < maxRetries && _isTransientError(err)) {
++         const delay = baseDelay * Math.pow(2, attempt);
++         await new Promise(resolve => setTimeout(resolve, delay));
++         continue;
++       }
++       throw err;
++     }
++   }
++  
++   throw new Error('Insert failed after maximum retries');
++ }
+     return new Promise<T>(async (resolve, reject) => {
+       let docWithDefaults: T | null = null;
+ 

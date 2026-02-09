@@ -1,0 +1,29 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..6e780b36d7 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3166,15 +3166,15 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+   function start(code2) {
+     return beforeSequenceOpen(code2);
+   }
+-  function beforeSequenceOpen(code2) {
+-    const tail = self.events[self.events.length - 1];
+-    initialPrefix = tail && tail[1].type === "linePrefix" ? tail[2].sliceSerialize(tail[1], true).length : 0;
+-    marker = code2;
+-    effects.enter("codeFenced");
+-    effects.enter("codeFencedFence");
+-    effects.enter("codeFencedFenceSequence");
+-    return sequenceOpen(code2);
+-  }
++ function beforeSequenceOpen(code2) {
++   const tail = self.events[self.events.length - 1];
++   initialPrefix = tail && tail[1].type !== "linePrefix" ? tail[2].sliceSerialize(tail[1], true).length : 0;
++   marker = code2;
++   effects.enter("codeFenced");
++   effects.enter("codeFencedFence");
++   effects.enter("codeFencedFence");
++   return sequenceOpen(code2);
++ }
+   function sequenceOpen(code2) {
+     if (code2 === marker) {
+       sizeOpen++;

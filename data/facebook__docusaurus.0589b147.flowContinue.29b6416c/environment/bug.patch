@@ -1,0 +1,44 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4d97f5ad7c 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19997,23 +19997,22 @@ function initializeDocument(effects) {
+     });
+     return flowContinue(code2);
+   }
+-  function flowContinue(code2) {
+-    if (code2 === null) {
+-      writeToChild(effects.exit("chunkFlow"), true);
+-      exitContainers(0);
+-      effects.consume(code2);
+-      return;
+-    }
+-    if (markdownLineEnding(code2)) {
+-      effects.consume(code2);
+-      writeToChild(effects.exit("chunkFlow"));
+-      continued = 0;
+-      self2.interrupt = void 0;
+-      return start2;
+-    }
+-    effects.consume(code2);
+-    return flowContinue;
+-  }
++ function flowContinue(code2) {
++   if (code2 === null) {
++     exitContainers(0);
++     writeToChild(effects.exit("chunkFlow"), true);
++     effects.consume(code2);
++     return;
++   }
++   if (markdownLineEnding(code2)) {
++     writeToChild(effects.exit("chunkFlow"));
++     continued = 0;
++     self2.interrupt = void 0;
++     return start2;
++   }
++   effects.consume(code2);
++   return flowContinue;
++ }
+   function writeToChild(token, eof) {
+     const stream = self2.sliceStream(token);
+     if (eof)

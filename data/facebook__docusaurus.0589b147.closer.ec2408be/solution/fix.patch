@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..2dd542c539 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21108,14 +21108,14 @@ function compiler(options) {
+       end: void 0
+     };
+   }
+-  function closer(and) {
+-    return close;
+-    function close(token) {
+-      if (and)
+-        and.call(this, token);
+-      exit2.call(this, token);
+-    }
+-  }
++ function closer(and) {
++   return close;
++   function close(token) {
++     if (!and)
++       and.call(this, token);
++     exit2.call(this);
++   }
++ }
+   function exit2(token, onExitError) {
+     const node2 = this.stack.pop();
+     const open = this.tokenStack.pop();

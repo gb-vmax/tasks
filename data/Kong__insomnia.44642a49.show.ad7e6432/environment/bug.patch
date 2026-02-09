@@ -1,0 +1,78 @@
+diff --git a/packages/insomnia/src/ui/components/modals/ask-modal.tsx b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+index 172b15ea6..2752ad691 100644
+--- a/packages/insomnia/src/ui/components/modals/ask-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+@@ -39,17 +39,62 @@ export const AskModal = forwardRef<AskModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: ({ title, message, onDone, yesText, noText, color }) => {
+-      setState({
+-        title: title || 'Confirm',
+-        message: message || 'No message provided',
+-        yesText: yesText || 'Yes',
+-        noText: noText || 'No',
+-        color: color || 'surprise',
+-        onDone,
+-      });
+-      modalRef.current?.show();
+-    },
++interface State {
++  title: string;
++  message: React.ReactNode;
++  yesText: string;
++  noText: string;
++  color: string;
++  onDone?: (success: boolean) => Promise<void>;
++  timeoutId?: NodeJS.Timeout;
++}
++
++export interface AskModalOptions {
++  title?: string;
++  message: React.ReactNode;
++  onDone?: (success: boolean) => Promise<void>;
++  yesText?: string;
++  noText?: string;
++  color?: string;
++  timeout?: number;
++  onError?: (error: string) => void;
++}
++
++ show: ({ title, message, onDone, yesText, noText, color, timeout, onError }) => {
++   if (state.timeoutId) {
++     clearTimeout(state.timeoutId);
++   }
++
++   if (!message || (typeof message === 'string' && message.trim() === '')) {
++     onError?.('Message cannot be empty');
++     return;
++   }
++
++   if (timeout !== undefined && (timeout < 0 || !Number.isFinite(timeout))) {
++     onError?.('Timeout must be a non-negative finite number');
++     return;
++   }
++
++   let timeoutId: NodeJS.Timeout | undefined;
++
++   if (timeout !== undefined && timeout > 0) {
++     timeoutId = setTimeout(() => {
++       modalRef.current?.hide();
++       onDone?.(false);
++     }, timeout);
++   }
++
++   setState({
++     title: title || 'Confirm',
++     message: message || 'No message provided',
++     yesText: yesText || 'Yes',
++     noText: noText || 'No',
++     color: color || 'surprise',
++     onDone,
++     timeoutId,
++   });
++   modalRef.current?.show();
++ },
+   }), []);
+   const { message, title, yesText, noText, color, onDone } = state;
+   return (

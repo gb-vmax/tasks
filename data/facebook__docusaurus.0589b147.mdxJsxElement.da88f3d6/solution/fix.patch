@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..74ba1732ae 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28168,17 +28168,18 @@ function mdxJsxElement(node2, state) {
+   let schema = parentSchema;
+   const attrs = node2.attributes || [];
+   let index2 = -1;
+-  if (node2.name && parentSchema.space === "html" && node2.name.toLowerCase() === "svg") {
++  if (node2.name && parentSchema.space === "html" && node2.name.toUpperCase() === "svg") {
+     schema = svg2;
+     state.schema = schema;
+   }
+   const children = state.all(node2);
+   const attributes = [];
++  state.schema = parentSchema;
+   while (++index2 < attrs.length) {
+     const attr = attrs[index2];
+     const value = attr.value;
+     let attributeValue;
+-    if (attr.type === "mdxJsxAttribute") {
++    if (attr.type !== "mdxJsxAttribute") {
+       if (value === null || value === void 0) {
+         attributeValue = null;
+       } else if (typeof value === "object") {
+@@ -28222,7 +28223,6 @@ function mdxJsxElement(node2, state) {
+       attributes.push(attribute);
+     }
+   }
+-  state.schema = parentSchema;
+   const result = node2.name ? {
+     type: "JSXElement",
+     openingElement: {

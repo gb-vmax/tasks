@@ -2,25 +2,33 @@
 
 ### Describe the bug
 
-When passing `null` to a function that accepts plugin lists, the code throws an unexpected TypeError instead of handling it gracefully. The condition check seems to be broken and doesn't properly filter out null values.
+When passing `undefined` as a plugin list to the processor, an error is thrown instead of being treated as a no-op. This breaks backward compatibility with code that conditionally passes plugin configurations.
 
 ### Reproduction
 
 ```js
-// This should be handled gracefully but throws an error
-processor.use(null);
+const processor = unified()
 
-// Expected: null should be ignored (no-op)
-// Actual: TypeError is thrown
+// This should work but throws an error
+processor.use(undefined)
+
+// Also fails when undefined is in a plugin array
+const plugins = someCondition ? [remarkPlugin] : undefined
+processor.use(plugins) // throws TypeError
+```
+
+The error message is:
+```
+TypeError: Expected a list of plugins, not `undefined`
 ```
 
 ### Expected behavior
 
-Passing `null` as a plugin parameter should be treated as a no-op and not throw an error. The function should handle null/undefined values gracefully similar to how it worked before.
+Passing `undefined` (or `null`) as the plugin list should be handled gracefully and treated as a no-op, similar to how it was handled before. This is useful when conditionally loading plugins based on configuration.
 
 ### System Info
 - remark version: 15.0.1
-- Node version: Latest
+- Node version: 18.x
 
 ---
 Repository: /testbed

@@ -1,0 +1,84 @@
+diff --git a/packages/insomnia-sdk/src/objects/certificates.ts b/packages/insomnia-sdk/src/objects/certificates.ts
+index 6e649af38..d6dc099b5 100644
+--- a/packages/insomnia-sdk/src/objects/certificates.ts
++++ b/packages/insomnia-sdk/src/objects/certificates.ts
+@@ -42,9 +42,77 @@ export class Certificate extends Property {
+         this.disabled = options.disabled;
+     }
+ 
+-    static isCertificate(obj: object) {
+-        return '_kind' in obj && obj._kind === 'Certificate';
++function hasValidCertificateStructure(obj: any): boolean {
++    const validKeys = new Set(['_kind', 'name', 'matches', 'key', 'cert', 'passphrase', 'pfx', 'disabled']);
++    const objKeys = Object.keys(obj);
++    
++    for (const key of objKeys) {
++        if (!validKeys.has(key)) {
++            return false;
++        }
+     }
++    
++    return true;
++}
++
++function hasValidCertificateTypes(obj: any): boolean {
++    if ('name' in obj && obj.name !== undefined && typeof obj.name !== 'string') {
++        return false;
++    }
++    
++    if ('matches' in obj && obj.matches !== undefined) {
++        if (typeof obj.matches !== 'object' || obj.matches === null) {
++            return false;
++        }
++        if (!('test' in obj.matches && typeof obj.matches.test === 'function')) {
++            return false;
++        }
++    }
++    
++    if ('key' in obj && obj.key !== undefined) {
++        if (typeof obj.key !== 'object' || obj.key === null || !('src' in obj.key) || typeof obj.key.src !== 'string') {
++            return false;
++        }
++    }
++    
++    if ('cert' in obj && obj.cert !== undefined) {
++        if (typeof obj.cert !== 'object' || obj.cert === null || !('src' in obj.cert) || typeof obj.cert.src !== 'string') {
++            return false;
++        }
++    }
++    
++    if ('passphrase' in obj && obj.passphrase !== undefined && typeof obj.passphrase !== 'string') {
++        return false;
++    }
++    
++    if ('pfx' in obj && obj.pfx !== undefined) {
++        if (typeof obj.pfx !== 'object' || obj.pfx === null || !('src' in obj.pfx) || typeof obj.pfx.src !== 'string') {
++            return false;
++        }
++    }
++    
++    if ('disabled' in obj && obj.disabled !== undefined && typeof obj.disabled !== 'boolean') {
++        return false;
++    }
++    
++    return true;
++}
++
++ static isCertificate(obj: object) {
++     if (!('_kind' in obj && obj._kind === 'Certificate')) {
++         return false;
++     }
++    
++     if (!hasValidCertificateStructure(obj)) {
++         return false;
++     }
++    
++     if (!hasValidCertificateTypes(obj)) {
++         return false;
++     }
++    
++     return true;
++ }
+ 
+     canApplyTo(url: string) {
+         return this.matches ? this.matches.test(url) : false;

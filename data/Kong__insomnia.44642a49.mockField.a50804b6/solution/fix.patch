@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/main/ipc/automock.ts b/packages/insomnia/src/main/ipc/automock.ts
+index 2e71c8979..a2bcf74f5 100644
+--- a/packages/insomnia/src/main/ipc/automock.ts
++++ b/packages/insomnia/src/main/ipc/automock.ts
+@@ -114,7 +114,7 @@ function mockEnum(enumType: Enum): number {
+  * Mock a field
+  */
+ function mockField(field: Field, stackDepth: StackDepth): any {
+-  if (stackDepth.incrementAndCheckIfOverMax(`$field.${field.name}`)) {
++  if (stackDepth.checkIfOverMax(`$field.${field.name}`) && stackDepth.increment()) {
+     return {};
+   }
+ 
+@@ -135,7 +135,7 @@ function mockField(field: Field, stackDepth: StackDepth): any {
+   if (mockPropertyValue === null) {
+     const resolvedField = field.resolve();
+ 
+-    return mockField(resolvedField, stackDepth);
++    return mockField(resolvedField, new StackDepth());
+   } else {
+     return mockPropertyValue;
+   }

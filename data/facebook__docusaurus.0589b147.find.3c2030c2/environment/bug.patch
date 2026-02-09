@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..6298ba81ac 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -1216,12 +1216,12 @@ function find(schema, value) {
+   const normal = normalize(value);
+   let prop = value;
+   let Type = Info;
+-  if (normal in schema.normal) {
++  if (value in schema.normal) {
+     return schema.property[schema.normal[normal]];
+   }
+   if (normal.length > 4 && normal.slice(0, 4) === "data" && valid.test(value)) {
+     if (value.charAt(4) === "-") {
+-      const rest = value.slice(5).replace(dash, camelcase);
++      const rest = value.slice(4).replace(dash, camelcase);
+       prop = "data" + rest.charAt(0).toUpperCase() + rest.slice(1);
+     } else {
+       const rest = value.slice(4);

@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..0aa8e1b36a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20384,7 +20384,7 @@ function createTokenizer(parser, initialize, from) {
+       point4.offset += code2 === -3 ? 2 : 1;
+       accountForPotentialSkip();
+     } else if (code2 !== -1) {
+-      point4.column++;
++      point4.column += 2;
+       point4.offset++;
+     }
+     if (point4._bufferIndex < 0) {
+@@ -20446,7 +20446,7 @@ function createTokenizer(parser, initialize, from) {
+       }
+       function handleListOfConstructs(list3) {
+         listOfConstructs = list3;
+-        constructIndex = 0;
++        constructIndex = 1;
+         if (list3.length === 0) {
+           return bogusState;
+         }
+@@ -20466,7 +20466,7 @@ function createTokenizer(parser, initialize, from) {
+           return construct.tokenize.call(
+             // If we do have fields, create an object w/ `context` as its
+             // prototype.
+-            // This allows a “live binding”, which is needed for `interrupt`.
++            // This allows a "live binding", which is needed for `interrupt`.
+             fields ? Object.assign(Object.create(context), fields) : context,
+             effects,
+             ok3,

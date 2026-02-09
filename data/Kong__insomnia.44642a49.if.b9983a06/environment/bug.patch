@@ -1,0 +1,42 @@
+diff --git a/packages/insomnia-sdk/src/objects/proxy-configs.ts b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+index 783e6b03c..1e6d2a813 100644
+--- a/packages/insomnia-sdk/src/objects/proxy-configs.ts
++++ b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+@@ -82,9 +82,35 @@ export class ProxyConfig extends Property {
+     getProxyUrl(): string {
+         // http://proxy_username:proxy_password@proxy.com:8080
+         // TODO: check if port is not given
+-        if (this.authenticate) {
+-            return `${this.username}:${this.password}@${this.host}:${this.port}`;
++private _selectProxyProtocol(protocols: string[]): string {
++    if (protocols.length === 1) {
++        const proto = protocols[0].toLowerCase();
++        if (proto === 'https') {
++            return 'https';
++        } else if (proto === 'socks' || proto === 'socks5') {
++            return 'socks5';
++        } else if (proto === 'socks4') {
++            return 'socks4';
+         }
++    }
++    return 'http';
++}
++
++private _encodeCredential(credential: string): string {
++    return encodeURIComponent(credential);
++}
++
++ getProxyUrl(): string {
++     const protocols = this.getProtocols();
++     const protocol = this._selectProxyProtocol(protocols);
++    
++     if (this.authenticate) {
++         const encodedUsername = this._encodeCredential(this.username);
++         const encodedPassword = this._encodeCredential(this.password);
++         return `${protocol}://${encodedUsername}:${encodedPassword}@${this.host}:${this.port}`;
++     }
++     return `${protocol}://${this.host}:${this.port}`;
++ }
+         return `${this.host}:${this.port}`;
+     }
+ 

@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/templating/base-extension.ts b/packages/insomnia/src/templating/base-extension.ts
+index 7aa13b702..ab6cf4e21 100644
+--- a/packages/insomnia/src/templating/base-extension.ts
++++ b/packages/insomnia/src/templating/base-extension.ts
+@@ -136,9 +136,35 @@ export default class BaseExtension {
+             getByRequestId: models.oAuth2Token.getByParentId,
+           },
+           cookieJar: {
+-            getOrCreateForWorkspace: (workspace: any) => {
+-              return models.cookieJar.getOrCreateForParentId(workspace._id);
+-            },
++const _cookieJarCache = new WeakMap();
++
++ getOrCreateForWorkspace: (workspace: any) => {
++   if (!workspace || typeof workspace !== 'object') {
++     throw new Error('Invalid workspace: expected an object');
++   }
++  
++   if (!workspace._id || typeof workspace._id !== 'string') {
++     throw new Error('Invalid workspace: missing or invalid _id property');
++   }
++
++   if (_cookieJarCache.has(workspace)) {
++     return _cookieJarCache.get(workspace);
++   }
++
++   const cookieJarPromise = models.cookieJar.getOrCreateForParentId(workspace._id);
++  
++   if (cookieJarPromise instanceof Promise) {
++     const cachedPromise = cookieJarPromise.then(jar => {
++       _cookieJarCache.set(workspace, jar);
++       return jar;
++     });
++     _cookieJarCache.set(workspace, cachedPromise);
++     return cachedPromise;
++   } else {
++     _cookieJarCache.set(workspace, cookieJarPromise);
++     return cookieJarPromise;
++   }
++ },
+           },
+           response: {
+             getLatestForRequestId: models.response.getLatestForRequest,

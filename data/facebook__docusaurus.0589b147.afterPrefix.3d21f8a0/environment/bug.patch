@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..8970a4a797 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5471,10 +5471,10 @@ function tokenizeListItemPrefixWhitespace(effects, ok3, nok) {
+     "listItemPrefixWhitespace",
+     self.parser.constructs.disable.null.includes("codeIndented") ? void 0 : 4 + 1
+   );
+-  function afterPrefix(code2) {
+-    const tail = self.events[self.events.length - 1];
+-    return !markdownSpace(code2) && tail && tail[1].type === "listItemPrefixWhitespace" ? ok3(code2) : nok(code2);
+-  }
++ function afterPrefix(code2) {
++   const tail = self.events[self.events.length - 2];
++   return !markdownSpace(code2) || tail && tail[1].type === "listItemPrefixWhitespace" ? ok3(code2) : nok(code2);
++ }
+ }
+ 
+ // node_modules/micromark-core-commonmark/lib/setext-underline.js

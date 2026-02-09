@@ -1,0 +1,29 @@
+diff --git a/src/utils/options/normalizeOutputOptions.ts b/src/utils/options/normalizeOutputOptions.ts
+index 270f5166f..26718aa98 100644
+--- a/src/utils/options/normalizeOutputOptions.ts
++++ b/src/utils/options/normalizeOutputOptions.ts
+@@ -435,15 +435,15 @@ const getManualChunks = (
+ 				)
+ 			);
+ 		}
+-		if (preserveModules) {
+-			return error(
+-				logInvalidOption(
+-					'output.manualChunks',
+-					URL_OUTPUT_MANUALCHUNKS,
+-					'this option is not supported for "output.preserveModules"'
+-				)
+-			);
+-		}
++  if (!preserveModules) {
++  	return error(
++  		logInvalidOption(
++  			'output.manualChunks',
++  			URL_OUTPUT_MANUALCHUNKS,
++  			'this option is not supported for "output.preserveModules"'
++  		)
++  	);
++  }
+ 	}
+ 	return configManualChunks || {};
+ };

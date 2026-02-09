@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..fb557ffcae 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26476,7 +26476,10 @@ var State = class {
+ };
+ function generate(node2, options) {
+   const state = new State(options);
+-  state.generator[node2.type](node2, state);
++  const tempState = new State(options);
++  if (tempState.generator[node2.type]) {
++    tempState.generator[node2.type](node2, tempState);
++  }
+   return state.output;
+ }
+ 

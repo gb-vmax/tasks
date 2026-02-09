@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..b627a067f 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -236,9 +236,55 @@ export class CookieObject extends CookieList {
+         this.typeClass = Cookie;
+     }
+ 
+-    jar() {
+-        return this.cookieJar;
+-    }
++private _syncJarWithList() {
++    const currentCookies = this.all();
++    const newJar = new Map<string, Map<string, Cookie>>();
++    
++    currentCookies.forEach(cookie => {
++        const properties = cookie.toJSON();
++        if (properties.domain) {
++            const domainCookies = newJar.get(properties.domain) || new Map();
++            newJar.set(properties.domain, domainCookies.set(properties.key, cookie));
++        }
++    });
++    
++    (this.cookieJar as any).jar = newJar;
++}
++
++private _filterJarByDomain(domainFilter: string): CookieJar {
++    const filteredCookies: Cookie[] = [];
++    const currentCookies = this.all();
++    
++    const domainPattern = this._createDomainPattern(domainFilter);
++    
++    currentCookies.forEach(cookie => {
++        const properties = cookie.toJSON();
++        if (properties.domain && domainPattern.test(properties.domain)) {
++            filteredCookies.push(cookie);
++        }
++    });
++    
++    return new CookieJar(this.cookieJar['jarName'] || 'filtered', filteredCookies);
++}
++
++private _createDomainPattern(domainFilter: string): RegExp {
++    const escapedFilter = domainFilter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
++    const pattern = escapedFilter
++        .replace(/\\\*/g, '.*')
++        .replace(/\\\?/g, '.');
++    
++    return new RegExp(`^${pattern}$`, 'i');
++}
++
++ jar(domainFilter?: string) {
++     this._syncJarWithList();
++    
++     if (domainFilter !== undefined) {
++         return this._filterJarByDomain(domainFilter);
++     }
++    
++     return this.cookieJar;
++ }
+ }
+ 
+ export class CookieJar {

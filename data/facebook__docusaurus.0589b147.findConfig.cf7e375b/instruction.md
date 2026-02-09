@@ -2,22 +2,28 @@
 
 ### Describe the bug
 
-After a recent update, Docusaurus is not loading my config file anymore. The build process fails immediately with an error saying "No config file found" even though I have a valid `docusaurus.config.js` file in my project root.
+After a recent update, Docusaurus is not starting up properly. When I try to run my site, I get an error message saying "No config file found" even though my `docusaurus.config.js` file is definitely present in the site directory.
 
 ### Reproduction
 
-1. Create a new Docusaurus project or use an existing one
-2. Make sure you have a `docusaurus.config.js` (or `.ts`, `.mjs`, etc.) in the site directory
-3. Run the build or start command
-4. The process fails with "No config file found" error
+1. Create a new Docusaurus site or use an existing one with a valid `docusaurus.config.js` file
+2. Try to start the dev server or build the site
+3. The process fails with "No config file found" error
 
 ### Expected behavior
 
-Docusaurus should detect and load the config file normally. The config file is present and valid, so the build should proceed without errors.
+Docusaurus should detect the config file and start normally. The config file is in the correct location and has been working fine before.
 
 ### Additional context
 
-This worked fine in the previous version. The config file hasn't been moved or renamed. It seems like the config detection logic might be inverted somehow - it's throwing an error when it *finds* the config instead of when it *doesn't find* it.
+The error message shows:
+```
+No config file found.
+Expected one of: docusaurus.config.ts, docusaurus.config.mts, docusaurus.config.cts, docusaurus.config.js, docusaurus.config.cjs
+You can provide a custom config path with the --config option.
+```
+
+But my `docusaurus.config.js` is right there in the root directory. This seems like a regression as it was working perfectly before updating.
 
 ---
 Repository: /testbed

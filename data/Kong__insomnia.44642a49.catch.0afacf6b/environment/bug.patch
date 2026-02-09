@@ -1,0 +1,44 @@
+diff --git a/packages/insomnia/src/main/ipc/grpc.ts b/packages/insomnia/src/main/ipc/grpc.ts
+index e29bc5ffd..47419c775 100644
+--- a/packages/insomnia/src/main/ipc/grpc.ts
++++ b/packages/insomnia/src/main/ipc/grpc.ts
+@@ -83,9 +83,36 @@ const loadMethodsFromFilePath = async (filePath: string, includeDirs: string[]):
+       includeDirs,
+     });
+     return getMethodsFromPackageDefinition(definition);
+-  } catch (error) {
+-    throw error;
+-  }
++ async function processData(items, options = {}) {
++   const results = [];
++   let processedCount = 0;
++  
++   try {
++     for (let i = 0; i < items.length; i++) {
++       const item = items[i];
++      
++       if (options.validate) {
++         await validateItem(item);
++       }
++      
++       const processed = await transformItem(item);
++       results.push(processed);
++       processedCount++;
++      
++       if (options.onProgress) {
++         options.onProgress(processedCount, items.length);
++       }
++     }
++    
++     return results;
++   } catch (error) {
++     if (error.name === 'ValidationError') {
++       results.push(null);
++       processedCount++;
++     }
++     throw error;
++   }
++ }
+ };
+ const loadMethods = async (protoFileId: string): Promise<GrpcMethodInfo[]> => {
+   const protoFile = await models.protoFile.getById(protoFileId);

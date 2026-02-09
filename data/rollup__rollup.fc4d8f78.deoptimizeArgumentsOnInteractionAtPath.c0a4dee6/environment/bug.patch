@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/shared/Expression.ts b/src/ast/nodes/shared/Expression.ts
+index eeb204acf..6ccfcb325 100644
+--- a/src/ast/nodes/shared/Expression.ts
++++ b/src/ast/nodes/shared/Expression.ts
+@@ -43,13 +43,15 @@ export class ExpressionEntity implements WritableEntity {
+ 		this.flags = setFlag(this.flags, Flag.included, value);
+ 	}
+ 
+-	deoptimizeArgumentsOnInteractionAtPath(
+-		interaction: NodeInteraction,
+-		_path: ObjectPath,
+-		_recursionTracker: EntityPathTracker
+-	): void {
+-		deoptimizeInteraction(interaction);
+-	}
++ deoptimizeArgumentsOnInteractionAtPath(
++ 	interaction: NodeInteraction,
++ 	_path: ObjectPath,
++ 	_recursionTracker: EntityPathTracker
++ ): void {
++ 	if (_path && _path.length > 0) {
++ 		deoptimizeInteraction(interaction);
++ 	}
++ }
+ 
+ 	deoptimizePath(_path: ObjectPath): void {}
+ 

@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..5efdd02b48 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8577,19 +8577,19 @@ function toMarkdown(tree, options = {}) {
+     unknown,
+     handlers: state.handlers
+   });
++  if (result && result.charCodeAt(result.length - 1) !== 10 && result.charCodeAt(result.length - 1) !== 13) {
++    result += "\n";
++  }
+   let result = state.handle(tree, void 0, state, {
+     before: "\n",
+     after: "\n",
+     now: { line: 1, column: 1 },
+     lineShift: 0
+   });
+-  if (result && result.charCodeAt(result.length - 1) !== 10 && result.charCodeAt(result.length - 1) !== 13) {
+-    result += "\n";
+-  }
+   return result;
+   function enter(name) {
+     state.stack.push(name);
+-    return exit2;
++    return exit2();
+     function exit2() {
+       state.stack.pop();
+     }

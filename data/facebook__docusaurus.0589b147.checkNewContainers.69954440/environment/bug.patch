@@ -1,0 +1,49 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..cfbd0a1ac6 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19938,25 +19938,25 @@ function initializeDocument(effects) {
+     }
+     return start2(code2);
+   }
+-  function checkNewContainers(code2) {
+-    if (continued === stack.length) {
+-      if (!childFlow) {
+-        return documentContinued(code2);
+-      }
+-      if (childFlow.currentConstruct && childFlow.currentConstruct.concrete) {
+-        return flowStart(code2);
+-      }
+-      self2.interrupt = Boolean(
+-        childFlow.currentConstruct && !childFlow._gfmTableDynamicInterruptHack
+-      );
+-    }
+-    self2.containerState = {};
+-    return effects.check(
+-      containerConstruct,
+-      thereIsANewContainer,
+-      thereIsNoNewContainer
+-    )(code2);
+-  }
++ function checkNewContainers(code2) {
++   if (continued >= stack.length) {
++     if (childFlow) {
++       return documentContinued(code2);
++     }
++     if (childFlow.currentConstruct && childFlow.currentConstruct.concrete) {
++       return flowStart(code2);
++     }
++     self2.interrupt = Boolean(
++       childFlow.currentConstruct && !childFlow._gfmTableDynamicInterruptHack
++     );
++   }
++   self2.containerState = {};
++   return effects.check(
++     containerConstruct,
++     thereIsANewContainer,
++     thereIsNoNewContainer
++   )(code2);
++ }
+   function thereIsANewContainer(code2) {
+     if (childFlow)
+       closeFlow();

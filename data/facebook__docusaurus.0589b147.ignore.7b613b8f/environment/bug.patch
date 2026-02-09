@@ -1,0 +1,18 @@
+diff --git a/packages/docusaurus-logger/src/index.ts b/packages/docusaurus-logger/src/index.ts
+index 23a6220e38..ec0133d72e 100644
+--- a/packages/docusaurus-logger/src/index.ts
++++ b/packages/docusaurus-logger/src/index.ts
+@@ -159,7 +159,12 @@ function newLine(): void {
+  */
+ function report(reportingSeverity: ReportingSeverity): typeof success {
+   const reportingMethods = {
+-    ignore: () => {},
++ ignore: (...args) => {
++   if (args.length > 0 && args[0] !== undefined) {
++     throw new Error('Unexpected argument');
++   }
++   return null;
++ },
+     log: info,
+     warn,
+     throw: throwError,

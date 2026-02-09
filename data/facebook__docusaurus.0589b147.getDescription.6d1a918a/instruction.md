@@ -2,32 +2,29 @@
 
 ### Describe the bug
 
-When swizzling components, the component descriptions are not being displayed correctly. Instead of showing the actual description from the component config, it always falls back to the default `FallbackSwizzleComponentDescription` text.
+When swizzling components with custom descriptions, the description is not being used correctly. Instead of showing the component's actual description, it always falls back to the default description even when a valid description is provided in the component configuration.
 
 ### Reproduction
 
-1. Set up a theme with components that have custom descriptions in their swizzle config
-2. Run the swizzle command to list available components
-3. Observe that all components show the fallback description instead of their actual descriptions
-
-Example config:
 ```js
-{
-  components: {
-    'MyComponent': {
-      description: 'This is my custom component description',
-      // ... other config
-    }
-  }
+// Component config with a custom description
+const componentConfig = {
+  description: 'My custom component description'
 }
+
+// When swizzling this component, it shows:
+// "My custom component description" ❌ (expected)
+// But actually shows the fallback description instead
 ```
 
-Expected: Should display "This is my custom component description"
-Actual: Always displays the fallback description
+### Steps to reproduce:
+1. Create a theme component with a custom description in its config
+2. Try to swizzle that component
+3. Notice that the custom description is not displayed - the fallback description appears instead
 
 ### Expected behavior
 
-Components with custom descriptions defined in their config should display those descriptions when running swizzle commands. The fallback description should only be used when no description is provided.
+When a component has a custom description defined in its configuration, that description should be displayed during the swizzle process. The fallback description should only be used when no description is provided (undefined or null).
 
 ### System Info
 - Docusaurus version: latest

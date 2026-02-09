@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..10741ad84 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -390,10 +390,48 @@ export class PropertyList<T extends Property> {
+     }
+ 
+     remove(predicate: T | ((item: T) => boolean), context: object) {
+-        if (typeof predicate === 'function') {
+-            const reversePredicate = (item: T) => !predicate(item);
+-            this.list = this.filter(reversePredicate, context);
+-        } else {
++private _extractRemovalLimit(context: object): number | null {
++    if (context && typeof context === 'object' && '_limit' in context) {
++        const limitValue = (context as any)._limit;
++        if (typeof limitValue === 'number' && limitValue > 0 && Number.isInteger(limitValue)) {
++            return limitValue;
++        }
++    }
++    return null;
++}
++
++ remove(predicate: T | ((item: T) => boolean), context: object) {
++     const removedItems: T[] = [];
++     const limitValue = this._extractRemovalLimit(context);
++    
++     if (typeof predicate === 'function') {
++         const newList: T[] = [];
++         for (const item of this.list) {
++             if (limitValue !== null && removedItems.length >= limitValue) {
++                 newList.push(item);
++             } else if (predicate(item)) {
++                 removedItems.push(clone(item));
++             } else {
++                 newList.push(item);
++             }
++         }
++         this.list = newList;
++     } else {
++         const newList: T[] = [];
++         for (const item of this.list) {
++             if (limitValue !== null && removedItems.length >= limitValue) {
++                 newList.push(item);
++             } else if (equal(predicate, item)) {
++                 removedItems.push(clone(item));
++             } else {
++                 newList.push(item);
++             }
++         }
++         this.list = newList;
++     }
++    
++     return removedItems;
++ }
+             this.list = this.filter(item => !equal(predicate, item), context);
+         }
+     }

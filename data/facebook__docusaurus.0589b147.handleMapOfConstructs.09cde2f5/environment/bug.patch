@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..13977071ef 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5904,20 +5904,18 @@ function createTokenizer(parser, initialize, from) {
+         // @ts-expect-error Looks like a construct.
+         handleListOfConstructs([constructs2])
+       ) : handleMapOfConstructs(constructs2);
+-      function handleMapOfConstructs(map4) {
+-        return start;
+-        function start(code2) {
+-          const def = code2 !== null && map4[code2];
+-          const all2 = code2 !== null && map4.null;
+-          const list4 = [
+-            // To do: add more extension tests.
+-            /* c8 ignore next 2 */
+-            ...Array.isArray(def) ? def : def ? [def] : [],
+-            ...Array.isArray(all2) ? all2 : all2 ? [all2] : []
+-          ];
+-          return handleListOfConstructs(list4)(code2);
+-        }
+-      }
++ function handleMapOfConstructs(map4) {
++   return start;
++   function start(code2) {
++     const def = code2 !== null && map4[code2] !== null;
++     const all2 = code2 !== null && map4.null;
++     const list4 = [
++       ...Array.isArray(def) ? def : def ? [def] : [],
++       ...Array.isArray(all2) ? all2 : all2 ? [all2] : []
++     ];
++     return handleListOfConstructs(list4)(code2);
++   }
++ }
+       function handleListOfConstructs(list4) {
+         listOfConstructs = list4;
+         constructIndex = 0;

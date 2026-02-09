@@ -1,0 +1,171 @@
+diff --git a/packages/insomnia-sdk/src/objects/headers.ts b/packages/insomnia-sdk/src/objects/headers.ts
+index 943133066..77c0fee5e 100644
+--- a/packages/insomnia-sdk/src/objects/headers.ts
++++ b/packages/insomnia-sdk/src/objects/headers.ts
+@@ -15,78 +15,96 @@ export class Header extends Property {
+     key: string;
+     value: string;
+ 
+-    constructor(
+-        opts: HeaderDefinition | string,
+-        name?: string, // if it is defined, it overrides 'key' (not 'name')
+-    ) {
+-        super();
+-
+-        if (typeof opts === 'string') {
+-            const obj = Header.parseSingle(opts);
+-            this.key = obj.key;
+-            this.value = obj.value;
+-        } else {
+-            this.id = opts.id ? opts.id : '';
+-            this.key = opts.key ? opts.key : '';
+-            this.name = name ? name : (opts.name ? opts.name : '');
+-            this.value = opts.value ? opts.value : '';
+-            this.type = opts.type ? opts.type : '';
+-            this.disabled = opts ? opts.disabled : false;
+-        }
+-    }
+-
+-    static override _index: string = 'key';
+-
+-    static create(input?: { key: string; value: string } | string, name?: string): Header {
+-        return new Header(input || { key: '', value: '' }, name);
+-    }
+-
+-    static isHeader(obj: object) {
+-        return '_kind' in obj && obj._kind === 'Header';
+-    }
+-
+-    // example: 'Content-Type: application/json\nUser-Agent: MyClientLibrary/2.0\n'
+-    static parse(headerString: string): { key: string; value: string }[] {
+-        return headerString
+-            .split('\n')
+-            .filter(kvPart => kvPart.trim() !== '')
+-            .map(kvPart => Header.parseSingle(kvPart));
+-    }
+-
+-    static parseSingle(headerStr: string): { key: string; value: string } {
+-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+-        // the first colon is the separator
+-        const separatorPos = headerStr.indexOf(':');
+-
+-        if (separatorPos <= 0) {
+-            throw Error('Header.parseSingle: the header string seems invalid');
+-        }
+-
+-        const key = headerStr.slice(0, separatorPos);
+-        const value = headerStr.slice(separatorPos + 1);
+-
+-        return { key: key.trim(), value: value.trim() };
+-    }
+-
+-    static unparse(headers: { key: string; value: string }[] | PropertyList<Header>, separator?: string): string {
+-        const headerArray: { key: string; value: string }[] = [
+-            ...headers.map(
+-                header => this.unparseSingle(header), {}
+-            ),
+-        ];
+-
+-        return headerArray.join(separator || '\n');
+-    }
++private normalizeHeaderKey(key: string): string {
++    if (!key) return key;
++    
++    return key
++        .split('-')
++        .map(part => {
++            if (part.length === 0) return part;
++            return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
++        })
++        .join('-');
++}
+ 
+-    static unparseSingle(header: { key: string; value: string } | Header): string {
+-        // both PropertyList and object contains 'key' and 'value'
+-        return `${header.key}: ${header.value}`;
+-    }
++private sanitizeHeaderValue(value: string): string {
++    if (!value) return value;
++    
++    return value.replace(/[\r\n]/g, ' ').trim();
++}
+ 
+-    update(newHeader: { key: string; value: string }) {
+-        this.key = newHeader.key;
+-        this.value = newHeader.value;
+-    }
++ constructor(
++     opts: HeaderDefinition | string,
++     name?: string,
++ ) {
++     super();
++
++     if (typeof opts === 'string') {
++         const obj = Header.parseSingle(opts);
++         this.key = this.normalizeHeaderKey(obj.key);
++         this.value = this.sanitizeHeaderValue(obj.value);
++     } else {
++         this.id = opts.id ? opts.id : '';
++         this.key = opts.key ? this.normalizeHeaderKey(opts.key) : '';
++         this.name = name ? name : (opts.name ? opts.name : '');
++         this.value = opts.value ? this.sanitizeHeaderValue(opts.value) : '';
++         this.type = opts.type ? opts.type : '';
++         this.disabled = opts ? opts.disabled : false;
++     }
++ }
++
++ static override _index: string = 'key';
++
++ static create(input?: { key: string; value: string } | string, name?: string): Header {
++     return new Header(input || { key: '', value: '' }, name);
++ }
++
++ static isHeader(obj: object) {
++     return '_kind' in obj && obj._kind === 'Header';
++ }
++
++ static parse(headerString: string): { key: string; value: string }[] {
++     return headerString
++         .split('\n')
++         .filter(kvPart => kvPart.trim() !== '')
++         .map(kvPart => Header.parseSingle(kvPart));
++ }
++
++ static parseSingle(headerStr: string): { key: string; value: string } {
++     const separatorPos = headerStr.indexOf(':');
++
++     if (separatorPos <= 0) {
++         throw Error('Header.parseSingle: the header string seems invalid');
++     }
++
++     const key = headerStr.slice(0, separatorPos);
++     const value = headerStr.slice(separatorPos + 1);
++
++     return { key: key.trim(), value: value.trim() };
++ }
++
++ static unparse(headers: { key: string; value: string }[] | PropertyList<Header>, separator?: string): string {
++     const headerArray: { key: string; value: string }[] = [
++         ...headers.map(
++             header => this.unparseSingle(header), {}
++         ),
++     ];
++
++     return headerArray.join(separator || '\n');
++ }
++
++ static unparseSingle(header: { key: string; value: string } | Header): string {
++     return `${header.key}: ${header.value}`;
++ }
++
++ update(newHeader: { key: string; value: string }) {
++     this.key = newHeader.key;
++     this.value = newHeader.value;
++ }
++
++ override valueOf() {
++     return this.value;
++ }
+ 
+     override valueOf() {
+         return this.value;

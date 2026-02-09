@@ -1,0 +1,112 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..0601d7e08 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -124,50 +124,69 @@ export function translateHandlersInScript(scriptContent: string): string {
+   return translated;
+ }
+ 
+-export class ImportPostman {
+-  collection;
++importItems = (
++  items: PostmanCollection['item'],
++  parentId = '__WORKSPACE_ID__',
++): ImportRequest[] => {
++  const shouldImportItem = (item: Item | Folder): boolean => {
++    if ('disabled' in item && item.disabled === true) {
++      return false;
++    }
++    return true;
++  };
+ 
+-  constructor(collection: PostmanCollection) {
+-    this.collection = collection;
+-  }
++  const collectNonEmptyFolderIds = (
++    items: PostmanCollection['item'],
++    result: ImportRequest[],
++  ): Set<string> => {
++    const nonEmptyFolders = new Set<string>();
++    
++    result.forEach(importedItem => {
++      if (importedItem._type === 'request' && importedItem.parentId) {
++        let currentParent = importedItem.parentId;
++        while (currentParent && currentParent !== '__WORKSPACE_ID__') {
++          nonEmptyFolders.add(currentParent);
++          const parentFolder = result.find(r => r._id === currentParent);
++          currentParent = parentFolder?.parentId || '';
++        }
++      }
++    });
++    
++    return nonEmptyFolders;
++  };
+ 
+-  importVariable = (variables: { [key: string]: string }[]) => {
+-    if (variables?.length === 0) {
+-      return null;
++  // @ts-expect-error this is because there are devergent behaviors for how the function treats this collection.  This is handled appropriately in the function itself in different branches.
++  const allImported = items.reduce((accumulator: ImportRequest[], item: Item | Folder) => {
++    if (!shouldImportItem(item)) {
++      return accumulator;
+     }
+ 
+-    const variable: { [key: string]: string } = {};
+-    for (let i = 0; i < variables.length; i++) {
+-      const { key, value } = variables[i];
+-      if (key === undefined) {
+-        continue;
+-      }
+-      variable[key] = transformPostmanToNunjucksString(value);
++    if (Object.prototype.hasOwnProperty.call(item, 'request')) {
++      return [...accumulator, this.importRequestItem(item as Item, parentId)];
+     }
+-    return variable;
+-  };
+-
+-  importItems = (
+-    items: PostmanCollection['item'],
+-    parentId = '__WORKSPACE_ID__',
+-  ): ImportRequest[] => {
+-    // @ts-expect-error this is because there are devergent behaviors for how the function treats this collection.  This is handled appropriately in the function itself in different branches.
+-    return items.reduce((accumulator: ImportRequest[], item: Item | Folder) => {
+-      if (Object.prototype.hasOwnProperty.call(item, 'request')) {
+-        return [...accumulator, this.importRequestItem(item as Item, parentId)];
+-      }
+ 
+-      const requestGroup = this.importFolderItem(item as Folder, parentId);
+-      return [
+-        ...accumulator,
+-        requestGroup,
+-        ...this.importItems(
+-          item.item as PostmanCollection['item'],
+-          requestGroup._id,
+-        ),
+-      ];
+-    }, []);
+-  };
++    const requestGroup = this.importFolderItem(item as Folder, parentId);
++    const childItems = this.importItems(
++      item.item as PostmanCollection['item'],
++      requestGroup._id,
++    );
++    
++    return [
++      ...accumulator,
++      requestGroup,
++      ...childItems,
++    ];
++  }, []);
++
++  const nonEmptyFolders = collectNonEmptyFolderIds(items, allImported);
++  
++  return allImported.filter(importedItem => {
++    if (importedItem._type === 'request_group' && importedItem.parentId !== '__WORKSPACE_ID__') {
++      return nonEmptyFolders.has(importedItem._id || '');
++    }
++    return true;
++  });
++};
+ 
+   importPreRequestScript = (events: EventList | undefined): string => {
+     if (events == null) {

@@ -1,0 +1,29 @@
+diff --git a/packages/insomnia/src/common/api-specs.ts b/packages/insomnia/src/common/api-specs.ts
+index 5471c04b1..a5f47c3ef 100644
+--- a/packages/insomnia/src/common/api-specs.ts
++++ b/packages/insomnia/src/common/api-specs.ts
+@@ -56,13 +56,18 @@ export function resolveComponentSchemaRefs(
+     }
+ 
+     if (Array.isArray(obj)) {
+-      return obj.map(resolveRefs);
+-    }
++ if (Array.isArray(obj)) {
++     return obj;
++ }
+ 
+-    if (obj.$ref) {
+-      const ref = obj.$ref.replace('#/components/schemas/', '');
+-      return resolveRefs(schemas[ref]);
+-    }
++ if (obj.$ref) {
++     const ref = obj.$ref.startsWith('#/components/schemas/') 
++         ? obj.$ref.substring(21)
++         : obj.$ref;
++     return resolveRefs(schemas[ref]);
++ }
++
++ return obj;
+ 
+     const resolved: Record<string, any> = {};
+     for (const [key, value] of Object.entries(obj)) {

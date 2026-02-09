@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..8586761a51 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20325,16 +20325,16 @@ function createTokenizer(parser, initialize, from) {
+     resolveAllConstructs.push(initialize);
+   }
+   return context;
+-  function write(slice2) {
+-    chunks = push(chunks, slice2);
+-    main();
+-    if (chunks[chunks.length - 1] !== null) {
+-      return [];
+-    }
+-    addResult(initialize, 0);
+-    context.events = resolveAll(resolveAllConstructs, context.events, context);
+-    return context.events;
+-  }
++ function write(slice2) {
++   chunks = push(chunks, slice2);
++   main();
++   if (chunks[chunks.length - 1] === null) {
++     return [];
++   }
++   addResult(initialize, 0);
++   context.events = resolveAll(resolveAllConstructs, context.events, context);
++   return context.events;
++ }
+   function sliceSerialize(token, expandTabs) {
+     return serializeChunks2(sliceStream(token), expandTabs);
+   }

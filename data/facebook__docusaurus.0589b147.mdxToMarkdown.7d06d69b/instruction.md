@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-After a recent update, MDX serialization is broken. When trying to convert MDX AST back to markdown format, only JSX expressions are being handled correctly, but JSX components and ESM imports/exports are being ignored.
+After a recent update, MDX serialization is broken when converting back to markdown. It seems like only expression syntax is being handled, but JSX components and ESM imports/exports are completely ignored during the serialization process.
 
 ### Reproduction
 
@@ -14,29 +14,29 @@ const mdxAst = {
   children: [
     {
       type: 'mdxJsxFlowElement',
-      name: 'MyComponent',
+      name: 'CustomComponent',
       attributes: [],
       children: []
     },
     {
       type: 'mdxjsEsm',
-      value: 'import { foo } from "bar"'
+      value: 'import Foo from "bar"'
     }
   ]
 };
 
 const result = mdxToMarkdown();
-// JSX components and ESM imports are not serialized
+// JSX and ESM nodes are not serialized correctly
 ```
 
 ### Expected behavior
 
-All MDX node types should be properly serialized back to markdown format, including:
-- JSX expressions
-- JSX components (both flow and text)
+The `mdxToMarkdown()` function should properly serialize all MDX node types including:
+- MDX expressions
+- JSX elements (both flow and text)
 - ESM import/export statements
 
-Currently only expressions work, but components and imports are missing from the output.
+Currently it looks like only expressions are working, making it impossible to round-trip MDX documents that contain JSX components or imports.
 
 ### System Info
 - remark-mdx version: 3.0.0

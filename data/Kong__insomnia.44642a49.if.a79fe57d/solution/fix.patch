@@ -1,0 +1,64 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..122504001 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -558,9 +558,56 @@ export const database = {
+   },
+ 
+   withAncestors: async function <T extends BaseModel>(doc: T | null, types: string[] = allTypes()) {
+-    if (db._empty) {
+-      return _send<T[]>('withAncestors', ...arguments);
+-    }
++ withAncestors: async function <T extends BaseModel>(doc: T | null, types: string[] = allTypes(), maxDepth: number | null = null) {
++   if (db._empty) {
++     return _send<T[]>('withAncestors', ...arguments);
++   }
++
++   if (!doc) {
++     return [];
++   }
++
++   let docsToReturn: T[] = doc ? [doc] : [];
++   const visitedIds = new Set<string>();
++   let currentDepth = 0;
++
++   async function next(docs: T[]): Promise<T[]> {
++     if (maxDepth !== null && currentDepth >= maxDepth) {
++       return docsToReturn;
++     }
++
++     const foundDocs: T[] = [];
++
++     for (const d of docs) {
++       if (visitedIds.has(d._id)) {
++         continue;
++       }
++
++       visitedIds.add(d._id);
++
++       for (const type of types) {
++         const another = await database.get<T>(type, d.parentId);
++         if (another && !visitedIds.has(another._id)) {
++           foundDocs.push(another);
++         }
++       }
++     }
++
++     if (foundDocs.length === 0) {
++       return docsToReturn;
++     }
++
++     docsToReturn = [
++       ...docsToReturn,
++       ...foundDocs,
++     ];
++    
++     currentDepth++;
++     return next(foundDocs);
++   }
++
++   return next([doc]);
++ },
+ 
+     if (!doc) {
+       return [];

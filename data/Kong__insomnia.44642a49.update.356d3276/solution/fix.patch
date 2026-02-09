@@ -1,0 +1,95 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..5c2af6370 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -67,8 +67,89 @@ export async function all() {
+   return db.all<ApiSpec>(type);
+ }
+ 
++function inferContentType(contents: string): 'json' | 'yaml' | null {
++  const trimmed = contents.trim();
++  
++  if (!trimmed) {
++    return null;
++  }
++  
++  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
++    try {
++      JSON.parse(trimmed);
++      return 'json';
++    } catch {
++      return 'yaml';
++    }
++  }
++  
++  const yamlIndicators = /^(\s*-\s+|\s*[\w-]+:\s*|---|\.\.\.)/.test(trimmed);
++  if (yamlIndicators) {
++    return 'yaml';
++  }
++  
++  try {
++    JSON.parse(trimmed);
++    return 'json';
++  } catch {
++    return 'yaml';
++  }
++}
++
++function syncFileNameExtension(fileName: string, contentType: 'json' | 'yaml'): string {
++  const targetExtension = contentType === 'json' ? '.json' : '.yaml';
++  const alternateExtensions = contentType === 'json' ? ['.yaml', '.yml'] : ['.json'];
++  
++  let baseName = fileName;
++  let hasExtension = false;
++  
++  if (fileName.endsWith(targetExtension)) {
++    return fileName;
++  }
++  
++  for (const ext of alternateExtensions) {
++    if (fileName.endsWith(ext)) {
++      baseName = fileName.slice(0, -ext.length);
++      hasExtension = true;
++      break;
++    }
++  }
++  
++  if (!hasExtension && fileName.endsWith(targetExtension)) {
++    return fileName;
++  }
++  
++  if (!hasExtension) {
++    const lastDotIndex = fileName.lastIndexOf('.');
++    if (lastDotIndex > 0 && lastDotIndex > fileName.lastIndexOf('/')) {
++      const currentExt = fileName.slice(lastDotIndex);
++      if (currentExt.length <= 6) {
++        baseName = fileName.slice(0, lastDotIndex);
++      }
++    }
++  }
++  
++  return baseName + targetExtension;
++}
++
+ export function update(apiSpec: ApiSpec, patch: Partial<ApiSpec> = {}) {
+-  return db.docUpdate(apiSpec, patch);
++  const enrichedPatch = { ...patch };
++  
++  if (patch.contents !== undefined && patch.contentType === undefined) {
++    const inferredType = inferContentType(patch.contents);
++    if (inferredType) {
++      enrichedPatch.contentType = inferredType;
++    }
++  }
++  
++  const finalContentType = enrichedPatch.contentType || apiSpec.contentType;
++  
++  if (enrichedPatch.fileName !== undefined || enrichedPatch.contentType !== undefined) {
++    const baseFileName = enrichedPatch.fileName || apiSpec.fileName;
++    enrichedPatch.fileName = syncFileNameExtension(baseFileName, finalContentType);
++  }
++  
++  return db.docUpdate(apiSpec, enrichedPatch);
+ }
+ 
+ export function removeWhere(parentId: string) {

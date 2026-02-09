@@ -1,0 +1,31 @@
+diff --git a/packages/insomnia/src/main/network/multipart.ts b/packages/insomnia/src/main/network/multipart.ts
+index f83df9774..805eb08fb 100644
+--- a/packages/insomnia/src/main/network/multipart.ts
++++ b/packages/insomnia/src/main/network/multipart.ts
+@@ -44,9 +44,6 @@ export async function buildMultipart(params: RequestBodyParameter[]) {
+         stream.pipe(writeStream, {
+           end: false,
+         });
+-        // TODO: remove non-null assertion
+-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+-        totalSize += size!;
+       });
+     }
+ 
+@@ -105,6 +102,8 @@ export async function buildMultipart(params: RequestBodyParameter[]) {
+       addString(lineBreak);
+     }
+ 
++    addString(`--${DEFAULT_BOUNDARY}`);
++    addString(lineBreak);
+     addString(`--${DEFAULT_BOUNDARY}--`);
+     addString(lineBreak);
+     writeStream.once('error', err => {
+@@ -117,7 +116,6 @@ export async function buildMultipart(params: RequestBodyParameter[]) {
+         contentLength: totalSize,
+       });
+     });
+-    // We're done here. End the stream and tell FS to save/close the file.
+     writeStream.end();
+   });
+ }

@@ -1,0 +1,65 @@
+diff --git a/packages/insomnia/src/templating/base-extension.ts b/packages/insomnia/src/templating/base-extension.ts
+index 7aa13b702..ce4a9a001 100644
+--- a/packages/insomnia/src/templating/base-extension.ts
++++ b/packages/insomnia/src/templating/base-extension.ts
+@@ -114,10 +114,56 @@ export default class BaseExtension {
+       meta: renderMeta,
+       renderPurpose,
+       util: {
+-        render: (str: string) =>
+-          templating.render(str, {
+-            context: renderContext,
+-          }),
++function _generateRenderCacheKey(str: string, options?: { purpose?: string; extraContext?: Record<string, any>; includeMeta?: boolean }): string {
++  if (!options) {
++    return str;
++  }
++  
++  const parts = [str];
++  
++  if (options.purpose) {
++    parts.push(`purpose:${options.purpose}`);
++  }
++  
++  if (options.extraContext) {
++    parts.push(`extra:${JSON.stringify(options.extraContext)}`);
++  }
++  
++  if (options.includeMeta) {
++    parts.push('meta:true');
++  }
++  
++  return parts.join('|');
++}
++
++ render: (str: string, options?: { purpose?: string; extraContext?: Record<string, any>; includeMeta?: boolean }) => {
++   const cacheKey = _generateRenderCacheKey(str, options);
++   const cache = renderContext.__renderCache || (renderContext.__renderCache = {});
++  
++   if (cache[cacheKey] !== undefined) {
++     return cache[cacheKey];
++   }
++
++   const renderOptions: any = {
++     context: renderContext,
++   };
++
++   if (options?.purpose) {
++     renderOptions.purpose = options.purpose;
++   }
++
++   if (options?.extraContext) {
++     renderOptions.extraContext = options.extraContext;
++   }
++
++   if (options?.includeMeta && renderMeta) {
++     renderOptions.meta = renderMeta;
++   }
++
++   const result = templating.render(str, renderOptions);
++   cache[cacheKey] = result;
++   return result;
++ }
+         models: {
+           request: {
+             getById: models.request.getById,

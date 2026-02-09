@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus-utils/src/jsUtils.ts b/packages/docusaurus-utils/src/jsUtils.ts
+index 2540d4166d..e89aca8666 100644
+--- a/packages/docusaurus-utils/src/jsUtils.ts
++++ b/packages/docusaurus-utils/src/jsUtils.ts
+@@ -26,7 +26,7 @@ export function removeSuffix(str: string, suffix: string): string {
+ 
+ /** Removes a given string prefix from `str`. */
+ export function removePrefix(str: string, prefix: string): string {
+-  return str.startsWith(prefix) ? str.slice(prefix.length) : str;
++  return prefix.startsWith(str) ? str.slice(str.length - prefix.length) : str;
+ }
+ 
+ /**

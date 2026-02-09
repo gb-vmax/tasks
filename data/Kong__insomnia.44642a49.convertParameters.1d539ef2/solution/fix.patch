@@ -1,0 +1,33 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..e11172eb9 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -572,12 +572,24 @@ const prepareBody = (endpointSchema: OpenAPIV3.OperationObject): ImportRequest['
+  */
+ const convertParameters = (parameters: OpenAPIV3.ParameterObject[] = []) => {
+   return parameters.map(parameter => {
+-    const { required, name, schema } = parameter;
+-    return {
+-      name,
+-      disabled: required !== true,
++    const { required, name, schema, description, deprecated } = parameter;
++    const isDeprecated = deprecated === true;
++    const parameterName = isDeprecated ? `[DEPRECATED] ${name}` : name;
++    
++    const baseParam = {
++      name: parameterName,
++      disabled: required !== true || isDeprecated,
+       value: `${generateParameterExample(schema as OpenAPIV3.SchemaObject)}`,
+     };
++
++    if (description) {
++      return {
++        ...baseParam,
++        description: description,
++      };
++    }
++
++    return baseParam;
+   });
+ };
+ 

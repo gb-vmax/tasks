@@ -2,36 +2,33 @@
 
 ### Describe the bug
 
-I'm encountering an issue with MDX parsing where the compiler seems to be returning incorrect or malformed output. When processing MDX content with nested elements, the resulting output appears corrupted or incomplete.
+I'm experiencing an issue with MDX compilation where nested content isn't being processed correctly. When I have nested elements or components in my MDX files, the output seems malformed or incomplete.
 
 ### Reproduction
 
-```js
-import { compile } from '@mdx-js/mdx'
+```mdx
+# Test Document
 
-const mdxContent = `
-# Hello World
+<CustomComponent>
+  Some nested content here
+  
+  <AnotherComponent>
+    Deeply nested content
+  </AnotherComponent>
+</CustomComponent>
 
-Some paragraph text.
-
-- List item 1
-- List item 2
-`
-
-const result = await compile(mdxContent)
-console.log(result)
-// Output is not what's expected - appears malformed
+More content after
 ```
+
+When this gets compiled, the nested components don't render properly. It seems like the content inside nested elements is either missing or appearing in the wrong place.
 
 ### Expected behavior
 
-The MDX content should compile correctly and produce valid output that can be rendered. The compiled result should properly represent the structure of the input markdown.
+The MDX compiler should correctly handle nested components and preserve the structure. All nested content should be properly processed and appear in the final output.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0
 - Node version: 18.x
-
-This seems to have started happening recently. The compilation doesn't throw errors but the output isn't usable. Any help would be appreciated!
 
 ---
 Repository: /testbed

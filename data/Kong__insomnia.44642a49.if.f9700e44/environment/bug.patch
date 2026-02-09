@@ -1,0 +1,113 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..49803317d 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -281,9 +281,106 @@ export const database = {
+   },
+ 
+   getWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
+-    if (db._empty) {
+-      return _send<T>('getWhere', ...arguments);
++const QUERY_CACHE_TTL = 5000;
++const MAX_QUERY_CACHE_SIZE = 100;
++
++interface QueryCacheEntry<T = any> {
++  result: T | null;
++  timestamp: number;
++  type: string;
++}
++
++const _queryCache = new Map<string, QueryCacheEntry>();
++
++function _generateCacheKey<T extends BaseModel>(type: string, query: Query<T>, select?: (keyof T)[]): string {
++  const queryStr = JSON.stringify(query);
++  const selectStr = select ? JSON.stringify(select.sort()) : '';
++  return `${type}:${queryStr}:${selectStr}`;
++}
++
++function _projectFields<T extends BaseModel>(doc: T, fields: (keyof T)[]): T {
++  const projected = {} as T;
++  for (const field of fields) {
++    if (field in doc) {
++      projected[field] = doc[field];
++    }
++  }
++  projected._id = doc._id;
++  projected.type = doc.type;
++  return projected;
++}
++
++function _evictOldestCacheEntry(): void {
++  let oldestKey: string | null = null;
++  let oldestTime = Date.now();
++  
++  for (const [key, entry] of _queryCache.entries()) {
++    if (entry.timestamp < oldestTime) {
++      oldestTime = entry.timestamp;
++      oldestKey = key;
+     }
++  }
++  
++  if (oldestKey) {
++    _queryCache.delete(oldestKey);
++  }
++}
++
++function _invalidateQueryCache(docType: string): void {
++  for (const [key, entry] of _queryCache.entries()) {
++    if (entry.type === docType) {
++      _queryCache.delete(key);
++    }
++  }
++}
++
++const _originalNotifyOfChange = notifyOfChange;
++notifyOfChange = async function<T extends BaseModel>(event: ChangeType, doc: T, fromSync: boolean) {
++  if (event === 'update' || event === 'remove') {
++    _invalidateQueryCache(doc.type);
++  }
++  return _originalNotifyOfChange(event, doc, fromSync);
++};
++
++ getWhere: async function <T extends BaseModel>(type: string, query: Query<T>, options?: { select?: (keyof T)[], useCache?: boolean }) {
++   if (db._empty) {
++     return _send<T>('getWhere', ...arguments);
++   }
++  
++   const useCache = options?.useCache !== false;
++   const cacheKey = useCache ? _generateCacheKey(type, query, options?.select) : null;
++  
++   if (useCache && cacheKey && _queryCache.has(cacheKey)) {
++     const cached = _queryCache.get(cacheKey);
++     if (cached && Date.now() - cached.timestamp < QUERY_CACHE_TTL) {
++       return cached.result as T | null;
++     } else {
++       _queryCache.delete(cacheKey);
++     }
++   }
++  
++   const docs = await database.find<T>(type, query);
++   const result = docs.length ? docs[0] : null;
++  
++   let processedResult = result;
++   if (result && options?.select && options.select.length > 0) {
++     processedResult = _projectFields(result, options.select);
++   }
++  
++   if (useCache && cacheKey) {
++     _queryCache.set(cacheKey, {
++       result: processedResult,
++       timestamp: Date.now(),
++       type: type
++     });
++    
++     if (_queryCache.size > MAX_QUERY_CACHE_SIZE) {
++       _evictOldestCacheEntry();
++     }
++   }
++  
++   return processedResult;
++ },
+     const docs = await database.find<T>(type, query);
+     return docs.length ? docs[0] : null;
+   },

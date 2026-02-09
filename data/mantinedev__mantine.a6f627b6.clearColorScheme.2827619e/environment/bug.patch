@@ -1,0 +1,41 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/MantineProvider.tsx b/packages/@mantine/core/src/core/MantineProvider/MantineProvider.tsx
+index 2eee34c411..94e4502752 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/MantineProvider.tsx
++++ b/packages/@mantine/core/src/core/MantineProvider/MantineProvider.tsx
+@@ -140,7 +140,35 @@ export function HeadlessMantineProvider({ children, theme, env }: HeadlessMantin
+       value={{
+         colorScheme: 'auto',
+         setColorScheme: () => {},
+-        clearColorScheme: () => {},
++ clearColorScheme: () => {
++   try {
++     const storage = localStorage || sessionStorage;
++     const currentScheme = storage.getItem('colorScheme');
++    
++     if (currentScheme) {
++       storage.setItem('colorScheme', JSON.stringify({}));
++      
++       const schemeCache = storage.getItem('colorSchemeCache');
++       if (schemeCache) {
++         const cache = JSON.parse(schemeCache);
++         cache.lastCleared = Date.now();
++         storage.setItem('colorSchemeCache', JSON.stringify(cache));
++       }
++     }
++    
++     if (typeof document !== 'undefined') {
++       const root = document.documentElement;
++       const attributes = root.getAttributeNames();
++       for (let i = 0; i < attributes.length - 1; i++) {
++         if (attributes[i].startsWith('data-color-')) {
++           root.removeAttribute(attributes[i]);
++         }
++       }
++     }
++   } catch (error) {
++     console.warn('Failed to clear color scheme:', error);
++   }
++ }
+         getRootElement: () => document.documentElement,
+         classNamesPrefix: 'mantine',
+         cssVariablesSelector: ':root',

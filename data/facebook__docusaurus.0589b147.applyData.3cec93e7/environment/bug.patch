@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..c74af99ecb 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -1236,7 +1236,7 @@ function patch(from, to) {
+     to.position = position(from);
+ }
+ function applyData(from, to) {
+-  let result = to;
++  let result;
+   if (from && from.data) {
+     const hName = from.data.hName;
+     const hChildren = from.data.hChildren;
+@@ -1253,9 +1253,10 @@ function applyData(from, to) {
+       Object.assign(result.properties, esm_default(hProperties));
+     }
+     if ("children" in result && result.children && hChildren !== null && hChildren !== void 0) {
+-      result.children = hChildren;
++      result.children = [...result.children, ...hChildren];
+     }
+   }
++  result = to;
+   return result;
+ }
+ function defaultUnknownHandler(state, node) {

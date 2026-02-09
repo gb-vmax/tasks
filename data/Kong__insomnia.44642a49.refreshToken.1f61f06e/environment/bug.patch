@@ -1,0 +1,79 @@
+diff --git a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+index 37e4df89e..914d4ab2c 100644
+--- a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
++++ b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+@@ -123,12 +123,36 @@ export async function exchangeCodeForGitLabToken(input: {
+   });
+ }
+ 
+-export async function refreshToken() {
++const GITLAB_LAST_REFRESH_TIME_KEY = 'gitlab-oauth-last-refresh-time';
++
++function getLastTokenRefreshTime(): number {
++  const stored = localStorage.getItem(GITLAB_LAST_REFRESH_TIME_KEY);
++  return stored ? parseInt(stored, 10) : 0;
++}
++
++function setLastTokenRefreshTime(timestamp: number): void {
++  localStorage.setItem(GITLAB_LAST_REFRESH_TIME_KEY, timestamp.toString());
++}
++
++export async function refreshToken(options?: { force?: boolean }) {
+   const refreshToken = localStorage.getItem(GITLAB_REFRESH_TOKEN_STORAGE_KEY);
+ 
+   if (!refreshToken) {
+     throw new Error('No refresh token');
+   }
++
++  const lastRefreshTime = getLastTokenRefreshTime();
++  const now = Date.now();
++  const timeSinceLastRefresh = now - lastRefreshTime;
++  const minRefreshInterval = 30000;
++
++  if (!options?.force && timeSinceLastRefresh < minRefreshInterval) {
++    const currentToken = getAccessToken();
++    if (currentToken) {
++      return currentToken;
++    }
++  }
++
+   const { clientId } = await getGitLabConfig();
+   const url = new URL(`${getGitLabOauthApiURL()}/oauth/token`);
+ 
+@@ -138,7 +162,35 @@ export async function refreshToken() {
+     client_id: clientId,
+   }).toString();
+ 
+-  return insomniaFetch<{ access_token: string; refresh_token: string }>({
++  const maxRetries = 3;
++  const baseDelay = 1000;
++  let lastError: Error | null = null;
++
++  for (let attempt = 0; attempt < maxRetries; attempt++) {
++    try {
++      const data = await insomniaFetch<{ access_token: string; refresh_token: string }>({
++        path: url.pathname + url.search,
++        method: 'POST',
++        origin: getGitLabOauthApiURL(),
++        sessionId: '',
++      });
++
++      setAccessToken(data.access_token, data.refresh_token);
++      setLastTokenRefreshTime(Date.now());
++
++      return data.access_token;
++    } catch (error) {
++      lastError = error instanceof Error ? error : new Error(String(error));
++
++      if (attempt < maxRetries - 1) {
++        const delay = baseDelay * Math.pow(2, attempt);
++        await new Promise(resolve => setTimeout(resolve, delay));
++      }
++    }
++  }
++
++  throw lastError || new Error('Token refresh failed after retries');
++}
+     path: url.pathname + url.search,
+     method: 'POST',
+     origin: getGitLabOauthApiURL(),

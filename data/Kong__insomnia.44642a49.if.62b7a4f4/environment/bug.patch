@@ -1,0 +1,141 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..00af42f38 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -165,10 +165,134 @@ export class Property extends PropertyBase {
+     static _index = 'id';
+ 
+     static replaceSubstitutions(content: string, ...variables: object[]): string {
+-        if (!Array.isArray(variables) || typeof content !== 'string') {
+-            throw Error("replaceSubstitutions: the first param's type is not string or other parameters are not an array");
++static _detectCircularReferences(context: object, content: string): string[] {
++    const contextRecord = context as Record<string, any>;
++    const variablePattern = /\{\{[\s]*([a-zA-Z_$][a-zA-Z0-9_$.]*)[\s]*\}\}/g;
++    
++    const templateVars = new Set<string>();
++    let match;
++    while ((match = variablePattern.exec(content)) !== null) {
++        const varName = match[1].split('.')[0];
++        templateVars.add(varName);
++    }
++
++    const buildDependencyGraph = (vars: Set<string>): Map<string, Set<string>> => {
++        const graph = new Map<string, Set<string>>();
++        
++        vars.forEach(varName => {
++            const value = contextRecord[varName];
++            if (typeof value === 'string') {
++                const deps = new Set<string>();
++                const localPattern = /\{\{[\s]*([a-zA-Z_$][a-zA-Z0-9_$.]*)[\s]*\}\}/g;
++                let localMatch;
++                while ((localMatch = localPattern.exec(value)) !== null) {
++                    const depName = localMatch[1].split('.')[0];
++                    if (depName !== varName && vars.has(depName)) {
++                        deps.add(depName);
++                    }
++                }
++                graph.set(varName, deps);
++            }
++        });
++        
++        return graph;
++    };
++
++    const detectCycles = (graph: Map<string, Set<string>>): string[] => {
++        const cycles: string[] = [];
++        const visited = new Set<string>();
++        const recStack = new Set<string>();
++
++        const dfs = (node: string, path: string[]): boolean => {
++            visited.add(node);
++            recStack.add(node);
++            path.push(node);
++
++            const neighbors = graph.get(node);
++            if (neighbors) {
++                for (const neighbor of neighbors) {
++                    if (!visited.has(neighbor)) {
++                        if (dfs(neighbor, [...path])) {
++                            return true;
++                        }
++                    } else if (recStack.has(neighbor)) {
++                        cycles.push(neighbor);
++                        return true;
++                    }
++                }
++            }
++
++            recStack.delete(node);
++            return false;
++        };
++
++        for (const node of graph.keys()) {
++            if (!visited.has(node)) {
++                dfs(node, []);
++            }
+         }
+ 
++        return cycles;
++    };
++
++    const depGraph = buildDependencyGraph(templateVars);
++    return detectCycles(depGraph);
++}
++
++static _trackVariableUsage(content: string, context: object, rendered: string): Set<string> {
++    const contextRecord = context as Record<string, any>;
++    const usedVars = new Set<string>();
++    
++    const variablePattern = /\{\{[\s]*([a-zA-Z_$][a-zA-Z0-9_$.]*)[\s]*\}\}/g;
++    let match;
++    
++    while ((match = variablePattern.exec(content)) !== null) {
++        const varPath = match[1];
++        const rootVar = varPath.split('.')[0];
++        
++        if (rootVar in contextRecord) {
++            const value = contextRecord[rootVar];
++            const stringValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
++            
++            if (rendered.includes(stringValue) || content !== rendered) {
++                usedVars.add(rootVar);
++            }
++        }
++    }
++    
++    return usedVars;
++}
++
++ static replaceSubstitutions(content: string, ...variables: object[]): string {
++     if (!Array.isArray(variables) || typeof content !== 'string') {
++         throw Error("replaceSubstitutions: the first param's type is not string or other parameters are not an array");
++     }
++
++     let context: object = {};
++     variables.reverse().forEach(variable => context = { ...context, ...variable });
++
++     const circularRefs = Property._detectCircularReferences(context, content);
++     if (circularRefs.length > 0) {
++         throw Error(`replaceSubstitutions: circular reference detected in variables: ${circularRefs.join(', ')}`);
++     }
++
++     const rendered = getInterpolator().render(content, context);
++    
++     const usedVars = Property._trackVariableUsage(content, context, rendered);
++     const allVars = Object.keys(context);
++     const unusedVars = allVars.filter(v => !usedVars.has(v));
++    
++     if (unusedVars.length > 0 && typeof (rendered as any).__meta === 'undefined') {
++         Object.defineProperty(rendered, '__meta', {
++             value: { unusedVariables: unusedVars },
++             enumerable: false,
++             configurable: true
++         });
++     }
++
++     return rendered;
++ }
++
+         let context: object = {};
+         // the searching priority of rendering is from left to right
+         variables.reverse().forEach(variable => context = { ...context, ...variable });

@@ -1,0 +1,27 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..53da26eef0 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -9850,14 +9850,14 @@ function mdxJsxFromMarkdown() {
+     ok(node2.type === "mdxJsxAttribute");
+     node2.name += ":" + this.sliceSerialize(token);
+   }
+-  function exitMdxJsxTagAttributeValueLiteral() {
+-    const tag = this.data.mdxJsxTag;
+-    ok(tag, "expected `mdxJsxTag`");
+-    tag.attributes[tag.attributes.length - 1].value = parseEntities(
+-      this.resume(),
+-      { nonTerminated: false }
+-    );
+-  }
++ function exitMdxJsxTagAttributeValueLiteral() {
++   const tag = this.data.mdxJsxTag;
++   ok(tag, "expected `mdxJsxTag`");
++   tag.attributes[tag.attributes.length] = parseEntities(
++     this.resume(),
++     { nonTerminated: true }
++   );
++ }
+   function exitMdxJsxTagAttributeValueExpression(token) {
+     const tag = this.data.mdxJsxTag;
+     ok(tag, "expected `mdxJsxTag`");

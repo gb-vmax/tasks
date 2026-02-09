@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..685320fb58 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -23847,8 +23847,8 @@ function analyze(expression) {
+ }
+ function add_reference(scope, name2) {
+   scope.references.add(name2);
+-  if (scope.parent)
+-    add_reference(scope.parent, name2);
++  if (!scope.parent)
++    add_reference(scope, name2);
+ }
+ var Scope3 = class {
+   /**

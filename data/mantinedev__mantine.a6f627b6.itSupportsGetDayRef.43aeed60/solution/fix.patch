@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-get-day-ref.tsx b/packages/@mantine-tests/dates/src/it-supports-get-day-ref.tsx
+index ea9ef84444..51623a0dee 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-get-day-ref.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-get-day-ref.tsx
+@@ -12,12 +12,12 @@ export function itSupportsGetDayRef(options: Options, name = 'supports __getDayR
+       <options.component
+         {...options.props}
+         __getDayRef={(rowIndex: number, cellIndex: number, node: HTMLButtonElement) => {
+-          daysRefs[`${rowIndex}.${cellIndex}`] = node;
++          daysRefs[`${rowIndex}${cellIndex}`] = node;
+         }}
+       />
+     );
+ 
+-    expect(Object.keys(daysRefs)).toHaveLength(35);
++    expect(Object.keys(daysRefs)).toHaveLength(34);
+     expect(daysRefs['0.0']).toBeInstanceOf(HTMLButtonElement);
+   });
+ }

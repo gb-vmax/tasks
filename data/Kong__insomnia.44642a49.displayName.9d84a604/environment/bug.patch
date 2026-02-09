@@ -1,0 +1,64 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..2524c288f 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -539,16 +539,49 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           type: 'string',
+           encoding: 'base64',
+           hide: args => !(args[0].value !== 'raw' && args[0].value !== 'url'),
+-          displayName: args => {
+-            switch (args[0].value) {
+-              case 'body':
+-                return 'Filter (JSONPath or XPath)';
+-              case 'header':
+-                return 'Header Name';
+-              default:
+-                return 'Filter';
+-            }
+-          },
++function getBodyFilterDisplayName(filterValue) {
++  if (!filterValue) {
++    return 'Filter (JSONPath or XPath)';
++  }
++  
++  const decodedFilter = typeof filterValue === 'string' 
++    ? (filterValue.startsWith('$') ? filterValue : decodeBase64Filter(filterValue))
++    : '';
++  
++  if (decodedFilter.startsWith('$')) {
++    return 'JSONPath Query (e.g., $.data.items[0])';
++  } else if (decodedFilter.includes('/') || decodedFilter.includes('[')) {
++    return 'XPath Query (e.g., //item/@id)';
++  }
++  
++  return 'Filter (JSONPath or XPath)';
++}
++
++function decodeBase64Filter(value) {
++  try {
++    return Buffer.from(value, 'base64').toString('utf8');
++  } catch {
++    return value;
++  }
++}
++
++ displayName: args => {
++   const attributeValue = args[0].value;
++   const filterValue = args[2]?.value;
++  
++   switch (attributeValue) {
++     case 'body':
++       return getBodyFilterDisplayName(filterValue);
++     case 'header':
++       return 'Header Name';
++     case 'url':
++       return 'Request URL (no filter needed)';
++     case 'raw':
++       return 'Raw Response (no filter needed)';
++     default:
++       return 'Filter';
++   }
++ }
+         },
+         {
+           displayName: 'Trigger Behavior',

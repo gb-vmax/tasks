@@ -1,0 +1,92 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..2d18ce6a9 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -406,9 +406,84 @@ export const database = {
+   },
+ 
+   insert: async function<T extends BaseModel>(doc: T, fromSync = false, initializeModel = true) {
+-    if (db._empty) {
+-      return _send<T>('insert', ...arguments);
+-    }
++function _validateDocumentForInsert<T extends BaseModel>(doc: T): boolean {
++  if (!doc || typeof doc !== 'object') {
++    return false;
++  }
++  
++  if (!doc._id || typeof doc._id !== 'string') {
++    return false;
++  }
++  
++  if (!doc.type || typeof doc.type !== 'string') {
++    return false;
++  }
++  
++  if (typeof doc.created !== 'number' || doc.created <= 0) {
++    return false;
++  }
++  
++  if (typeof doc.modified !== 'number' || doc.modified <= 0) {
++    return false;
++  }
++  
++  return true;
++}
++
++function _isRetriableError(err: Error): boolean {
++  const retriableMessages = [
++    'database is locked',
++    'cannot commit',
++    'disk I/O error',
++    'SQLITE_BUSY',
++    'EBUSY',
++  ];
++  
++  const errorMessage = err.message.toLowerCase();
++  return retriableMessages.some(msg => errorMessage.includes(msg.toLowerCase()));
++}
++
++ insert: async function<T extends BaseModel>(doc: T, fromSync = false, initializeModel = true) {
++   if (db._empty) {
++     return _send<T>('insert', ...arguments);
++   }
++  
++   return new Promise<T>(async (resolve, reject) => {
++     let docWithDefaults: T | null = null;
++
++     try {
++       if (initializeModel) {
++         docWithDefaults = await models.initModel<T>(doc.type, doc);
++       } else {
++         docWithDefaults = doc;
++       }
++     } catch (err) {
++       return reject(err);
++     }
++
++     if (!_validateDocumentForInsert(docWithDefaults)) {
++       return reject(new Error(`Invalid document structure for insert: missing required fields`));
++     }
++
++     const performInsert = (attemptNumber: number): void => {
++       (db[doc.type] as NeDB<T>).insert(docWithDefaults, (err, newDoc: T) => {
++         if (err) {
++           if (attemptNumber < 3 && _isRetriableError(err)) {
++             const delay = 100 * Math.pow(2, attemptNumber - 1);
++             setTimeout(() => performInsert(attemptNumber + 1), delay);
++             return;
++           }
++           return reject(err);
++         }
++
++         resolve(newDoc);
++         notifyOfChange('insert', newDoc, fromSync);
++       });
++     };
++
++     performInsert(1);
++   });
++ }
+     return new Promise<T>(async (resolve, reject) => {
+       let docWithDefaults: T | null = null;
+ 

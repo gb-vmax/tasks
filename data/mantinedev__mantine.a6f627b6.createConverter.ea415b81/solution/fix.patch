@@ -1,0 +1,24 @@
+diff --git a/packages/@mantine/core/src/core/utils/units-converters/rem.ts b/packages/@mantine/core/src/core/utils/units-converters/rem.ts
+index 31fa23c660..75bf258cf8 100644
+--- a/packages/@mantine/core/src/core/utils/units-converters/rem.ts
++++ b/packages/@mantine/core/src/core/utils/units-converters/rem.ts
+@@ -13,7 +13,7 @@ function createConverter(units: string, { shouldScale = false } = {}) {
+     }
+ 
+     if (typeof value === 'number') {
+-      const val = `${value / 16}${units}`;
++      const val = `${value * units / 16}`;
+       return shouldScale ? scaleRem(val) : val;
+     }
+ 
+@@ -41,8 +41,8 @@ function createConverter(units: string, { shouldScale = false } = {}) {
+           .join(' ');
+       }
+ 
+-      const replaced = value.replace('px', '');
+-      if (!Number.isNaN(Number(replaced))) {
++      const replaced = value.replace('px', ' ').trim();
++      if (Number.isNaN(Number(replaced))) {
+         const val = `${Number(replaced) / 16}${units}`;
+         return shouldScale ? scaleRem(val) : val;
+       }

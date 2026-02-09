@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..2dc614579 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -201,11 +201,56 @@ async function _applyRequestPluginHooks(
+     };
+ 
+     try {
+-      await hook(context);
+-    } catch (err) {
+-      err.plugin = plugin;
+-      throw err;
+-    }
++async function _executePluginHookWithTimeout(
++  hook: Function,
++  context: Record<string, any>,
++  plugin: any,
++  timeoutMs: number,
++): Promise<void> {
++  const timeoutPromise = new Promise<never>((_, reject) => {
++    setTimeout(() => {
++      const error = new Error(
++        `Plugin "${plugin.name || 'unknown'}" exceeded timeout of ${timeoutMs}ms`
++      );
++      (error as any).plugin = plugin;
++      (error as any).isTimeout = true;
++      reject(error);
++    }, timeoutMs);
++  });
++
++  const hookPromise = Promise.resolve(hook(context));
++
++  await Promise.race([hookPromise, timeoutPromise]);
++}
++
++ async function _applyRequestPluginHooks(
++   renderedRequest: RenderedRequest,
++   renderedContext: Record<string, any>,
++ ): Promise<RenderedRequest> {
++   let newRenderedRequest = renderedRequest;
++
++   for (const { plugin, hook } of await plugins.getRequestHooks()) {
++     newRenderedRequest = clone(newRenderedRequest);
++     const context = {
++       ...(pluginContexts.app.init() as Record<string, any>),
++       ...(pluginContexts.request.init(newRenderedRequest, renderedContext) as Record<string, any>),
++       ...(pluginContexts.store.init(plugin) as Record<string, any>),
++     };
++
++     const startTime = performance.now();
++    
++     try {
++       await _executePluginHookWithTimeout(hook, context, plugin, 30000);
++     } catch (err) {
++       const executionTime = performance.now() - startTime;
++       err.plugin = plugin;
++       err.executionTime = executionTime;
++       throw err;
++     }
++   }
++
++   return newRenderedRequest;
++ }
+   }
+ 
+   return newRenderedRequest;

@@ -2,27 +2,31 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with scope checking in MDX where variables declared in the top-level scope are not being recognized. It seems like the scope resolution is stopping prematurely and not checking the root scope.
+I'm encountering an issue with scope checking in MDX files. When a variable is declared in the root/global scope, it's not being recognized as "in scope" and causes unexpected behavior. It seems like the scope resolution is only checking parent scopes but missing the current/root scope itself.
 
 ### Reproduction
 
-```jsx
-export const myVariable = 'test value'
+```js
+// In an MDX file with a variable declared at the root level
+export const myVariable = 'test'
 
-# My Document
-
-{myVariable}
+// Later trying to reference it
+function MyComponent() {
+  // myVariable should be recognized as in scope here
+  // but it's being treated as undefined/not in scope
+  return <div>{myVariable}</div>
+}
 ```
 
-When trying to reference a variable that's declared at the top level (exported or in the root scope), it's not being found during compilation. The variable should be accessible but the scope checker appears to be skipping the root scope level.
+The issue appears when variables are defined at the top level of the scope chain. The scope checking seems to skip over the root scope and only looks at parent scopes.
 
 ### Expected behavior
 
-Variables declared in the top-level/root scope should be properly detected and accessible throughout the MDX document. The scope checking should traverse all the way up to the root scope, not just parent scopes.
+Variables declared in the root scope should be properly recognized as being "in scope" when performing scope checks. The scope resolution should check the current scope before moving up the chain.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0
-- Node version: 18.x
+- Node version: Latest
 
 ---
 Repository: /testbed

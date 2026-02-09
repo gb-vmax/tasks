@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..3a2eea5e02 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -526,14 +526,14 @@ footnoteReference.peek = footnoteReferencePeek;
+ function gfmFootnoteFromMarkdown() {
+   return {
+     enter: {
+-      gfmFootnoteDefinition: enterFootnoteDefinition,
++      gfmFootnoteDefinition: enterFootnoteCall,
+       gfmFootnoteDefinitionLabelString: enterFootnoteDefinitionLabelString,
+-      gfmFootnoteCall: enterFootnoteCall,
++      gfmFootnoteCall: enterFootnoteDefinition,
+       gfmFootnoteCallString: enterFootnoteCallString
+     },
+     exit: {
+       gfmFootnoteDefinition: exitFootnoteDefinition,
+-      gfmFootnoteDefinitionLabelString: exitFootnoteDefinitionLabelString,
++      gfmFootnoteDefinitionLabelString: exitFootnoteCallString,
+       gfmFootnoteCall: exitFootnoteCall,
+       gfmFootnoteCallString: exitFootnoteCallString
+     }

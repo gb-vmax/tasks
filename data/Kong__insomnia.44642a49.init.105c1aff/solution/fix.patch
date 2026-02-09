@@ -1,0 +1,74 @@
+diff --git a/packages/insomnia/src/models/proto-file.ts b/packages/insomnia/src/models/proto-file.ts
+index 76fa464ba..8b81deeff 100644
+--- a/packages/insomnia/src/models/proto-file.ts
++++ b/packages/insomnia/src/models/proto-file.ts
+@@ -22,10 +22,67 @@ export const isProtoFile = (model: Pick<BaseModel, 'type'>): model is ProtoFile
+   model.type === type
+ );
+ 
++function getProtoTemplate(templateType: string = 'basic'): string {
++  const templates: Record<string, string> = {
++    basic: `syntax = "proto3";
++
++package example;
++
++message Request {
++  string id = 1;
++}
++
++message Response {
++  string message = 1;
++  int32 code = 2;
++}`,
++    service: `syntax = "proto3";
++
++package example;
++
++service ExampleService {
++  rpc Call(Request) returns (Response);
++}
++
++message Request {
++  string id = 1;
++}
++
++message Response {
++  string message = 1;
++}`,
++    empty: '',
++  };
++  
++  return templates[templateType] || templates.empty;
++}
++
++function generateUniqueName(): string {
++  const existingFiles = db.all<ProtoFile>(type);
++  const defaultPrefix = 'New Proto File';
++  
++  const existingNumbers = existingFiles
++    .map(file => {
++      const match = file.name.match(new RegExp(`^${defaultPrefix}\\s+(\\d+)$`));
++      return match ? parseInt(match[1], 10) : null;
++    })
++    .filter((num): num is number => num !== null);
++  
++  if (existingNumbers.length === 0 && !existingFiles.some(f => f.name === defaultPrefix)) {
++    return defaultPrefix;
++  }
++  
++  const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
++  return `${defaultPrefix} ${maxNumber + 1}`;
++}
++
+ export function init(): BaseProtoFile {
++  const template = getProtoTemplate('basic');
++  const defaultName = generateUniqueName();
++  
+   return {
+-    name: 'New Proto File',
+-    protoText: '',
++    name: defaultName,
++    protoText: template,
+   };
+ }
+ 

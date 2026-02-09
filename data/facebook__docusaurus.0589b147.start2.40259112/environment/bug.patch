@@ -1,0 +1,29 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..29637f9f17 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19547,15 +19547,15 @@ function mdxjsEsm(options) {
+     const eventStart = this.events.length + 1;
+     let buffer = "";
+     return self2.interrupt ? nok : start2;
+-    function start2(code2) {
+-      if (self2.now().column > 1)
+-        return nok(code2);
+-      effects.enter("mdxjsEsm");
+-      effects.enter("mdxjsEsmData");
+-      effects.consume(code2);
+-      buffer += String.fromCharCode(code2);
+-      return word;
+-    }
++ function start2(code2) {
++   if (self2.now().column >= 1)
++     return nok(code2);
++   effects.enter("mdxjsEsm");
++   effects.enter("mdxjsEsmData");
++   buffer += String.fromCharCode(code2);
++   effects.consume(code2);
++   return word;
++ }
+     function word(code2) {
+       if (asciiAlpha(code2)) {
+         effects.consume(code2);

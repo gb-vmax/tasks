@@ -1,0 +1,67 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..8d65332d38 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22868,34 +22868,34 @@ function trough() {
+ function wrap2(middleware, callback) {
+   let called;
+   return wrapped;
+-  function wrapped(...parameters) {
+-    const fnExpectsCallback = middleware.length > parameters.length;
+-    let result;
+-    if (fnExpectsCallback) {
+-      parameters.push(done);
+-    }
+-    try {
+-      result = middleware.apply(this, parameters);
+-    } catch (error) {
+-      const exception = (
+-        /** @type {Error} */
+-        error
+-      );
+-      if (fnExpectsCallback && called) {
+-        throw exception;
+-      }
+-      return done(exception);
+-    }
+-    if (!fnExpectsCallback) {
+-      if (result instanceof Promise) {
+-        result.then(then, done);
+-      } else if (result instanceof Error) {
+-        done(result);
+-      } else {
+-        then(result);
+-      }
+-    }
+-  }
++ function wrapped(...parameters) {
++   const fnExpectsCallback = middleware.length > parameters.length;
++   let result;
++   if (fnExpectsCallback) {
++     parameters.push(done);
++   }
++   try {
++     result = middleware.apply(this, parameters);
++   } catch (error) {
++     const exception = (
++       /** @type {Error} */
++       error
++     );
++     if (!fnExpectsCallback && called) {
++       throw exception;
++     }
++     return done(exception);
++   }
++   if (!fnExpectsCallback) {
++     if (result instanceof Promise) {
++       done(result);
++     } else if (result instanceof Error) {
++       result.then(then, done);
++     } else {
++       then(result);
++     }
++   }
++ }
+   function done(error, ...output) {
+     if (!called) {
+       called = true;

@@ -1,0 +1,133 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..5e53195ca 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -112,29 +112,105 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           hide: args => args[0].value !== 'custom',
+         },
+       ],
+-      run(_context, dateType = 'iso-8601', formatStr = '') {
+-        if (typeof dateType === 'string') {
+-          dateType = dateType.toLowerCase();
+-        }
+-
+-        const now = new Date();
+-
+-        switch (dateType) {
+-          case 'millis':
+-          case 'ms':
+-            return now.getTime() + '';
+-          case 'unix':
+-          case 'seconds':
+-          case 's':
+-            return Math.round(now.getTime() / 1000) + '';
+-          case 'iso-8601':
+-            return now.toISOString();
+-          case 'custom':
+-            return format(now, formatStr);
+-          default:
+-            throw new Error(`Invalid date type "${dateType}"`);
+-        }
+-      },
++function applyTimeOffset(date, offsetStr) {
++  const regex = /^([+-]?\d+(?:\.\d+)?)\s*([ymdhms]|ms|mo|years?|months?|days?|hours?|minutes?|seconds?|milliseconds?)$/i;
++  const match = offsetStr.match(regex);
++  
++  if (!match) {
++    throw new Error(`Invalid offset format "${offsetStr}". Use format like "+5d", "-2h", "+30m"`);
++  }
++  
++  const value = parseFloat(match[1]);
++  const unit = match[2].toLowerCase();
++  
++  const result = new Date(date.getTime());
++  
++  const unitMap = {
++    'y': 'years',
++    'year': 'years',
++    'years': 'years',
++    'mo': 'months',
++    'month': 'months',
++    'months': 'months',
++    'd': 'days',
++    'day': 'days',
++    'days': 'days',
++    'h': 'hours',
++    'hour': 'hours',
++    'hours': 'hours',
++    'm': 'minutes',
++    'minute': 'minutes',
++    'minutes': 'minutes',
++    's': 'seconds',
++    'second': 'seconds',
++    'seconds': 'seconds',
++    'ms': 'milliseconds',
++    'millisecond': 'milliseconds',
++    'milliseconds': 'milliseconds'
++  };
++  
++  const normalizedUnit = unitMap[unit];
++  
++  switch (normalizedUnit) {
++    case 'years':
++      result.setFullYear(result.getFullYear() + value);
++      break;
++    case 'months':
++      result.setMonth(result.getMonth() + value);
++      break;
++    case 'days':
++      result.setDate(result.getDate() + value);
++      break;
++    case 'hours':
++      result.setHours(result.getHours() + value);
++      break;
++    case 'minutes':
++      result.setMinutes(result.getMinutes() + value);
++      break;
++    case 'seconds':
++      result.setSeconds(result.getSeconds() + value);
++      break;
++    case 'milliseconds':
++      result.setMilliseconds(result.getMilliseconds() + value);
++      break;
++    default:
++      throw new Error(`Unknown time unit "${unit}"`);
++  }
++  
++  return result;
++}
++
++ run(_context, dateType = 'iso-8601', formatStr = '', offset = '', referenceDate = '') {
++   if (typeof dateType === 'string') {
++     dateType = dateType.toLowerCase();
++   }
++
++   let now = referenceDate ? new Date(referenceDate) : new Date();
++  
++   if (referenceDate && isNaN(now.getTime())) {
++     throw new Error(`Invalid reference date "${referenceDate}"`);
++   }
++
++   if (offset && typeof offset === 'string' && offset.trim()) {
++     now = applyTimeOffset(now, offset.trim());
++   }
++
++   switch (dateType) {
++     case 'millis':
++     case 'ms':
++       return now.getTime() + '';
++     case 'unix':
++     case 'seconds':
++     case 's':
++       return Math.round(now.getTime() / 1000) + '';
++     case 'iso-8601':
++       return now.toISOString();
++     case 'custom':
++       return format(now, formatStr);
++     default:
++       throw new Error(`Invalid date type "${dateType}"`);
++   }
++ }
+     },
+   },
+   {

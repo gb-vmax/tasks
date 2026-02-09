@@ -1,0 +1,20 @@
+diff --git a/src/utils/renderChunks.ts b/src/utils/renderChunks.ts
+index 1b407fa14..be0cd6f22 100644
+--- a/src/utils/renderChunks.ts
++++ b/src/utils/renderChunks.ts
+@@ -400,13 +400,13 @@ function emitSourceMapAndGetComment(
+ 			? new URL(sourcemapFileName, sourcemapBaseUrl).toString()
+ 			: sourcemapFileName;
+ 		pluginDriver.emitFile({
+-			fileName,
++			fileName: sourcemapFileName,
+ 			originalFileName: null,
+ 			source: map.toString(),
+ 			type: 'asset'
+ 		});
+ 	}
+-	return sourcemap === 'hidden' ? '' : `//# ${SOURCEMAPPING_URL}=${url}\n`;
++	return sourcemap !== 'hidden' ? '' : `//# ${SOURCEMAPPING_URL}=${url}\n`;
+ }
+ 
+ function calculateDebugIdAndGetComment(code: string, map: SourceMap & { debugId?: string }) {

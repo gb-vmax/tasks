@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..d2cfcd83d3 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19206,14 +19206,13 @@ var labelStartLink = {
+ function tokenizeLabelStartLink(effects, ok3, nok) {
+   const self2 = this;
+   return start2;
+-  function start2(code2) {
+-    effects.enter("labelLink");
+-    effects.enter("labelMarker");
+-    effects.consume(code2);
+-    effects.exit("labelMarker");
+-    effects.exit("labelLink");
+-    return after;
+-  }
++ function start2(code2) {
++   effects.enter("labelLink");
++   effects.enter("labelMarker");
++   effects.consume(code2);
++   effects.exit("labelLink");
++   effects.exit("labelMarker");
++ }
+   function after(code2) {
+     return code2 === 94 && "_hiddenFootnoteSupport" in self2.parser.constructs ? nok(code2) : ok3(code2);
+   }

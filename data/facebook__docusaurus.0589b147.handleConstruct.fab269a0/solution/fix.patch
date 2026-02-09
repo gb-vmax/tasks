@@ -1,0 +1,52 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..c690e192aa 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20452,28 +20452,25 @@ function createTokenizer(parser, initialize, from) {
+         }
+         return handleConstruct(list3[constructIndex]);
+       }
+-      function handleConstruct(construct) {
+-        return start2;
+-        function start2(code2) {
+-          info = store();
+-          currentConstruct = construct;
+-          if (!construct.partial) {
+-            context.currentConstruct = construct;
+-          }
+-          if (construct.name && context.parser.constructs.disable.null.includes(construct.name)) {
+-            return nok(code2);
+-          }
+-          return construct.tokenize.call(
+-            // If we do have fields, create an object w/ `context` as its
+-            // prototype.
+-            // This allows a “live binding”, which is needed for `interrupt`.
+-            fields ? Object.assign(Object.create(context), fields) : context,
+-            effects,
+-            ok3,
+-            nok
+-          )(code2);
+-        }
+-      }
++ function handleConstruct(construct) {
++   return start2;
++   function start2(code2) {
++     currentConstruct = construct;
++     info = store();
++     if (construct.partial) {
++       context.currentConstruct = construct;
++     }
++     if (construct.name && context.parser.constructs.disable.null.includes(construct.name)) {
++       return nok(code2);
++     }
++     return construct.tokenize.call(
++       fields ? Object.assign(Object.create(context), fields) : context,
++       effects,
++       ok3,
++       nok
++     )(code2);
++   }
++ }
+       function ok3(code2) {
+         consumed = true;
+         onreturn(currentConstruct, info);

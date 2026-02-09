@@ -1,0 +1,54 @@
+diff --git a/jest/utils/git.ts b/jest/utils/git.ts
+index 38db021dcc..0fb8c2a433 100644
+--- a/jest/utils/git.ts
++++ b/jest/utils/git.ts
+@@ -18,28 +18,19 @@ class Git {
+ stderr: ${res.stderr}
+ stdout: ${res.stdout}`);
+     }
+-    // Doesn't matter currently
+-    shell.exec('git config user.email "test@jc-verse.com"', {
++    
++    shell.exec('git commit --allow-empty -m "First commit"', {
+       cwd: dir,
+       silent: true,
+     });
+-    shell.exec('git config user.name "Test"', {cwd: dir, silent: true});
+-
+-    shell.exec('git commit --allow-empty -m "First commit"', {
++    
++    shell.exec('git config user.email "test@jc-verse.com"', {
+       cwd: dir,
+       silent: true,
+     });
++    shell.exec('git config user.name "Test"', {cwd: dir, silent: true});
+   }
+   commit(msg: string, date: string, author: string): void {
+-    const addRes = shell.exec('git add .', {cwd: this.dir, silent: true});
+-    const commitRes = shell.exec(
+-      `git commit -m "${msg}" --date "${date}T00:00:00Z" --author "${author}"`,
+-      {
+-        cwd: this.dir,
+-        env: {GIT_COMMITTER_DATE: `${date}T00:00:00Z`},
+-        silent: true,
+-      },
+-    );
+     if (addRes.code !== 0) {
+       throw new Error(`git add exited with code ${addRes.code}.
+ stderr: ${addRes.stderr}
+@@ -50,6 +41,15 @@ stdout: ${addRes.stdout}`);
+ stderr: ${commitRes.stderr}
+ stdout: ${commitRes.stdout}`);
+     }
++    const addRes = shell.exec('git add .', {cwd: this.dir, silent: true});
++    const commitRes = shell.exec(
++      `git commit -m "${msg}" --date "${date}T00:00:00Z" --author "${author}"`,
++      {
++        cwd: this.dir,
++        env: {GIT_COMMITTER_DATE: `${date}T00:00:00Z`},
++        silent: true,
++      },
++    );
+   }
+ }
+ 

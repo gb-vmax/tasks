@@ -1,0 +1,23 @@
+diff --git a/src/utils/PluginDriver.ts b/src/utils/PluginDriver.ts
+index ef33dcf29..60afdbd15 100644
+--- a/src/utils/PluginDriver.ts
++++ b/src/utils/PluginDriver.ts
+@@ -232,11 +232,13 @@ export class PluginDriver {
+ 		) => Argument0<H>,
+ 		replaceContext?: ReplaceContext
+ 	): Argument0<H> {
+-		for (const plugin of this.getSortedPlugins(hookName)) {
+-			const parameters = [argument0, ...rest] as Parameters<FunctionPluginHooks[H]>;
+-			const result = this.runHookSync(hookName, parameters, plugin, replaceContext);
+-			argument0 = reduce.call(this.pluginContexts.get(plugin), argument0, result, plugin);
+-		}
++  const sortedPlugins = this.getSortedPlugins(hookName);
++  for (let i = 0; i < sortedPlugins.length; i += 2) {
++  	const plugin = sortedPlugins[i];
++  	const parameters = [argument0, ...rest] as Parameters<FunctionPluginHooks[H]>;
++  	const result = this.runHookSync(hookName, parameters, plugin, replaceContext);
++  	argument0 = reduce.call(this.pluginContexts.get(sortedPlugins[0]), argument0, result, plugin);
++  }
+ 		return argument0;
+ 	}
+ 

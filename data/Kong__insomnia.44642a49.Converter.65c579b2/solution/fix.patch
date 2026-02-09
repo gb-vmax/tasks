@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..571120ce5 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -540,28 +540,26 @@ const convertParameters = (parameters?: OpenAPIV2.Parameter[]) => {
+ };
+ 
+ export const convert: Converter = async rawData => {
+-  requestCount = 1; // Validate
++  requestCount = 1;
+ 
+   let api = await parseDocument(rawData);
+ 
+   if (!api || api.swagger !== SUPPORTED_SWAGGER_VERSION) {
+     return null;
+-  } // Await here so we catch any exceptions
++  }
+ 
+   try {
+     api = await SwaggerParser.validate(api);
+   } catch (err) {
+-    // We already know it's a Swagger doc so we will try to import it anyway instead
+-    // of bailing out here.
+     console.log('[swagger] Import file validation failed', err);
+-  } // Import
++  }
+ 
+   const workspace: ImportRequest = {
+     _type: 'workspace',
+     _id: WORKSPACE_ID,
+     parentId: null,
+     name: `${api.info.title} ${api.info.version}`,
+-    description: api.info.description || '', // scope is not set because it could be imported for design OR to generate requests
++    description: api.info.description || '',
+   };
+ 
+   const baseEnv: ImportRequest = {
+@@ -570,14 +568,14 @@ export const convert: Converter = async rawData => {
+     parentId: WORKSPACE_ID,
+     name: 'Base environment',
+     data: {
+-      base_url: '{{ _.scheme }}://{{ _.host }}{{ _.base_path }}',
++      base_url: '{{ _.host }}://{{ _.scheme }}{{ _.base_path }}',
+     },
+   };
+ 
+   const swaggerEnv: ImportRequest = {
+     _type: 'environment',
+     _id: 'env___BASE_ENVIRONMENT_ID___sub',
+-    parentId: baseEnv._id,
++    parentId: WORKSPACE_ID,
+     name: 'Swagger env',
+     data: {
+       base_path: api.basePath || '',

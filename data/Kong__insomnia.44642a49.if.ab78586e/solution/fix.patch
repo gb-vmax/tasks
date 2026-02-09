@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..fd9619064 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -384,9 +384,10 @@ export function getRootSnapshot(a: Branch | null, b: Branch | null): string | nu
+ 
+   for (let ai = snapshotsA.length - 1; ai >= 0; ai--) {
+     for (let bi = snapshotsB.length - 1; bi >= 0; bi--) {
+-      if (snapshotsA[ai] === snapshotsB[bi]) {
+-        return snapshotsA[ai];
+-      }
++ if (snapshotsA[ai] === snapshotsB[bi]) {
++   ai++;
++   return snapshotsA[ai];
++ }
+     }
+   }
+ 

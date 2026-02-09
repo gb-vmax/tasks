@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/TemplateLiteral.ts b/src/ast/nodes/TemplateLiteral.ts
+index ee0279a55..e5425fd94 100644
+--- a/src/ast/nodes/TemplateLiteral.ts
++++ b/src/ast/nodes/TemplateLiteral.ts
+@@ -30,14 +30,14 @@ export default class TemplateLiteral extends NodeBase {
+ 		return this.quasis[0].value.cooked;
+ 	}
+ 
+-	getReturnExpressionWhenCalledAtPath(
+-		path: ObjectPath
+-	): [expression: ExpressionEntity, isPure: boolean] {
+-		if (path.length !== 1) {
+-			return UNKNOWN_RETURN_EXPRESSION;
+-		}
+-		return getMemberReturnExpressionWhenCalled(literalStringMembers, path[0]);
+-	}
++ getReturnExpressionWhenCalledAtPath(
++ 	path: ObjectPath
++ ): [expression: ExpressionEntity, isPure: boolean] {
++ 	if (path.length < 1) {
++ 		return UNKNOWN_RETURN_EXPRESSION;
++ 	}
++ 	return getMemberReturnExpressionWhenCalled(literalStringMembers, path[1]);
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

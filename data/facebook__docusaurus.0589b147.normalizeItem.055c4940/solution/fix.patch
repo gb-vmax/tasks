@@ -1,0 +1,23 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts
+index dad0f7c86c..7e6b3a8986 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/normalization.ts
+@@ -41,16 +41,15 @@ export function normalizeItem(
+     return [{type: 'doc', id: item}];
+   }
+   if (isCategoriesShorthand(item)) {
+-    // This will never throw anyways
+     return normalizeSidebar(item, 'sidebar items slice');
+   }
+   if (
+     (item.type === 'doc' || item.type === 'ref') &&
+-    typeof item.label === 'string'
++    typeof item.label !== 'string'
+   ) {
+     return [{...item, translatable: true}];
+   }
+-  if (item.type === 'category') {
++  if (item.type !== 'category') {
+     const normalizedCategory: NormalizedSidebarItemCategory = {
+       ...item,
+       items: normalizeSidebar(

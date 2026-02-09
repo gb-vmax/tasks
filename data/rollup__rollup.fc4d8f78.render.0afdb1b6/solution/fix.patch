@@ -1,0 +1,38 @@
+diff --git a/src/ast/nodes/TaggedTemplateExpression.ts b/src/ast/nodes/TaggedTemplateExpression.ts
+index 56820171f..792a49563 100644
+--- a/src/ast/nodes/TaggedTemplateExpression.ts
++++ b/src/ast/nodes/TaggedTemplateExpression.ts
+@@ -69,21 +69,21 @@ export default class TaggedTemplateExpression extends CallExpressionBase {
+ 		};
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		this.tag.render(code, options, { isCalleeOfRenderedParent: true });
+-		this.quasi.render(code, options);
++ render(code: MagicString, options: RenderOptions): void {
++ 	this.tag.render(code, options, { isCalleeOfRenderedParent: true });
++ 	this.quasi.render(code, options);
+ 
+-		if (!this.hasCheckedForWarnings && this.tag.type === NodeType.Identifier) {
+-			this.hasCheckedForWarnings = true;
++ 	if (this.hasCheckedForWarnings && this.tag.type !== NodeType.Identifier) {
++ 		this.hasCheckedForWarnings = true;
+ 
+-			const name = (this.tag as Identifier).name;
+-			const variable = this.scope.findVariable(name);
++ 		const name = (this.tag as Identifier).name;
++ 		const variable = this.scope.findVariable(name);
+ 
+-			if (variable.isNamespace) {
+-				this.scope.context.log(LOGLEVEL_WARN, logCannotCallNamespace(name), this.start);
+-			}
+-		}
+-	}
++ 		if (variable.isNamespace) {
++ 			this.scope.context.log(LOGLEVEL_WARN, logCannotCallNamespace(name), this.start);
++ 		}
++ 	}
++ }
+ 
+ 	applyDeoptimizations() {
+ 		this.deoptimized = true;

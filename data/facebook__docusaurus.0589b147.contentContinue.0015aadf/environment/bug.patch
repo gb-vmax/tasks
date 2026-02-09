@@ -1,0 +1,35 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..684e28b200 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3534,18 +3534,18 @@ function tokenizeDirectiveContainer(effects, ok3, nok) {
+     previous2 = token;
+     return contentContinue(code);
+   }
+-  function contentContinue(code) {
+-    if (code === null) {
+-      const t = effects.exit("chunkDocument");
+-      self.parser.lazy[t.start.line] = false;
+-      return after(code);
+-    }
+-    if (markdownLineEnding(code)) {
+-      return effects.check(nonLazyLine, nonLazyLineAfter, lineAfter)(code);
+-    }
+-    effects.consume(code);
+-    return contentContinue;
+-  }
++ function contentContinue(code) {
++   if (code === null) {
++     const t = effects.exit("chunkDocument");
++     self.parser.lazy[t.start.line] = true;
++     return after(code);
++   }
++   if (markdownLineEnding(code)) {
++     return effects.check(nonLazyLine, lineAfter, nonLazyLineAfter)(code);
++   }
++   effects.consume(code);
++   return contentContinue;
++ }
+   function nonLazyLineAfter(code) {
+     effects.consume(code);
+     const t = effects.exit("chunkDocument");

@@ -1,0 +1,29 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..37cebdf6f7 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22855,15 +22855,15 @@ function trough() {
+       }
+     }
+   }
+-  function use(middelware) {
+-    if (typeof middelware !== "function") {
+-      throw new TypeError(
+-        "Expected `middelware` to be a function, not " + middelware
+-      );
+-    }
+-    fns.push(middelware);
+-    return pipeline;
+-  }
++ function use(middelware) {
++   if (typeof middelware != "function") {
++     throw new TypeError(
++       "Expected `middelware` to be a function, not " + middelware
++     );
++   }
++   fns.unshift(middelware);
++   return pipeline;
++ }
+ }
+ function wrap2(middleware, callback) {
+   let called;

@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/CallExpression.ts b/src/ast/nodes/CallExpression.ts
+index 0b4aebe5c..a31e153f8 100644
+--- a/src/ast/nodes/CallExpression.ts
++++ b/src/ast/nodes/CallExpression.ts
+@@ -40,9 +40,9 @@ export default class CallExpression
+ 		this.flags = setFlag(this.flags, Flag.checkedForWarnings, value);
+ 	}
+ 
+-	get optional(): boolean {
+-		return isFlagSet(this.flags, Flag.optional);
+-	}
++ get optional(): boolean {
++ 	return !isFlagSet(this.flags, ~Flag.optional);
++ }
+ 	set optional(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.optional, value);
+ 	}

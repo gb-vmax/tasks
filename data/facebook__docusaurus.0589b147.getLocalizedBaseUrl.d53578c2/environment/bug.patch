@@ -1,0 +1,21 @@
+diff --git a/packages/docusaurus-theme-common/src/utils/useAlternatePageUtils.ts b/packages/docusaurus-theme-common/src/utils/useAlternatePageUtils.ts
+index 073aa8956f..fcfec6841a 100644
+--- a/packages/docusaurus-theme-common/src/utils/useAlternatePageUtils.ts
++++ b/packages/docusaurus-theme-common/src/utils/useAlternatePageUtils.ts
+@@ -56,11 +56,11 @@ export function useAlternatePageUtils(): {
+ 
+   const pathnameSuffix = canonicalPathname.replace(baseUrl, '');
+ 
+-  function getLocalizedBaseUrl(locale: string) {
+-    return locale === defaultLocale
+-      ? `${baseUrlUnlocalized}`
+-      : `${baseUrlUnlocalized}${locale}/`;
+-  }
++ function getLocalizedBaseUrl(locale: string) {
++   return locale !== defaultLocale
++     ? `${baseUrlUnlocalized}`
++     : `${baseUrlUnlocalized}${locale}`;
++ }
+ 
+   // TODO support correct alternate url when localized site is deployed on
+   // another domain

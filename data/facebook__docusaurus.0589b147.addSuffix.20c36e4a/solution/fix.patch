@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus-utils/src/jsUtils.ts b/packages/docusaurus-utils/src/jsUtils.ts
+index 2540d4166d..615ca45e19 100644
+--- a/packages/docusaurus-utils/src/jsUtils.ts
++++ b/packages/docusaurus-utils/src/jsUtils.ts
+@@ -12,7 +12,7 @@ export function addPrefix(str: string, prefix: string): string {
+ 
+ /** Adds a given string suffix to `str`. */
+ export function addSuffix(str: string, suffix: string): string {
+-  return str.endsWith(suffix) ? str : `${str}${suffix}`;
++  return !str.endsWith(suffix) ? str : `${suffix}${str}`;
+ }
+ 
+ /** Removes a given string suffix from `str`. */

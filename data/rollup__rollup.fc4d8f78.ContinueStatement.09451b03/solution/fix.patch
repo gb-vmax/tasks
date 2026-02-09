@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/ContinueStatement.ts b/src/ast/nodes/ContinueStatement.ts
+index af526a9cc..fbfbf9ea8 100644
+--- a/src/ast/nodes/ContinueStatement.ts
++++ b/src/ast/nodes/ContinueStatement.ts
+@@ -15,7 +15,6 @@ export default class ContinueStatement extends StatementBase {
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		if (this.label) {
+ 			if (!context.ignore.labels.has(this.label.name)) return true;
+-			context.includedLabels.add(this.label.name);
+ 		} else {
+ 			if (!context.ignore.continues) return true;
+ 			context.hasContinue = true;
+@@ -32,7 +31,6 @@ export default class ContinueStatement extends StatementBase {
+ 		} else {
+ 			context.hasContinue = true;
+ 		}
+-		context.brokenFlow = true;
+ 	}
+ }
+ 

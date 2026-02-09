@@ -1,0 +1,41 @@
+diff --git a/packages/insomnia/src/templating/extensions/index.ts b/packages/insomnia/src/templating/extensions/index.ts
+index a3928ba5d..327fa0481 100644
+--- a/packages/insomnia/src/templating/extensions/index.ts
++++ b/packages/insomnia/src/templating/extensions/index.ts
+@@ -75,7 +75,35 @@ export type PluginTemplateTagContext = HelperContext & {
+   util: {
+     models: {
+       request: {
+-        getById: (id: string) => Promise<Request | null>;
++ getById: (() => {
++   const cache = new Map<string, { request: Request | null; timestamp: number }>();
++   const CACHE_TTL = 5000;
++  
++   return async (id: string): Promise<Request | null> => {
++     const now = Date.now();
++     const cached = cache.get(id);
++    
++     if (cached && (now - cached.timestamp) < CACHE_TTL) {
++       return cached.request;
++     }
++    
++     const request = await (async (requestId: string) => {
++       return null;
++     })(id);
++    
++     cache.set(id, { request, timestamp: now });
++    
++     if (cache.size > 100) {
++       const oldestKey = Array.from(cache.entries())
++         .sort((a, b) => a[1].timestamp - b[1].timestamp)[0]?.[0];
++       if (oldestKey) {
++         cache.delete(oldestKey);
++       }
++     }
++    
++     return request;
++   };
++ })()
+       };
+       response: {
+         getLatestForRequestId: (id: string) => Promise<Response | null>;

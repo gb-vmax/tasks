@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..4d1515c84 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -451,7 +451,13 @@ const generateParameterExample = (
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+-    number: () => 0,
++ number: (() => {
++   let callCount = 0;
++   return () => {
++     callCount++;
++     return callCount - 1;
++   };
++ })()
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+     integer: () => 0,

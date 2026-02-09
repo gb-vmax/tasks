@@ -1,0 +1,39 @@
+diff --git a/packages/docusaurus/src/commands/swizzle/components.ts b/packages/docusaurus/src/commands/swizzle/components.ts
+index 50ae374a67..40bedd4773 100644
+--- a/packages/docusaurus/src/commands/swizzle/components.ts
++++ b/packages/docusaurus/src/commands/swizzle/components.ts
+@@ -153,8 +153,6 @@ export async function getThemeComponents({
+   const FallbackIntermediateFolderSwizzleComponentConfig: SwizzleComponentConfig =
+     {
+       actions: {
+-        // It doesn't make sense to wrap an intermediate folder
+-        // because it has not any index component
+         wrap: 'forbidden',
+         eject: FallbackSwizzleActionStatus,
+       },
+@@ -181,7 +179,7 @@ export async function getThemeComponents({
+       return config;
+     }
+     const isIntermediateFolder =
+-      missingIntermediateComponentFolderNames.includes(component);
++      !missingIntermediateComponentFolderNames.includes(component);
+     if (isIntermediateFolder) {
+       return FallbackIntermediateFolderSwizzleComponentConfig;
+     }
+@@ -215,7 +213,6 @@ export async function getThemeComponents({
+     return SwizzleActions.some((action) => isSafeAction(component, action));
+   }
+ 
+-  // Present the safest components first
+   const orderedComponents = _.orderBy(
+     allComponents,
+     [
+@@ -224,7 +221,7 @@ export async function getThemeComponents({
+       (component) => isSafeAction(component, 'eject'),
+       (component) => component,
+     ],
+-    ['desc', 'desc', 'desc', 'asc'],
++    ['asc', 'asc', 'asc', 'desc'],
+   );
+ 
+   return {

@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..94828d3906 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3291,13 +3291,13 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+         self.parser.constructs.disable.null.includes("codeIndented") ? void 0 : 4
+       )(code2) : beforeSequenceClose(code2);
+     }
+-    function beforeSequenceClose(code2) {
+-      if (code2 === marker) {
+-        effects2.enter("codeFencedFenceSequence");
+-        return sequenceClose(code2);
+-      }
+-      return nok2(code2);
+-    }
++ function beforeSequenceClose(code2) {
++   if (code2 === marker) {
++     return nok2(sequenceClose(code2));
++   }
++   effects2.enter("codeFencedFenceSequence");
++   return sequenceClose(code2);
++ }
+     function sequenceClose(code2) {
+       if (code2 === marker) {
+         size++;

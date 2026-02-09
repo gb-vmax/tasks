@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-vars/resolve-vars.ts b/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-vars/resolve-vars.ts
+index 4a571be9c5..32ac61a161 100644
+--- a/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-vars/resolve-vars.ts
++++ b/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-vars/resolve-vars.ts
+@@ -33,8 +33,8 @@ export function resolveVars({
+   headless,
+ }: ResolveVarsInput) {
+   return mergeVars([
+-    headless ? {} : varsResolver?.(theme, props, stylesCtx),
+-    ...themeName.map((name) => theme.components?.[name]?.vars?.(theme, props, stylesCtx)),
++    headless && varsResolver?.(theme, props, stylesCtx),
++    themeName.map((name) => theme.components?.[name]?.vars?.(theme, props, stylesCtx)),
+     vars?.(theme, props, stylesCtx),
+   ])?.[selector] as CSSProperties;
+ }

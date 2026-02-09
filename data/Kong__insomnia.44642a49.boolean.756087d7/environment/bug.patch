@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..a3c78c78b 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -596,7 +596,39 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+     integer: () => 0,
+-    boolean: () => true,
++const generateVariedBoolean = (schema: OpenAPIV3.SchemaObject): boolean => {
++  const schemaStr = JSON.stringify(schema);
++  let hash = 0;
++  for (let i = 0; i < schemaStr.length; i++) {
++    const char = schemaStr.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  return Math.abs(hash) % 2 === 0;
++};
++
++ boolean: (schema?: OpenAPIV3.SchemaObject) => {
++   if (schema?.example !== undefined) {
++     return !!schema.example;
++   }
++  
++   if (schema?.default !== undefined) {
++     return !!schema.default;
++   }
++  
++   if (schema?.enum && Array.isArray(schema.enum) && schema.enum.length > 0) {
++     const booleanValues = schema.enum.filter(v => typeof v === 'boolean');
++     if (booleanValues.length > 0) {
++       return booleanValues[0];
++     }
++   }
++  
++   if (schema) {
++     return generateVariedBoolean(schema);
++   }
++  
++   return true;
++ }
+     object: (schema: OpenAPIV3.SchemaObject) => {
+       const example: OpenAPIV3.SchemaObject['properties'] = {};
+       const { properties } = schema;

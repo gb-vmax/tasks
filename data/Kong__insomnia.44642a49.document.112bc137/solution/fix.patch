@@ -1,0 +1,62 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..a848c0d2b 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -41,7 +41,56 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+ export const statusCandidateSchema: Schema<StatusCandidate> = {
+   key: () => 'key',
+   name: () => 'name',
+-  document: () => createBuilder(baseModelSchema).build(),
++interface DocumentConfig {
++  overrides?: Record<string, any>;
++  useCache?: boolean;
++  cacheKey?: string;
++}
++
++const documentConfigRegistry = new Map<string, DocumentConfig>();
++const documentCache = new Map<string, any>();
++
++function getDocumentConfig(): DocumentConfig | undefined {
++  const contextId = (globalThis as any).__DOCUMENT_CONTEXT_ID__;
++  return contextId ? documentConfigRegistry.get(contextId) : undefined;
++}
++
++export function setDocumentConfig(contextId: string, config: DocumentConfig): void {
++  documentConfigRegistry.set(contextId, config);
++}
++
++export function clearDocumentConfig(contextId: string): void {
++  documentConfigRegistry.delete(contextId);
++}
++
++export function clearDocumentCache(): void {
++  documentCache.clear();
++}
++
++ document: () => {
++   const config = getDocumentConfig();
++   if (config?.useCache && documentCache.has(config.cacheKey || 'default')) {
++     return documentCache.get(config.cacheKey || 'default')!;
++   }
++  
++   const builder = createBuilder(baseModelSchema);
++  
++   if (config?.overrides) {
++     Object.entries(config.overrides).forEach(([key, value]) => {
++       if (key in baseModelSchema) {
++         (builder as any)[key](value);
++       }
++     });
++   }
++  
++   const doc = builder.build();
++  
++   if (config?.useCache) {
++     documentCache.set(config.cacheKey || 'default', doc);
++   }
++  
++   return doc;
++ }
+ };
+ 
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {

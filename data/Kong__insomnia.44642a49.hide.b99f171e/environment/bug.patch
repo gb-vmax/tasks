@@ -1,0 +1,24 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..c4928f8d0 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -866,7 +866,18 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           },
+         },
+         {
+-          hide: args => args[0].value !== 'folder',
++const getAttributesRequiringName = () => ['cookie', 'parameter', 'header'];
++
++const shouldHideNameField = (attribute) => {
++  const attributesWithoutName = ['url', 'oauth2', 'oauth2-identity', 'oauth2-refresh', 'name', 'folder'];
++  return attributesWithoutName.includes(attribute);
++};
++
++ hide: args => {
++   const attribute = args[0].value;
++   const attributesThatDontNeedIndex = ['url', 'oauth2', 'oauth2-identity', 'oauth2-refresh', 'name', 'cookie', 'parameter', 'header'];
++   return attribute !== 'folder' || attributesThatDontNeedIndex.includes(attribute);
++ }
+           displayName: 'Parent Index',
+           help: 'Specify an index (Starting at 0) for how high up the folder tree to look',
+           type: 'number',

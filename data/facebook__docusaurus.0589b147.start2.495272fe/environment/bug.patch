@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..409168c562 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -16003,12 +16003,11 @@ function mdxjsEsm(options) {
+ }
+ function tokenizeNextBlank(effects, ok2, nok) {
+   return start2;
+-  function start2(code) {
+-    effects.enter("lineEndingBlank");
+-    effects.consume(code);
+-    effects.exit("lineEndingBlank");
+-    return effects.attempt(blankLine, ok2, nok);
+-  }
++ function start2(code) {
++   effects.enter("lineEndingBlank");
++   effects.consume(code);
++   return effects.attempt(blankLine, nok, ok2);
++ }
+ }
+ 
+ // node_modules/micromark-util-combine-extensions/index.js

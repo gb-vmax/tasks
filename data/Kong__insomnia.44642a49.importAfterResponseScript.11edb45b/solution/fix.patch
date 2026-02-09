@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..b77d56c2d 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -190,26 +190,55 @@ export class ImportPostman {
+     return translateHandlersInScript(scriptContent);
+   };
+ 
+-  importAfterResponseScript = (events: EventList | undefined): string => {
+-    if (events == null) {
+-      return '';
+-    }
++function sanitizeImportedScript(script: string): string {
++  if (!script || script.trim().length === 0) {
++    return '';
++  }
+ 
+-    const afterResponseEvent = events.find(
+-      event => event.listen === 'test'
+-    );
++  let sanitized = script;
+ 
+-    const scriptOrRows = afterResponseEvent ? afterResponseEvent.script : '';
+-    if (!scriptOrRows) {
+-      return '';
+-    }
++  sanitized = sanitized.replace(/require\s*\(\s*['"`][^'"`]*['"`]\s*\)/g, '');
+ 
+-    const scriptContent = scriptOrRows.exec ?
+-      (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('\n') : scriptOrRows.exec) :
+-      '';
++  sanitized = sanitized.replace(/pm\.sendRequest\s*\([^)]*\)/g, '');
+ 
+-    return translateHandlersInScript(scriptContent);
+-  };
++  sanitized = sanitized.split('\n')
++    .filter(line => line.trim().length > 0 || line.match(/^\s*$/))
++    .join('\n');
++
++  sanitized = sanitized.replace(/\n{3,}/g, '\n\n');
++
++  return sanitized.trim();
++}
++
++ importAfterResponseScript = (events: EventList | undefined): string => {
++   if (events == null) {
++     return '';
++   }
++
++   const afterResponseEvent = events.find(
++     event => event.listen === 'test'
++   );
++
++   if (!afterResponseEvent) {
++     return '';
++   }
++
++   if (afterResponseEvent.disabled === true) {
++     return '';
++   }
++
++   const scriptOrRows = afterResponseEvent.script;
++   if (!scriptOrRows) {
++     return '';
++   }
++
++   const scriptContent = scriptOrRows.exec ?
++     (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('\n') : scriptOrRows.exec) :
++     '';
++
++   const translatedScript = translateHandlersInScript(scriptContent);
++   return sanitizeImportedScript(translatedScript);
++ };
+ 
+   importRequestItem = (
+     { request, name = '', event }: Item,

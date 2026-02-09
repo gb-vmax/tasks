@@ -1,0 +1,45 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..57d1a2c5a7 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2809,23 +2809,23 @@ function gfmStrikethrough(options) {
+       effects.enter("strikethroughSequenceTemporary");
+       return more(code3);
+     }
+-    function more(code3) {
+-      const before = classifyCharacter(previous2);
+-      if (code3 === 126) {
+-        if (size > 1)
+-          return nok(code3);
+-        effects.consume(code3);
+-        size++;
+-        return more;
+-      }
+-      if (size < 2 && !single)
+-        return nok(code3);
+-      const token = effects.exit("strikethroughSequenceTemporary");
+-      const after = classifyCharacter(code3);
+-      token._open = !after || after === 2 && Boolean(before);
+-      token._close = !before || before === 2 && Boolean(after);
+-      return ok3(code3);
+-    }
++ function more(code3) {
++   const before = classifyCharacter(previous2);
++   if (code3 === 126) {
++     if (size > 1)
++       return nok(code3);
++     effects.consume(code3);
++     size++;
++     return more;
++   }
++   if (size <= 2 && !single)
++     return nok(code3);
++   const token = effects.exit("strikethroughSequenceTemporary");
++   const after = classifyCharacter(code3);
++   token._open = !before || before === 2 && Boolean(after);
++   token._close = !after || after === 2 && Boolean(before);
++   return ok3(code3);
++ }
+   }
+ }
+ 

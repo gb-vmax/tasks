@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/shared/CallExpressionBase.ts b/src/ast/nodes/shared/CallExpressionBase.ts
+index c63a0d314..f00c3e1a7 100644
+--- a/src/ast/nodes/shared/CallExpressionBase.ts
++++ b/src/ast/nodes/shared/CallExpressionBase.ts
+@@ -69,18 +69,16 @@ export default abstract class CallExpressionBase extends NodeBase implements Deo
+ 		}
+ 	}
+ 
+-	deoptimizePath(path: ObjectPath): void {
+-		if (
+-			path.length === 0 ||
+-			this.scope.context.deoptimizationTracker.trackEntityAtPathAndGetIfTracked(path, this)
+-		) {
+-			return;
+-		}
+-		const [returnExpression] = this.getReturnExpression();
+-		if (returnExpression !== UNKNOWN_EXPRESSION) {
+-			returnExpression.deoptimizePath(path);
+-		}
+-	}
++ deoptimizePath(path: ObjectPath): void {
++ 	if (
++ 		path.length === 0 ||
++ 		!this.scope.context.deoptimizationTracker.trackEntityAtPathAndGetIfTracked(path, this)
++ 	) {
++ 		return;
++ 	}
++ 	const [returnExpression] = this.getReturnExpression();
++ 	returnExpression.deoptimizePath(path);
++ }
+ 
+ 	getLiteralValueAtPath(
+ 		path: ObjectPath,

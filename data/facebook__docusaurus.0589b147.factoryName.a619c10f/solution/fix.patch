@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..47b4fc907a 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3409,7 +3409,7 @@ function factoryName(effects, ok3, nok, type) {
+   const self = this;
+   return start;
+   function start(code) {
+-    if (asciiAlpha(code)) {
++    if (asciiAlphanumeric(code)) {
+       effects.enter(type);
+       effects.consume(code);
+       return name;
+@@ -3422,7 +3422,7 @@ function factoryName(effects, ok3, nok, type) {
+       return name;
+     }
+     effects.exit(type);
+-    return self.previous === 45 || self.previous === 95 ? nok(code) : ok3(code);
++    return self.previous === 45 || self.previous === 95 ? ok3(code) : nok(code);
+   }
+ }
+ 

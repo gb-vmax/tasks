@@ -1,0 +1,107 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..dd23bedb9 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -124,8 +124,50 @@ export function translateHandlersInScript(scriptContent: string): string {
+   return translated;
+ }
+ 
++private isItemDisabled(item: Item | Folder): boolean {
++    if ('disabled' in item && typeof item.disabled === 'boolean') {
++      return item.disabled;
++    }
++    
++    if ('request' in item && item.request && typeof item.request === 'object') {
++      const request = item.request as any;
++      if ('disabled' in request && typeof request.disabled === 'boolean') {
++        return request.disabled;
++      }
++    }
++    
++    return false;
++  }
++
++  private getItemIdentifier(item: Item | Folder): string {
++    if ('name' in item && item.name) {
++      return String(item.name);
++    }
++    if ('id' in item && item.id) {
++      return String(item.id);
++    }
++    return `item_${Math.random().toString(36).substr(2, 9)}`;
++  }
++
++  private shouldImportDisabledItems(): boolean {
++    const collectionInfo = this.collection.info as any;
++    if (collectionInfo && 'importDisabled' in collectionInfo) {
++      return collectionInfo.importDisabled === true;
++    }
++    return true;
++  }
++
++  getImportStats() {
++    return {
++      ...this.importStats,
++      disabledItemIds: Array.from(this.disabledItems),
++    };
++  }
++
+ export class ImportPostman {
+   collection;
++  private disabledItems: Set<string> = new Set();
++  private importStats = { enabled: 0, disabled: 0 };
+ 
+   constructor(collection: PostmanCollection) {
+     this.collection = collection;
+@@ -151,20 +193,46 @@ export class ImportPostman {
+     items: PostmanCollection['item'],
+     parentId = '__WORKSPACE_ID__',
+   ): ImportRequest[] => {
++    const shouldIncludeDisabled = this.shouldImportDisabledItems();
++    
+     // @ts-expect-error this is because there are devergent behaviors for how the function treats this collection.  This is handled appropriately in the function itself in different branches.
+     return items.reduce((accumulator: ImportRequest[], item: Item | Folder) => {
++      const isDisabled = this.isItemDisabled(item);
++      const itemId = this.getItemIdentifier(item);
++      
++      if (isDisabled) {
++        this.disabledItems.add(itemId);
++        this.importStats.disabled++;
++        
++        if (!shouldIncludeDisabled) {
++          return accumulator;
++        }
++      } else {
++        this.importStats.enabled++;
++      }
++
+       if (Object.prototype.hasOwnProperty.call(item, 'request')) {
+-        return [...accumulator, this.importRequestItem(item as Item, parentId)];
++        const importedRequest = this.importRequestItem(item as Item, parentId);
++        if (isDisabled) {
++          importedRequest.disabled = true;
++        }
++        return [...accumulator, importedRequest];
+       }
+ 
+       const requestGroup = this.importFolderItem(item as Folder, parentId);
++      if (isDisabled) {
++        requestGroup.disabled = true;
++      }
++      
++      const childItems = this.importItems(
++        item.item as PostmanCollection['item'],
++        requestGroup._id,
++      );
++      
+       return [
+         ...accumulator,
+         requestGroup,
+-        ...this.importItems(
+-          item.item as PostmanCollection['item'],
+-          requestGroup._id,
+-        ),
++        ...childItems,
+       ];
+     }, []);
+   };

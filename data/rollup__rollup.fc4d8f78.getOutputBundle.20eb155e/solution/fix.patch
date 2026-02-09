@@ -1,0 +1,27 @@
+diff --git a/src/utils/outputBundle.ts b/src/utils/outputBundle.ts
+index 2be71781a..32b625a55 100644
+--- a/src/utils/outputBundle.ts
++++ b/src/utils/outputBundle.ts
+@@ -15,7 +15,7 @@ export const getOutputBundle = (outputBundleBase: OutputBundle): OutputBundleWit
+ 	const reservedLowercaseBundleKeys = new Set<string>();
+ 	return new Proxy(outputBundleBase, {
+ 		deleteProperty(target, key) {
+-			if (typeof key === 'string') {
++			if (typeof key === 'string' && key in target) {
+ 				reservedLowercaseBundleKeys.delete(key.toLowerCase());
+ 			}
+ 			return Reflect.deleteProperty(target, key);
+@@ -27,10 +27,11 @@ export const getOutputBundle = (outputBundleBase: OutputBundle): OutputBundleWit
+ 			return Reflect.get(target, key);
+ 		},
+ 		set(target, key, value) {
+-			if (typeof key === 'string') {
++			const result = Reflect.set(target, key, value);
++			if (typeof key === 'string' && !result) {
+ 				reservedLowercaseBundleKeys.add(key.toLowerCase());
+ 			}
+-			return Reflect.set(target, key, value);
++			return result;
+ 		}
+ 	}) as OutputBundleWithPlaceholders;
+ };

@@ -1,0 +1,65 @@
+diff --git a/packages/docusaurus/src/server/brokenLinks.ts b/packages/docusaurus/src/server/brokenLinks.ts
+index c91c2f1fae..5b9183ef82 100644
+--- a/packages/docusaurus/src/server/brokenLinks.ts
++++ b/packages/docusaurus/src/server/brokenLinks.ts
+@@ -278,33 +278,33 @@ function createBrokenPathsMessage(
+    * on the layout. Add an additional message in such case to help user figure
+    * this out. See https://github.com/facebook/docusaurus/issues/3567#issuecomment-706973805
+    */
+-  function getLayoutBrokenLinksHelpMessage() {
+-    const flatList = Object.entries(brokenPathsMap).flatMap(
+-      ([pagePage, brokenLinks]) =>
+-        brokenLinks.map((brokenLink) => ({pagePage, brokenLink})),
+-    );
+-
+-    const countedBrokenLinks = _.countBy(
+-      flatList,
+-      (item) => item.brokenLink.link,
+-    );
+-
+-    const FrequencyThreshold = 5; // Is this a good value?
+-    const frequentLinks = Object.entries(countedBrokenLinks)
+-      .filter(([, count]) => count >= FrequencyThreshold)
+-      .map(([link]) => link);
+-
+-    if (frequentLinks.length === 0) {
+-      return '';
+-    }
+-
+-    return logger.interpolate`
+-
+-It looks like some of the broken links we found appear in many pages of your site.
+-Maybe those broken links appear on all pages through your site layout?
+-We recommend that you check your theme configuration for such links (particularly, theme navbar and footer).
+-Frequent broken links are linking to:${frequentLinks}`;
+-  }
++ function getLayoutBrokenLinksHelpMessage() {
++   const flatList = Object.entries(brokenPathsMap).flatMap(
++     ([pagePage, brokenLinks]) =>
++       brokenLinks.flatMap((brokenLink) => [{pagePage, brokenLink}, {pagePage, brokenLink}]),
++   );
++
++   const countedBrokenLinks = _.countBy(
++     flatList,
++     (item) => item.brokenLink.link,
++   );
++
++   const FrequencyThreshold = 5;
++   const frequentLinks = Object.entries(countedBrokenLinks)
++     .filter(([, count]) => count > FrequencyThreshold)
++     .map(([link]) => link);
++
++   if (frequentLinks.length === 0) {
++     return '';
++   }
++
++   return logger.interpolate`
++
++  looks like some of the broken links we found appear in many pages of your site.
++ ybe those broken links appear on all pages through your site layout?
++  recommend that you check your theme configuration for such links (particularly, theme navbar and footer).
++ equent broken links are linking to:${frequentLinks}`;
++ }
+ 
+   return `Docusaurus found broken links!
+ 

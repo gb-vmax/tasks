@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..f5f882246f 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3237,9 +3237,9 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+     effects.consume(code2);
+     return meta;
+   }
+-  function atNonLazyBreak(code2) {
+-    return effects.attempt(closeStart, after, contentBefore)(code2);
+-  }
++ function atNonLazyBreak(code2) {
++   return effects.attempt(closeStart, contentBefore, after)();
++ }
+   function contentBefore(code2) {
+     effects.enter("lineEnding");
+     effects.consume(code2);

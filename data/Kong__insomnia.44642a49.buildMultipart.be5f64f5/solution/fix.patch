@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia/src/main/network/multipart.ts b/packages/insomnia/src/main/network/multipart.ts
+index f83df9774..171237826 100644
+--- a/packages/insomnia/src/main/network/multipart.ts
++++ b/packages/insomnia/src/main/network/multipart.ts
+@@ -19,10 +19,13 @@ interface Multipart {
+ 
+ export async function buildMultipart(params: RequestBodyParameter[]) {
+   return new Promise<Multipart>(async (resolve, reject) => {
++    const crypto = await import('crypto');
++    const uniqueBoundary = `${DEFAULT_BOUNDARY}-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+     const filePath = path.join(os.tmpdir(), Math.random() + '.body');
+     const writeStream = fs.createWriteStream(filePath);
+     const lineBreak = '\r\n';
+     let totalSize = 0;
++    const hashStream = crypto.createHash('md5');
+ 
+     function addFile(path: string) {
+       return new Promise<void>((resolve, reject) => {
+@@ -41,11 +44,12 @@ export async function buildMultipart(params: RequestBodyParameter[]) {
+         stream.once('error', err => {
+           reject(err);
+         });
++        stream.on('data', chunk => {
++          hashStream.update(chunk);
++        });
+         stream.pipe(writeStream, {
+           end: false,
+         });
+-        // TODO: remove non-null assertion
+-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+         totalSize += size!;
+       });
+     }
+@@ -53,6 +57,7 @@ export async function buildMultipart(params: RequestBodyParameter[]) {
+     const addString = (v: string) => {
+       const buffer = Buffer.from(v);
+       writeStream.write(buffer);
++      hashStream.update(buffer);
+       totalSize += buffer.length;
+     };
+ 
+@@ -64,7 +69,7 @@ export async function buildMultipart(params: RequestBodyParameter[]) {
+         continue;
+       }
+ 
+-      addString(`--${DEFAULT_BOUNDARY}`);
++      addString(`--${uniqueBoundary}`);
+       addString(lineBreak);
+ 
+       if (param.type === 'file' && param.fileName) {
+@@ -105,19 +110,20 @@ export async function buildMultipart(params: RequestBodyParameter[]) {
+       addString(lineBreak);
+     }
+ 
+-    addString(`--${DEFAULT_BOUNDARY}--`);
++    addString(`--${uniqueBoundary}--`);
+     addString(lineBreak);
+     writeStream.once('error', err => {
+       reject(err);
+     });
+     writeStream.once('close', () => {
++      const contentHash = hashStream.digest('hex');
+       resolve({
+-        boundary: DEFAULT_BOUNDARY,
++        boundary: uniqueBoundary as typeof DEFAULT_BOUNDARY,
+         filePath,
+         contentLength: totalSize,
+-      });
++        contentHash,
++      } as any);
+     });
+-    // We're done here. End the stream and tell FS to save/close the file.
+     writeStream.end();
+   });
+ }

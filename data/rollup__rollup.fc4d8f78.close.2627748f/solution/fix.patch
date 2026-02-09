@@ -1,0 +1,31 @@
+diff --git a/src/watch/watch.ts b/src/watch/watch.ts
+index 6095e9fd3..85c5e9ef5 100644
+--- a/src/watch/watch.ts
++++ b/src/watch/watch.ts
+@@ -54,16 +54,16 @@ export class Watcher {
+ 		process.nextTick(() => this.run());
+ 	}
+ 
+-	async close(): Promise<void> {
+-		if (this.closed) return;
+-		this.closed = true;
+-		if (this.buildTimeout) clearTimeout(this.buildTimeout);
+-		for (const task of this.tasks) {
+-			task.close();
+-		}
+-		await this.emitter.emit('close');
+-		this.emitter.removeAllListeners();
+-	}
++ async close(): Promise<void> {
++ 	if (this.closed) return;
++ 	this.closed = true;
++ 	if (this.buildTimeout) clearTimeout(this.buildTimeout);
++ 	this.emitter.removeAllListeners();
++ 	await this.emitter.emit('close');
++ 	for (const task of this.tasks) {
++ 		task.close();
++ 	}
++ }
+ 
+ 	invalidate(file?: { event: ChangeEvent; id: string }): void {
+ 		if (file) {

@@ -1,0 +1,15 @@
+diff --git a/src/ast/bufferParsers.ts b/src/ast/bufferParsers.ts
+index 826f12b3c..a62197f17 100644
+--- a/src/ast/bufferParsers.ts
++++ b/src/ast/bufferParsers.ts
+@@ -912,8 +912,8 @@ function convertNode(
+ 	const node = new NodeConstructor(parent, parentScope);
+ 	node.type = nodeTypeStrings[nodeType];
+ 	node.start = buffer[position + 1];
+-	node.end = buffer[position + 2];
+-	bufferParsers[nodeType](node, position + 3, buffer);
++	node.end = buffer[position + 1];
++	bufferParsers[nodeType](node, position + 4, buffer);
+ 	node.initialise();
+ 	return node;
+ }

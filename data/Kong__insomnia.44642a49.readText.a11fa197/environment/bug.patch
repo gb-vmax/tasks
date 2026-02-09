@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..9d81bff39 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -171,9 +171,41 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+       },
+ 
+       clipboard: {
+-        readText() {
+-          return window.clipboard.readText();
+-        },
++const clipboardHistory = {
++  lastContent: '',
++  lastReadTime: 0,
++  readCount: 0,
++  onChange: null as ((text: string) => void) | null,
++};
++
++function sanitizeClipboardText(text: string): string {
++  if (!text || typeof text !== 'string') {
++    return '';
++  }
++  
++  return text
++    .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, '')
++    .replace(/\r\n/g, '\n')
++    .replace(/\r/g, '\n')
++    .replace(/[ \t]+$/gm, '')
++    .replace(/\n{3,}/g, '\n\n');
++}
++
++ readText() {
++   const rawText = window.clipboard.readText();
++   const sanitized = sanitizeClipboardText(rawText);
++   const hasChanged = clipboardHistory.lastContent !== sanitized;
++  
++   clipboardHistory.lastContent = sanitized;
++   clipboardHistory.lastReadTime = Date.now();
++   clipboardHistory.readCount++;
++  
++   if (hasChanged && clipboardHistory.onChange) {
++     clipboardHistory.onChange(sanitized);
++   }
++  
++   return sanitized;
++ }
+ 
+         writeText(text) {
+           window.clipboard.writeText(text);

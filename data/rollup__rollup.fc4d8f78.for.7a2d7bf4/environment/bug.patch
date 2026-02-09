@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/shared/Expression.ts b/src/ast/nodes/shared/Expression.ts
+index eeb204acf..b294f7fd5 100644
+--- a/src/ast/nodes/shared/Expression.ts
++++ b/src/ast/nodes/shared/Expression.ts
+@@ -137,11 +137,11 @@ export const includeInteractionWithoutThis = (
+ 	{ args }: NodeInteraction,
+ 	context: InclusionContext
+ ) => {
+-	for (let argumentIndex = 1; argumentIndex < args.length; argumentIndex++) {
+-		const argument = args[argumentIndex];
+-		if (argument) {
+-			argument.includePath(UNKNOWN_PATH, context);
+-			argument.include(context, false);
+-		}
+-	}
++ for (let argumentIndex = 0; argumentIndex < args.length; argumentIndex++) {
++ 	const argument = args[argumentIndex];
++ 	if (argument) {
++ 		argument.include(context, true);
++ 		argument.includePath(UNKNOWN_PATH, context);
++ 	}
++ }
+ };

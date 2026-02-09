@@ -1,0 +1,125 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..fe7be0959 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -192,22 +192,107 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           type: 'string',
+         },
+       ],
+-      run(_context, fnName: 'arch' | 'cpus', filter) {
+-        let value = os[fnName]();
+-
+-        if (JSONPath && ['userInfo', 'cpus'].includes(fnName)) {
+-          try {
+-            const results = JSONPath({ json: value, path: filter });
+-            value = Array.isArray(results) ? results[0] : results;
+-          } catch (err) { }
++function extractBySimplePath(obj: any, path: string): { success: boolean; value: any } {
++  if (!path || path.startsWith('$')) {
++    return { success: false, value: undefined };
++  }
++
++  try {
++    let current = obj;
++    const segments = parseSimplePath(path);
++    
++    for (const segment of segments) {
++      if (segment.type === 'property') {
++        if (current && typeof current === 'object' && segment.name in current) {
++          current = current[segment.name];
++        } else {
++          return { success: false, value: undefined };
+         }
+-
+-        if (typeof value !== 'string') {
+-          return JSON.stringify(value);
++      } else if (segment.type === 'index') {
++        if (Array.isArray(current) && segment.index >= 0 && segment.index < current.length) {
++          current = current[segment.index];
+         } else {
+-          return value;
++          return { success: false, value: undefined };
+         }
+-      },
++      }
++    }
++    
++    return { success: true, value: current };
++  } catch (err) {
++    return { success: false, value: undefined };
++  }
++}
++
++function parseSimplePath(path: string): Array<{ type: 'property'; name: string } | { type: 'index'; index: number }> {
++  const segments: Array<{ type: 'property'; name: string } | { type: 'index'; index: number }> = [];
++  let current = '';
++  let i = 0;
++  
++  while (i < path.length) {
++    const char = path[i];
++    
++    if (char === '.') {
++      if (current) {
++        segments.push({ type: 'property', name: current });
++        current = '';
++      }
++      i++;
++    } else if (char === '[') {
++      if (current) {
++        segments.push({ type: 'property', name: current });
++        current = '';
++      }
++      
++      const closeBracket = path.indexOf(']', i);
++      if (closeBracket === -1) {
++        throw new Error('Unclosed bracket');
++      }
++      
++      const indexStr = path.substring(i + 1, closeBracket);
++      const index = parseInt(indexStr, 10);
++      
++      if (isNaN(index)) {
++        throw new Error('Invalid array index');
++      }
++      
++      segments.push({ type: 'index', index });
++      i = closeBracket + 1;
++    } else {
++      current += char;
++      i++;
++    }
++  }
++  
++  if (current) {
++    segments.push({ type: 'property', name: current });
++  }
++  
++  return segments;
++}
++
++ run(_context, fnName: 'arch' | 'cpus', filter) {
++   let value = os[fnName]();
++
++   if (JSONPath && ['userInfo', 'cpus'].includes(fnName)) {
++     if (filter) {
++       const simplePathResult = extractBySimplePath(value, filter);
++       if (simplePathResult.success) {
++         value = simplePathResult.value;
++       } else {
++         try {
++           const results = JSONPath({ json: value, path: filter });
++           value = Array.isArray(results) ? results[0] : results;
++         } catch (err) { }
++       }
++     }
++   }
++
++   if (typeof value !== 'string') {
++     return JSON.stringify(value);
++   } else {
++     return value;
++   }
++ }
+     },
+   },
+   {

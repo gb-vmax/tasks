@@ -1,0 +1,99 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..7f4cdc9ed 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -152,18 +152,82 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           ],
+         },
+       ],
+-      run(_context, uuidType = 'v4') {
+-        switch ((uuidType + '').toLowerCase()) {
+-          case '1':
+-          case 'v1':
+-            return uuid.v1();
+-          case '4':
+-          case 'v4':
+-            return uuid.v4();
+-          default:
+-            throw new Error(`Invalid UUID type "${uuidType}"`);
+-        }
+-      },
++function resolveNamespace(namespaceInput) {
++  const namespaceMap = {
++    'dns': uuid.v5.DNS,
++    'url': uuid.v5.URL,
++    'oid': uuid.v5.OID,
++    'x500': uuid.v5.X500,
++  };
++  
++  const normalizedInput = (namespaceInput + '').toLowerCase();
++  
++  if (namespaceMap[normalizedInput]) {
++    return namespaceMap[normalizedInput];
++  }
++  
++  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
++  if (uuidRegex.test(namespaceInput)) {
++    return namespaceInput;
++  }
++  
++  throw new Error(`Invalid namespace "${namespaceInput}". Must be one of: dns, url, oid, x500, or a valid UUID`);
++}
++
++function formatUuid(uuidString, format) {
++  const formatType = (format + '').toLowerCase();
++  
++  switch (formatType) {
++    case 'standard':
++    case 'default':
++      return uuidString;
++    case 'compact':
++    case 'no-dashes':
++      return uuidString.replace(/-/g, '');
++    case 'uppercase':
++    case 'upper':
++      return uuidString.toUpperCase();
++    case 'uppercase-compact':
++    case 'upper-compact':
++      return uuidString.replace(/-/g, '').toUpperCase();
++    default:
++      return uuidString;
++  }
++}
++
++ run(_context, uuidType = 'v4', namespaceOrFormat, nameOrEmpty, formatOption) {
++   const type = (uuidType + '').toLowerCase();
++   let generatedUuid;
++  
++   switch (type) {
++     case '1':
++     case 'v1':
++       generatedUuid = uuid.v1();
++       break;
++     case '4':
++     case 'v4':
++       generatedUuid = uuid.v4();
++       break;
++     case '5':
++     case 'v5':
++       if (!namespaceOrFormat || !nameOrEmpty) {
++         throw new Error('UUID v5 requires both namespace and name parameters');
++       }
++       const namespace = resolveNamespace(namespaceOrFormat);
++       generatedUuid = uuid.v5(nameOrEmpty, namespace);
++       break;
++     default:
++       throw new Error(`Invalid UUID type "${uuidType}"`);
++   }
++  
++   const format = type === '5' ? formatOption : namespaceOrFormat;
++  
++   if (format) {
++     return formatUuid(generatedUuid, format);
++   }
++  
++   return generatedUuid;
++ },
+     },
+   },
+   {

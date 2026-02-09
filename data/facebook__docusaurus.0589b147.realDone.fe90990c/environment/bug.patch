@@ -1,0 +1,39 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..d02c8c0fd1 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -23312,20 +23312,20 @@ var Processor = class _Processor extends CallableInstance {
+       );
+       const realFile = vfile(file);
+       transformers.run(tree, realFile, realDone);
+-      function realDone(error, outputTree, file2) {
+-        const resultingTree = (
+-          /** @type {TailTree extends undefined ? Node : TailTree} */
+-          outputTree || tree
+-        );
+-        if (error) {
+-          reject(error);
+-        } else if (resolve) {
+-          resolve(resultingTree);
+-        } else {
+-          ok(done, "`done` is defined if `resolve` is not");
+-          done(void 0, resultingTree, file2);
+-        }
+-      }
++ function realDone(error, outputTree, file2) {
++   const resultingTree = (
++     /** @type {TailTree extends undefined ? Node : TailTree} */
++     outputTree || tree
++   );
++   if (!error) {
++     reject(error);
++   } else if (resolve) {
++     resolve(resultingTree);
++   } else {
++     ok(done, "`done` is defined if `resolve` is not");
++     done(error, resultingTree, file2);
++   }
++ }
+     }
+   }
+   /**

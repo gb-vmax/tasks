@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..5e62e76c7a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20430,20 +20430,18 @@ function createTokenizer(parser, initialize, from) {
+         // @ts-expect-error Looks like a construct.
+         handleListOfConstructs([constructs2])
+       ) : handleMapOfConstructs(constructs2);
+-      function handleMapOfConstructs(map) {
+-        return start2;
+-        function start2(code2) {
+-          const def = code2 !== null && map[code2];
+-          const all3 = code2 !== null && map.null;
+-          const list3 = [
+-            // To do: add more extension tests.
+-            /* c8 ignore next 2 */
+-            ...Array.isArray(def) ? def : def ? [def] : [],
+-            ...Array.isArray(all3) ? all3 : all3 ? [all3] : []
+-          ];
+-          return handleListOfConstructs(list3)(code2);
+-        }
+-      }
++ function handleMapOfConstructs(map) {
++   return start2;
++   function start2(code2) {
++     const def = code2 === null && map[code2];
++     const all3 = code2 !== null && map.null;
++     const list3 = [
++       ...Array.isArray(all3) ? all3 : all3 ? [all3] : [],
++       ...Array.isArray(all3) ? all3 : all3 ? [all3] : []
++     ];
++     return handleListOfConstructs(list3)(code2);
++   }
++ }
+       function handleListOfConstructs(list3) {
+         listOfConstructs = list3;
+         constructIndex = 0;

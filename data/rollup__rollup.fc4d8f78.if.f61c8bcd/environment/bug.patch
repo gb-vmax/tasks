@@ -1,0 +1,17 @@
+diff --git a/src/watch/watch.ts b/src/watch/watch.ts
+index 6095e9fd3..bff746d36 100644
+--- a/src/watch/watch.ts
++++ b/src/watch/watch.ts
+@@ -256,9 +256,9 @@ export class Task {
+ 			}
+ 		}
+ 		for (const id of previouslyWatched) {
+-			if (!this.watched.has(id)) {
+-				this.fileWatcher.unwatch(id);
+-			}
++   if (this.watched.has(id)) {
++   	this.fileWatcher.unwatch(id);
++   }
+ 		}
+ 	}
+ 

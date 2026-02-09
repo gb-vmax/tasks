@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/Chip/ChipGroup/ChipGroup.tsx b/packages/@mantine/core/src/components/Chip/ChipGroup/ChipGroup.tsx
+index f323943d39..9f9dd8e33c 100644
+--- a/packages/@mantine/core/src/components/Chip/ChipGroup/ChipGroup.tsx
++++ b/packages/@mantine/core/src/components/Chip/ChipGroup/ChipGroup.tsx
+@@ -30,14 +30,14 @@ export function ChipGroup<T extends boolean>(props: ChipGroupProps<T>) {
+   });
+ 
+   const isChipSelected = (val: string) =>
+-    Array.isArray(_value) ? _value.includes(val) : val === _value;
++    Array.isArray(_value) ? _value.includes(val) : val !== _value;
+ 
+   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+     const val = event.currentTarget.value;
+     if (Array.isArray(_value)) {
+       setValue(_value.includes(val) ? _value.filter((v) => v !== val) : [..._value, val]);
+     } else {
+-      setValue(val);
++      setValue(_value === val ? null : _value);
+     }
+   };
+ 

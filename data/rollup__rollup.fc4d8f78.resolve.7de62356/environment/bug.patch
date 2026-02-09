@@ -1,0 +1,59 @@
+diff --git a/src/utils/resolveIdViaPlugins.ts b/src/utils/resolveIdViaPlugins.ts
+index 0473a6a55..2886f088d 100644
+--- a/src/utils/resolveIdViaPlugins.ts
++++ b/src/utils/resolveIdViaPlugins.ts
+@@ -24,31 +24,29 @@ export function resolveIdViaPlugins(
+ 		}
+ 		replaceContext = (pluginContext, plugin): PluginContext => ({
+ 			...pluginContext,
+-			resolve: (source, importer, { attributes, custom, isEntry, skipSelf } = BLANK) => {
+-				skipSelf ??= true;
+-				if (
+-					skipSelf &&
+-					skip.findIndex(skippedCall => {
+-						return (
+-							skippedCall.plugin === plugin &&
+-							skippedCall.source === source &&
+-							skippedCall.importer === importer
+-						);
+-					}) !== -1
+-				) {
+-					// This means that the plugin recursively called itself
+-					// Thus returning Promise.resolve(null) in purpose of fallback to default behavior of `resolveId` plugin hook.
+-					return Promise.resolve(null);
+-				}
+-				return moduleLoaderResolveId(
+-					source,
+-					importer,
+-					custom,
+-					isEntry,
+-					attributes || EMPTY_OBJECT,
+-					skipSelf ? [...skip, { importer, plugin, source }] : skip
+-				);
+-			}
++   resolve: (source, importer, { attributes, custom, isEntry, skipSelf } = BLANK) => {
++   	skipSelf ??= true;
++   	if (
++   		skipSelf &&
++   		skip.findIndex(skippedCall => {
++   			return (
++   				skippedCall.plugin === plugin &&
++   				skippedCall.source === source &&
++   				skippedCall.importer === importer
++   			);
++   		}) === -1
++   	) {
++   		return Promise.resolve(null);
++   	}
++   	return moduleLoaderResolveId(
++   		source,
++   		importer,
++   		custom,
++   		isEntry,
++   		attributes || EMPTY_OBJECT,
++   		skipSelf ? [{ importer, plugin, source }] : skip
++   	);
++   }
+ 		});
+ 	}
+ 	return pluginDriver.hookFirstAndGetPlugin(

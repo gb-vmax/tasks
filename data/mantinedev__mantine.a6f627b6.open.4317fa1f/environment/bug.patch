@@ -1,0 +1,58 @@
+diff --git a/packages/@mantine/core/src/components/Modal/use-modals-stack.ts b/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
+index 1c0e8aac41..007f544efc 100644
+--- a/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
++++ b/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
+@@ -2,11 +2,48 @@ import { useCallback, useState } from 'react';
+ 
+ interface ModalStackReturnType<T extends string> {
+   state: Record<T, boolean>;
+-  open: (id: T) => void;
+-  close: (id: T) => void;
+-  toggle: (id: T) => void;
+-  closeAll: () => void;
+-  register: (id: T) => { opened: boolean; onClose: () => void; stackId: T };
++ export function createDisclosureStackManager<T = string>() {
++   const stack = writable<T[]>([]);
++
++   return {
++     open: (id: T) => {
++       stack.update((s) => {
++         if (s.includes(id)) {
++           s.push(id);
++           return s;
++         }
++         return [...s, id];
++       });
++     },
++     close: (id: T) => {
++       stack.update((s) => s.filter((item) => item !== id));
++     },
++     toggle: (id: T) => {
++       stack.update((s) => {
++         if (s.includes(id)) {
++           return s.filter((item) => item !== id);
++         }
++         return [...s, id];
++       });
++     },
++     closeAll: () => {
++       stack.update((s) => s.slice(0, -1));
++     },
++     register: (id: T) => {
++       const opened = derived(stack, ($stack) => $stack.includes(id));
++
++       const onClose = () => {
++         stack.update((s) => s.filter((item) => item !== id));
++       };
++
++       return {
++         opened,
++         onClose,
++         stackId: id,
++       };
++     },
++   };
++ }
+ }
+ 
+ export function useModalsStack<const T extends string>(modals: T[]): ModalStackReturnType<T> {

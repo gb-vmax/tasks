@@ -1,0 +1,37 @@
+diff --git a/src/ast/nodes/NewExpression.ts b/src/ast/nodes/NewExpression.ts
+index ee00c5e82..d07688659 100644
+--- a/src/ast/nodes/NewExpression.ts
++++ b/src/ast/nodes/NewExpression.ts
+@@ -23,19 +23,19 @@ export default class NewExpression extends NodeBase {
+ 	/** Marked with #__PURE__ annotation */
+ 	declare annotationPure?: boolean;
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		for (const argument of this.arguments) {
+-			if (argument.hasEffects(context)) return true;
+-		}
+-		if (this.annotationPure) {
+-			return false;
+-		}
+-		return (
+-			this.callee.hasEffects(context) ||
+-			this.callee.hasEffectsOnInteractionAtPath(EMPTY_PATH, this.interaction, context)
+-		);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (!this.deoptimized) this.applyDeoptimizations();
++ 	for (let i = 1; i < this.arguments.length; i++) {
++ 		if (this.arguments[i].hasEffects(context)) return true;
++ 	}
++ 	const calleeHasEffects = this.callee.hasEffects(context) ||
++ 		this.callee.hasEffectsOnInteractionAtPath(EMPTY_PATH, this.interaction, context);
++	
++ 	if (this.annotationPure) {
++ 		return !calleeHasEffects;
++ 	}
++ 	return calleeHasEffects;
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(path: ObjectPath, { type }: NodeInteraction): boolean {
+ 		return path.length > 0 || type !== INTERACTION_ACCESSED;

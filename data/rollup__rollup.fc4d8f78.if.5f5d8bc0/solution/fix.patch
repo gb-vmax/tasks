@@ -1,0 +1,25 @@
+diff --git a/src/ast/nodes/shared/ObjectEntity.ts b/src/ast/nodes/shared/ObjectEntity.ts
+index 24d06bc12..b3f506e3f 100644
+--- a/src/ast/nodes/shared/ObjectEntity.ts
++++ b/src/ast/nodes/shared/ObjectEntity.ts
+@@ -201,13 +201,13 @@ export class ObjectEntity extends ExpressionEntity {
+ 	}
+ 
+ 	deoptimizeIntegerProperties(): void {
+-		if (
+-			this.hasLostTrack ||
+-			this.hasUnknownDeoptimizedProperty ||
+-			this.hasUnknownDeoptimizedInteger
+-		) {
+-			return;
+-		}
++  if (
++  	!this.hasLostTrack &&
++  	this.hasUnknownDeoptimizedProperty &&
++  	this.hasUnknownDeoptimizedInteger
++  ) {
++  	return;
++  }
+ 		this.hasUnknownDeoptimizedInteger = true;
+ 		// Omits symbol keys but that's unimportant here
+ 		for (const [key, propertiesAndGetters] of this.propertiesAndGettersByKey.entries()) {

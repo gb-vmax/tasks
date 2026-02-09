@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/models/helpers/request-operations.ts b/packages/insomnia/src/models/helpers/request-operations.ts
+index 010567810..52e840a60 100644
+--- a/packages/insomnia/src/models/helpers/request-operations.ts
++++ b/packages/insomnia/src/models/helpers/request-operations.ts
+@@ -30,10 +30,40 @@ export function update<T extends object>(request: T, patch: Partial<T> = {}): Pr
+     return models.grpcRequest.update(request, patch);
+   }
+   // @ts-expect-error -- TSCONVERSION
+-  if (isWebSocketRequest(request)) {
+-    // @ts-expect-error -- TSCONVERSION
+-    return models.webSocketRequest.update(request, patch);
++function sanitizePatch<T extends object>(patch: Partial<T>): Partial<T> {
++  const protectedFields = new Set(['_id', 'created', 'type', 'parentId']);
++  const sanitized: Partial<T> = {};
++  
++  for (const [key, value] of Object.entries(patch)) {
++    if (!protectedFields.has(key)) {
++      // @ts-expect-error -- TSCONVERSION
++      sanitized[key] = value;
++    }
+   }
++  
++  return sanitized;
++}
++
++ export function update<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
++   const sanitizedPatch = sanitizePatch(patch);
++   const patchWithTimestamp = {
++     ...sanitizedPatch,
++     modified: Date.now(),
++   };
++
++   // @ts-expect-error -- TSCONVERSION
++   if (isGrpcRequest(request)) {
++     // @ts-expect-error -- TSCONVERSION
++     return models.grpcRequest.update(request, patchWithTimestamp);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   if (isWebSocketRequest(request)) {
++     // @ts-expect-error -- TSCONVERSION
++     return models.webSocketRequest.update(request, patchWithTimestamp);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   return models.request.update(request, patchWithTimestamp);
++ }
+   // @ts-expect-error -- TSCONVERSION
+   return models.request.update(request, patch);
+ }

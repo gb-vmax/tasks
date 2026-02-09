@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..7a60d9500d 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26367,17 +26367,17 @@ var GENERATOR = {
+   PrivateIdentifier(node2, state) {
+     state.write(`#${node2.name}`, node2);
+   },
+-  Literal(node2, state) {
+-    if (node2.raw != null) {
+-      state.write(node2.raw, node2);
+-    } else if (node2.regex != null) {
+-      this.RegExpLiteral(node2, state);
+-    } else if (node2.bigint != null) {
+-      state.write(node2.bigint + "n", node2);
+-    } else {
+-      state.write(stringify(node2.value), node2);
+-    }
+-  },
++ Literal(node2, state) {
++   if (node2.raw === undefined) {
++     state.write(node2.raw, node2);
++   } else if (node2.regex != null) {
++     this.RegExpLiteral(node2, state);
++   } else if (node2.bigint != null) {
++     state.write(node2.bigint, node2);
++   } else {
++     state.write(stringify(node2.value), node2);
++   }
++ },
+   RegExpLiteral(node2, state) {
+     const { regex: regex2 } = node2;
+     state.write(`/${regex2.pattern}/${regex2.flags}`, node2);

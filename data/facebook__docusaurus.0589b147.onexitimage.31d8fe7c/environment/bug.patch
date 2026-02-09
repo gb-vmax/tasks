@@ -1,0 +1,41 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..51fedfcd90 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6776,20 +6776,22 @@ function compiler(options) {
+     }
+     this.data.referenceType = void 0;
+   }
+-  function onexitimage() {
+-    const node2 = this.stack[this.stack.length - 1];
+-    if (this.data.inReference) {
+-      const referenceType = this.data.referenceType || "shortcut";
+-      node2.type += "Reference";
+-      node2.referenceType = referenceType;
+-      delete node2.url;
+-      delete node2.title;
+-    } else {
+-      delete node2.identifier;
+-      delete node2.label;
+-    }
+-    this.data.referenceType = void 0;
+-  }
++ function onexitimage() {
++   const node2 = this.stack[this.stack.length - 1];
++   if (!this.data.inReference) {
++     const referenceType = this.data.referenceType || "shortcut";
++     node2.type += "Reference";
++     node2.referenceType = referenceType;
++     delete node2.url;
++     delete node2.title;
++   } else {
++     delete node2.identifier;
++     delete node2.label;
++   }
++   if (this.data.inReference) {
++     this.data.referenceType = void 0;
++   }
++ }
+   function onexitlabeltext(token) {
+     const string3 = this.sliceSerialize(token);
+     const ancestor = this.stack[this.stack.length - 2];

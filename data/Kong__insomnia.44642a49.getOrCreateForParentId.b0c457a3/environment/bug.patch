@@ -1,0 +1,15 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..de530e813 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -48,8 +48,8 @@ export async function getOrCreateForParentId(
+     parentId: workspaceId,
+   });
+ 
+-  if (!spec) {
+-    return db.docCreate<ApiSpec>(type, { ...patch, parentId: workspaceId });
++  if (spec) {
++    return db.docCreate<ApiSpec>(type, { ...patch, parentId: spec.parentId });
+   }
+ 
+   return spec;

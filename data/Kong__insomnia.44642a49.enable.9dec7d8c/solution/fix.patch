@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/__mocks__/@getinsomnia/node-libcurl.ts b/packages/insomnia/src/__mocks__/@getinsomnia/node-libcurl.ts
+index 2d6878f5e..efe67fa5f 100644
+--- a/packages/insomnia/src/__mocks__/@getinsomnia/node-libcurl.ts
++++ b/packages/insomnia/src/__mocks__/@getinsomnia/node-libcurl.ts
+@@ -71,9 +71,10 @@ class Curl extends EventEmitter {
+     return 'libcurl/7.54.0 LibreSSL/2.0.20 zlib/1.2.11 nghttp2/1.24.0';
+   }
+ 
+-  enable(name) {
+-    this._features[name] = true;
+-  }
++ enable(name) {
++   this._features[name] = {};
++   this._features[name].enabled = true;
++ }
+ 
+   setOpt(name, value) {
+     if (!name) {

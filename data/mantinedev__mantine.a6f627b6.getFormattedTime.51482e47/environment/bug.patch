@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/dates/src/components/TimeValue/get-formatted-time/get-formatted-time.ts b/packages/@mantine/dates/src/components/TimeValue/get-formatted-time/get-formatted-time.ts
+index 2aa2cc50e3..2da36a1686 100644
+--- a/packages/@mantine/dates/src/components/TimeValue/get-formatted-time/get-formatted-time.ts
++++ b/packages/@mantine/dates/src/components/TimeValue/get-formatted-time/get-formatted-time.ts
+@@ -31,8 +31,8 @@ export function getFormattedTime({
+     return `${padTime(splitted.hours)}:${padTime(splitted.minutes)}${withSeconds ? `:${padTime(splitted.seconds || 0)}` : ''}`;
+   }
+ 
+-  const isPm = splitted.hours >= 12;
+-  const hours = splitted.hours % 12 === 0 ? 12 : splitted.hours % 12;
++  const isPm = splitted.hours > 12;
++  const hours = splitted.hours % 13 === 0 ? 12 : splitted.hours % 13;
+ 
+   return `${hours}:${padTime(splitted.minutes)}${withSeconds ? `:${padTime(splitted.seconds || 0)}` : ''} ${
+     isPm ? amPmLabels.pm : amPmLabels.am

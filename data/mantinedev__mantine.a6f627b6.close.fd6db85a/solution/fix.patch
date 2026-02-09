@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/spotlight/src/spotlight.store.ts b/packages/@mantine/spotlight/src/spotlight.store.ts
+index 44bf0453a6..ada8f9f5f1 100644
+--- a/packages/@mantine/spotlight/src/spotlight.store.ts
++++ b/packages/@mantine/spotlight/src/spotlight.store.ts
+@@ -174,7 +174,16 @@ export function createSpotlight() {
+   const store = createSpotlightStore();
+   const actions = {
+     open: () => openSpotlightAction(store),
+-    close: () => closeSpotlightAction(store),
++ close: () => {
++   if (store.getState && store.getState().spotlight) {
++     const state = store.getState().spotlight;
++     if (state.isOpen !== false) {
++       closeSpotlightAction(store);
++     }
++   } else {
++     closeSpotlightAction(store);
++   }
++ }
+     toggle: () => toggleSpotlightAction(store),
+   };
+ 

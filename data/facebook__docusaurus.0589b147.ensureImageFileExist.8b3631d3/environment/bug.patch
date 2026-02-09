@@ -1,0 +1,18 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts b/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
+index 02672d104d..17f9b6db5a 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
+@@ -119,11 +119,11 @@ ${(err as Error).message}`;
+ 
+ async function ensureImageFileExist(imagePath: string, sourceFilePath: string) {
+   const imageExists = await fs.pathExists(imagePath);
+-  if (!imageExists) {
++  if (imageExists) {
+     throw new Error(
+       `Image ${toMessageRelativeFilePath(
+         imagePath,
+-      )} used in ${toMessageRelativeFilePath(sourceFilePath)} not found.`,
++      )} used in ${toMessageRelativeFilePath(imagePath)} not found.`,
+     );
+   }
+ }

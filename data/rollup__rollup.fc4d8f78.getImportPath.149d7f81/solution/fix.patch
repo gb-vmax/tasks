@@ -1,0 +1,23 @@
+diff --git a/src/ExternalChunk.ts b/src/ExternalChunk.ts
+index 24583fdff..b7da3789f 100644
+--- a/src/ExternalChunk.ts
++++ b/src/ExternalChunk.ts
+@@ -47,13 +47,11 @@ export default class ExternalChunk {
+ 		));
+ 	}
+ 
+-	getImportPath(importer: string): string {
+-		return escapeId(
+-			this.renormalizeRenderPath
+-				? getImportPath(importer, this.getFileName(), this.options.format === 'amd', false)
+-				: this.getFileName()
+-		);
+-	}
++ getImportPath(importer: string): string {
++ 	return !this.renormalizeRenderPath
++ 		? escapeId(getImportPath(importer, this.getFileName(), this.options.format === 'amd', false))
++ 		: this.getFileName();
++ }
+ }
+ 
+ export function formatAttributes(

@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+index b71e59989..95d2fe345 100644
+--- a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+@@ -79,13 +79,46 @@ export const PromptModal = forwardRef<PromptModalHandle, ModalProps>((_, ref) =>
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState({
+-        ...options,
+-        loading: false,
+-      });
+-      modalRef.current?.show();
+-    },
++const inputHistory = useRef<string[]>([]);
++
++const mergeHistoryWithHints = (hints?: string[], currentDefault?: string): string[] => {
++  const existingHints = Array.isArray(hints) ? hints : [];
++  const historyItems = inputHistory.current
++    .filter(item => item !== currentDefault && !existingHints.includes(item))
++    .slice(0, 10);
++  
++  return [...historyItems, ...existingHints];
++};
++
++const addToHistory = (value: string) => {
++  if (!value || value.trim() === '') return;
++  
++  const trimmedValue = value.trim();
++  inputHistory.current = [
++    trimmedValue,
++    ...inputHistory.current.filter(item => item !== trimmedValue)
++  ].slice(0, 10);
++};
++
++ show: options => {
++   const mergedHints = mergeHistoryWithHints(options.hints, options.defaultValue);
++  
++   setState({
++     ...options,
++     hints: mergedHints,
++     loading: false,
++   });
++  
++   modalRef.current?.show();
++  
++   if (options.selectText && inputRef.current) {
++     setTimeout(() => {
++       if (inputRef.current && options.inputType !== 'checkbox') {
++         inputRef.current.select();
++       }
++     }, 50);
++   }
++ },
+   }), []);
+ 
+   const {

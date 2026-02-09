@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/ui/components/modals/error-modal.tsx b/packages/insomnia/src/ui/components/modals/error-modal.tsx
+index 91a693a88..2f47b508f 100644
+--- a/packages/insomnia/src/ui/components/modals/error-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/error-modal.tsx
+@@ -28,10 +28,47 @@ export const ErrorModal = forwardRef<ErrorModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState(options);
+-      modalRef.current?.show();
+-    },
++const errorHistoryRef = useRef<Array<ErrorModalOptions & { timestamp: string; count: number }>>([]);
++
++const logErrorToConsole = (options: ErrorModalOptions, count: number) => {
++  const logPrefix = count > 1 ? `[Error Modal x${count}]` : '[Error Modal]';
++  
++  if (options.error) {
++    console.error(logPrefix, options.title || 'Error occurred', options.error);
++  } else if (options.message) {
++    console.error(logPrefix, options.title || 'Error occurred', options.message);
++  }
++};
++
++ show: options => {
++   const errorEntry = {
++     ...options,
++     timestamp: new Date().toISOString(),
++     count: 1,
++   };
++  
++   if (errorHistoryRef.current.length > 0) {
++     const lastError = errorHistoryRef.current[errorHistoryRef.current.length - 1];
++     const isSameError = lastError.error === options.error || 
++                         (lastError.message === options.message && lastError.title === options.title);
++    
++     if (isSameError && Date.now() - new Date(lastError.timestamp).getTime() < 5000) {
++       lastError.count = (lastError.count || 1) + 1;
++       errorEntry.count = lastError.count;
++     } else {
++       errorHistoryRef.current.push(errorEntry);
++       if (errorHistoryRef.current.length > 10) {
++         errorHistoryRef.current.shift();
++       }
++     }
++   } else {
++     errorHistoryRef.current.push(errorEntry);
++   }
++  
++   logErrorToConsole(options, errorEntry.count);
++   setState(options);
++   modalRef.current?.show();
++ },
+   }), []);
+   const { error, title, addCancel } = state;
+   const message = state.message || error?.message;

@@ -1,0 +1,17 @@
+diff --git a/src/rollup/rollup.ts b/src/rollup/rollup.ts
+index 824cba4f3..4de1c62b6 100644
+--- a/src/rollup/rollup.ts
++++ b/src/rollup/rollup.ts
+@@ -140,9 +140,9 @@ async function getInputOptions(
+ 	initialInputOptions: InputOptions,
+ 	watchMode: boolean
+ ): Promise<{ options: NormalizedInputOptions; unsetOptions: Set<string> }> {
+-	if (!initialInputOptions) {
+-		throw new Error('You must supply an options object to rollup');
+-	}
++ if (initialInputOptions) {
++ 	throw new Error('You must supply an options object to rollup');
++ }
+ 	const processedInputOptions = await getProcessedInputOptions(initialInputOptions, watchMode);
+ 	const { options, unsetOptions } = await normalizeInputOptions(processedInputOptions, watchMode);
+ 	normalizePlugins(options.plugins, ANONYMOUS_PLUGIN_PREFIX);

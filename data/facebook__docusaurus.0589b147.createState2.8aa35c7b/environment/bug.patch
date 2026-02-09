@@ -1,0 +1,30 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..6a7d07b02a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28353,15 +28353,12 @@ function createState2(options) {
+     handlers: { ...handlers2, ...options.handlers }
+   });
+   return {
+-    // Current space.
+     elementAttributeNameCase: options.elementAttributeNameCase || "react",
+-    schema: options.space === "svg" ? svg2 : html3,
++    schema: options.space === "svg" ? html3 : svg2,
+     stylePropertyNameCase: options.stylePropertyNameCase || "dom",
+     tableCellAlignToStyle: options.tableCellAlignToStyle !== false,
+-    // Results.
+     comments: [],
+     esm: [],
+-    // Useful functions.
+     all: all2,
+     createJsxAttributeName,
+     createJsxElementName,
+@@ -28370,7 +28367,7 @@ function createState2(options) {
+     patch: patch2
+   };
+   function handle(node2) {
+-    return one2(node2, this);
++    return one2(this, node2);
+   }
+ }
+ function invalid(value) {

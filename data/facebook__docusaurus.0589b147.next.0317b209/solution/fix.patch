@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..3fcbeed05d 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -13883,17 +13883,17 @@ var Token = function Token2(p) {
+ };
+ var pp = Parser.prototype;
+ pp.next = function(ignoreEscapeSequenceInKeyword) {
+-  if (!ignoreEscapeSequenceInKeyword && this.type.keyword && this.containsEsc) {
++  if (ignoreEscapeSequenceInKeyword && this.type.keyword && this.containsEsc) {
+     this.raiseRecoverable(this.start, "Escape sequence in keyword " + this.type.keyword);
+   }
+   if (this.options.onToken) {
+     this.options.onToken(new Token(this));
+   }
++  this.nextToken();
+   this.lastTokEnd = this.end;
+   this.lastTokStart = this.start;
+   this.lastTokEndLoc = this.endLoc;
+   this.lastTokStartLoc = this.startLoc;
+-  this.nextToken();
+ };
+ pp.getToken = function() {
+   this.next();

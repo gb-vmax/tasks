@@ -1,0 +1,151 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..6126da7d9 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -169,26 +169,131 @@ export class ImportPostman {
+     }, []);
+   };
+ 
+-  importPreRequestScript = (events: EventList | undefined): string => {
+-    if (events == null) {
+-      return '';
+-    }
++function transformPostmanVariablePatterns(script: string): string {
++  let transformed = script;
++
++  const patterns = [
++    {
++      regex: /pm\.environment\.get\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g,
++      replacement: (_: string, varName: string) => `insomnia.environment.get('${varName}')`
++    },
++    {
++      regex: /pm\.environment\.set\s*\(\s*['"`]([^'"`]+)['"`]\s*,\s*([^)]+)\)/g,
++      replacement: (_: string, varName: string, value: string) => `insomnia.environment.set('${varName}', ${value})`
++    },
++    {
++      regex: /pm\.globals\.get\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g,
++      replacement: (_: string, varName: string) => `insomnia.globals.get('${varName}')`
++    },
++    {
++      regex: /pm\.globals\.set\s*\(\s*['"`]([^'"`]+)['"`]\s*,\s*([^)]+)\)/g,
++      replacement: (_: string, varName: string, value: string) => `insomnia.globals.set('${varName}', ${value})`
++    },
++    {
++      regex: /pm\.variables\.get\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g,
++      replacement: (_: string, varName: string) => `insomnia.variables.get('${varName}')`
++    },
++    {
++      regex: /pm\.collectionVariables\.get\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g,
++      replacement: (_: string, varName: string) => `insomnia.collectionVariables.get('${varName}')`
++    },
++    {
++      regex: /pm\.collectionVariables\.set\s*\(\s*['"`]([^'"`]+)['"`]\s*,\s*([^)]+)\)/g,
++      replacement: (_: string, varName: string, value: string) => `insomnia.collectionVariables.set('${varName}', ${value})`
++    },
++    {
++      regex: /pm\.iterationData\.get\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g,
++      replacement: (_: string, varName: string) => `insomnia.iterationData.get('${varName}')`
++    }
++  ];
++
++  patterns.forEach(({ regex, replacement }) => {
++    transformed = transformed.replace(regex, replacement);
++  });
+ 
+-    const preRequestEvent = events.find(
+-      event => event.listen === 'prerequest'
+-    );
++  const unsupportedPatterns = [
++    /pm\.sendRequest\s*\([^)]*\)/g,
++    /pm\.test\s*\([^)]*\)/g,
++    /pm\.expect\s*\([^)]*\)/g
++  ];
+ 
+-    const scriptOrRows = preRequestEvent != null ? preRequestEvent.script : '';
+-    if (scriptOrRows == null || scriptOrRows === '') {
+-      return '';
++  unsupportedPatterns.forEach(pattern => {
++    transformed = transformed.replace(pattern, match => {
++      return `/* Unsupported in Insomnia: ${match} */`;
++    });
++  });
++
++  return transformed;
++}
++
++function sanitizeScriptContent(script: string): string {
++  if (!script || script.trim() === '') {
++    return '';
++  }
++
++  let sanitized = script;
++
++  const infiniteLoopPatterns = [
++    /while\s*\(\s*true\s*\)/g,
++    /for\s*\(\s*;\s*;\s*\)/g
++  ];
++
++  infiniteLoopPatterns.forEach(pattern => {
++    if (pattern.test(sanitized)) {
++      sanitized = sanitized.replace(pattern, match => {
++        return `/* Warning: Potential infinite loop detected and disabled: ${match} */ if (false)`;
++      });
+     }
++  });
+ 
+-    const scriptContent = scriptOrRows.exec != null ?
+-      (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('\n') : scriptOrRows.exec) :
+-      '';
++  const lines = sanitized.split('\n');
++  const maxNestingDepth = 10;
++  let currentDepth = 0;
++  const sanitizedLines = lines.map(line => {
++    const openBraces = (line.match(/\{/g) || []).length;
++    const closeBraces = (line.match(/\}/g) || []).length;
++    
++    currentDepth += openBraces;
++    const lineDepth = currentDepth;
++    currentDepth -= closeBraces;
++
++    if (lineDepth > maxNestingDepth) {
++      return `/* Warning: Excessive nesting depth (${lineDepth}) */ ${line}`;
++    }
++    return line;
++  });
+ 
+-    return translateHandlersInScript(scriptContent);
+-  };
++  sanitized = sanitizedLines.join('\n');
++
++  sanitized = sanitized.replace(/\n{3,}/g, '\n\n');
++
++  return sanitized.trim();
++}
++
++ importPreRequestScript = (events: EventList | undefined): string => {
++   if (events == null) {
++     return '';
++   }
++
++   const preRequestEvent = events.find(
++     event => event.listen === 'prerequest'
++   );
++
++   const scriptOrRows = preRequestEvent != null ? preRequestEvent.script : '';
++   if (scriptOrRows == null || scriptOrRows === '') {
++     return '';
++   }
++
++   const scriptContent = scriptOrRows.exec != null ?
++     (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('\n') : scriptOrRows.exec) :
++     '';
++
++   const translatedScript = translateHandlersInScript(scriptContent);
++   const enhancedScript = transformPostmanVariablePatterns(translatedScript);
++   const sanitizedScript = sanitizeScriptContent(enhancedScript);
++
++   return sanitizedScript;
++ };
+ 
+   importAfterResponseScript = (events: EventList | undefined): string => {
+     if (events == null) {

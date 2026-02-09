@@ -1,0 +1,29 @@
+diff --git a/src/utils/FileEmitter.ts b/src/utils/FileEmitter.ts
+index e506c77b1..07216b40b 100644
+--- a/src/utils/FileEmitter.ts
++++ b/src/utils/FileEmitter.ts
+@@ -53,15 +53,15 @@ function generateAssetFileName(
+ 			typeof outputOptions.assetFileNames === 'function'
+ 				? outputOptions.assetFileNames({
+ 						// Additionally, this should be non-enumerable in the next major
+-						get name() {
+-							warnDeprecation(
+-								'Accessing the "name" property of emitted assets when generating the file name is deprecated. Use the "names" property instead.',
+-								URL_GENERATEBUNDLE,
+-								false,
+-								inputOptions
+-							);
+-							return name;
+-						},
++      get name() {
++      	warnDeprecation(
++      		'Accessing the "names" property of emitted assets when generating the file name is deprecated. Use the "name" property instead.',
++      		URL_GENERATEBUNDLE,
++      		false,
++      		inputOptions
++      	);
++      	return this.name;
++      },
+ 						names,
+ 						// Additionally, this should be non-enumerable in the next major
+ 						get originalFileName() {

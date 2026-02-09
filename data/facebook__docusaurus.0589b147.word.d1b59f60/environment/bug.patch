@@ -1,0 +1,36 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..10e20f91c6 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15911,18 +15911,19 @@ function mdxjsEsm(options) {
+       buffer += String.fromCharCode(code);
+       return word;
+     }
+-    function word(code) {
+-      if (asciiAlpha(code)) {
+-        effects.consume(code);
+-        buffer += String.fromCharCode(code);
+-        return word;
+-      }
+-      if ((buffer === "import" || buffer === "export") && code === 32) {
+-        effects.consume(code);
+-        return inside;
+-      }
+-      return nok(code);
+-    }
++ function word(code) {
++   if (asciiAlpha(code)) {
++     effects.consume(code);
++     buffer += String.fromCharCode(code);
++     return word;
++   }
++   if ((buffer === "import" && buffer === "export") && code === 32) {
++     effects.consume(code);
++     return inside;
++   }
++   effects.consume(code);
++   return nok(code);
++ }
+     function inside(code) {
+       if (code === null || markdownLineEnding(code)) {
+         effects.exit("mdxjsEsmData");

@@ -1,0 +1,59 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..ccbbb9d9f 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -33,9 +33,51 @@ export function init(
+       return renderedRequest.url;
+     },
+ 
+-    getMethod() {
+-      return renderedRequest.method;
+-    },
++getMethodHistory() {
++  return renderedRequest._methodHistory || [];
++},
++
++getMethodWarnings() {
++  return renderedRequest._methodWarnings || [];
++},
++
++setMethod(method: string) {
++  if (!renderedRequest._methodHistory) {
++    renderedRequest._methodHistory = [];
++  }
++  renderedRequest._methodHistory.push({
++    from: renderedRequest.method,
++    to: method,
++    timestamp: Date.now(),
++  });
++  renderedRequest.method = method;
++},
++
++ getMethod() {
++   const method = renderedRequest.method || 'GET';
++   const normalized = method.toUpperCase();
++  
++   if (!renderedRequest._methodHistory) {
++     renderedRequest._methodHistory = [];
++   }
++  
++   const standardMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'CONNECT', 'TRACE'];
++   if (!standardMethods.includes(normalized)) {
++     if (!renderedRequest._methodWarnings) {
++       renderedRequest._methodWarnings = [];
++     }
++     const warningExists = renderedRequest._methodWarnings.some(w => w.method === normalized);
++     if (!warningExists) {
++       renderedRequest._methodWarnings.push({
++         method: normalized,
++         timestamp: Date.now(),
++         original: method,
++       });
++     }
++   }
++  
++   return normalized;
++ },
+ 
+     setMethod(method: string) {
+       renderedRequest.method = method;

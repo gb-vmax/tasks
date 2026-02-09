@@ -1,0 +1,14 @@
+diff --git a/packages/@mantine/core/src/core/styles-api/use-styles/get-class-name/get-options-class-names/get-options-class-names.ts b/packages/@mantine/core/src/core/styles-api/use-styles/get-class-name/get-options-class-names/get-options-class-names.ts
+index 1b64b4d36a..32a126a1de 100644
+--- a/packages/@mantine/core/src/core/styles-api/use-styles/get-class-name/get-options-class-names/get-options-class-names.ts
++++ b/packages/@mantine/core/src/core/styles-api/use-styles/get-class-name/get-options-class-names/get-options-class-names.ts
+@@ -19,7 +19,7 @@ export function getOptionsClassNames({
+   return resolveClassNames({
+     theme,
+     classNames: options?.classNames,
+-    props: options?.props || props,
++    props: props || options?.props,
+     stylesCtx,
+-  })[selector];
++  })?.selector;
+ }

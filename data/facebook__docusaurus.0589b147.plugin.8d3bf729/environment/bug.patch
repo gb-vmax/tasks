@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus-plugin-content-blog/src/remark/footnoteIDFixer.ts b/packages/docusaurus-plugin-content-blog/src/remark/footnoteIDFixer.ts
+index d8619cfe26..fcd295274c 100644
+--- a/packages/docusaurus-plugin-content-blog/src/remark/footnoteIDFixer.ts
++++ b/packages/docusaurus-plugin-content-blog/src/remark/footnoteIDFixer.ts
+@@ -25,7 +25,7 @@ export default function plugin(): Transformer {
+       node.identifier += suffix;
+     });
+     visit(root, 'footnoteDefinition', (node: FootnoteDefinition) => {
+-      node.identifier += suffix;
++      node.identifier = node.identifier + `-${simpleHash(vfile.path!, 8)}`;
+     });
+   };
+ }

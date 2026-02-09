@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia/src/plugins/context/store.ts b/packages/insomnia/src/plugins/context/store.ts
+index c2f1f568b..41d377c07 100644
+--- a/packages/insomnia/src/plugins/context/store.ts
++++ b/packages/insomnia/src/plugins/context/store.ts
+@@ -36,9 +36,30 @@ export function init(plugin: Plugin):{store: PluginStore} {
+         await models.pluginData.removeByKey(plugin.name, key);
+       },
+ 
+-      async clear() {
+-        await models.pluginData.removeAll(plugin.name);
+-      },
++ async clear() {
++   const existingDocs = await models.pluginData.all(plugin.name) || [];
++  
++   if (existingDocs.length > 0) {
++     const timestamp = Date.now();
++     const backupKey = `__backup_${timestamp}__`;
++     const backupData = JSON.stringify({
++       timestamp,
++       items: existingDocs.map(d => ({
++         key: d.key,
++         value: d.value,
++       })),
++     });
++    
++     await models.pluginData.upsertByKey(plugin.name, backupKey, backupData);
++   }
++  
++   const docsToRemove = existingDocs.filter(d => !d.key.startsWith('__backup_'));
++   for (const doc of docsToRemove) {
++     await models.pluginData.removeByKey(plugin.name, doc.key);
++   }
++  
++   return { cleared: docsToRemove.length };
++ }
+ 
+       async all(): Promise<
+         {

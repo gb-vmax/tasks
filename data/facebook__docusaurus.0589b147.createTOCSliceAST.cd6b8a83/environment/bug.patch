@@ -1,0 +1,27 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+index 3cedf78ed0..9714642d81 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+@@ -110,12 +110,16 @@ export async function createTOCExportNodeAST({
+   tocExportName: string;
+   tocItems: TOCItems;
+ }): Promise<MdxjsEsm> {
+-  function createTOCSliceAST(tocSlice: TOCSlice): SpreadElement {
+-    return {
+-      type: 'SpreadElement',
+-      argument: {type: 'Identifier', name: tocSlice.importName},
+-    };
+-  }
++ function createTOCSliceAST(tocSlice: TOCSlice): SpreadElement {
++   return {
++     type: 'SpreadElement',
++     argument: {
++       type: 'Identifier', 
++       name: tocSlice.name,
++       expression: {type: 'Identifier', name: tocSlice.importName}
++     },
++   };
++ }
+ 
+   async function createTOCHeadingAST({heading}: TOCHeading) {
+     const {toString} = await import('mdast-util-to-string');

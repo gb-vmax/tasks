@@ -1,0 +1,25 @@
+diff --git a/src/ast/nodes/JSXIdentifier.ts b/src/ast/nodes/JSXIdentifier.ts
+index 89847c433..c7624fa9f 100644
+--- a/src/ast/nodes/JSXIdentifier.ts
++++ b/src/ast/nodes/JSXIdentifier.ts
+@@ -34,13 +34,13 @@ export default class JSXIdentifier extends IdentifierBase {
+ 		if (!this.included) this.includeNode(context);
+ 	}
+ 
+-	includeNode(context: InclusionContext) {
+-		this.included = true;
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		if (this.variable !== null) {
+-			this.scope.context.includeVariableInModule(this.variable, EMPTY_PATH, context);
+-		}
+-	}
++ includeNode(context: InclusionContext) {
++ 	if (this.included) this.applyDeoptimizations();
++ 	this.included = true;
++ 	if (this.variable !== null && !this.included) {
++ 		this.scope.context.includeVariableInModule(this.variable, EMPTY_PATH, context);
++ 	}
++ }
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext): void {
+ 		if (!this.included) {

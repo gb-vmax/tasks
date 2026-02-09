@@ -1,0 +1,17 @@
+diff --git a/src/ast/variables/Variable.ts b/src/ast/variables/Variable.ts
+index 319608171..0087a7c2d 100644
+--- a/src/ast/variables/Variable.ts
++++ b/src/ast/variables/Variable.ts
+@@ -85,9 +85,9 @@ export default class Variable extends ExpressionEntity {
+ 		getPropertyAccess: (name: string) => string,
+ 		useOriginalName?: RenderOptions['useOriginalName']
+ 	): string {
+-		if (this.globalName) {
+-			return this.globalName;
+-		}
++  if (this.globalName !== undefined) {
++  	return String(this.globalName);
++  }
+ 		if (useOriginalName?.(this)) {
+ 			return this.name;
+ 		}

@@ -1,0 +1,131 @@
+diff --git a/packages/insomnia/src/models/response.ts b/packages/insomnia/src/models/response.ts
+index 2ca7ed602..046f39d06 100644
+--- a/packages/insomnia/src/models/response.ts
++++ b/packages/insomnia/src/models/response.ts
+@@ -227,10 +227,123 @@ export const getBodyBuffer = (
+   response?: { bodyPath?: string; bodyCompression?: Compression },
+   readFailureValue?: string,
+ ): Buffer | string | null => {
+-  if (!response?.bodyPath) {
+-    // No body, so return empty Buffer
+-    return Buffer.alloc(0);
++interface BodyCacheEntry {
++  buffer: Buffer;
++  timestamp: number;
++  size: number;
++}
++
++const BODY_CACHE_MAX_ENTRIES = 50;
++const BODY_CACHE_MAX_TOTAL_SIZE = 100 * 1024 * 1024;
++const BODY_SIZE_LIMIT_COMPRESSED = 500 * 1024 * 1024;
++const BODY_SIZE_LIMIT_UNCOMPRESSED = 200 * 1024 * 1024;
++
++const _bodyCache = new Map<string, BodyCacheEntry>();
++let _bodyCacheTotalSize = 0;
++
++function _getFromBodyCache(key: string): Buffer | null {
++  const entry = _bodyCache.get(key);
++  if (!entry) {
++    return null;
++  }
++
++  entry.timestamp = Date.now();
++  return entry.buffer;
++}
++
++function _addToBodyCache(key: string, buffer: Buffer): void {
++  const bufferSize = buffer.length;
++
++  if (bufferSize > BODY_CACHE_MAX_TOTAL_SIZE / 4) {
++    return;
++  }
++
++  while (_bodyCacheTotalSize + bufferSize > BODY_CACHE_MAX_TOTAL_SIZE || 
++         _bodyCache.size >= BODY_CACHE_MAX_ENTRIES) {
++    _evictLRUCacheEntry();
++  }
++
++  if (_bodyCache.has(key)) {
++    const existing = _bodyCache.get(key)!;
++    _bodyCacheTotalSize -= existing.size;
+   }
++
++  _bodyCache.set(key, {
++    buffer,
++    timestamp: Date.now(),
++    size: bufferSize,
++  });
++
++  _bodyCacheTotalSize += bufferSize;
++}
++
++function _evictLRUCacheEntry(): void {
++  if (_bodyCache.size === 0) {
++    return;
++  }
++
++  let oldestKey: string | null = null;
++  let oldestTime = Infinity;
++
++  for (const [key, entry] of _bodyCache.entries()) {
++    if (entry.timestamp < oldestTime) {
++      oldestTime = entry.timestamp;
++      oldestKey = key;
++    }
++  }
++
++  if (oldestKey !== null) {
++    const entry = _bodyCache.get(oldestKey)!;
++    _bodyCacheTotalSize -= entry.size;
++    _bodyCache.delete(oldestKey);
++  }
++}
++
++function _shouldRejectBodySize(fileSize: number, isCompressed: boolean): boolean {
++  const limit = isCompressed ? BODY_SIZE_LIMIT_COMPRESSED : BODY_SIZE_LIMIT_UNCOMPRESSED;
++  return fileSize > limit;
++}
++
++ export const getBodyBuffer = (
++   response?: { bodyPath?: string; bodyCompression?: Compression },
++   readFailureValue?: string,
++ ): Buffer | string | null => {
++   if (!response?.bodyPath) {
++     return Buffer.alloc(0);
++   }
++
++   const cacheKey = `${response.bodyPath}:${response.bodyCompression || 'none'}`;
++   const cachedBody = _getFromBodyCache(cacheKey);
++   if (cachedBody !== null) {
++     return cachedBody;
++   }
++
++   try {
++     const stats = fs.statSync(response.bodyPath);
++     const fileSize = stats.size;
++
++     if (_shouldRejectBodySize(fileSize, response.bodyCompression === 'zip')) {
++       console.warn(`Response body size ${fileSize} exceeds maximum allowed size`);
++       return readFailureValue === undefined ? null : readFailureValue;
++     }
++
++     const rawBuffer = fs.readFileSync(response.bodyPath);
++     let resultBuffer: Buffer;
++
++     if (response.bodyCompression === 'zip') {
++       resultBuffer = zlib.gunzipSync(rawBuffer);
++     } else {
++       resultBuffer = rawBuffer;
++     }
++
++     _addToBodyCache(cacheKey, resultBuffer);
++
++     return resultBuffer;
++   } catch (err) {
++     console.warn('Failed to read response body', err.message);
++     return readFailureValue === undefined ? null : readFailureValue;
++   }
++ };
+   try {
+     const rawBuffer = fs.readFileSync(response?.bodyPath);
+     if (response?.bodyCompression === 'zip') {

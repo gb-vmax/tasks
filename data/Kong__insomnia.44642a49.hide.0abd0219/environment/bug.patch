@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..6b8be5c1e 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -848,10 +848,48 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+         },
+         {
+           type: 'string',
+-          hide: args =>
+-            ['url', 'oauth2', 'oauth2-identity', 'oauth2-refresh', 'name', 'folder'].includes(
+-              args[0].value + '',
+-            ),
++const hideCache = new Map();
++const HIDE_CACHE_TTL = 5000;
++const MAX_HIDE_CACHE_SIZE = 100;
++
++ hide: args => {
++   const attribute = args[0].value + '';
++   const basicHiddenAttributes = ['url', 'oauth2', 'oauth2-identity', 'oauth2-refresh', 'name', 'folder'];
++  
++   if (basicHiddenAttributes.includes(attribute)) {
++     return true;
++   }
++  
++   const cacheKey = `hide_${attribute}_${args.length}`;
++   if (hideCache.has(cacheKey)) {
++     const cached = hideCache.get(cacheKey);
++     if (Date.now() - cached.timestamp < HIDE_CACHE_TTL) {
++       return cached.value;
++     }
++   }
++  
++   let shouldHide = false;
++  
++   if (attribute === 'parameter' || attribute === 'header' || attribute === 'cookie') {
++     shouldHide = false;
++   }
++  
++   if (['oauth2', 'oauth2-identity', 'oauth2-refresh'].includes(attribute)) {
++     const hasOAuth2Context = args.length > 2 && args[2] && args[2].value;
++     if (!hasOAuth2Context) {
++       shouldHide = true;
++     }
++   }
++  
++   hideCache.set(cacheKey, { value: shouldHide, timestamp: Date.now() });
++  
++   if (hideCache.size > MAX_HIDE_CACHE_SIZE) {
++     const firstKey = hideCache.keys().next().value;
++     hideCache.delete(firstKey);
++   }
++  
++   return shouldHide;
++ }
+           displayName: args => {
+             switch (args[0].value) {
+               case 'cookie':

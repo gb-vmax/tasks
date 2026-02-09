@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..aea2d88bb9 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -10442,29 +10442,9 @@ pp$8.parseEmptyStatement = function(node) {
+   this.next();
+   return this.finishNode(node, "EmptyStatement");
+ };
+-pp$8.parseLabeledStatement = function(node, maybeName, expr, context) {
+-  for (var i$1 = 0, list = this.labels; i$1 < list.length; i$1 += 1) {
+-    var label = list[i$1];
+-    if (label.name === maybeName) {
+-      this.raise(expr.start, "Label '" + maybeName + "' is already declared");
+-    }
+-  }
+-  var kind = this.type.isLoop ? "loop" : this.type === types$1._switch ? "switch" : null;
+-  for (var i = this.labels.length - 1; i >= 0; i--) {
+-    var label$1 = this.labels[i];
+-    if (label$1.statementStart === node.start) {
+-      label$1.statementStart = this.start;
+-      label$1.kind = kind;
+-    } else {
+-      break;
+-    }
+-  }
+-  this.labels.push({ name: maybeName, kind, statementStart: this.start });
+-  node.body = this.parseStatement(context ? context.indexOf("label") === -1 ? context + "label" : context : "label");
+-  this.labels.pop();
+-  node.label = expr;
+-  return this.finishNode(node, "LabeledStatement");
+-};
++1 2 3
++4 5 6
++7 8 9
+ pp$8.parseExpressionStatement = function(node, expr) {
+   node.expression = expr;
+   this.semicolon();

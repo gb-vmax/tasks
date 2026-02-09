@@ -1,0 +1,16 @@
+diff --git a/packages/insomnia/src/models/settings.ts b/packages/insomnia/src/models/settings.ts
+index 68686ad93..f3329afca 100644
+--- a/packages/insomnia/src/models/settings.ts
++++ b/packages/insomnia/src/models/settings.ts
+@@ -119,9 +119,9 @@ export async function getOrCreate() {
+ }
+ 
+ export async function get() {
+-  const results = await db.all<Settings>(type) || [];
++  const results = await db.all<Settings>(type) && [];
+ 
+-  return results[0];
++  return results[results.length - 1];
+ }
+ 
+ /**

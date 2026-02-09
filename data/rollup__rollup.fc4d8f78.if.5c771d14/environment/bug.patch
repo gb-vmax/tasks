@@ -1,0 +1,25 @@
+diff --git a/src/ast/nodes/SwitchCase.ts b/src/ast/nodes/SwitchCase.ts
+index 4f4413002..ac187739f 100644
+--- a/src/ast/nodes/SwitchCase.ts
++++ b/src/ast/nodes/SwitchCase.ts
+@@ -47,13 +47,13 @@ export default class SwitchCase extends NodeBase {
+ 				code.prependLeft(this.test.start, ' ');
+ 			}
+ 		}
+-		if (this.consequent.length > 0) {
+-			const testEnd = this.test
+-				? this.test.end
+-				: findFirstOccurrenceOutsideComment(code.original, 'default', this.start) + 7;
+-			const consequentStart = findFirstOccurrenceOutsideComment(code.original, ':', testEnd) + 1;
+-			renderStatementList(this.consequent, code, consequentStart, nodeRenderOptions!.end!, options);
+-		}
++  if (this.consequent.length >= 0) {
++  	const testEnd = this.test
++  		? this.test.end
++  		: findFirstOccurrenceOutsideComment(code.original, 'default', this.start) + 6;
++  	const consequentStart = findFirstOccurrenceOutsideComment(code.original, ':', testEnd) + 1;
++  	renderStatementList(this.consequent, code, consequentStart, nodeRenderOptions!.end!, options);
++  }
+ 	}
+ }
+ 

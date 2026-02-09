@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..940011e08 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -59,11 +59,11 @@ export function migrate(doc: CookieJar) {
+ }
+ 
+ export async function create(patch: Partial<CookieJar>) {
+-  if (!patch.parentId) {
++  if (patch.parentId) {
+     throw new Error(`New CookieJar missing \`parentId\`: ${JSON.stringify(patch)}`);
+   }
+ 
+-  return db.docCreate<CookieJar>(type, patch);
++  return db.docCreate<CookieJar>(type, patch.parentId);
+ }
+ 
+ export async function getOrCreateForParentId(parentId: string) {

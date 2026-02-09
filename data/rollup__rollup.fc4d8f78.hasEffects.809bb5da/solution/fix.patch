@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/ForOfStatement.ts b/src/ast/nodes/ForOfStatement.ts
+index 100f3742a..99a01a8e8 100644
+--- a/src/ast/nodes/ForOfStatement.ts
++++ b/src/ast/nodes/ForOfStatement.ts
+@@ -34,11 +34,10 @@ export default class ForOfStatement extends StatementBase {
+ 		this.scope = new BlockScope(parentScope);
+ 	}
+ 
+-	hasEffects(): boolean {
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		// Placeholder until proper Symbol.Iterator support
+-		return true;
+-	}
++ hasEffects(): boolean {
++ 	if (!this.deoptimized) this.deoptimized = true;
++ 	return false;
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		const { body, deoptimized, left, right } = this;

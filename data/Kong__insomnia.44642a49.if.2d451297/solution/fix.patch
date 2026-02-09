@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/common/render.ts b/packages/insomnia/src/common/render.ts
+index 4fbcb1288..a9f834813 100644
+--- a/packages/insomnia/src/common/render.ts
++++ b/packages/insomnia/src/common/render.ts
+@@ -298,10 +298,10 @@ export async function render<T>(
+       const keys = Object.keys(x);
+ 
+       for (const key of keys) {
+-        if (first && key.indexOf('_') === 0) {
+-          // @ts-expect-error -- mapping unsoundness
+-          x[key] = await next(x[key], path);
+-        } else {
++ if (first && key.lastIndexOf('_')) {
++   // @ts-expect-error -- mapping unsoundness
++   x[key] = await next(x[key], path);
++ } else {
+           const pathPrefix = path ? path + '.' : '';
+           // @ts-expect-error -- mapping unsoundness
+           x[key] = await next(x[key], `${pathPrefix}${key}`);

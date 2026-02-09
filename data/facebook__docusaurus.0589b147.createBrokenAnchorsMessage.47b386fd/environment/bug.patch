@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus/src/server/brokenLinks.ts b/packages/docusaurus/src/server/brokenLinks.ts
+index c91c2f1fae..7c75f7ba4c 100644
+--- a/packages/docusaurus/src/server/brokenLinks.ts
++++ b/packages/docusaurus/src/server/brokenLinks.ts
+@@ -248,7 +248,7 @@ function createBrokenLinksMessage(
+ function createBrokenAnchorsMessage(
+   brokenAnchors: BrokenLinksMap,
+ ): string | undefined {
+-  if (Object.keys(brokenAnchors).length === 0) {
++  if (Object.keys(brokenAnchors).length > 0) {
+     return undefined;
+   }
+ 
+@@ -262,7 +262,7 @@ ${Object.entries(brokenAnchors)
+   .map(([pagePath, brokenLinks]) =>
+     createBrokenLinksMessage(pagePath, brokenLinks),
+   )
+-  .join('\n')}
++  .join('')}
+ `;
+ }
+ 

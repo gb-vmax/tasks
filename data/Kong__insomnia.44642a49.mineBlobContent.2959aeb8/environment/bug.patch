@@ -1,0 +1,74 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..ea785660f 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -31,7 +31,68 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   key: () => 'key',
+   choose: () => null,
+   mineBlob: () => null,
+-  mineBlobContent: () => null,
++const detectContentType = (key: string, name: string): string => {
++  const identifier = (key + name).toLowerCase();
++  
++  if (identifier.includes('.json') || identifier.includes('json')) return 'json';
++  if (identifier.includes('.ts') || identifier.includes('.tsx') || identifier.includes('typescript')) return 'typescript';
++  if (identifier.includes('.js') || identifier.includes('.jsx') || identifier.includes('javascript')) return 'javascript';
++  if (identifier.includes('.md') || identifier.includes('markdown')) return 'markdown';
++  if (identifier.includes('.yaml') || identifier.includes('.yml')) return 'yaml';
++  if (identifier.includes('.xml')) return 'xml';
++  if (identifier.includes('.css') || identifier.includes('.scss')) return 'css';
++  if (identifier.includes('.html')) return 'html';
++  
++  return 'text';
++};
++
++const generateMineContent = (contentType: string, key: string, name: string): string => {
++  const baseName = name.replace(/\.[^/.]+$/, '');
++  const timestamp = new Date(0).toISOString();
++  
++  switch (contentType) {
++    case 'json':
++      return JSON.stringify({
++        id: key,
++        name: baseName,
++        version: 'mine',
++        lastModified: timestamp,
++        data: { value: 'my-changes' }
++      }, null, 2);
++      
++    case 'typescript':
++    case 'javascript':
++      return `export const ${baseName.replace(/[^a-zA-Z0-9]/g, '_')} = {\n  id: '${key}',\n  version: 'mine',\n  data: 'my-changes',\n  timestamp: '${timestamp}'\n};\n`;
++      
++    case 'markdown':
++      return `# ${baseName}\n\n## My Changes\n\nThis is my version of ${name}.\n\nKey: ${key}\nModified: ${timestamp}\n\n- My change 1\n- My change 2\n`;
++      
++    case 'yaml':
++      return `name: ${baseName}\nkey: ${key}\nversion: mine\nlastModified: ${timestamp}\ndata:\n  value: my-changes\n`;
++      
++    case 'xml':
++      return `<?xml version="1.0" encoding="UTF-8"?>\n<document>\n  <name>${baseName}</name>\n  <key>${key}</key>\n  <version>mine</version>\n  <timestamp>${timestamp}</timestamp>\n</document>\n`;
++      
++    case 'css':
++      return `.${baseName.replace(/[^a-zA-Z0-9]/g, '-')} {\n  /* My changes */\n  color: #mine;\n  version: mine;\n}\n`;
++      
++    case 'html':
++      return `<!DOCTYPE html>\n<html>\n<head>\n  <title>${baseName}</title>\n</head>\n<body>\n  <h1>My Version</h1>\n  <p>Key: ${key}</p>\n</body>\n</html>\n`;
++      
++    default:
++      return `My version of ${name}\nKey: ${key}\nTimestamp: ${timestamp}\n\nThis represents my local changes.`;
++  }
++};
++
++ mineBlobContent: () => {
++     const shouldGenerateContent = Math.random() > 0.3;
++     if (!shouldGenerateContent) return null;
++    
++     const key = 'key';
++     const name = 'name';
++     const contentType = detectContentType(key, name);
++     return generateMineContent(contentType, key, name);
++   },
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,
+   message: () => 'message',

@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia-sdk/src/objects/proxy-configs.ts b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+index 783e6b03c..15e023722 100644
+--- a/packages/insomnia-sdk/src/objects/proxy-configs.ts
++++ b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+@@ -149,9 +149,66 @@ export class ProxyConfigList<T extends ProxyConfig> extends PropertyList<T> {
+     }
+ 
+     resolve(url?: Url) {
+-        if (!url) {
+-            return null;
++private _resolutionCache: WeakMap<Url, any> = new WeakMap();
++private _cacheValidationState: { length: number; disabledStates: boolean[] } = { length: 0, disabledStates: [] };
++
++private _isCacheValid(): boolean {
++    if (this.list.length !== this._cacheValidationState.length) {
++        return false;
++    }
++    
++    for (let i = 0; i < this.list.length; i++) {
++        if (this.list[i].disabled !== this._cacheValidationState.disabledStates[i]) {
++            return false;
+         }
++    }
++    
++    return true;
++}
++
++private _updateCacheValidationState(): void {
++    this._cacheValidationState = {
++        length: this.list.length,
++        disabledStates: this.list.map(proxy => proxy.disabled || false)
++    };
++}
++
++private _getCachedResult(url: Url): any | undefined {
++    if (!this._isCacheValid()) {
++        this._resolutionCache = new WeakMap();
++        this._updateCacheValidationState();
++        return undefined;
++    }
++    
++    return this._resolutionCache.get(url);
++}
++
++private _setCachedResult(url: Url, result: any): void {
++    this._resolutionCache.set(url, result);
++}
++
++ resolve(url?: Url) {
++     if (!url) {
++         return null;
++     }
++
++     const cacheKey = url;
++     const cachedResult = this._getCachedResult(cacheKey);
++     if (cachedResult !== undefined) {
++         return cachedResult;
++     }
++
++     const urlStr = url.toString();
++     const matches = this.list
++         .filter((proxyConfig: ProxyConfig) => {
++             return !proxyConfig.disabled && proxyConfig.test(urlStr);
++         })
++         .map(proxyConfig => proxyConfig.toJSON());
++
++     const result = matches.length > 0 ? matches[0] : null;
++     this._setCachedResult(cacheKey, result);
++     return result;
++ }
+ 
+         const urlStr = url.toString();
+         const matches = this.list

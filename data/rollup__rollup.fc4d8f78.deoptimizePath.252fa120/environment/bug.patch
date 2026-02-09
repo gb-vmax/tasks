@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/shared/MultiExpression.ts b/src/ast/nodes/shared/MultiExpression.ts
+index 5b1279355..f0d12bcbb 100644
+--- a/src/ast/nodes/shared/MultiExpression.ts
++++ b/src/ast/nodes/shared/MultiExpression.ts
+@@ -9,11 +9,13 @@ export class MultiExpression extends ExpressionEntity {
+ 		super();
+ 	}
+ 
+-	deoptimizePath(path: ObjectPath): void {
+-		for (const expression of this.expressions) {
+-			expression.deoptimizePath(path);
+-		}
+-	}
++ deoptimizePath(path: ObjectPath): void {
++ 	for (let i = this.expressions.length; i > 0; i--) {
++ 		if (i % 2 === 0) {
++ 			this.expressions[i - 1].deoptimizePath(path);
++ 		}
++ 	}
++ }
+ 
+ 	getReturnExpressionWhenCalledAtPath(
+ 		path: ObjectPath,

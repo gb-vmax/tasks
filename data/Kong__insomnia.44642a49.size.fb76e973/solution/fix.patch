@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..af06c00dc 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -179,16 +179,62 @@ export class Response extends Property {
+         return this.status;
+     }
+ 
+-    size(): number {
+-        try {
+-            const contentLength = this.headers.get('Content-Length');
+-            // TODO: improve this by manual counting
+-            console.log(this.headers.get('Content-Length'));
+-            return contentLength == null ? -1 : parseInt(contentLength.valueOf());
+-        } catch (e) {
+-            throw Error('size: ${e}');
++function calculateByteSize(text: string, charset: string): number {
++    if (charset.includes('utf-16') || charset.includes('utf16')) {
++        return text.length * 2;
++    }
++    
++    if (charset.includes('utf-32') || charset.includes('utf32')) {
++        return text.length * 4;
++    }
++    
++    if (charset === 'ascii' || charset.includes('iso-8859-1') || charset.includes('latin1')) {
++        return text.length;
++    }
++    
++    let byteCount = 0;
++    for (let i = 0; i < text.length; i++) {
++        const codePoint = text.charCodeAt(i);
++        
++        if (codePoint < 0x80) {
++            byteCount += 1;
++        } else if (codePoint < 0x800) {
++            byteCount += 2;
++        } else if (codePoint >= 0xD800 && codePoint <= 0xDBFF) {
++            byteCount += 4;
++            i++;
++        } else {
++            byteCount += 3;
+         }
+     }
++    
++    return byteCount;
++}
++
++ size(): number {
++     try {
++         const contentLength = this.headers.get('Content-Length');
++         if (contentLength != null) {
++             const parsedLength = parseInt(contentLength.valueOf());
++             if (!isNaN(parsedLength) && parsedLength >= 0) {
++                 return parsedLength;
++             }
++         }
++        
++         if (this.stream) {
++             return this.stream.byteLength;
++         }
++        
++         if (!this.body) {
++             return 0;
++         }
++        
++         const charset = this.contentInfo().charset.toLowerCase();
++         return calculateByteSize(this.body, charset);
++     } catch (e) {
++         throw Error(`size: ${e}`);
++     }
++ }
+ 
+     text() {
+         return this.body.toString();

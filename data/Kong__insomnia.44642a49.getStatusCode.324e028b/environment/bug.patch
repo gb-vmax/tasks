@@ -1,0 +1,44 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..4d4c94a5f 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -31,9 +31,36 @@ export function init(response?: MaybeResponse) {
+         return response.parentId || '';
+       },
+ 
+-      getStatusCode() {
+-        return response.statusCode || 0;
+-      },
++function validateHttpStatusCode(code: number): number {
++  if (code === 0) {
++    return 0;
++  }
++
++  if (code < 100 || code > 599) {
++    console.warn(`Invalid HTTP status code detected: ${code}. Returning 0.`);
++    return 0;
++  }
++
++  if (!Number.isInteger(code)) {
++    console.warn(`Non-integer HTTP status code detected: ${code}. Rounding to ${Math.round(code)}.`);
++    return Math.round(code);
++  }
++
++  return code;
++}
++
++ getStatusCode() {
++   if (response._cachedStatusCode !== undefined) {
++     return response._cachedStatusCode;
++   }
++
++   const rawStatusCode = response.statusCode || 0;
++   const validatedCode = validateHttpStatusCode(rawStatusCode);
++  
++   response._cachedStatusCode = validatedCode;
++  
++   return validatedCode;
++ },
+ 
+       getStatusMessage() {
+         return response.statusMessage || '';

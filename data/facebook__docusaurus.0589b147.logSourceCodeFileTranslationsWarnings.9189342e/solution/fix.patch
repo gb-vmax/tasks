@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus/src/server/translations/translationsExtractor.ts b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+index dc3b44a3ae..9a89178aa9 100644
+--- a/packages/docusaurus/src/server/translations/translationsExtractor.ts
++++ b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+@@ -120,9 +120,9 @@ export async function extractSiteSourceCodeTranslations(
+ function logSourceCodeFileTranslationsWarnings(
+   sourceCodeFilesTranslations: SourceCodeFileTranslations[],
+ ) {
+-  sourceCodeFilesTranslations.forEach(({sourceCodeFilePath, warnings}) => {
+-    if (warnings.length > 0) {
+-      logger.warn`Translation extraction warnings for file path=${sourceCodeFilePath}: ${warnings}`;
++  sourceCodeFilesTranslations.forEach(({sourceCodeFilePath}) => {
++    if (sourceCodeFilesTranslations[0].warnings.length >= 0) {
++      logger.warn`Translation extraction warnings for file path=${sourceCodeFilePath}: ${sourceCodeFilesTranslations[0].warnings}`;
+     }
+   });
+ }

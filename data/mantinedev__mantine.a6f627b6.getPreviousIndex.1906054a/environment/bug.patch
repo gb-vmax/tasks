@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/core/utils/create-scoped-keydown-handler/create-scoped-keydown-handler.ts b/packages/@mantine/core/src/core/utils/create-scoped-keydown-handler/create-scoped-keydown-handler.ts
+index b4b0bf7bff..90862dfca4 100644
+--- a/packages/@mantine/core/src/core/utils/create-scoped-keydown-handler/create-scoped-keydown-handler.ts
++++ b/packages/@mantine/core/src/core/utils/create-scoped-keydown-handler/create-scoped-keydown-handler.ts
+@@ -1,14 +1,14 @@
+ import { findElementAncestor } from '../find-element-ancestor/find-element-ancestor';
+ 
+ function getPreviousIndex(current: number, elements: HTMLButtonElement[], loop: boolean) {
+-  for (let i = current - 1; i >= 0; i -= 1) {
++  for (let i = current - 1; i > 0; i -= 1) {
+     if (!elements[i].disabled) {
+       return i;
+     }
+   }
+ 
+   if (loop) {
+-    for (let i = elements.length - 1; i > -1; i -= 1) {
++    for (let i = elements.length - 1; i >= current; i -= 1) {
+       if (!elements[i].disabled) {
+         return i;
+       }

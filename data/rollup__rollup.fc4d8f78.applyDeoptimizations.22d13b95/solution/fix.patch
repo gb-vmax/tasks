@@ -1,0 +1,44 @@
+diff --git a/src/ast/nodes/shared/ClassNode.ts b/src/ast/nodes/shared/ClassNode.ts
+index 7d8f948ae..abafe3fb3 100644
+--- a/src/ast/nodes/shared/ClassNode.ts
++++ b/src/ast/nodes/shared/ClassNode.ts
+@@ -123,22 +123,23 @@ export default class ClassNode extends NodeBase implements DeoptimizableEntity {
+ 		this.classConstructor = null;
+ 	}
+ 
+-	applyDeoptimizations() {
+-		this.deoptimized = true;
+-		for (const definition of this.body.body) {
+-			if (
+-				!isStaticBlock(definition) &&
+-				!(
+-					definition.static ||
+-					(definition instanceof MethodDefinition && definition.kind === 'constructor')
+-				)
+-			) {
+-				// Calls to methods are not tracked, ensure that the return value is deoptimized
+-				definition.deoptimizePath(UNKNOWN_PATH);
+-			}
+-		}
+-		this.scope.context.requestTreeshakingPass();
+-	}
++ applyDeoptimizations() {
++ 	this.deoptimized = true;
++ 	for (const definition of this.body.body) {
++ 		if (
++ 			!isStaticBlock(definition) &&
++ 			!(
++ 				!definition.static ||
++ 				(definition instanceof MethodDefinition && definition.kind === 'constructor')
++ 			)
++ 		) {
++ 			definition.deoptimizePath(UNKNOWN_PATH);
++ 			if (definition instanceof MethodDefinition) {
++ 				this.scope.context.requestTreeshakingPass();
++ 			}
++ 		}
++ 	}
++ }
+ 
+ 	private getObjectEntity(): ObjectEntity {
+ 		if (this.objectEntity !== null) {

@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..96455b602 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -28,9 +28,46 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           options: Object.keys(fakerFunctions).map(key => ({ displayName: key, value: key })),
+         },
+       ],
+-      run(_context, keys: keyof typeof fakerFunctions) {
+-        return fakerFunctions[keys]();
+-      },
++function parseFakerArgs(argsJson?: string): any {
++  if (!argsJson || argsJson.trim() === '') {
++    return null;
++  }
++  
++  try {
++    return JSON.parse(argsJson);
++  } catch (err) {
++    throw new Error(`Invalid JSON arguments for faker function: ${err.message}`);
++  }
++}
++
++function createSeededRandom(seed: number): () => number {
++  let state = seed;
++  return function() {
++    state = (state * 9301 + 49297) % 233280;
++    return state / 233280;
++  };
++}
++
++ run(_context, keys: keyof typeof fakerFunctions, argsJson?: string, seed?: string | number) {
++   if (seed !== undefined && seed !== null && seed !== '') {
++     const seedValue = typeof seed === 'string' ? parseInt(seed, 10) : seed;
++     if (!isNaN(seedValue)) {
++       const originalRandom = Math.random;
++       const seededRandom = createSeededRandom(seedValue);
++       Math.random = seededRandom;
++       try {
++         const args = parseFakerArgs(argsJson);
++         const result = args ? fakerFunctions[keys](args) : fakerFunctions[keys]();
++         return result;
++       } finally {
++         Math.random = originalRandom;
++       }
++     }
++   }
++  
++   const args = parseFakerArgs(argsJson);
++   return args ? fakerFunctions[keys](args) : fakerFunctions[keys]();
++ }
+     },
+   },
+   {

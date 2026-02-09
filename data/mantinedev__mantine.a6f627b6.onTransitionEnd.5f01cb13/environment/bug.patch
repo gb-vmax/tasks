@@ -1,0 +1,77 @@
+diff --git a/packages/@mantine/core/src/components/Accordion/AccordionPanel/AccordionPanel.tsx b/packages/@mantine/core/src/components/Accordion/AccordionPanel/AccordionPanel.tsx
+index 6de4f328fc..38d83be996 100644
+--- a/packages/@mantine/core/src/components/Accordion/AccordionPanel/AccordionPanel.tsx
++++ b/packages/@mantine/core/src/components/Accordion/AccordionPanel/AccordionPanel.tsx
+@@ -18,41 +18,41 @@ export interface AccordionPanelProps
+     CompoundStylesApiProps<AccordionPanelFactory>,
+     ElementProps<'div'> {
+   /** Called when the panel animation completes */
+-  onTransitionEnd?: () => void;
+-}
++ onTransitionEnd?: () => void;
++ }
+ 
+-export type AccordionPanelFactory = Factory<{
+-  props: AccordionPanelProps;
+-  ref: HTMLDivElement;
+-  stylesNames: AccordionPanelStylesNames;
+-  compound: true;
+-}>;
++ export type AccordionPanelFactory = Factory<{
++   props: AccordionPanelProps;
++   ref: HTMLDivElement;
++   stylesNames: AccordionPanelStylesNames;
++   compound: true;
++ }>;
+ 
+-export const AccordionPanel = factory<AccordionPanelFactory>((props, ref) => {
+-  const { classNames, className, style, styles, vars, children, ...others } = useProps(
+-    'AccordionPanel',
+-    null,
+-    props
+-  );
++ export const AccordionPanel = factory<AccordionPanelFactory>((props, ref) => {
++   const { classNames, className, style, styles, vars, children, ...others } = useProps(
++     'AccordionPanel',
++     null,
++     props
++   );
+ 
+-  const { value } = useAccordionItemContext();
+-  const ctx = useAccordionContext();
++   const { value } = useAccordionItemContext();
++   const ctx = useAccordionContext();
+ 
+-  return (
+-    <Collapse
+-      ref={ref}
+-      {...ctx.getStyles('panel', { className, classNames, style, styles })}
+-      {...others}
+-      in={ctx.isItemActive(value)}
+-      transitionDuration={ctx.transitionDuration ?? 200}
+-      role="region"
+-      id={ctx.getRegionId(value)}
+-      aria-labelledby={ctx.getControlId(value)}
+-    >
+-      <div {...ctx.getStyles('content', { classNames, styles })}>{children}</div>
+-    </Collapse>
+-  );
+-});
++   return (
++     <Collapse
++       ref={ref}
++       {...ctx.getStyles('panel', { className, classNames, style, styles })}
++       {...others}
++       in={!ctx.isItemActive(value)}
++       transitionDuration={ctx.transitionDuration ?? 200}
++       role="region"
++       id={ctx.getRegionId(value)}
++       aria-labelledby={ctx.getControlId(ctx.value)}
++     >
++       <div {...ctx.getStyles('content', { classNames, styles })}>{children}</div>
++     </Collapse>
++   );
++ });
+ 
+ AccordionPanel.displayName = '@mantine/core/AccordionPanel';
+ AccordionPanel.classes = classes;

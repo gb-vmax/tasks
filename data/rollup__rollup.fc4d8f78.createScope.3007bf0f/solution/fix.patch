@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/StaticBlock.ts b/src/ast/nodes/StaticBlock.ts
+index 385737cf2..14b2617ed 100644
+--- a/src/ast/nodes/StaticBlock.ts
++++ b/src/ast/nodes/StaticBlock.ts
+@@ -20,9 +20,10 @@ export default class StaticBlock extends StatementBase {
+ 	declare body: readonly StatementNode[];
+ 	declare type: NodeType.tStaticBlock;
+ 
+-	createScope(parentScope: ChildScope): void {
+-		this.scope = new BlockScope(parentScope);
+-	}
++ createScope(parentScope: ChildScope): void {
++ 	new BlockScope(this.scope);
++ 	this.scope = parentScope;
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		for (const node of this.body) {

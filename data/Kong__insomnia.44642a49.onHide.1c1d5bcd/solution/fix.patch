@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..dc7c803f2 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -125,12 +125,44 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+             },
+ 
+             // don't resolve the overall promise until the modal has hidden after clicking submit
+-            onHide() {
+-              if (shouldResolve && resolveWith !== null) {
+-                resolve(resolveWith);
+-              }
+-              reject(new Error(`Prompt ${title} cancelled`));
+-            },
++const isValidationEnabled = options.validate && typeof options.validate === 'function';
++let timeoutId: NodeJS.Timeout | null = null;
++let validationPromise: Promise<void> | null = null;
++
++if (options.timeout && typeof options.timeout === 'number' && options.timeout > 0) {
++  timeoutId = setTimeout(() => {
++    reject(new Error(`Prompt ${title} timed out after ${options.timeout}ms`));
++    const modal = document.querySelector('[role="dialog"]');
++    if (modal) {
++      const closeButton = modal.querySelector('[data-close-modal]');
++      if (closeButton instanceof HTMLElement) {
++        closeButton.click();
++      }
++    }
++  }, options.timeout);
++}
++
++ onHide() {
++   if (shouldResolve && resolveWith !== null) {
++     if (validationPromise) {
++       validationPromise
++         .then(() => {
++           if (timeoutId) clearTimeout(timeoutId);
++           resolve(resolveWith);
++         })
++         .catch(err => {
++           if (timeoutId) clearTimeout(timeoutId);
++           reject(err);
++         });
++     } else {
++       if (timeoutId) clearTimeout(timeoutId);
++       resolve(resolveWith);
++     }
++     return;
++   }
++   if (timeoutId) clearTimeout(timeoutId);
++   reject(new Error(`Prompt ${title} cancelled`));
++ },
+           });
+         });
+       },

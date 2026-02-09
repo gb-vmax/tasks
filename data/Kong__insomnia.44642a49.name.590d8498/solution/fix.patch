@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..e86868a56 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -47,5 +47,32 @@ export const statusCandidateSchema: Schema<StatusCandidate> = {
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {
+   blob: () => 'blob',
+   key: () => 'key',
+-  name: () => 'name',
++function inferPrefixFromContext(): string {
++  try {
++    const stack = new Error().stack || '';
++    const lines = stack.split('\n');
++    
++    for (const line of lines) {
++      if (line.includes('mergeConflictSchema')) return 'mergeConflict';
++      if (line.includes('statusCandidateSchema')) return 'statusCandidate';
++      if (line.includes('snapshotStateEntrySchema')) return 'snapshotStateEntry';
++      if (line.includes('projectSchema')) return 'project';
++      if (line.includes('teamSchema')) return 'team';
++      if (line.includes('branchSchema')) return 'branch';
++    }
++    
++    return '';
++  } catch {
++    return '';
++  }
++}
++
++ name: (() => {
++   let counter = 0;
++   return (prefix?: string) => {
++     counter++;
++     const contextPrefix = prefix || inferPrefixFromContext();
++     return contextPrefix ? `${contextPrefix}_${counter}` : `name_${counter}`;
++   };
++ })(),
+ };

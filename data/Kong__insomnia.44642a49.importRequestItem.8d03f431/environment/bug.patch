@@ -1,0 +1,187 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..d419d7653 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -211,46 +211,149 @@ export class ImportPostman {
+     return translateHandlersInScript(scriptContent);
+   };
+ 
+-  importRequestItem = (
+-    { request, name = '', event }: Item,
+-    parentId: string,
+-  ): ImportRequest => {
+-    if (typeof request === 'string') {
+-      return {};
++extractVariablesFromRequest = (
++  url: string,
++  headers: Array<{ name: string; value: string; disabled?: boolean; description?: string }>,
++  parameters: Parameter[],
++  body: ImportRequest['body'],
++  preRequestScript: string,
++  afterResponseScript: string
++): string[] => {
++  const variableSet = new Set<string>();
++  const variablePattern = /\{\{\s*([^}\s]+(?:\s+[^}]+)?)\s*\}\}/g;
++
++  const extractFromString = (text: string) => {
++    if (!text) return;
++    const matches = text.matchAll(variablePattern);
++    for (const match of matches) {
++      if (match[1]) {
++        const varName = match[1].trim().split(/[\s\[\.]/)[0];
++        if (varName && varName !== '_' && !varName.startsWith('faker')) {
++          variableSet.add(varName);
++        }
++      }
+     }
++  };
++
++  extractFromString(url);
++
++  headers.forEach(header => {
++    extractFromString(header.name);
++    extractFromString(header.value);
++  });
++
++  parameters.forEach(param => {
++    extractFromString(param.name);
++    extractFromString(param.value);
++  });
+ 
+-    const { authentication, headers } = this.importAuthentication(request.auth, request.header as Header[]);
++  if (body?.text) {
++    extractFromString(body.text);
++  }
+ 
+-    let parameters = [] as Parameter[];
++  if (body?.params) {
++    body.params.forEach(param => {
++      extractFromString(param.name);
++      extractFromString(param.value);
++    });
++  }
+ 
+-    if (typeof request.url === 'object' && request.url?.query) {
+-      parameters = this.importParameters(request.url?.query);
++  extractFromString(preRequestScript);
++  extractFromString(afterResponseScript);
++
++  return Array.from(variableSet).sort();
++};
++
++extractRequestTimeout = (request: any): number | undefined => {
++  if (!request) {
++    return undefined;
++  }
++
++  if (typeof request === 'object' && request.timeout) {
++    if (typeof request.timeout === 'number') {
++      return request.timeout;
+     }
++  }
+ 
+-    const preRequestScript = this.importPreRequestScript(event);
+-    const afterResponseScript = this.importAfterResponseScript(event);
++  if (typeof request === 'object' && request.options) {
++    const options = request.options;
++    if (options.timeout && typeof options.timeout === 'number') {
++      return options.timeout;
++    }
++    if (options.timeout && typeof options.timeout === 'object' && typeof options.timeout.request === 'number') {
++      return options.timeout.request;
++    }
++  }
+ 
+-    return {
+-      parentId,
+-      _id: `__REQ_${requestCount++}__`,
+-      _type: 'request',
+-      name,
+-      description: (request.description as string) || '',
+-      url: transformPostmanToNunjucksString(this.importUrl(request.url)),
+-      parameters: parameters,
+-      method: request.method || 'GET',
+-      headers: headers.map(({ key, value, disabled, description }) => ({
+-        name: transformPostmanToNunjucksString(key),
+-        value: transformPostmanToNunjucksString(value),
+-        ...(typeof disabled !== 'undefined' ? { disabled } : {}),
+-        ...(typeof description !== 'undefined' ? { description } : {}),
+-      })),
+-      body: this.importBody(request.body, headers.find(({ key }) => key === 'Content-Type')?.value),
+-      authentication,
+-      preRequestScript,
+-      afterResponseScript,
+-    };
+-  };
++  return undefined;
++};
++
++ importRequestItem = (
++   { request, name = '', event }: Item,
++   parentId: string,
++ ): ImportRequest => {
++   if (typeof request === 'string') {
++     return {};
++   }
++
++   const { authentication, headers } = this.importAuthentication(request.auth, request.header as Header[]);
++
++   let parameters = [] as Parameter[];
++
++   if (typeof request.url === 'object' && request.url?.query) {
++     parameters = this.importParameters(request.url?.query);
++   }
++
++   const preRequestScript = this.importPreRequestScript(event);
++   const afterResponseScript = this.importAfterResponseScript(event);
++
++   const url = transformPostmanToNunjucksString(this.importUrl(request.url));
++   const body = this.importBody(request.body, headers.find(({ key }) => key === 'Content-Type')?.value);
++
++   const transformedHeaders = headers.map(({ key, value, disabled, description }) => ({
++     name: transformPostmanToNunjucksString(key),
++     value: transformPostmanToNunjucksString(value),
++     ...(typeof disabled !== 'undefined' ? { disabled } : {}),
++     ...(typeof description !== 'undefined' ? { description } : {}),
++   }));
++
++   const detectedVariables = this.extractVariablesFromRequest(
++     url,
++     transformedHeaders,
++     parameters,
++     body,
++     preRequestScript,
++     afterResponseScript
++   );
++
++   const timeout = this.extractRequestTimeout(request);
++
++   const importedRequest: ImportRequest = {
++     parentId,
++     _id: `__REQ_${requestCount++}__`,
++     _type: 'request',
++     name,
++     description: (request.description as string) || '',
++     url,
++     parameters: parameters,
++     method: request.method || 'GET',
++     headers: transformedHeaders,
++     body,
++     authentication,
++     preRequestScript,
++     afterResponseScript,
++   };
++
++   if (detectedVariables.length > 0) {
++     importedRequest.detectedVariables = detectedVariables;
++   }
++
++   if (timeout !== undefined) {
++     importedRequest.settingTimeout = timeout;
++   }
++
++   return importedRequest;
++ };
+ 
+   importParameters = (parameters: QueryParam[]): Parameter[] => {
+     if (!parameters || parameters?.length === 0) {

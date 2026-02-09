@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..76e326668 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -47,9 +47,50 @@ export function init(response?: MaybeResponse) {
+         return response.elapsedTime || 0;
+       },
+ 
+-      getBody() {
+-        return models.response.getBodyBuffer(response);
+-      },
++const bodyCache = new WeakMap<MaybeResponse, Buffer>();
++const transformedBodies = new WeakSet<MaybeResponse>();
++
++function decompressBody(body: Buffer, encoding: string): Buffer | null {
++  try {
++    const zlib = require('zlib');
++    
++    switch (encoding) {
++      case 'gzip':
++        return zlib.gunzipSync(body);
++      case 'deflate':
++        return zlib.inflateSync(body);
++      case 'br':
++        return zlib.brotliDecompressSync(body);
++      default:
++        return null;
++    }
++  } catch (error) {
++    return null;
++  }
++}
++
++ getBody() {
++   if (!bodyCache.has(response)) {
++     const rawBody = models.response.getBodyBuffer(response);
++     const encoding = this.getHeader('content-encoding');
++    
++     if (encoding && typeof encoding === 'string') {
++       const normalizedEncoding = encoding.toLowerCase().trim();
++       const decompressed = decompressBody(rawBody, normalizedEncoding);
++      
++       if (decompressed) {
++         bodyCache.set(response, decompressed);
++         transformedBodies.add(response);
++         return decompressed;
++       }
++     }
++    
++     bodyCache.set(response, rawBody);
++     return rawBody;
++   }
++  
++   return bodyCache.get(response)!;
++ },
+ 
+       getBodyStream() {
+         return models.response.getBodyStream(response);

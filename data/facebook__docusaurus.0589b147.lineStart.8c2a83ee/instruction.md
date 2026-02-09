@@ -2,31 +2,36 @@
 
 ### Describe the bug
 
-I'm encountering an issue with MDX content parsing where the content type is being set incorrectly for text chunks. When processing paragraph content, the chunks are being marked with the wrong `contentType` value, which breaks downstream processing that relies on proper content type identification.
+I'm experiencing an issue with MDX content parsing where the `previous` token reference is being set incorrectly in the `lineStart` function. This causes problems with linked list traversal of text chunks.
 
 ### Reproduction
 
+When parsing MDX content with multiple text chunks, the token linking appears to be broken:
+
 ```js
-// Processing MDX content with paragraph text
+// Parse MDX content with consecutive text chunks
 const mdxContent = `
-This is a paragraph with some text content.
+This is some text.
+This is more text.
+And even more text.
 `;
 
-// Parse the content
-const result = compile(mdxContent);
-
-// The chunkText tokens have incorrect contentType
-// Expected: contentType: "text"
-// Actual: contentType: "chunkText"
+// The previous.next reference chain is not being established correctly
+// because previous2 is assigned before checking if it exists
 ```
 
 ### Expected behavior
 
-Text chunks within paragraphs should have `contentType: "text"` to properly identify them as text content. The current behavior sets `contentType: "chunkText"` which doesn't match the expected content type for text processing.
+The token chain should be properly linked so that:
+1. Each new token has a reference to the previous token
+2. The previous token has a reference to the next token
+3. The linked list can be traversed in both directions
 
-### Additional context
+Currently, the assignment order causes `previous2` to be overwritten before establishing the bidirectional link, breaking the token chain.
 
-This affects how the MDX parser handles text content in paragraphs and could cause issues with any tooling or plugins that depend on the correct content type being set for text chunks.
+### System Info
+- @mdx-js/mdx version: 3.0.0
+- Node version: 18.x
 
 ---
 Repository: /testbed

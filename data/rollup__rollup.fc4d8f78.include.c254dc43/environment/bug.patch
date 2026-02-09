@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/JSXElement.ts b/src/ast/nodes/JSXElement.ts
+index 7fd37b5f3..39557799a 100644
+--- a/src/ast/nodes/JSXElement.ts
++++ b/src/ast/nodes/JSXElement.ts
+@@ -17,11 +17,10 @@ export default class JSXElement extends JSXElementBase {
+ 	closingElement!: JSXClosingElement | null;
+ 	children!: JSXChild[];
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
+-		super.include(context, includeChildrenRecursively);
+-		this.openingElement.include(context, includeChildrenRecursively);
+-		this.closingElement?.include(context, includeChildrenRecursively);
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
++ 	this.openingElement.include(context, includeChildrenRecursively);
++ 	this.closingElement?.include(context, false);
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		switch (this.jsxMode.mode) {

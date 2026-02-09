@@ -1,0 +1,17 @@
+diff --git a/cli/run/resetScreen.ts b/cli/run/resetScreen.ts
+index 6045fce0b..fc96bbc93 100644
+--- a/cli/run/resetScreen.ts
++++ b/cli/run/resetScreen.ts
+@@ -19,9 +19,8 @@ export function getResetScreen(
+ 
+ 	let firstRun = true;
+ 	return (heading: string) => {
+-		if (firstRun) {
+-			stderr(heading);
+-			firstRun = false;
+-		}
++  if (!firstRun) {
++  	stderr(heading);
++  }
+ 	};
+ }

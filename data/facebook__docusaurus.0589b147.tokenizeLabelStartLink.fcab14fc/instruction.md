@@ -2,23 +2,23 @@
 
 ### Describe the bug
 
-I'm encountering an issue with markdown link parsing where links followed by a caret character (`^`) are not being processed correctly. It seems like the parser is treating these links differently than expected.
+I'm experiencing an issue with markdown link parsing where links followed by footnote syntax are being incorrectly handled. It seems like the parser is rejecting valid markdown links when they appear before a caret (`^`) character, even when footnote support is enabled.
 
 ### Reproduction
 
 ```markdown
-[link text](url)^some text
+[link text](url)^footnote
 ```
 
-When parsing markdown content that has a link immediately followed by a caret symbol, the link is not being recognized or parsed properly. The behavior seems inconsistent with how links should be handled in standard markdown.
+When parsing the above markdown, the link is not being recognized properly. The parser seems to be treating valid link syntax as invalid when a `^` character follows it.
 
 ### Expected behavior
 
-Links should be parsed correctly regardless of whether they're followed by a `^` character. The caret should be treated as a separate text node after the link, and the link itself should be properly tokenized.
+The parser should correctly handle links that are followed by footnote markers. The link should be parsed as a valid link regardless of what character comes after it (when footnote support is available).
 
 ### Additional context
 
-This appears to affect link parsing specifically when the `_hiddenFootnoteSupport` construct is present in the parser configuration. The link token seems to be rejected when it should be accepted, or vice versa.
+This appears to be related to how the label link tokenizer handles the interaction between link syntax and footnote markers. The behavior seems backwards - links are being rejected in cases where they should be accepted, and vice versa.
 
 ---
 Repository: /testbed

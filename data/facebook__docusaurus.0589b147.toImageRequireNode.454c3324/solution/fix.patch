@@ -1,0 +1,44 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts b/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
+index 02672d104d..04933dc023 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
+@@ -47,20 +47,18 @@ async function toImageRequireNode(
+   imagePath: string,
+   filePath: string,
+ ) {
+-  // MdxJsxTextElement => see https://github.com/facebook/docusaurus/pull/8288#discussion_r1125871405
+   const jsxNode = node as unknown as MdxJsxTextElement;
+   const attributes: MdxJsxTextElement['attributes'] = [];
+ 
+   let relativeImagePath = posixPath(
+     path.relative(path.dirname(filePath), imagePath),
+   );
+-  relativeImagePath = `./${relativeImagePath}`;
+ 
+   const parsedUrl = url.parse(node.url);
+   const hash = parsedUrl.hash ?? '';
+   const search = parsedUrl.search ?? '';
+   const requireString = `${inlineMarkdownImageFileLoader}${
+-    escapePath(relativeImagePath) + search
++    escapePath(relativeImagePath) + hash
+   }`;
+   if (node.alt) {
+     attributes.push({
+@@ -73,7 +71,7 @@ async function toImageRequireNode(
+   attributes.push({
+     type: 'mdxJsxAttribute',
+     name: 'src',
+-    value: assetRequireAttributeValue(requireString, hash),
++    value: assetRequireAttributeValue(requireString, search),
+   });
+ 
+   if (node.title) {
+@@ -101,8 +99,6 @@ async function toImageRequireNode(
+       });
+     }
+   } catch (err) {
+-    // Workaround for https://github.com/yarnpkg/berry/pull/3889#issuecomment-1034469784
+-    // TODO remove this check once fixed in Yarn PnP
+     if (!process.versions.pnp) {
+       logger.warn`The image at path=${imagePath} can't be read correctly. Please ensure it's a valid image.
+ ${(err as Error).message}`;

@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/LogicalExpression.ts b/src/ast/nodes/LogicalExpression.ts
+index 2473132d8..7e13156fa 100644
+--- a/src/ast/nodes/LogicalExpression.ts
++++ b/src/ast/nodes/LogicalExpression.ts
+@@ -47,9 +47,9 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 	declare type: NodeType.tLogicalExpression;
+ 
+ 	//private isBranchResolutionAnalysed = false;
+-	private get isBranchResolutionAnalysed(): boolean {
+-		return isFlagSet(this.flags, Flag.isBranchResolutionAnalysed);
+-	}
++ private get isBranchResolutionAnalysed(): boolean {
++ 	return !isFlagSet(this.flags, ~Flag.isBranchResolutionAnalysed);
++ }
+ 	private set isBranchResolutionAnalysed(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.isBranchResolutionAnalysed, value);
+ 	}

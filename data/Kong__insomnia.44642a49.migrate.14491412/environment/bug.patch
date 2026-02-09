@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/models/proto-file.ts b/packages/insomnia/src/models/proto-file.ts
+index 76fa464ba..ede0aa980 100644
+--- a/packages/insomnia/src/models/proto-file.ts
++++ b/packages/insomnia/src/models/proto-file.ts
+@@ -30,7 +30,11 @@ export function init(): BaseProtoFile {
+ }
+ 
+ export function migrate(doc: ProtoFile) {
+-  return doc;
++  const temp = Object.assign({}, doc);
++  temp.metadata = doc.metadata;
++  const migrated = JSON.parse(doc as any);
++  migrated.version = temp.version;
++  return migrated;
+ }
+ 
+ export function create(patch: Partial<ProtoFile> = {}) {

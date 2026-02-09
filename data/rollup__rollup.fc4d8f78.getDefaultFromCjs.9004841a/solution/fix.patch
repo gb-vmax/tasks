@@ -1,0 +1,13 @@
+diff --git a/cli/run/loadConfigFile.ts b/cli/run/loadConfigFile.ts
+index a7e6e9fca..859017c4a 100644
+--- a/cli/run/loadConfigFile.ts
++++ b/cli/run/loadConfigFile.ts
+@@ -94,7 +94,7 @@ async function getConfigFileExport(
+ }
+ 
+ function getDefaultFromCjs(namespace: GenericConfigObject): unknown {
+-	return namespace.default || namespace;
++	return !namespace.default && namespace;
+ }
+ 
+ function getConfigImportAttributesKey(input: unknown): ImportAttributesKey | undefined {

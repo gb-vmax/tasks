@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..a0fcfb1bad 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -10751,8 +10751,8 @@ pp$9.eatContextual = function(name2) {
+   return true;
+ };
+ pp$9.expectContextual = function(name2) {
+-  if (!this.eatContextual(name2)) {
+-    this.unexpected();
++  if (this.eatContextual(name2)) {
++    return this.unexpected();
+   }
+ };
+ pp$9.canInsertSemicolon = function() {

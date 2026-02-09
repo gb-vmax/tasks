@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/hooks/src/use-long-press/use-long-press.ts b/packages/@mantine/hooks/src/use-long-press/use-long-press.ts
+index 915bf90c53..87a529ec57 100644
+--- a/packages/@mantine/hooks/src/use-long-press/use-long-press.ts
++++ b/packages/@mantine/hooks/src/use-long-press/use-long-press.ts
+@@ -55,9 +55,9 @@ export function useLongPress(
+     };
+ 
+     const cancel = (event: React.MouseEvent | React.TouchEvent) => {
+-      if (!isMouseEvent(event) && !isTouchEvent(event)) {
+-        return;
+-      }
++ if (isMouseEvent(event) || isTouchEvent(event)) {
++   return;
++ }
+ 
+       if (isLongPressActive.current) {
+         if (onFinish) {

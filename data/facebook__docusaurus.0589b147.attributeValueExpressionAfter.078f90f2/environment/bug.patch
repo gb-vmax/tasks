@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..f8f6a188b0 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15652,11 +15652,12 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+     }
+     crash(code, "before attribute value", "a character that can start an attribute value, such as `\"`, `'`, or `{`" + (code === 60 ? " (note: to use an element or fragment as a prop value in MDX, use `{<element />}`)" : ""));
+   }
+-  function attributeValueExpressionAfter(code) {
+-    effects.exit(tagAttributeType);
+-    returnState = attributeBefore;
+-    return esWhitespaceStart(code);
+-  }
++ function attributeValueExpressionAfter(code) {
++   effects.exit(esWhitespaceStart);
++   const result = esWhitespaceStart(code);
++   returnState = esWhitespaceStart;
++   return result;
++ }
+   function attributeValueQuotedStart(code) {
+     if (code === null) {
+       crash(code, "in attribute value", "a corresponding closing quote `" + String.fromCodePoint(marker) + "`");

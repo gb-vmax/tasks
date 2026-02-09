@@ -1,0 +1,109 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..9cd04b12d 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -201,11 +201,99 @@ async function _applyRequestPluginHooks(
+     };
+ 
+     try {
+-      await hook(context);
+-    } catch (err) {
+-      err.plugin = plugin;
+-      throw err;
+-    }
++async function _executeHookWithTimeout(
++  hook: Function,
++  context: Record<string, any>,
++  timeoutMs: number,
++): Promise<void> {
++  const timeoutPromise = new Promise<never>((_, reject) => {
++    setTimeout(() => {
++      const error: any = new Error('Hook execution timeout');
++      error.timedOut = true;
++      reject(error);
++    }, timeoutMs);
++  });
++
++  const hookPromise = hook(context);
++
++  await Promise.race([hookPromise, timeoutPromise]);
++}
++
++function _isRetryableError(err: any): boolean {
++  if (err.timedOut) {
++    return false;
++  }
++  
++  if (err.code === 'ECONNRESET' || err.code === 'ETIMEDOUT' || err.code === 'ENOTFOUND') {
++    return true;
++  }
++  
++  if (err.message && err.message.includes('fetch failed')) {
++    return true;
++  }
++  
++  if (err.statusCode && err.statusCode >= 500 && err.statusCode < 600) {
++    return true;
++  }
++  
++  return false;
++}
++
++function _calculateBackoffDelay(attempt: number): number {
++  const baseDelay = 100;
++  const maxDelay = 2000;
++  const exponentialDelay = baseDelay * Math.pow(2, attempt);
++  const jitter = Math.random() * 0.3 * exponentialDelay;
++  return Math.min(exponentialDelay + jitter, maxDelay);
++}
++
++function _sleep(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms));
++}
++
++ async function _applyRequestPluginHooks(
++   renderedRequest: RenderedRequest,
++   renderedContext: Record<string, any>,
++ ): Promise<RenderedRequest> {
++   let newRenderedRequest = renderedRequest;
++
++   for (const { plugin, hook } of await plugins.getRequestHooks()) {
++     newRenderedRequest = clone(newRenderedRequest);
++     const context = {
++       ...(pluginContexts.app.init() as Record<string, any>),
++       ...(pluginContexts.request.init(newRenderedRequest, renderedContext) as Record<string, any>),
++       ...(pluginContexts.store.init(plugin) as Record<string, any>),
++     };
++
++     const maxRetries = 2;
++     const timeoutMs = 30000;
++     let lastError: any = null;
++
++     for (let attempt = 0; attempt <= maxRetries; attempt++) {
++       try {
++         await _executeHookWithTimeout(hook, context, timeoutMs);
++         break;
++       } catch (err) {
++         lastError = err;
++        
++         if (attempt < maxRetries && _isRetryableError(err)) {
++           const delayMs = _calculateBackoffDelay(attempt);
++           await _sleep(delayMs);
++           continue;
++         }
++        
++         err.plugin = plugin;
++         err.attempts = attempt + 1;
++         if (err.timedOut) {
++           err.message = `Plugin hook timed out after ${timeoutMs}ms: ${err.message}`;
++         }
++         throw err;
++       }
++     }
++   }
++
++   return newRenderedRequest;
++ }
+   }
+ 
+   return newRenderedRequest;

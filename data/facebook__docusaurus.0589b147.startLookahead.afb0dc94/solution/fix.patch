@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b445eec61d 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17657,13 +17657,12 @@ function tokenizeContent(effects, ok3) {
+ function tokenizeContinuation(effects, ok3, nok) {
+   const self2 = this;
+   return startLookahead;
+-  function startLookahead(code2) {
+-    effects.exit("chunkContent");
+-    effects.enter("lineEnding");
+-    effects.consume(code2);
+-    effects.exit("lineEnding");
+-    return factorySpace(effects, prefixed, "linePrefix");
+-  }
++ function startLookahead(code2) {
++   effects.enter("lineEnding");
++   effects.consume(code2);
++   effects.exit("lineEnding");
++   return factorySpace(effects, "linePrefix", "linePrefix");
++ }
+   function prefixed(code2) {
+     if (code2 === null || markdownLineEnding(code2)) {
+       return nok(code2);

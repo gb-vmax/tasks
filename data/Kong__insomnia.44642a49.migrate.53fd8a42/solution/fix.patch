@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/models/git-repository.ts b/packages/insomnia/src/models/git-repository.ts
+index 5b1e72112..f93c3651e 100644
+--- a/packages/insomnia/src/models/git-repository.ts
++++ b/packages/insomnia/src/models/git-repository.ts
+@@ -44,8 +44,76 @@ export const isGitRepository = (model: Pick<BaseModel, 'type'>): model is GitRep
+   model.type === type
+ );
+ 
++function normalizeGitUri(uri: string): string {
++  let normalized = uri.trim();
++  
++  if (normalized.startsWith('git://')) {
++    normalized = normalized.replace('git://', 'https://');
++  }
++  
++  if (normalized.startsWith('http://')) {
++    normalized = normalized.replace('http://', 'https://');
++  }
++  
++  if (normalized.endsWith('/')) {
++    normalized = normalized.slice(0, -1);
++  }
++  
++  if (normalized.endsWith('.git')) {
++    normalized = normalized.slice(0, -4);
++  }
++  
++  return normalized;
++}
++
++function normalizeCredentials(credentials: GitCredentials): GitCredentials {
++  const normalized = { ...credentials };
++  
++  if ('token' in normalized && normalized.token) {
++    if ('oauth2format' in normalized) {
++      const oauth2format = (normalized as any).oauth2format as OauthProviderName | undefined;
++      if (oauth2format === 'gitlab' || oauth2format === 'github') {
++        if (!(normalized as any).provider) {
++          (normalized as any).provider = oauth2format;
++        }
++      }
++    }
++  }
++  
++  return normalized;
++}
++
+ export function migrate(doc: GitRepository) {
+-  return doc;
++  const migrated = { ...doc };
++  
++  if (migrated.uriNeedsMigration && migrated.uri) {
++    migrated.uri = normalizeGitUri(migrated.uri);
++    migrated.uriNeedsMigration = false;
++  }
++  
++  if (!migrated.author) {
++    migrated.author = {
++      name: '',
++      email: '',
++    };
++  } else {
++    if (!migrated.author.name) {
++      migrated.author.name = '';
++    }
++    if (!migrated.author.email) {
++      migrated.author.email = '';
++    }
++  }
++  
++  if (migrated.credentials) {
++    migrated.credentials = normalizeCredentials(migrated.credentials);
++  }
++  
++  if (migrated.needsFullClone === undefined) {
++    migrated.needsFullClone = false;
++  }
++  
++  return migrated;
+ }
+ 
+ export function create(patch: Partial<GitRepository> = {}) {

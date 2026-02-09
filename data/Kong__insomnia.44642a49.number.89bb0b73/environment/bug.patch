@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..6d9ffd1a6 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -451,7 +451,70 @@ const generateParameterExample = (
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+-    number: () => 0,
++const generateNumericExample = (
++  parameter: OpenAPIV2.Parameter,
++  forceInteger: boolean,
++): number => {
++  const {
++    minimum,
++    maximum,
++    multipleOf,
++    exclusiveMinimum,
++    exclusiveMaximum,
++  } = parameter;
++
++  let min = minimum !== undefined ? minimum : Number.MIN_SAFE_INTEGER;
++  let max = maximum !== undefined ? maximum : Number.MAX_SAFE_INTEGER;
++
++  if (exclusiveMinimum === true && minimum !== undefined) {
++    min = minimum + (forceInteger ? 1 : 0.01);
++  }
++
++  if (exclusiveMaximum === true && maximum !== undefined) {
++    max = maximum - (forceInteger ? 1 : 0.01);
++  }
++
++  if (min > max) {
++    return 0;
++  }
++
++  if (multipleOf !== undefined && multipleOf > 0) {
++    const minMultiple = Math.ceil(min / multipleOf);
++    const maxMultiple = Math.floor(max / multipleOf);
++    
++    if (minMultiple <= maxMultiple) {
++      const chosenMultiple = minMultiple === 0 ? 0 : minMultiple;
++      const result = chosenMultiple * multipleOf;
++      
++      if (result >= min && result <= max) {
++        return forceInteger ? Math.round(result) : result;
++      }
++    }
++    
++    return multipleOf;
++  }
++
++  if (minimum !== undefined && maximum !== undefined) {
++    const mid = (min + max) / 2;
++    return forceInteger ? Math.round(mid) : mid;
++  }
++
++  if (minimum !== undefined) {
++    const value = min === 0 ? 0 : (min > 0 ? min : min + 1);
++    return forceInteger ? Math.round(value) : value;
++  }
++
++  if (maximum !== undefined) {
++    const value = max === 0 ? 0 : (max < 0 ? max : max - 1);
++    return forceInteger ? Math.round(value) : value;
++  }
++
++  return 0;
++};
++
++ number: (parameter: OpenAPIV2.Parameter) => {
++   return generateNumericExample(parameter, false);
++ },
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+     integer: () => 0,

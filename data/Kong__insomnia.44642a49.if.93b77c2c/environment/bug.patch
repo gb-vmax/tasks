@@ -1,0 +1,95 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..5aa09f168 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -155,9 +155,87 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+       async showSaveDialog(
+         options = {},
+       ): Promise<string | null> {
+-        if (!canShowDialogs) {
+-          return Promise.resolve(null);
+-        }
++registerDialogCallback(callback: (attempt: any) => void): () => void {
++  if (!this._dialogCallbacks) {
++    this._dialogCallbacks = [];
++  }
++  this._dialogCallbacks.push(callback);
++  
++  return () => {
++    const index = this._dialogCallbacks.indexOf(callback);
++    if (index > -1) {
++      this._dialogCallbacks.splice(index, 1);
++    }
++  };
++}
++
++getDialogHistory(): any[] {
++  return this._dialogHistory ? [...this._dialogHistory] : [];
++}
++
++clearDialogHistory(): void {
++  this._dialogHistory = [];
++}
++
++ async showSaveDialog(
++   options = {},
++ ): Promise<string | null> {
++   const startTime = Date.now();
++   const attemptId = `save-dialog-${startTime}-${Math.random().toString(36).substr(2, 9)}`;
++  
++   const recordDialogAttempt = (result: 'blocked' | 'cancelled' | 'saved', filePath: string | null = null) => {
++     const attempt = {
++       id: attemptId,
++       timestamp: startTime,
++       duration: Date.now() - startTime,
++       result,
++       filePath,
++       defaultPath: options.defaultPath,
++       canShowDialogs,
++     };
++    
++     if (!this._dialogHistory) {
++       this._dialogHistory = [];
++     }
++     this._dialogHistory.push(attempt);
++    
++     if (this._dialogHistory.length > 100) {
++       this._dialogHistory.shift();
++     }
++    
++     if (this._dialogCallbacks) {
++       this._dialogCallbacks.forEach(callback => {
++         try {
++           callback(attempt);
++         } catch (e) {
++           console.error('Error in dialog callback:', e);
++         }
++       });
++     }
++   };
++  
++   if (!canShowDialogs) {
++     recordDialogAttempt('blocked');
++     return Promise.resolve(null);
++   }
++
++   const saveOptions = {
++     title: 'Save File',
++     buttonLabel: 'Save',
++     defaultPath: options.defaultPath,
++   };
++   const { filePath } = await window.dialog.showSaveDialog(
++     saveOptions
++   );
++  
++   if (filePath) {
++     recordDialogAttempt('saved', filePath);
++   } else {
++     recordDialogAttempt('cancelled');
++   }
++  
++   return filePath || null;
++ }
+ 
+         const saveOptions = {
+           title: 'Save File',

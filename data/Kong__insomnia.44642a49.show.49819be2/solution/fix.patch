@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+index b71e59989..3ea8d4fbb 100644
+--- a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+@@ -79,13 +79,54 @@ export const PromptModal = forwardRef<PromptModalHandle, ModalProps>((_, ref) =>
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState({
+-        ...options,
+-        loading: false,
+-      });
+-      modalRef.current?.show();
+-    },
++const getInputHistory = (key: string): string[] => {
++  try {
++    const stored = localStorage.getItem(key);
++    return stored ? JSON.parse(stored) : [];
++  } catch {
++    return [];
++  }
++};
++
++const saveInputHistory = (key: string, value: string): void => {
++  try {
++    const history = getInputHistory(key);
++    const filtered = history.filter(v => v !== value);
++    const updated = [value, ...filtered].slice(0, 5);
++    localStorage.setItem(key, JSON.stringify(updated));
++  } catch {
++    // Silently fail if localStorage is not available
++  }
++};
++
++const mergeHintsWithHistory = (hints: string[] | undefined, history: string[], defaultValue?: string): string[] => {
++  const hintsArray = hints || [];
++  const filtered = history.filter(h => h !== defaultValue && !hintsArray.includes(h));
++  return [...hintsArray, ...filtered];
++};
++
++ show: options => {
++   const historyKey = `prompt-modal-history-${options.title}`;
++   const storedHistory = getInputHistory(historyKey);
++   const mergedHints = mergeHintsWithHistory(options.hints, storedHistory, options.defaultValue);
++  
++   setState({
++     ...options,
++     hints: mergedHints,
++     loading: false,
++   });
++  
++   modalRef.current?.show();
++  
++   if (options.selectText && options.defaultValue) {
++     setTimeout(() => {
++       if (inputRef.current) {
++         inputRef.current.focus();
++         inputRef.current.select();
++       }
++     }, 100);
++   }
++ },
+   }), []);
+ 
+   const {

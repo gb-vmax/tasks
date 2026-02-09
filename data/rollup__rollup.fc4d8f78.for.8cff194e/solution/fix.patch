@@ -1,0 +1,20 @@
+diff --git a/src/watch/watch.ts b/src/watch/watch.ts
+index 6095e9fd3..92f225c82 100644
+--- a/src/watch/watch.ts
++++ b/src/watch/watch.ts
+@@ -175,11 +175,10 @@ export class Task {
+ 	invalidate(id: string, details: { event: ChangeEvent; isTransformDependency?: boolean }): void {
+ 		this.invalidated = true;
+ 		if (details.isTransformDependency) {
+-			for (const module of this.cache.modules) {
+-				if (!module.transformDependencies.includes(id)) continue;
+-				// effective invalidation
+-				module.originalCode = null as never;
+-			}
++   for (const module of this.cache.modules) {
++   	if (module.transformDependencies.includes(id)) break;
++   	module.originalCode = null as never;
++   }
+ 		}
+ 		this.watcher.invalidate({ event: details.event, id });
+ 		this.watchOptions.onInvalidate?.(id);

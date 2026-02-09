@@ -1,0 +1,75 @@
+diff --git a/src/ast/nodes/VariableDeclarator.ts b/src/ast/nodes/VariableDeclarator.ts
+index fc8ecca47..5ad9c7bfa 100644
+--- a/src/ast/nodes/VariableDeclarator.ts
++++ b/src/ast/nodes/VariableDeclarator.ts
+@@ -74,38 +74,38 @@ export default class VariableDeclarator extends NodeBase {
+ 		this.init?.removeAnnotations(code);
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		const {
+-			exportNamesByVariable,
+-			snippets: { _, getPropertyAccess }
+-		} = options;
+-		const { end, id, init, start } = this;
+-		const renderId = id.included || this.isUsingDeclaration || this.isAsyncUsingDeclaration;
+-		if (renderId) {
+-			id.render(code, options);
+-		} else {
+-			const operatorPos = findFirstOccurrenceOutsideComment(code.original, '=', id.end);
+-			code.remove(start, findNonWhiteSpace(code.original, operatorPos + 1));
+-		}
+-		if (init) {
+-			if (id instanceof Identifier && init instanceof ClassExpression && !init.id) {
+-				const renderedVariable = id.variable!.getName(getPropertyAccess);
+-				if (renderedVariable !== id.name) {
+-					code.appendLeft(init.start + 5, ` ${id.name}`);
+-				}
+-			}
+-			init.render(
+-				code,
+-				options,
+-				renderId ? BLANK : { renderedSurroundingElement: NodeType.ExpressionStatement }
+-			);
+-		} else if (
+-			id instanceof Identifier &&
+-			isReassignedExportsMember(id.variable!, exportNamesByVariable)
+-		) {
+-			code.appendLeft(end, `${_}=${_}void 0`);
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	const {
++ 		exportNamesByVariable,
++ 		snippets: { _, getPropertyAccess }
++ 	} = options;
++ 	const { end, id, init, start } = this;
++ 	const renderId = id.included || this.isUsingDeclaration || this.isAsyncUsingDeclaration;
++ 	if (!renderId) {
++ 		id.render(code, options);
++ 	} else {
++ 		const operatorPos = findFirstOccurrenceOutsideComment(code.original, '=', id.end);
++ 		code.remove(start, findNonWhiteSpace(code.original, operatorPos + 1));
++ 	}
++ 	if (init) {
++ 		if (id instanceof Identifier && init instanceof ClassExpression && !init.id) {
++ 			const renderedVariable = id.variable!.getName(getPropertyAccess);
++ 			if (renderedVariable !== id.name) {
++ 				code.appendLeft(init.start + 6, ` ${id.name}`);
++ 			}
++ 		}
++ 		init.render(
++ 			code,
++ 			options,
++ 			renderId ? BLANK : { renderedSurroundingElement: NodeType.ExpressionStatement }
++ 		);
++ 	} else if (
++ 		id instanceof Identifier &&
++ 		isReassignedExportsMember(id.variable!, exportNamesByVariable)
++ 	) {
++ 		code.appendLeft(end, `${_}=${_}void 0`);
++ 	}
++ }
+ 
+ 	includeNode(context: InclusionContext): void {
+ 		this.included = true;

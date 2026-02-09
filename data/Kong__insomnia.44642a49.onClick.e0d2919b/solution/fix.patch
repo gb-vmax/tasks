@@ -1,0 +1,62 @@
+diff --git a/packages/insomnia/src/ui/components/themed-button/async-button.tsx b/packages/insomnia/src/ui/components/themed-button/async-button.tsx
+index a3b314a29..f7fd192d0 100644
+--- a/packages/insomnia/src/ui/components/themed-button/async-button.tsx
++++ b/packages/insomnia/src/ui/components/themed-button/async-button.tsx
+@@ -13,9 +13,57 @@ function isPromise(obj: unknown) {
+   );
+ }
+ 
++export interface AsyncButtonProps<T> extends ButtonProps {
+ export interface AsyncButtonProps<T> extends ButtonProps {
+   onClick: (event: React.MouseEvent<HTMLButtonElement>) => Promise<T> | undefined;
+   loadingNode?: ReactNode;
++  onSuccess?: (result: T, event: React.MouseEvent<HTMLButtonElement>) => void;
++  onError?: (error: unknown, event: React.MouseEvent<HTMLButtonElement>) => void;
++}
++
++export const AsyncButton = <T, >({
++  onClick,
++  disabled,
++  loadingNode,
++  children,
++  onSuccess,
++  onError,
++  ...props
++}: AsyncButtonProps<T>) => {
++  const [loading, setLoading] = useState(false);
++  const asyncHandler = useCallback(async (event: MouseEvent<HTMLButtonElement>) => {
++    const result = onClick(event);
++
++    if (isPromise(result)) {
++      try {
++        setLoading(true);
++        const resolvedValue = await result;
++        if (onSuccess) {
++          onSuccess(resolvedValue, event);
++        }
++      } catch (error) {
++        if (onError) {
++          onError(error, event);
++        }
++      } finally {
++        setLoading(false);
++      }
++    }
++  }, [onClick, onSuccess, onError]);
++
++  return (
++    <Button
++      {...props}
++      onClick={asyncHandler}
++      disabled={loading || disabled}
++    >
++      {(loading && loadingNode) || children}
++    </Button>
++  );
++};
++
++ onClick: (event: React.MouseEvent<HTMLButtonElement>) => Promise<T> | undefined;
++  loadingNode?: ReactNode;
+ }
+ 
+ export const AsyncButton = <T, >({

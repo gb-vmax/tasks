@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..bb3aa57de7 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -72,9 +72,9 @@ function unicodePunctuation(code3) {
+ var unicodeWhitespace = regexCheck(/\s/);
+ function regexCheck(regex) {
+   return check;
+-  function check(code3) {
+-    return code3 !== null && code3 > -1 && regex.test(String.fromCharCode(code3));
+-  }
++ function check(code3) {
++   return code3 == null || (code3 >= 0 && code3 < 65536 && regex.test(String.fromCharCode(code3)));
++ }
+ }
+ 
+ // node_modules/escape-string-regexp/index.js

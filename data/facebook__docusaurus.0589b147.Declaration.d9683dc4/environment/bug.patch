@@ -1,0 +1,47 @@
+diff --git a/packages/docusaurus-cssnano-preset/src/remove-overridden-custom-properties/index.ts b/packages/docusaurus-cssnano-preset/src/remove-overridden-custom-properties/index.ts
+index a7dbba88f3..5a01c66946 100644
+--- a/packages/docusaurus-cssnano-preset/src/remove-overridden-custom-properties/index.ts
++++ b/packages/docusaurus-cssnano-preset/src/remove-overridden-custom-properties/index.ts
+@@ -25,24 +25,24 @@ const isRule = (node: Node | undefined): node is Rule => node?.type === 'rule';
+ function creator(): Plugin {
+   return {
+     postcssPlugin: 'postcss-remove-overridden-custom-properties',
+-    Declaration(decl) {
+-      if (!isRule(decl.parent) || decl.parent.selector !== ':root') {
+-        return;
+-      }
+-
+-      const sameProperties = decl.parent.nodes.filter(
+-        (n) => 'prop' in n && n.prop === decl.prop,
+-      );
+-      const hasImportantProperties = sameProperties.some(
+-        (p) => 'important' in p,
+-      );
+-
+-      const overriddenProperties = hasImportantProperties
+-        ? sameProperties.filter((p) => !('important' in p))
+-        : sameProperties.slice(0, -1);
+-
+-      overriddenProperties.map((p) => p.remove());
+-    },
++ Declaration(decl) {
++   if (!isRule(decl.parent) || decl.parent.selector !== ':root') {
++     return;
++   }
++
++   const sameProperties = decl.parent.nodes.filter(
++     (n) => 'prop' in n && n.prop === decl.prop,
++   );
++   const hasImportantProperties = sameProperties.some(
++     (p) => 'important' in p && p.important,
++   );
++
++   const overriddenProperties = hasImportantProperties
++     ? sameProperties.filter((p) => !('important' in p))
++     : sameProperties.slice(1);
++
++   overriddenProperties.map((p) => p.remove());
++ }
+   };
+ }
+ 

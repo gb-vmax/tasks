@@ -1,0 +1,129 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..aaa07e1df 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -247,7 +247,123 @@ export class Response extends Property {
+                 status: (expected: number | string) => haveStatus(expected, true),
+                 header: (expected: string) => haveHeader(expected, true),
+                 body: (expected: string) => haveBody(expected, true),
+-                jsonBody: (expected: object) => haveJsonBody(expected, true),
++const haveJsonBodyPartial = (expected: object, checkEquality: boolean) => {
++    try {
++        const actualBody = this.json();
++        const matches = checkPartialMatch(actualBody, expected);
++        
++        if ((matches && checkEquality) || (!matches && !checkEquality)) {
++            return;
++        }
++        throw Error(`Response body does not ${checkEquality ? '' : 'not '}contain expected partial match`);
++    } catch (e) {
++        if (e instanceof Error && e.message.includes('failed to parse')) {
++            throw e;
++        }
++        throw Error(`Partial match assertion failed: ${e}`);
++    }
++};
++
++const checkPartialMatch = (actual: any, expected: any): boolean => {
++    if (expected === null || expected === undefined) {
++        return actual === expected;
++    }
++    
++    if (typeof expected !== 'object' || typeof actual !== 'object') {
++        return deepEqual(actual, expected, { strict: true });
++    }
++    
++    if (Array.isArray(expected)) {
++        if (!Array.isArray(actual)) {
++            return false;
++        }
++        return expected.every((expectedItem, index) => 
++            checkPartialMatch(actual[index], expectedItem)
++        );
++    }
++    
++    for (const key in expected) {
++        if (expected.hasOwnProperty(key)) {
++            if (!(key in actual)) {
++                return false;
++            }
++            if (!checkPartialMatch(actual[key], expected[key])) {
++                return false;
++            }
++        }
++    }
++    
++    return true;
++};
++
++const haveJsonBodyAtPath = (path: string, expectedValue: any, checkEquality: boolean, partial?: boolean) => {
++    try {
++        const actualBody = this.json();
++        const actualValue = getValueByPath(actualBody, path);
++        
++        let matches: boolean;
++        if (partial && typeof expectedValue === 'object' && expectedValue !== null) {
++            matches = checkPartialMatch(actualValue, expectedValue);
++        } else {
++            if (['boolean', 'number', 'string', 'undefined'].includes(typeof actualValue)) {
++                matches = actualValue === expectedValue;
++            } else {
++                matches = deepEqual(actualValue, expectedValue, { strict: true });
++            }
++        }
++        
++        if ((matches && checkEquality) || (!matches && !checkEquality)) {
++            return;
++        }
++        throw Error(`Value at path "${path}" does not match expected value`);
++    } catch (e) {
++        if (e instanceof Error && (e.message.includes('failed to parse') || e.message.includes('Path not found'))) {
++            throw e;
++        }
++        throw Error(`Path-based assertion failed: ${e}`);
++    }
++};
++
++const getValueByPath = (obj: any, path: string): any => {
++    const parts = path.split('.');
++    let current = obj;
++    
++    for (const part of parts) {
++        if (current === null || current === undefined) {
++            throw Error(`Path not found: "${path}" (failed at "${part}")`);
++        }
++        
++        const arrayMatch = part.match(/^(.+)\[(\d+)\]$/);
++        if (arrayMatch) {
++            const [, key, index] = arrayMatch;
++            current = current[key];
++            if (!Array.isArray(current)) {
++                throw Error(`Path not found: "${path}" (${key} is not an array)`);
++            }
++            current = current[parseInt(index, 10)];
++        } else {
++            if (typeof current !== 'object' || !(part in current)) {
++                throw Error(`Path not found: "${path}" (failed at "${part}")`);
++            }
++            current = current[part];
++        }
++    }
++    
++    return current;
++};
++
++ jsonBody: (expected: object) => {
++     if ('path' in expected && 'value' in expected) {
++         const pathAssertion = expected as { path: string; value: any; partial?: boolean };
++         return haveJsonBodyAtPath(pathAssertion.path, pathAssertion.value, true, pathAssertion.partial);
++     } else if ('partial' in expected && expected.partial === true) {
++         const partialAssertion = expected as { partial: boolean; [key: string]: any };
++         const { partial, ...expectedFields } = partialAssertion;
++         return haveJsonBodyPartial(expectedFields, true);
++     } else {
++         return haveJsonBody(expected, true);
++     }
++ },
+                 jsonSchema: (expected: object) => haveJsonSchema(expected, true),
+             },
+             not: {

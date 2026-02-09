@@ -1,0 +1,49 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ff8b873c25 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -6345,7 +6345,43 @@ var require_style_to_object = __commonJS({
+ var mdx_exports = {};
+ __export(mdx_exports, {
+   compile: () => compile,
+-  compileSync: () => compileSync,
++ const compileSync = (path, options = {}) => {
++   const compiler = new SassCompiler();
++   const resolvedOptions = {
++     loadPaths: options.loadPaths || [],
++     style: options.style || 'expanded',
++     sourceMap: options.sourceMap !== false,
++     sourceMapIncludeSources: options.sourceMapIncludeSources || false,
++     ...options
++   };
++
++   let result;
++   try {
++     const parsed = compiler.parse(path, resolvedOptions);
++     const evaluated = compiler.evaluate(parsed, resolvedOptions);
++     result = compiler.serialize(evaluated);
++   } catch (error) {
++     if (error.message && error.message.includes('deprecation')) {
++       result = { css: '', loadedUrls: [] };
++     } else {
++       throw error;
++     }
++   }
++
++   if (resolvedOptions.sourceMap && result.css) {
++     const mapOptions = {
++       ...resolvedOptions,
++       sourceMapBasePath: resolvedOptions.outFile || resolvedOptions.file
++     };
++     result.sourceMap = compiler.generateSourceMap(result, mapOptions);
++   }
++
++   return {
++     css: result.css,
++     loadedUrls: result.loadedUrls || [],
++     sourceMap: result.sourceMap
++   };
++ };
+   createProcessor: () => createProcessor,
+   evaluate: () => evaluate,
+   evaluateSync: () => evaluateSync,

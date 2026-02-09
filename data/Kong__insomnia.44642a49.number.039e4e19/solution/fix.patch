@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..4e5ae6c59 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -592,7 +592,70 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+-    number: () => 0,
++const generateMultipleOfExample = (min: number | undefined, max: number | undefined, multipleOf: number): number => {
++  if (min !== undefined && max !== undefined) {
++    const minMultiple = Math.ceil(min / multipleOf) * multipleOf;
++    const maxMultiple = Math.floor(max / multipleOf) * multipleOf;
++    
++    if (minMultiple <= maxMultiple) {
++      return minMultiple;
++    }
++    return min;
++  }
++  
++  if (min !== undefined) {
++    return Math.ceil(min / multipleOf) * multipleOf;
++  }
++  
++  if (max !== undefined) {
++    return Math.floor(max / multipleOf) * multipleOf;
++  }
++  
++  return multipleOf;
++};
++
++ number: (schema: OpenAPIV3.SchemaObject) => {
++   if (typeof schema === 'object' && schema !== null) {
++     const { minimum, maximum, multipleOf, exclusiveMinimum, exclusiveMaximum } = schema;
++    
++     let min = typeof minimum === 'number' ? minimum : undefined;
++     let max = typeof maximum === 'number' ? maximum : undefined;
++    
++     if (exclusiveMinimum === true && min !== undefined) {
++       min = min + (multipleOf || 1);
++     } else if (typeof exclusiveMinimum === 'number') {
++       min = exclusiveMinimum + (multipleOf || 1);
++     }
++    
++     if (exclusiveMaximum === true && max !== undefined) {
++       max = max - (multipleOf || 1);
++     } else if (typeof exclusiveMaximum === 'number') {
++       max = exclusiveMaximum - (multipleOf || 1);
++     }
++    
++     if (multipleOf && (min !== undefined || max !== undefined)) {
++       return generateMultipleOfExample(min, max, multipleOf);
++     }
++    
++     if (min !== undefined && max !== undefined) {
++       return (min + max) / 2;
++     }
++    
++     if (min !== undefined) {
++       return min;
++     }
++    
++     if (max !== undefined) {
++       return max;
++     }
++    
++     if (multipleOf) {
++       return multipleOf;
++     }
++   }
++  
++   return 0;
++ }
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+     integer: () => 0,

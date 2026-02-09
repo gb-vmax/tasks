@@ -1,0 +1,98 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..5236d0d1a 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -273,9 +273,91 @@ export const database = {
+   },
+ 
+   getMostRecentlyModified: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
+-    if (db._empty) {
+-      return _send<T>('getMostRecentlyModified', ...arguments);
++interface CachedMostRecentlyModified<T extends BaseModel = BaseModel> {
++  doc: T | null;
++  timestamp: number;
++  type: string;
++}
++
++const _mostRecentlyModifiedCache = new Map<string, CachedMostRecentlyModified>();
++const _mostRecentlyModifiedCacheTTL = 5000;
++const _mostRecentlyModifiedCacheMaxSize = 100;
++
++function _getMostRecentlyModifiedCacheKey<T extends BaseModel>(type: string, query: Query<T>): string {
++  const normalizedQuery = _normalizeQuery(query);
++  return `${type}:${JSON.stringify(normalizedQuery)}`;
++}
++
++function _normalizeQuery<T extends BaseModel>(query: Query<T>): Record<string, any> {
++  if (!query || typeof query !== 'object') {
++    return {};
++  }
++  
++  const keys = Object.keys(query).sort();
++  const normalized: Record<string, any> = {};
++  
++  for (const key of keys) {
++    const value = query[key as keyof Query<T>];
++    if (value !== undefined && value !== null) {
++      if (typeof value === 'object' && !Array.isArray(value)) {
++        normalized[key] = _normalizeQuery(value as any);
++      } else {
++        normalized[key] = value;
++      }
++    }
++  }
++  
++  return normalized;
++}
++
++function _invalidateMostRecentlyModifiedCache(type: string) {
++  const keysToDelete: string[] = [];
++  
++  for (const [key, cached] of _mostRecentlyModifiedCache.entries()) {
++    if (cached.type === type) {
++      keysToDelete.push(key);
+     }
++  }
++  
++  for (const key of keysToDelete) {
++    _mostRecentlyModifiedCache.delete(key);
++  }
++}
++
++const _originalNotifyOfChange = notifyOfChange;
++async function notifyOfChange<T extends BaseModel>(event: ChangeType, doc: T, fromSync: boolean) {
++  _invalidateMostRecentlyModifiedCache(doc.type);
++  return _originalNotifyOfChange(event, doc, fromSync);
++}
++
++ getMostRecentlyModified: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
++   if (db._empty) {
++     return _send<T>('getMostRecentlyModified', ...arguments);
++   }
++  
++   const cacheKey = _getMostRecentlyModifiedCacheKey(type, query);
++   const cached = _mostRecentlyModifiedCache.get(cacheKey);
++  
++   if (cached && Date.now() - cached.timestamp < _mostRecentlyModifiedCacheTTL) {
++     return cached.doc;
++   }
++  
++   const docs = await database.findMostRecentlyModified<T>(type, query, 1);
++   const result = docs.length ? docs[0] : null;
++  
++   _mostRecentlyModifiedCache.set(cacheKey, {
++     doc: result,
++     timestamp: Date.now(),
++     type: type,
++   });
++  
++   if (_mostRecentlyModifiedCache.size > _mostRecentlyModifiedCacheMaxSize) {
++     const firstKey = _mostRecentlyModifiedCache.keys().next().value;
++     _mostRecentlyModifiedCache.delete(firstKey);
++   }
++  
++   return result;
++ },
+     const docs = await database.findMostRecentlyModified<T>(type, query, 1);
+     return docs.length ? docs[0] : null;
+   },

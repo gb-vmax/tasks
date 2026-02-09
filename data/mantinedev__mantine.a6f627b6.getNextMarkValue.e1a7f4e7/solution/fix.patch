@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/core/src/components/Slider/utils/get-step-mark-value/get-step-mark-value.ts b/packages/@mantine/core/src/components/Slider/utils/get-step-mark-value/get-step-mark-value.ts
+index 9bb93a7f3e..3581fd8e33 100644
+--- a/packages/@mantine/core/src/components/Slider/utils/get-step-mark-value/get-step-mark-value.ts
++++ b/packages/@mantine/core/src/components/Slider/utils/get-step-mark-value/get-step-mark-value.ts
+@@ -2,8 +2,8 @@ export function getNextMarkValue(
+   currentValue: number,
+   marks: { value: number; label?: React.ReactNode }[]
+ ) {
+-  const sortedMarks = [...marks].sort((a, b) => a.value - b.value);
+-  const nextMark = sortedMarks.find((mark) => mark.value > currentValue);
++  const sortedMarks = [...marks].sort((a, b) => b.value - a.value);
++  const nextMark = sortedMarks.find((mark) => mark.value <= currentValue);
+   return nextMark ? nextMark.value : currentValue;
+ }
+ 

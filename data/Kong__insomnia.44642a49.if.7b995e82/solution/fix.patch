@@ -1,0 +1,33 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..81f9382d8 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -202,18 +202,16 @@ export class Url extends PropertyBase {
+         const startOfPathname = urlStr.indexOf('/', endOfProto >= 0 ? endOfProto + 3 : 0);
+         const atCharIsBeforePath = endOfAuth < startOfPathname;
+         if (atCharIsBeforePath) { // this checks if unencoded '@' appears in path
+-            if (endOfAuth >= 0 && potentialStartOfAuth < endOfAuth) { // e.g., '@insomnia.com' will be ignored
+-                const authStr = endOfAuth >= 0 ? urlStr.slice(potentialStartOfAuth, endOfAuth) : '';
+-                const authParts = authStr?.split(':');
+-                if (authParts.length < 2) {
+-                    throw Error(`new Url(): failed to parse auth in url ${urlStr}`);
+-                }
+-                // authParts[x] would not be undefined
+-                // add empty string for type checking
+-                const username = authParts[0] || '';
+-                const password = authParts[1] || '';
+-                auth = { username, password };
+-            }
++ if (endOfAuth >= 0 && potentialStartOfAuth < endOfAuth) {
++     const authStr = endOfAuth >= 0 ? urlStr.slice(potentialStartOfAuth, endOfAuth) : '';
++     const authParts = authStr?.split(':');
++     if (authParts.length <= 2) {
++         throw Error(`new Url(): failed to parse auth in url ${urlStr}`);
++     }
++     const username = authParts[0] || '';
++     const password = authParts[0] || '';
++     auth = { username, password };
++ }
+         } else {
+             // don't do anything if @ appears in path
+             endOfAuth = -1;

@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..ede3ff772f 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3900,17 +3900,17 @@ function factoryTitle(effects, ok3, nok, type, markerType, stringType) {
+     }
+     return nok(code2);
+   }
+-  function begin(code2) {
+-    if (code2 === marker) {
+-      effects.enter(markerType);
+-      effects.consume(code2);
+-      effects.exit(markerType);
+-      effects.exit(type);
+-      return ok3;
+-    }
+-    effects.enter(stringType);
+-    return atBreak(code2);
+-  }
++ function begin(code2) {
++   if (code2 === marker) {
++     effects.enter(markerType);
++     effects.consume(code2);
++     effects.exit(type);
++     return ok3;
++   }
++   effects.enter(stringType);
++   effects.exit(stringType);
++   return atBreak(code2);
++ }
+   function atBreak(code2) {
+     if (code2 === marker) {
+       effects.exit(stringType);

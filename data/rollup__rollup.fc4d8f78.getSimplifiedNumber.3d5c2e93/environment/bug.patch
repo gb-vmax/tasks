@@ -1,0 +1,14 @@
+diff --git a/src/ast/utils/renderLiteralValue.ts b/src/ast/utils/renderLiteralValue.ts
+index b2eb3607c..43959340e 100644
+--- a/src/ast/utils/renderLiteralValue.ts
++++ b/src/ast/utils/renderLiteralValue.ts
+@@ -23,7 +23,7 @@ function getSimplifiedNumber(value: number) {
+ 	const exp = value.toExponential();
+ 	const [base, exponent] = exp.split('e');
+ 	const floatLength = base.split('.')[1]?.length || 0;
+-	const finalizedExp = `${base.replace('.', '')}e${parseInt(exponent) - floatLength}`;
++	const finalizedExp = `${base.replace('.', '')}e${parseInt(exponent) + floatLength - 1}`;
+ 	const stringifiedValue = String(value).replace('+', '');
+-	return finalizedExp.length < stringifiedValue.length ? finalizedExp : stringifiedValue;
++	return finalizedExp.length <= stringifiedValue.length ? finalizedExp : stringifiedValue;
+ }

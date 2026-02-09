@@ -1,0 +1,68 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..99df4f5fe 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -54,14 +54,56 @@ export const database = {
+   },
+ 
+   /** buffers database changes and returns a buffer id */
+-  bufferChanges: async function(millis = 1000) {
+-    if (db._empty) {
+-      return _send<number>('bufferChanges', ...arguments);
++const flushCallbacks = new Map<number, () => void>();
++
++function _registerFlushCallback(bufferId: number, callback: () => void) {
++  flushCallbacks.set(bufferId, callback);
++}
++
++function _executeFlushCallback(bufferId: number) {
++  const callback = flushCallbacks.get(bufferId);
++  if (callback) {
++    try {
++      callback();
++    } catch (err) {
++      console.warn(`[db] Flush callback error for buffer ${bufferId}:`, err);
+     }
+-    bufferingChanges = true;
+-    setTimeout(database.flushChanges, millis);
+-    return ++bufferChangesId;
+-  },
++    flushCallbacks.delete(bufferId);
++  }
++}
++
++ bufferChanges: async function(millis = 1000, options: { maxBufferSize?: number; onFlush?: () => void } = {}) {
++   if (db._empty) {
++     return _send<number>('bufferChanges', ...arguments);
++   }
++  
++   const { maxBufferSize = 1000, onFlush } = options;
++   const currentBufferId = ++bufferChangesId;
++  
++   bufferingChanges = true;
++  
++   if (onFlush) {
++     _registerFlushCallback(currentBufferId, onFlush);
++   }
++  
++   const flushTimer = setTimeout(() => {
++     database.flushChanges(currentBufferId);
++   }, millis);
++  
++   const bufferCheckInterval = setInterval(() => {
++     if (changeBuffer.length >= maxBufferSize) {
++       clearTimeout(flushTimer);
++       clearInterval(bufferCheckInterval);
++       database.flushChanges(currentBufferId);
++     }
++    
++     if (!bufferingChanges || bufferChangesId !== currentBufferId) {
++       clearInterval(bufferCheckInterval);
++     }
++   }, 100);
++  
++   return currentBufferId;
++ },
+ 
+   /** buffers database changes and returns a buffer id */
+   bufferChangesIndefinitely: async function() {

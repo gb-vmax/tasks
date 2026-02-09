@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with sidebar configuration in the docs plugin. When I set `sidebarCollapsible: false` without explicitly setting `sidebarCollapsed`, the sidebar items are appearing as expanded instead of collapsed. This seems backwards from what I would expect.
+When setting `sidebarCollapsible: false` in the docs plugin configuration without explicitly setting `sidebarCollapsed`, the sidebar items are being collapsed by default instead of expanded. This is the opposite of the expected behavior.
 
 ### Reproduction
 
@@ -15,7 +15,7 @@ module.exports = {
       {
         docs: {
           sidebarCollapsible: false,
-          // sidebarCollapsed is not set
+          // sidebarCollapsed not set (undefined)
         },
       },
     ],
@@ -23,19 +23,17 @@ module.exports = {
 };
 ```
 
-When I load the docs, all sidebar items are expanded by default. I expected them to be collapsed since `sidebarCollapsible` is set to false.
+After starting the dev server, all sidebar categories appear collapsed even though `sidebarCollapsible` is set to `false`.
 
 ### Expected behavior
 
-When `sidebarCollapsible: false` is set and `sidebarCollapsed` is undefined, the sidebar items should default to a collapsed state (or at least behave consistently).
+When `sidebarCollapsible` is set to `false` and `sidebarCollapsed` is not explicitly defined, the sidebar items should default to expanded (not collapsed). This makes sense because if items aren't collapsible, they should be shown expanded by default.
 
 ### System Info
 
 - Docusaurus version: latest
 - Node version: 18.x
 - OS: macOS
-
-This might be related to how the default values are being set for these options. The behavior seems inconsistent with the option names.
 
 ---
 Repository: /testbed

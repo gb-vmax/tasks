@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..c56802665 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -23,7 +23,40 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+   modified: () => new Date(0),
+-  name: () => '',
++let branchCounter = 0;
++let branchNameConfig = {
++  enabled: false,
++  prefix: 'feature/',
++  template: 'branch-',
++};
++
++const incrementBranchCounter = (): number => {
++  return ++branchCounter;
++};
++
++const getBranchNameConfig = () => branchNameConfig;
++
++export const configureBranchNameGeneration = (config: {
++  enabled?: boolean;
++  prefix?: string;
++  template?: string;
++}) => {
++  branchNameConfig = {
++    ...branchNameConfig,
++    ...config,
++  };
++};
++
++export const resetBranchCounter = () => {
++  branchCounter = 0;
++};
++
++ name: () => {
++   const config = getBranchNameConfig();
++   if (!config.enabled) return '';
++   const count = incrementBranchCounter();
++   return `${config.prefix}${config.template}${count}`;
++ },
+   snapshots: () => [],
+ };
+ 

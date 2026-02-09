@@ -1,0 +1,152 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..55b9bf1b5 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -52,10 +52,109 @@ export async function exportHarCurrentRequest(request: Request, response: Respon
+   ]);
+ }
+ 
++function extractTimingsFromResponse(response: Response | null): Har.Timings {
++  if (!response || !response.elapsedTime) {
++    return {
++      blocked: -1,
++      dns: -1,
++      connect: -1,
++      send: 0,
++      wait: 0,
++      receive: 0,
++      ssl: -1,
++    };
++  }
++
++  const totalTime = response.elapsedTime;
++  const timings: any = (response as any).timings;
++
++  if (timings && typeof timings === 'object') {
++    return {
++      blocked: timings.blocked ?? -1,
++      dns: timings.dns ?? -1,
++      connect: timings.connect ?? -1,
++      send: timings.send ?? 0,
++      wait: timings.wait ?? totalTime,
++      receive: timings.receive ?? 0,
++      ssl: timings.ssl ?? -1,
++    };
++  }
++
++  const estimatedSend = Math.min(totalTime * 0.05, 10);
++  const estimatedReceive = Math.min(totalTime * 0.1, 50);
++  const waitTime = Math.max(0, totalTime - estimatedSend - estimatedReceive);
++
++  return {
++    blocked: -1,
++    dns: -1,
++    connect: -1,
++    send: estimatedSend,
++    wait: waitTime,
++    receive: estimatedReceive,
++    ssl: -1,
++  };
++}
++
++function updatePerformanceMetrics(
++  metrics: {
++    totalTime: number;
++    successCount: number;
++    failureCount: number;
++    minTime: number;
++    maxTime: number;
++  },
++  response: Response | null,
++  elapsedTime: number,
++): void {
++  metrics.totalTime += elapsedTime;
++
++  if (elapsedTime > 0) {
++    metrics.minTime = Math.min(metrics.minTime, elapsedTime);
++    metrics.maxTime = Math.max(metrics.maxTime, elapsedTime);
++  }
++
++  if (response && response.statusCode >= 200 && response.statusCode < 400) {
++    metrics.successCount++;
++  } else if (response) {
++    metrics.failureCount++;
++  }
++}
++
++function generatePerformanceComment(
++  metrics: {
++    totalTime: number;
++    successCount: number;
++    failureCount: number;
++    minTime: number;
++    maxTime: number;
++  },
++  totalRequests: number,
++): string {
++  if (totalRequests === 0) {
++    return 'Performance: No requests exported';
++  }
++
++  const avgTime = metrics.totalTime / totalRequests;
++  const successRate = totalRequests > 0 
++    ? ((metrics.successCount / totalRequests) * 100).toFixed(1)
++    : '0.0';
++  
++  const minTime = metrics.minTime === Infinity ? 0 : metrics.minTime;
++  const maxTime = metrics.maxTime === -Infinity ? 0 : metrics.maxTime;
++
++  return `Performance: ${totalRequests} requests, avg ${avgTime.toFixed(2)}ms, min ${minTime.toFixed(2)}ms, max ${maxTime.toFixed(2)}ms, success rate ${successRate}%`;
++}
++
+ export async function exportHar(exportRequests: ExportRequest[]) {
+-  // Export HAR entries with the same start time in order to keep their workspace sort order.
+   const startedDateTime = new Date().toISOString();
+   const entries: Har.Entry[] = [];
++  const performanceMetrics = {
++    totalTime: 0,
++    successCount: 0,
++    failureCount: 0,
++    minTime: Infinity,
++    maxTime: -Infinity,
++  };
+ 
+   for (const exportRequest of exportRequests) {
+     const request: Request | null = await models.request.getById(exportRequest.requestId);
+@@ -86,21 +185,18 @@ export async function exportHar(exportRequests: ExportRequest[]) {
+       continue;
+     }
+ 
++    const timings = extractTimingsFromResponse(response);
++    const elapsedTime = response ? response.elapsedTime : 0;
++
++    updatePerformanceMetrics(performanceMetrics, response, elapsedTime);
++
+     const entry = {
+       startedDateTime: startedDateTime,
+-      time: response ? response.elapsedTime : 0,
++      time: elapsedTime,
+       request: harRequest,
+       response: harResponse,
+       cache: {},
+-      timings: {
+-        blocked: -1,
+-        dns: -1,
+-        connect: -1,
+-        send: 0,
+-        wait: response ? response.elapsedTime : 0,
+-        receive: 0,
+-        ssl: -1,
+-      },
++      timings: timings,
+       comment: request.name,
+     };
+     entries.push(entry);
+@@ -114,6 +210,7 @@ export async function exportHar(exportRequests: ExportRequest[]) {
+         version: `insomnia.desktop.app:v${getAppVersion()}`,
+       },
+       entries: entries,
++      comment: generatePerformanceComment(performanceMetrics, entries.length),
+     },
+   };
+   return har;

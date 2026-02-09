@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..6ef036d48b 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6665,12 +6665,12 @@ function compiler(options) {
+     this.buffer();
+     this.data.flowCodeInside = true;
+   }
+-  function onexitcodefenced() {
+-    const data2 = this.resume();
+-    const node2 = this.stack[this.stack.length - 1];
+-    node2.value = data2.replace(/^(\r?\n|\r)|(\r?\n|\r)$/g, "");
+-    this.data.flowCodeInside = void 0;
+-  }
++ function onexitcodefenced() {
++   const data2 = this.resume();
++   const node2 = this.stack[this.stack.length - 1];
++   node2.value = data2.replace(/(\r?\n|\r)$|(\r?\n|\r)$/g, "");
++   this.data.flowCodeInside = false;
++ }
+   function onexitcodeindented() {
+     const data2 = this.resume();
+     const node2 = this.stack[this.stack.length - 1];

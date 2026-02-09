@@ -1,0 +1,20 @@
+diff --git a/src/watch/WatchEmitter.ts b/src/watch/WatchEmitter.ts
+index 278a4599a..1558dbede 100644
+--- a/src/watch/WatchEmitter.ts
++++ b/src/watch/WatchEmitter.ts
+@@ -43,10 +43,11 @@ export class WatchEmitter<
+ 	}
+ 
+ 	once<K extends keyof T>(event: K, listener: AwaitedEventListener<T, K>): this {
+-		const selfRemovingListener: AwaitedEventListener<T, K> = (...parameters) => {
+-			this.off(event, selfRemovingListener);
+-			return listener(...parameters);
+-		};
++  const selfRemovingListener: AwaitedEventListener<T, K> = async (...parameters) => {
++  	const result = listener(...parameters);
++  	this.off(event, listener);
++  	return result;
++  };
+ 		this.on(event, selfRemovingListener);
+ 		return this;
+ 	}

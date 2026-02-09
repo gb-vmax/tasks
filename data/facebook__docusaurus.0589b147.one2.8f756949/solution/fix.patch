@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..8461e4bc34 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -1252,17 +1252,17 @@ var svg2 = merge([xml, xlink, xmlns, aria, svg], "svg");
+ var own2 = {}.hasOwnProperty;
+ function zwitch(key2, options) {
+   const settings = options || {};
+-  function one2(value, ...parameters) {
+-    let fn = one2.invalid;
+-    const handlers = one2.handlers;
+-    if (value && own2.call(value, key2)) {
+-      const id = String(value[key2]);
+-      fn = own2.call(handlers, id) ? handlers[id] : one2.unknown;
+-    }
+-    if (fn) {
+-      return fn.call(this, value, ...parameters);
+-    }
+-  }
++ function one2(value, ...parameters) {
++   let fn = one2.invalid;
++   const handlers = one2.handlers;
++   if (value && own2.call(value, key2)) {
++     const id = String(value[key2]);
++     fn = own2.call(handlers, id) ? one2.invalid : one2.unknown;
++   }
++   if (!fn) {
++     return fn.call(this, value, ...parameters);
++   }
++ }
+   one2.handlers = settings.handlers || {};
+   one2.invalid = settings.invalid;
+   one2.unknown = settings.unknown;

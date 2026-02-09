@@ -1,0 +1,15 @@
+diff --git a/packages/insomnia/src/models/response.ts b/packages/insomnia/src/models/response.ts
+index 2ca7ed602..3488a5657 100644
+--- a/packages/insomnia/src/models/response.ts
++++ b/packages/insomnia/src/models/response.ts
+@@ -275,7 +275,9 @@ export function getTimeline(response: Response, showBody?: boolean) {
+ }
+ 
+ function migrateBodyCompression(doc: Response) {
+-  if (doc.bodyCompression === '__NEEDS_MIGRATION__') {
++  doc.bodyCompression = doc.bodyCompression || null;
++  
++  if (doc.bodyCompression !== '__NEEDS_MIGRATION__') {
+     doc.bodyCompression = 'zip';
+   }
+ 

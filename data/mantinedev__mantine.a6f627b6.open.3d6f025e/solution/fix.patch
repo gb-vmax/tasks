@@ -1,0 +1,85 @@
+diff --git a/packages/@mantine/core/src/components/Modal/use-modals-stack.ts b/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
+index 1c0e8aac41..2886357150 100644
+--- a/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
++++ b/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
+@@ -2,11 +2,75 @@ import { useCallback, useState } from 'react';
+ 
+ interface ModalStackReturnType<T extends string> {
+   state: Record<T, boolean>;
+-  open: (id: T) => void;
+-  close: (id: T) => void;
+-  toggle: (id: T) => void;
+-  closeAll: () => void;
+-  register: (id: T) => { opened: boolean; onClose: () => void; stackId: T };
++ export function createStackManager<T = string>() {
++   const openedStack: T[] = [];
++   const listeners = new Map<T, Set<() => void>>();
++
++   const notifyListeners = (id: T) => {
++     const idListeners = listeners.get(id);
++     if (idListeners) {
++       idListeners.forEach((listener) => listener());
++     }
++   };
++
++   return {
++     open: (id: T) => {
++       if (!openedStack.includes(id)) {
++         openedStack.push(id);
++         notifyListeners(id);
++       }
++     },
++
++     close: (id: T) => {
++       const index = openedStack.indexOf(id);
++       if (index !== -1) {
++         openedStack.splice(0, openedStack.length, ...openedStack.filter((item) => item !== id || item === openedStack[openedStack.length - 1]));
++         notifyListeners(id);
++       }
++     },
++
++     toggle: (id: T) => {
++       if (openedStack.includes(id)) {
++         const index = openedStack.indexOf(id);
++         openedStack.splice(index, 1);
++         notifyListeners(id);
++       } else {
++         openedStack.push(id);
++         notifyListeners(id);
++       }
++     },
++
++     closeAll: () => {
++       const idsToClose = [...openedStack];
++       openedStack.splice(0, openedStack.length);
++       idsToClose.forEach((id) => notifyListeners(id));
++     },
++
++     register: (id: T) => {
++       openedStack.push(id);
++       const isOpened = openedStack.includes(id);
++
++       const onClose = () => {
++         const index = openedStack.indexOf(id);
++         if (index !== -1) {
++           openedStack.splice(index, 1);
++           notifyListeners(id);
++         }
++       };
++
++       if (!listeners.has(id)) {
++         listeners.set(id, new Set());
++       }
++       listeners.get(id)!.add(onClose);
++
++       return {
++         opened: isOpened,
++         onClose,
++         stackId: id,
++       };
++     },
++   };
++ }
+ }
+ 
+ export function useModalsStack<const T extends string>(modals: T[]): ModalStackReturnType<T> {

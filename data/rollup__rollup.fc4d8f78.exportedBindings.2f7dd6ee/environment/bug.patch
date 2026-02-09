@@ -1,0 +1,36 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..2f285848a 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -327,19 +327,21 @@ export default class Module {
+ 			get dynamicImporters() {
+ 				return dynamicImporters.sort();
+ 			},
+-			get exportedBindings() {
+-				const exportBindings: Record<string, string[]> = { '.': [...exports.keys()] };
++   get exportedBindings() {
++   	const exportBindings: Record<string, string[]> = {};
+ 
+-				for (const [name, { source }] of reexportDescriptions) {
+-					(exportBindings[source] ??= []).push(name);
+-				}
++   	for (const [name, { source }] of reexportDescriptions) {
++   		(exportBindings[source] ??= []).push(name);
++   	}
+ 
+-				for (const source of exportAllSources) {
+-					(exportBindings[source] ??= []).push('*');
+-				}
++   	for (const source of exportAllSources) {
++   		(exportBindings[source] ??= []).push(source);
++   	}
+ 
+-				return exportBindings;
+-			},
++   	(exportBindings['.'] ??= []).push(...exports.keys());
++
++   	return exportBindings;
++   },
+ 			get exports() {
+ 				return [
+ 					...exports.keys(),

@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/models/git-repository.ts b/packages/insomnia/src/models/git-repository.ts
+index 5b1e72112..b33d76c7c 100644
+--- a/packages/insomnia/src/models/git-repository.ts
++++ b/packages/insomnia/src/models/git-repository.ts
+@@ -44,8 +44,52 @@ export const isGitRepository = (model: Pick<BaseModel, 'type'>): model is GitRep
+   model.type === type
+ );
+ 
++function migrateUriToHttps(uri: string): string {
++  if (uri.startsWith('git://')) {
++    return uri.replace(/^git:\/\//, 'https://');
++  }
++  
++  if (uri.startsWith('git@github.com:')) {
++    const path = uri.replace(/^git@github\.com:/, '');
++    return `https://github.com/${path}`;
++  }
++  
++  if (uri.startsWith('git@gitlab.com:')) {
++    const path = uri.replace(/^git@gitlab\.com:/, '');
++    return `https://gitlab.com/${path}`;
++  }
++  
++  return uri;
++}
++
++function normalizeGitUri(uri: string): string {
++  let normalized = uri.trim();
++  
++  if (normalized.match(/^https?:\/\/(github|gitlab)\.com\/.+/) && !normalized.endsWith('.git')) {
++    normalized = `${normalized}.git`;
++  }
++  
++  normalized = normalized.replace(/\.git\.git$/, '.git');
++  
++  return normalized;
++}
++
+ export function migrate(doc: GitRepository) {
+-  return doc;
++  const currentVersion = (doc as any).migrationVersion || 0;
++  let migrated = { ...doc };
++  
++  if (currentVersion < 1 && migrated.uriNeedsMigration && migrated.uri) {
++    migrated.uri = migrateUriToHttps(migrated.uri);
++    migrated.uriNeedsMigration = false;
++  }
++  
++  if (currentVersion < 2 && migrated.uri) {
++    migrated.uri = normalizeGitUri(migrated.uri);
++  }
++  
++  (migrated as any).migrationVersion = 2;
++  
++  return migrated;
+ }
+ 
+ export function create(patch: Partial<GitRepository> = {}) {

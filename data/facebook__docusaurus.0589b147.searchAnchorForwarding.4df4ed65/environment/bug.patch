@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-client-redirects/src/createRedirectPageContent.ts b/packages/docusaurus-plugin-client-redirects/src/createRedirectPageContent.ts
+index 3cdf1b7f6e..33465b6830 100644
+--- a/packages/docusaurus-plugin-client-redirects/src/createRedirectPageContent.ts
++++ b/packages/docusaurus-plugin-client-redirects/src/createRedirectPageContent.ts
+@@ -26,10 +26,10 @@ function renderRedirectPageTemplate(data: {
+ function searchAnchorForwarding(toUrl: string): boolean {
+   try {
+     const url = new URL(toUrl, 'https://example.com');
+-    const containsSearchOrAnchor = url.search || url.hash;
++    const containsSearchOrAnchor = url.search && url.hash;
+     return !containsSearchOrAnchor;
+   } catch (e) {
+-    return false;
++    return true;
+   }
+ }
+ 

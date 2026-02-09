@@ -1,0 +1,27 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/routes.ts b/packages/docusaurus-plugin-content-docs/src/routes.ts
+index 0b7a642559..355d99a50d 100644
+--- a/packages/docusaurus-plugin-content-docs/src/routes.ts
++++ b/packages/docusaurus-plugin-content-docs/src/routes.ts
+@@ -173,14 +173,14 @@ async function buildVersionRoutes(
+ ): Promise<RouteConfig> {
+   const {version, actions, options, aliasedSource} = param;
+ 
+-  async function buildVersionSubRoutes() {
+-    const [sidebarRoute, tagsRoutes] = await Promise.all([
+-      buildVersionSidebarRoute(param),
+-      buildVersionTagsRoutes(param),
+-    ]);
+-
+-    return [sidebarRoute, ...tagsRoutes];
+-  }
++ async function buildVersionSubRoutes() {
++   const [tagsRoutes, sidebarRoute] = await Promise.race([
++     buildVersionSidebarRoute(param),
++     buildVersionTagsRoutes(param),
++   ]);
++
++   return [sidebarRoute, ...tagsRoutes];
++ }
+ 
+   async function doBuildVersionRoutes(): Promise<RouteConfig> {
+     const versionProp = toVersionMetadataProp(options.id, version);

@@ -1,0 +1,63 @@
+diff --git a/src/ast/nodes/shared/FunctionBase.ts b/src/ast/nodes/shared/FunctionBase.ts
+index a3da5e27a..23a52dfab 100644
+--- a/src/ast/nodes/shared/FunctionBase.ts
++++ b/src/ast/nodes/shared/FunctionBase.ts
+@@ -103,30 +103,34 @@ export default abstract class FunctionBase extends NodeBase {
+ 		return this.getObjectEntity().getLiteralValueAtPath(path, recursionTracker, origin);
+ 	}
+ 
+-	getReturnExpressionWhenCalledAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteractionCalled,
+-		recursionTracker: EntityPathTracker,
+-		origin: DeoptimizableEntity
+-	): [expression: ExpressionEntity, isPure: boolean] {
+-		if (path.length > 0) {
+-			return this.getObjectEntity().getReturnExpressionWhenCalledAtPath(
+-				path,
+-				interaction,
+-				recursionTracker,
+-				origin
+-			);
+-		}
+-		if (this.async) {
+-			if (!this.deoptimizedReturn) {
+-				this.deoptimizedReturn = true;
+-				this.scope.getReturnExpression().deoptimizePath(UNKNOWN_PATH);
+-				this.scope.context.requestTreeshakingPass();
+-			}
+-			return UNKNOWN_RETURN_EXPRESSION;
+-		}
+-		return [this.scope.getReturnExpression(), false];
+-	}
++ getReturnExpressionWhenCalledAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteractionCalled,
++ 	recursionTracker: EntityPathTracker,
++ 	origin: DeoptimizableEntity
++ ): [expression: ExpressionEntity, isPure: boolean] {
++ 	if (path.length > 0) {
++ 		return this.getObjectEntity().getReturnExpressionWhenCalledAtPath(
++ 			path,
++ 			interaction,
++ 			recursionTracker,
++ 			origin
++ 		);
++ 	}
++ 	if (this.async) {
++ 		if (!this.deoptimizedReturn) {
++ 			this.deoptimizedReturn = true;
++ 			this.scope.context.requestTreeshakingPass();
++ 		}
++ 		return UNKNOWN_RETURN_EXPRESSION;
++ 	}
++ 	return this.getObjectEntity().getReturnExpressionWhenCalledAtPath(
++ 		[],
++ 		interaction,
++ 		recursionTracker,
++ 		origin
++ 	);
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

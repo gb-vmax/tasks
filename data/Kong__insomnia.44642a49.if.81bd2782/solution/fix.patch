@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..5001383ec 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -101,10 +101,64 @@ export class PropertyBase {
+                 // no op
+             } else {
+                 if (customizer) {
+-                    if (customizer(cloned)) {
+-                        // continue until customizer returns a truthy value
+-                        return cloned;
+-                    }
++ findInParents(
++     property: string,
++     customizer?: (ancester: PropertyBase) => boolean,
++     options?: { maxMatches?: number; includeDepth?: boolean },
++ ): PropertyBase | undefined | Array<PropertyBase | { ancestor: PropertyBase; depth: number }> | Array<{ ancestor: PropertyBase; depth: number }> {
++     const currentParent = this.parent();
++     if (!currentParent) {
++         return;
++     }
++
++     const maxMatches = options?.maxMatches || 1;
++     const includeDepth = options?.includeDepth || false;
++     const matches: Array<{ ancestor: PropertyBase; depth: number }> = [];
++     const queue: Array<{ node: PropertyBase; depth: number }> = [{ node: currentParent, depth: 1 }];
++
++     while (queue.length > 0 && matches.length < maxMatches) {
++         const current = queue.shift();
++         if (!current) {
++             continue;
++         }
++
++         const { node: ancester, depth } = current;
++         const cloned = clone(ancester);
++         const hasProperty = Object.keys(cloned.meta()).includes(property);
++        
++         if (!hasProperty) {
++         } else {
++             if (customizer) {
++                 if (customizer(cloned)) {
++                     matches.push({ ancestor: cloned, depth });
++                     if (matches.length >= maxMatches) {
++                         break;
++                     }
++                 }
++             } else {
++                 matches.push({ ancestor: cloned, depth });
++                 if (matches.length >= maxMatches) {
++                     break;
++                 }
++             }
++         }
++
++         const olderAncester = ancester.parent();
++         if (olderAncester) {
++             queue.push({ node: olderAncester, depth: depth + 1 });
++         }
++     }
++
++     if (matches.length === 0) {
++         return undefined;
++     }
++
++     if (maxMatches === 1) {
++         return includeDepth ? matches[0] : matches[0].ancestor;
++     }
++
++     return includeDepth ? matches : matches.map(m => m.ancestor);
++ }
+                 } else {
+                     // customizer is not specified
+                     // stop at the first parent that contains the property

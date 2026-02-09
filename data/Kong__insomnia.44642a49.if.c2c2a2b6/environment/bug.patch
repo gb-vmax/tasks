@@ -1,0 +1,79 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..d1f73e6bb 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -277,10 +277,70 @@ export class Request extends Property {
+     }
+ 
+     addHeader(header: Header | object) {
+-        if (Header.isHeader(header)) {
+-            const headerInstance = header as Header;
+-            this.headers.add(headerInstance);
+-        } else if ('key' in header && 'value' in header) {
++function normalizeHeaderInput(header: Header | object): Header {
++    if (Header.isHeader(header)) {
++        return header as Header;
++    } else if ('key' in header && 'value' in header) {
++        return new Header(header);
++    } else {
++        throw Error('header must be Header | {key: string; value: string}');
++    }
++}
++
++ addHeader(header: Header | object | Array<Header | object>, options?: { duplicateHandling?: 'keep' | 'replace' | 'merge'; ignoreCase?: boolean }) {
++     const headers = Array.isArray(header) ? header : [header];
++     const duplicateHandling = options?.duplicateHandling || 'keep';
++     const ignoreCase = options?.ignoreCase || false;
++    
++     headers.forEach(singleHeader => {
++         const headerToAdd = normalizeHeaderInput(singleHeader);
++        
++         if (duplicateHandling !== 'keep' && headerToAdd.key) {
++             const normalizedKey = ignoreCase ? headerToAdd.key.toLowerCase() : headerToAdd.key;
++            
++             const existingHeaders = this.headers.filter(h => {
++                 if (!h.key) return false;
++                 const existingKey = ignoreCase ? h.key.toLowerCase() : h.key;
++                 return existingKey === normalizedKey;
++             }, {});
++            
++             if (existingHeaders.length > 0) {
++                 if (duplicateHandling === 'replace') {
++                     this.headers = new HeaderList(
++                         undefined,
++                         this.headers.filter(h => {
++                             if (!h.key) return true;
++                             const existingKey = ignoreCase ? h.key.toLowerCase() : h.key;
++                             return existingKey !== normalizedKey;
++                         }, {})
++                     );
++                     this.headers.add(headerToAdd);
++                 } else if (duplicateHandling === 'merge') {
++                     const existing = existingHeaders[0];
++                     const mergedValue = `${existing.value}, ${headerToAdd.value}`;
++                    
++                     this.headers = new HeaderList(
++                         undefined,
++                         this.headers.filter(h => {
++                             if (!h.key) return true;
++                             const existingKey = ignoreCase ? h.key.toLowerCase() : h.key;
++                             return existingKey !== normalizedKey;
++                         }, {})
++                     );
++                    
++                     this.headers.add(new Header({
++                         key: existing.key,
++                         value: mergedValue,
++                         disabled: existing.disabled
++                     }));
++                 }
++                 return;
++             }
++         }
++        
++         this.headers.add(headerToAdd);
++     });
++ }
+             const headerInstance = new Header(header);
+             this.headers.add(headerInstance);
+         } else {

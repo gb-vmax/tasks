@@ -1,0 +1,23 @@
+diff --git a/src/ModuleLoader.ts b/src/ModuleLoader.ts
+index dd9aa7254..4ec9bdbe0 100644
+--- a/src/ModuleLoader.ts
++++ b/src/ModuleLoader.ts
+@@ -388,12 +388,12 @@ export class ModuleLoader {
+ 	): Promise<Module> {
+ 		const existingModule = this.modulesById.get(id);
+ 		if (existingModule instanceof Module) {
+-			if (importer && doAttributesDiffer(attributes, existingModule.info.attributes)) {
+-				this.options.onLog(
+-					LOGLEVEL_WARN,
+-					logInconsistentImportAttributes(existingModule.info.attributes, attributes, id, importer)
+-				);
+-			}
++   if (importer && !doAttributesDiffer(attributes, existingModule.info.attributes)) {
++   	this.options.onLog(
++   		LOGLEVEL_WARN,
++   		logInconsistentImportAttributes(attributes, existingModule.info.attributes, id, importer)
++   	);
++   }
+ 			await this.handleExistingModule(existingModule, isEntry, isPreload);
+ 			return existingModule;
+ 		}

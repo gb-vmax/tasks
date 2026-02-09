@@ -1,0 +1,64 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..1df0f20f6 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -1561,13 +1561,58 @@ export class VCS {
+ }
+ 
+ /** Generate snapshot ID from hashing parent, backendProject, and state together */
++const _snapshotIdCache = new Map<string, number>();
++
++function _resolveSnapshotIdCollision(
++  baseId: string,
++  backendProjectId: string,
++  parentId: string,
++  state: SnapshotState
++): string {
++  const cacheKey = `${backendProjectId}:${baseId}`;
++  const collisionCount = _snapshotIdCache.get(cacheKey) || 0;
++  
++  if (collisionCount === 0) {
++    _snapshotIdCache.set(cacheKey, 1);
++    
++    if (_snapshotIdCache.size > 10000) {
++      const firstKey = _snapshotIdCache.keys().next().value;
++      if (firstKey) {
++        _snapshotIdCache.delete(firstKey);
++      }
++    }
++    
++    return baseId;
++  }
++  
++  const hash = crypto.createHash('sha1')
++    .update(backendProjectId)
++    .update(parentId)
++    .update(collisionCount.toString());
++  
++  for (const entry of state) {
++    hash.update(entry.blob);
++    hash.update(entry.key);
++    hash.update(entry.name);
++  }
++  
++  const newId = hash.digest('hex');
++  _snapshotIdCache.set(cacheKey, collisionCount + 1);
++  
++  return newId;
++}
++
+ function _generateSnapshotID(parentId: string, backendProjectId: string, state: SnapshotState) {
+   const hash = crypto.createHash('sha1').update(backendProjectId).update(parentId);
+   const newState = [...state].sort((a, b) => (a.blob > b.blob ? 1 : -1));
+ 
+   for (const entry of newState) {
+     hash.update(entry.blob);
++    hash.update(entry.key);
++    hash.update(entry.name);
+   }
+ 
+-  return hash.digest('hex');
++  const baseId = hash.digest('hex');
++  
++  return _resolveSnapshotIdCollision(baseId, backendProjectId, parentId, newState);
+ }

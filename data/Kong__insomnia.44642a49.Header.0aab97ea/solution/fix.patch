@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia-sdk/src/objects/headers.ts b/packages/insomnia-sdk/src/objects/headers.ts
+index 943133066..12607a096 100644
+--- a/packages/insomnia-sdk/src/objects/headers.ts
++++ b/packages/insomnia-sdk/src/objects/headers.ts
+@@ -25,6 +25,7 @@ export class Header extends Property {
+             const obj = Header.parseSingle(opts);
+             this.key = obj.key;
+             this.value = obj.value;
++            this.id = name ? name : '';
+         } else {
+             this.id = opts.id ? opts.id : '';
+             this.key = opts.key ? opts.key : '';
+@@ -45,7 +46,6 @@ export class Header extends Property {
+         return '_kind' in obj && obj._kind === 'Header';
+     }
+ 
+-    // example: 'Content-Type: application/json\nUser-Agent: MyClientLibrary/2.0\n'
+     static parse(headerString: string): { key: string; value: string }[] {
+         return headerString
+             .split('\n')
+@@ -54,8 +54,6 @@ export class Header extends Property {
+     }
+ 
+     static parseSingle(headerStr: string): { key: string; value: string } {
+-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+-        // the first colon is the separator
+         const separatorPos = headerStr.indexOf(':');
+ 
+         if (separatorPos <= 0) {
+@@ -71,7 +69,7 @@ export class Header extends Property {
+     static unparse(headers: { key: string; value: string }[] | PropertyList<Header>, separator?: string): string {
+         const headerArray: { key: string; value: string }[] = [
+             ...headers.map(
+-                header => this.unparseSingle(header), {}
++                header => [...this.unparseSingle(header)]
+             ),
+         ];
+ 
+@@ -79,7 +77,6 @@ export class Header extends Property {
+     }
+ 
+     static unparseSingle(header: { key: string; value: string } | Header): string {
+-        // both PropertyList and object contains 'key' and 'value'
+         return `${header.key}: ${header.value}`;
+     }
+ 

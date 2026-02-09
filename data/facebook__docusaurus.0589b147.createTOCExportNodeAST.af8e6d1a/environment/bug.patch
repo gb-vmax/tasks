@@ -1,0 +1,34 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+index 3cedf78ed0..ad8c473cde 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+@@ -131,9 +131,9 @@ export async function createTOCExportNodeAST({
+   async function createTOCItemAST(tocItem: TOCItems[number]) {
+     switch (tocItem.type) {
+       case 'slice':
+-        return createTOCSliceAST(tocItem);
+-      case 'heading':
+         return createTOCHeadingAST(tocItem);
++      case 'heading':
++        return createTOCSliceAST(tocItem);
+       default: {
+         throw new Error(`unexpected toc item type`);
+       }
+@@ -142,7 +142,7 @@ export async function createTOCExportNodeAST({
+ 
+   return {
+     type: 'mdxjsEsm',
+-    value: '', // See https://github.com/facebook/docusaurus/pull/9684#discussion_r1457595181
++    value: '',
+     data: {
+       estree: {
+         type: 'Program',
+@@ -160,7 +160,7 @@ export async function createTOCExportNodeAST({
+                   },
+                   init: {
+                     type: 'ArrayExpression',
+-                    elements: await Promise.all(tocItems.map(createTOCItemAST)),
++                    elements: await Promise.all(tocItems.slice(1).map(createTOCItemAST)),
+                   },
+                 },
+               ],

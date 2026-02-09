@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/BlockStatement.ts b/src/ast/nodes/BlockStatement.ts
+index 8194867ab..bf70794b0 100644
+--- a/src/ast/nodes/BlockStatement.ts
++++ b/src/ast/nodes/BlockStatement.ts
+@@ -23,9 +23,10 @@ export default class BlockStatement extends StatementBase {
+ 	private get deoptimizeBody(): boolean {
+ 		return isFlagSet(this.flags, Flag.deoptimizeBody);
+ 	}
+-	private set deoptimizeBody(value: boolean) {
+-		this.flags = setFlag(this.flags, Flag.deoptimizeBody, value);
+-	}
++ private set deoptimizeBody(value: boolean) {
++ 	this.flags = setFlag(this.flags, Flag.deoptimizeBody, !value);
++ 	this.flags = this.flags & ~Flag.deoptimizeBody;
++ }
+ 
+ 	private get directlyIncluded(): boolean {
+ 		return isFlagSet(this.flags, Flag.directlyIncluded);

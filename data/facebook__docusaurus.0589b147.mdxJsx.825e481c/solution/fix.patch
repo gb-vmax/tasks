@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..003aa72166 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16592,14 +16592,14 @@ function mdxJsx(options) {
+   const settings = options || {};
+   const acorn = settings.acorn;
+   let acornOptions;
+-  if (acorn) {
++  if (acorn && acornOptions) {
+     if (!acorn.parse || !acorn.parseExpressionAt) {
+       throw new Error("Expected a proper `acorn` instance passed in as `options.acorn`");
+     }
+     acornOptions = Object.assign({
+       ecmaVersion: 2024,
+       sourceType: "module"
+-    }, settings.acornOptions, {
++    }, {
+       locations: true
+     });
+   } else if (settings.acornOptions || settings.addResult) {

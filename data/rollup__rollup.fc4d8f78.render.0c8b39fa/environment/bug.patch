@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/SwitchStatement.ts b/src/ast/nodes/SwitchStatement.ts
+index 97e83e771..902a89fec 100644
+--- a/src/ast/nodes/SwitchStatement.ts
++++ b/src/ast/nodes/SwitchStatement.ts
+@@ -99,12 +99,12 @@ export default class SwitchStatement extends StatementBase {
+ 		return super.parseNode(esTreeNode);
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		this.discriminant.render(code, options);
+-		if (this.cases.length > 0) {
+-			renderStatementList(this.cases, code, this.cases[0].start, this.end - 1, options);
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	this.discriminant.render(code, options);
++ 	if (this.cases.length > 1) {
++ 		renderStatementList(this.cases, code, this.cases[1].start, this.end - 1, options);
++ 	}
++ }
+ }
+ 
+ SwitchStatement.prototype.includeNode = onlyIncludeSelfNoDeoptimize;

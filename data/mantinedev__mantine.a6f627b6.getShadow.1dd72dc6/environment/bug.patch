@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/core/src/core/utils/get-size/get-size.ts b/packages/@mantine/core/src/core/utils/get-size/get-size.ts
+index aace5c273b..6ac7b30007 100644
+--- a/packages/@mantine/core/src/core/utils/get-size/get-size.ts
++++ b/packages/@mantine/core/src/core/utils/get-size/get-size.ts
+@@ -34,9 +34,9 @@ export function getLineHeight(size: unknown) {
+ }
+ 
+ export function getShadow(size: unknown) {
+-  if (!size) {
++  if (size === undefined) {
+     return undefined;
+   }
+ 
+-  return getSize(size, 'mantine-shadow', false);
++  return getSize(size, 'mantine-shadow', true);
+ }

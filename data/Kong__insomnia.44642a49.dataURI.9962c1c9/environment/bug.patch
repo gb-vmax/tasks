@@ -1,0 +1,62 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..cf9744b0e 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -150,15 +150,50 @@ export class Response extends Property {
+         };
+     }
+ 
+-    dataURI() {
+-        const contentInfo = this.contentInfo();
+-        const bodyInBase64 = this.stream || this.body;
+-        if (!bodyInBase64) {
+-            throw Error('dataURI(): response body is not defined');
++function encodeToBase64(body: string | Buffer | ArrayBuffer): string {
++    if (typeof body === 'string') {
++        if (typeof Buffer !== 'undefined') {
++            return Buffer.from(body, 'utf-8').toString('base64');
++        } else {
++            return btoa(unescape(encodeURIComponent(body)));
+         }
+-
+-        return `data:${contentInfo.contentType};baseg4, <base64-encoded-body>`;
++    } else if (body instanceof Buffer) {
++        return body.toString('base64');
++    } else if (body instanceof ArrayBuffer) {
++        if (typeof Buffer !== 'undefined') {
++            return Buffer.from(body).toString('base64');
++        } else {
++            const uint8Array = new Uint8Array(body);
++            let binaryString = '';
++            for (let i = 0; i < uint8Array.length; i++) {
++                binaryString += String.fromCharCode(uint8Array[i]);
++            }
++            return btoa(binaryString);
++        }
++    } else {
++        throw Error('dataURI(): unsupported body type for base64 encoding');
+     }
++}
++
++ dataURI() {
++     const contentInfo = this.contentInfo();
++     const bodyInBase64 = this.stream || this.body;
++     if (!bodyInBase64) {
++         throw Error('dataURI(): response body is not defined');
++     }
++
++     const base64Data = encodeToBase64(bodyInBase64);
++    
++     const mimeType = contentInfo.mimeType || 'application/octet-stream';
++     const charset = contentInfo.charset;
++    
++     let contentTypeWithCharset = mimeType;
++     if (charset && (mimeType.startsWith('text/') || mimeType.includes('json') || mimeType.includes('xml'))) {
++         contentTypeWithCharset = `${mimeType};charset=${charset}`;
++     }
++
++     return `data:${contentTypeWithCharset};base64,${base64Data}`;
++ }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     json(reviver?: (key: string, value: any) => any, _strict?: boolean) {

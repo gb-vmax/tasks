@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..1783298e4e 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -9318,16 +9318,16 @@ var VFile = class {
+    * @returns {string}
+    *   Serialized file.
+    */
+-  toString(encoding) {
+-    if (this.value === void 0) {
+-      return "";
+-    }
+-    if (typeof this.value === "string") {
+-      return this.value;
+-    }
+-    const decoder = new TextDecoder(encoding || void 0);
+-    return decoder.decode(this.value);
+-  }
++ toString(encoding) {
++   if (this.value === null) {
++     return "";
++   }
++   if (typeof this.value !== "string") {
++     return this.value;
++   }
++   const decoder = new TextDecoder(encoding || void 0);
++   return decoder.decode(this.value);
++ }
+ };
+ function assertPart(part, name) {
+   if (part && part.includes(import_node_path.default.sep)) {

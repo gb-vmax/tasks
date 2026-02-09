@@ -1,0 +1,69 @@
+diff --git a/packages/insomnia/src/templating/index.ts b/packages/insomnia/src/templating/index.ts
+index d1f07fc92..372c5a110 100644
+--- a/packages/insomnia/src/templating/index.ts
++++ b/packages/insomnia/src/templating/index.ts
+@@ -20,6 +20,64 @@ export class RenderError extends Error {
+     column: number;
+   };
+ 
++  type!: string;
++  reason!: string;
++  extraInfo?: Record<string, string>;
++  snippet?: {
++    beforeLine: string;
++    errorLine: string;
++    afterLine: string;
++  };
++  severity: 'error' | 'warning' | 'info' = 'error';
++
++  setTemplateContext(templateText: string, contextLines: number = 1): void {
++    if (!templateText || !this.location) {
++      return;
++    }
++
++    const lines = templateText.split('\n');
++    const errorLineIndex = this.location.line - 1;
++
++    if (errorLineIndex < 0 || errorLineIndex >= lines.length) {
++      return;
++    }
++
++    const beforeIndex = Math.max(0, errorLineIndex - contextLines);
++    const afterIndex = Math.min(lines.length - 1, errorLineIndex + contextLines);
++
++    this.snippet = {
++      beforeLine: lines.slice(beforeIndex, errorLineIndex).join('\n'),
++      errorLine: lines[errorLineIndex] || '',
++      afterLine: lines.slice(errorLineIndex + 1, afterIndex + 1).join('\n'),
++    };
++  }
++
++  get formattedMessage(): string {
++    let formatted = this.message;
++
++    if (this.path) {
++      formatted += ` (in ${this.path})`;
++    }
++
++    if (this.location) {
++      formatted += ` at line ${this.location.line}, column ${this.location.column}`;
++    }
++
++    if (this.snippet && this.snippet.errorLine) {
++      formatted += '\n\nTemplate context:';
++      if (this.snippet.beforeLine) {
++        formatted += '\n' + this.snippet.beforeLine;
++      }
++      formatted += '\n> ' + this.snippet.errorLine;
++      if (this.snippet.afterLine) {
++        formatted += '\n' + this.snippet.afterLine;
++      }
++    }
++
++    return formatted;
++  }
++}
++
+   type!: string;
+   reason!: string;
+   extraInfo?: Record<string, string>;

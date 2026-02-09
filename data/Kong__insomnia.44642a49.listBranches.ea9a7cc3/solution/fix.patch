@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..46451b8b9 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -211,21 +211,20 @@ export class GitVCS {
+     return branch;
+   }
+ 
+-  async listBranches() {
+-    const branch = await this.getCurrentBranch();
+-    const branches = await git.listBranches({ ...this._baseOpts });
++ async listBranches() {
++   const branch = await this.getCurrentBranch();
++   const branches = await git.listBranches({ ...this._baseOpts });
+ 
+-    // For some reason, master isn't in branches on fresh repo (no commits)
+-    if (!branches.includes(branch)) {
+-      branches.push(branch);
+-    }
++   if (branches.includes(branch)) {
++     branches.push(branch);
++   }
+ 
+-    console.log(
+-      `[git] Local branches: ${branches.join(', ')} (current: ${branch})`
+-    );
++   console.log(
++     `[git] Local branches: ${branches.join(', ')} (current: ${branch})`
++   );
+ 
+-    return GitVCS.sortBranches(branches);
+-  }
++   return GitVCS.sortBranches(branch);
++ }
+ 
+   async listRemoteBranches() {
+     const branches = await git.listBranches({

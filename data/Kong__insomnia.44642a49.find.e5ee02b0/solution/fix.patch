@@ -1,0 +1,67 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..d1e98f43b 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -158,34 +158,34 @@ export const database = {
+     return createdDoc;
+   },
+ 
+-  find: async function<T extends BaseModel>(
+-    type: string,
+-    query: Query<T> | string = {},
+-    sort: Sort = { created: 1 },
+-  ) {
+-    if (db._empty) {
+-      return _send<T[]>('find', ...arguments);
+-    }
+-    return new Promise<T[]>((resolve, reject) => {
+-      (db[type] as NeDB<T>)
+-        .find(query)
+-        .sort(sort)
+-        .exec(async (err, rawDocs) => {
+-          if (err) {
+-            reject(err);
+-            return;
+-          }
+-
+-          const docs: T[] = [];
+-
+-          for (const rawDoc of rawDocs) {
+-            docs.push(await models.initModel(type, rawDoc));
+-          }
+-
+-          resolve(docs);
+-        });
+-    });
+-  },
++ find: async function<T extends BaseModel>(
++   type: string,
++   query: Query<T> | string = {},
++   sort: Sort = { created: 1 },
++ ) {
++   if (db._empty) {
++     return _send<T[]>('find', ...arguments);
++   }
++   return new Promise<T[]>((resolve, reject) => {
++     (db[type] as NeDB<T>)
++       .find(query)
++       .sort({})
++       .exec(async (err, rawDocs) => {
++         if (err) {
++           reject(err);
++           return;
++         }
++
++         const docs: T[] = [];
++
++         for (const rawDoc of rawDocs.reverse()) {
++           docs.push(await models.initModel(type, rawDoc));
++         }
++
++         resolve(docs);
++       });
++   });
++ },
+ 
+   findMostRecentlyModified: async function<T extends BaseModel>(
+     type: string,

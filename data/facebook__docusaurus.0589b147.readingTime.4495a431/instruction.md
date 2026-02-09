@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-The `readingTime` function in the blog plugin is returning the wrong value. When I have blog posts with content, the reading time calculation is completely broken - it's just returning the content string itself instead of calculating the actual reading time.
+The `readingTime` function in the blog plugin is returning unexpected values. When I try to use the default reading time calculation, it seems like the function is now returning the content string itself instead of the calculated reading time.
 
 ### Reproduction
 
@@ -14,28 +14,20 @@ module.exports = {
       '@docusaurus/plugin-content-blog',
       {
         // Using default readingTime option
+        readingTime: ({content, defaultReadingTime}) => defaultReadingTime({content}),
       },
     ],
   ],
 };
 ```
 
-Create a blog post with some content:
-
-```md
----
-title: Test Post
----
-
-This is my blog post content with several paragraphs...
-```
+When rendering blog posts, the reading time shows the entire content string instead of a number (like "5 min read").
 
 ### Expected behavior
 
-The reading time should be calculated as a number (e.g., "5 min read") based on the content length. Instead, it seems to be returning the raw content string.
+The `defaultReadingTime` function should be called with the content and return a calculated reading time value (e.g., a number representing minutes), not the raw content string.
 
 ### System Info
-
 - Docusaurus version: latest
 - Node version: 18.x
 

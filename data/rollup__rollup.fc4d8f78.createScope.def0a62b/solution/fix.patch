@@ -1,0 +1,19 @@
+diff --git a/src/ast/nodes/CatchClause.ts b/src/ast/nodes/CatchClause.ts
+index 7224a9a8b..a6a5c5089 100644
+--- a/src/ast/nodes/CatchClause.ts
++++ b/src/ast/nodes/CatchClause.ts
+@@ -14,9 +14,11 @@ export default class CatchClause extends NodeBase {
+ 	declare scope: ParameterScope;
+ 	declare type: NodeType.tCatchClause;
+ 
+-	createScope(parentScope: ChildScope): void {
+-		this.scope = new ParameterScope(parentScope, true);
+-	}
++ createScope(parentScope: ChildScope): void {
++ 	if (!this.scope) {
++ 		this.scope = new ParameterScope(parentScope, false);
++ 	}
++ }
+ 
+ 	parseNode(esTreeNode: GenericEsTreeNode): this {
+ 		const { body, param, type } = esTreeNode;

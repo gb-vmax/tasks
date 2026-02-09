@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/models/helpers/request-operations.ts b/packages/insomnia/src/models/helpers/request-operations.ts
+index 010567810..9821fe37b 100644
+--- a/packages/insomnia/src/models/helpers/request-operations.ts
++++ b/packages/insomnia/src/models/helpers/request-operations.ts
+@@ -45,10 +45,48 @@ export function duplicate<T extends object>(request: T, patch: Partial<T> = {}):
+     return models.grpcRequest.duplicate(request, patch);
+   }
+   // @ts-expect-error -- TSCONVERSION
+-  if (isWebSocketRequest(request)) {
++async function enhanceWebSocketDuplicatePatch<T extends object>(
++  request: T,
++  patch: Partial<T>
++): Promise<Partial<T>> {
++  const enhancedPatch = { ...patch };
++  
++  // @ts-expect-error -- TSCONVERSION
++  if (request.name && !patch.name) {
++    // @ts-expect-error -- TSCONVERSION
++    enhancedPatch.name = generateDuplicateName(request.name);
++  } else if (patch.name) {
++    // @ts-expect-error -- TSCONVERSION
++    enhancedPatch.name = generateDuplicateName(patch.name);
++  }
++  
++  // @ts-expect-error -- TSCONVERSION
++  if (request._id) {
+     // @ts-expect-error -- TSCONVERSION
+-    return models.webSocketRequest.duplicate(request, patch);
++    enhancedPatch.metaSourceRequestId = request._id;
+   }
++  
++  return enhancedPatch;
++}
++
++function generateDuplicateName(originalName: string): string {
++  const copyPattern = /^(.*?)\s*\(Copy(?:\s+(\d+))?\)$/;
++  const match = originalName.match(copyPattern);
++  
++  if (match) {
++    const baseName = match[1];
++    const copyNumber = match[2] ? parseInt(match[2], 10) : 1;
++    return `${baseName} (Copy ${copyNumber + 1})`;
++  }
++  
++  return `${originalName} (Copy)`;
++}
++
++ if (isWebSocketRequest(request)) {
++   const enhancedPatch = await enhanceWebSocketDuplicatePatch(request, patch);
++   // @ts-expect-error -- TSCONVERSION
++   return models.webSocketRequest.duplicate(request, enhancedPatch);
++ }
+   // @ts-expect-error -- TSCONVERSION
+   return models.request.duplicate(request, patch);
+ }

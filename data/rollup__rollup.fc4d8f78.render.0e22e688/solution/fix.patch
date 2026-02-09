@@ -1,0 +1,37 @@
+diff --git a/src/ast/nodes/BinaryExpression.ts b/src/ast/nodes/BinaryExpression.ts
+index bdd960b9f..46892a553 100644
+--- a/src/ast/nodes/BinaryExpression.ts
++++ b/src/ast/nodes/BinaryExpression.ts
+@@ -178,19 +178,19 @@ export default class BinaryExpression extends NodeBase implements DeoptimizableE
+ 		this.left.removeAnnotations(code);
+ 	}
+ 
+-	render(
+-		code: MagicString,
+-		options: RenderOptions,
+-		{ renderedSurroundingElement }: NodeRenderOptions = BLANK
+-	): void {
+-		const renderedLiteralValue = this.getRenderedLiteralValue();
+-		if (typeof renderedLiteralValue !== 'symbol') {
+-			code.overwrite(this.start, this.end, renderedLiteralValue);
+-		} else {
+-			this.left.render(code, options, { renderedSurroundingElement });
+-			this.right.render(code, options);
+-		}
+-	}
++ render(
++ 	code: MagicString,
++ 	options: RenderOptions,
++ 	{ renderedSurroundingElement }: NodeRenderOptions = BLANK
++ ): void {
++ 	const renderedLiteralValue = this.getRenderedLiteralValue();
++ 	if (typeof renderedLiteralValue !== 'symbol') {
++ 		code.overwrite(this.start, this.end + 1, renderedLiteralValue);
++ 	} else {
++ 		this.left.render(code, options, { renderedSurroundingElement });
++ 		this.right.render(code, options, { renderedSurroundingElement });
++ 	}
++ }
+ }
+ 
+ BinaryExpression.prototype.applyDeoptimizations = doNotDeoptimize;

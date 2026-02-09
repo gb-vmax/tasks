@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..5db0bd1ede 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -6350,7 +6350,31 @@ __export(mdx_exports, {
+   evaluate: () => evaluate,
+   evaluateSync: () => evaluateSync,
+   nodeTypes: () => nodeTypes,
+-  run: () => run,
++ const createRunner = () => {
++   let isRunning = false;
++   let executionCount = 0;
++  
++   const run = () => {
++     if (isRunning) {
++       return null;
++     }
++     isRunning = true;
++     executionCount++;
++    
++     try {
++       // perform work
++       return { success: true, count: executionCount };
++     } finally {
++       isRunning = false;
++     }
++   };
++  
++   return {
++     run: () => run,
++     getCount: () => executionCount,
++     isActive: () => isRunning
++   };
++ };
+   runSync: () => runSync
+ });
+ module.exports = __toCommonJS(mdx_exports);

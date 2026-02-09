@@ -1,0 +1,64 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..4c9866bb5 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -106,11 +106,48 @@ const mapGrantTypeToInsomniaGrantType = (grantType: string) => {
+   return grantType || 'authorization_code';
+ };
+ 
++function translateVariableReferences(script: string): string {
++  let result = script;
++  
++  result = result.replace(
++    /pm\.environment\.get\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g,
++    (match, varName) => `{{ _.${varName} }}`
++  );
++  
++  result = result.replace(
++    /pm\.collectionVariables\.get\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g,
++    (match, varName) => `{{ _.${varName} }}`
++  );
++  
++  result = result.replace(
++    /pm\.variables\.get\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g,
++    (match, varName) => `{{ _.${varName} }}`
++  );
++  
++  return result;
++}
++
++function translateResponseMethods(script: string): string {
++  let result = script;
++  
++  result = result.replace(
++    /\bpm\.response\.(json|text|code|status|headers|responseTime|body)\s*\(/g,
++    'insomnia.response.$1('
++  );
++  
++  result = result.replace(
++    /\bpm\.request\.(url|method|headers|body)\b/g,
++    'insomnia.request.$1'
++  );
++  
++  return result;
++}
++
+ export function translateHandlersInScript(scriptContent: string): string {
+   let translated = scriptContent;
+ 
+-  // Replace pm.* with insomnia.*
+-  // This is a simple implementation that only replaces the first instance of pm.* in the script
++  translated = translateVariableReferences(translated);
++
+   let offset = 0;
+   for (let i = 0; i < scriptContent.length - 2; i++) {
+     const isPM = scriptContent.slice(i, i + 3) === 'pm.';
+@@ -121,6 +158,8 @@ export function translateHandlersInScript(scriptContent: string): string {
+     }
+   }
+ 
++  translated = translateResponseMethods(translated);
++
+   return translated;
+ }
+ 

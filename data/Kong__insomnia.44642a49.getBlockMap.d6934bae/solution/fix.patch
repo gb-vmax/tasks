@@ -1,0 +1,42 @@
+diff --git a/packages/insomnia/src/sync/delta/diff.ts b/packages/insomnia/src/sync/delta/diff.ts
+index e6bc25083..be5d18e84 100644
+--- a/packages/insomnia/src/sync/delta/diff.ts
++++ b/packages/insomnia/src/sync/delta/diff.ts
+@@ -100,19 +100,35 @@ function getBlock(value: string, start: number, blockSize: number): Block {
+   };
+ }
+ 
++function canMergeBlocks(block1: Block, block2: Block): boolean {
++  return block1.start + block1.len === block2.start;
++}
++
+ function getBlockMap(value: string, blockSize: number): Record<string, Block[]> {
+   const map: Record<string, Block[]> = {};
++  const useSliding = blockSize <= 64;
++  const stepSize = useSliding ? 1 : blockSize;
+ 
+   for (let i = 0; i < value.length;) {
+     const block = getBlock(value, i, blockSize);
+ 
+     if (map[block.hash]) {
+-      map[block.hash].push(block);
++      const existingBlocks = map[block.hash];
++      const lastBlock = existingBlocks[existingBlocks.length - 1];
++      
++      if (useSliding && canMergeBlocks(lastBlock, block)) {
++        lastBlock.len = block.start + block.len - lastBlock.start;
++      } else {
++        map[block.hash].push(block);
++      }
+     } else {
+       map[block.hash] = [block];
+     }
+ 
+-    i += block.len;
++    i += stepSize;
++    if (i + blockSize > value.length && i < value.length && !useSliding) {
++      break;
++    }
+   }
+ 
+   return map;

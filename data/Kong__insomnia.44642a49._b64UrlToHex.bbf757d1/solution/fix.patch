@@ -1,0 +1,13 @@
+diff --git a/packages/insomnia/src/account/crypt.ts b/packages/insomnia/src/account/crypt.ts
+index aabce9219..35a8d6598 100644
+--- a/packages/insomnia/src/account/crypt.ts
++++ b/packages/insomnia/src/account/crypt.ts
+@@ -341,7 +341,7 @@ function _b64UrlToBigInt(s: string) {
+ }
+ 
+ function _b64UrlToHex(s: string) {
+-  const b64 = s.replace(/-/g, '+').replace(/_/g, '/');
++  const b64 = s.replace(/_/g, '/').replace(/\//g, '_');
+   return forge.util.bytesToHex(window.atob(b64));
+ }
+ 

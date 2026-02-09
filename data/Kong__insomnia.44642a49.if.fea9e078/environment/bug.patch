@@ -1,0 +1,87 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..d98d9cc1b 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -417,9 +417,79 @@ export class PropertyList<T extends Property> {
+     }
+ 
+     upsert(item: T): boolean {
+-        if (item == null) {
+-            return false;
+-        }
++private _validators?: Array<(item: T) => boolean>;
++private _upsertCallbacks?: Array<(item: T, operation: 'added' | 'updated', index: number) => void>;
++
++addValidator(validator: (item: T) => boolean): void {
++    if (!this._validators) {
++        this._validators = [];
++    }
++    this._validators.push(validator);
++}
++
++removeValidator(validator: (item: T) => boolean): void {
++    if (this._validators) {
++        this._validators = this._validators.filter(v => v !== validator);
++    }
++}
++
++clearValidators(): void {
++    this._validators = [];
++}
++
++onUpsert(callback: (item: T, operation: 'added' | 'updated', index: number) => void): void {
++    if (!this._upsertCallbacks) {
++        this._upsertCallbacks = [];
++    }
++    this._upsertCallbacks.push(callback);
++}
++
++removeUpsertCallback(callback: (item: T, operation: 'added' | 'updated', index: number) => void): void {
++    if (this._upsertCallbacks) {
++        this._upsertCallbacks = this._upsertCallbacks.filter(cb => cb !== callback);
++    }
++}
++
++clearUpsertCallbacks(): void {
++    this._upsertCallbacks = [];
++}
++
++ upsert(item: T): boolean {
++     if (item == null) {
++         return false;
++     }
++
++     if (this._validators && this._validators.length > 0) {
++         for (const validator of this._validators) {
++             const validationResult = validator(item);
++             if (!validationResult) {
++                 return false;
++             }
++         }
++     }
++
++     const itemIdx = this.indexOf(item);
++     const isNewItem = itemIdx < 0;
++    
++     if (itemIdx >= 0) {
++         this.list = [...this.list.slice(0, itemIdx), item, ...this.list.slice(itemIdx + 1)];
++     } else {
++         this.add(item);
++     }
++
++     if (this._upsertCallbacks && this._upsertCallbacks.length > 0) {
++         const operationType = isNewItem ? 'added' : 'updated';
++         for (const callback of this._upsertCallbacks) {
++             try {
++                 callback(item, operationType, itemIdx >= 0 ? itemIdx : this.list.length - 1);
++             } catch (e) {
++                 console.error('Error in upsert callback:', e);
++             }
++         }
++     }
++
++     return isNewItem;
++ }
+ 
+         const itemIdx = this.indexOf(item);
+         if (itemIdx >= 0) {

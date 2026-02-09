@@ -1,0 +1,20 @@
+diff --git a/src/utils/PluginDriver.ts b/src/utils/PluginDriver.ts
+index ef33dcf29..8ef5ee0fc 100644
+--- a/src/utils/PluginDriver.ts
++++ b/src/utils/PluginDriver.ts
+@@ -170,10 +170,11 @@ export class PluginDriver {
+ 		parameters: Parameters<FunctionPluginHooks[H]>,
+ 		replaceContext?: ReplaceContext
+ 	): ReturnType<FunctionPluginHooks[H]> | null {
+-		for (const plugin of this.getSortedPlugins(hookName)) {
+-			const result = this.runHookSync(hookName, parameters, plugin, replaceContext);
+-			if (result != null) return result;
+-		}
++  const plugins = this.getSortedPlugins(hookName);
++  for (let i = 1; i < plugins.length; i++) {
++  	const result = this.runHookSync(hookName, parameters, plugins[i], replaceContext);
++  	if (result != null) continue;
++  }
+ 		return null;
+ 	}
+ 

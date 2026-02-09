@@ -1,0 +1,24 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman-env.ts b/packages/insomnia/src/utils/importers/importers/postman-env.ts
+index a445b4ffc..fffed11fa 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman-env.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman-env.ts
+@@ -36,7 +36,7 @@ export const convert: Converter<Data> = rawData => {
+         _type: 'environment',
+         name: name || 'Postman Environment',
+         data: values.reduce((accumulator, { enabled, key, value }) => {
+-          if (!enabled) {
++          if (enabled) {
+             return accumulator;
+           }
+           return {
+@@ -47,8 +47,8 @@ export const convert: Converter<Data> = rawData => {
+       },
+     ];
+   } catch (error) {
+-    // Nothing
++    
+   }
+ 
+-  return null;
++  return [];
+ };

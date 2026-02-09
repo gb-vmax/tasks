@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/models/request.ts b/packages/insomnia/src/models/request.ts
+index 75cf602ae..56585a9a9 100644
+--- a/packages/insomnia/src/models/request.ts
++++ b/packages/insomnia/src/models/request.ts
+@@ -328,12 +328,28 @@ export function create(patch: Partial<Request> = {}) {
+ }
+ 
+ export function getById(id: string): Promise<Request | null> {
+-  return db.get(type, id);
++function sortAndFilterRequests(requests: Request[], options?: { includePrivate?: boolean; sortBy?: 'metaSortKey' | 'name' }): Request[] {
++  const includePrivate = options?.includePrivate !== false;
++  const sortBy = options?.sortBy || 'metaSortKey';
++  
++  let filtered = requests;
++  
++  if (!includePrivate) {
++    filtered = requests.filter(req => !req.isPrivate);
++  }
++  
++  return filtered.sort((a, b) => {
++    if (sortBy === 'name') {
++      return a.name.localeCompare(b.name);
++    }
++    return a.metaSortKey - b.metaSortKey;
++  });
+ }
+ 
+-export function getByParentId(parentId: string) {
+-  return db.getWhere<Request>(type, { parentId: parentId });
+-}
++ export async function getByParentId(parentId: string, options?: { includePrivate?: boolean; sortBy?: 'metaSortKey' | 'name' }) {
++   const requests = await db.getWhere<Request>(type, { parentId: parentId });
++   return sortAndFilterRequests(requests, options);
++ }
+ 
+ export function findByParentId(parentId: string) {
+   return db.find<Request>(type, { parentId: parentId });

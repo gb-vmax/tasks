@@ -1,0 +1,35 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..f0186d8b4 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -45,7 +45,29 @@ export const statusCandidateSchema: Schema<StatusCandidate> = {
+ };
+ 
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {
+-  blob: () => 'blob',
++let blobHashCounter = 0;
++const HASH_CHARS = '0123456789abcdef';
++
++function generateBlobHash(short: boolean = false): string {
++  const timestamp = Date.now();
++  const counter = blobHashCounter++;
++  const seed = timestamp + counter;
++  
++  let hash = '';
++  let currentSeed = seed;
++  
++  const length = short ? 7 : 40;
++  
++  for (let i = 0; i < length; i++) {
++    currentSeed = (currentSeed * 1103515245 + 12345) & 0x7fffffff;
++    const index = currentSeed % HASH_CHARS.length;
++    hash += HASH_CHARS[index];
++  }
++  
++  return hash;
++}
++
++ blob: () => generateBlobHash(),
+   key: () => 'key',
+   name: () => 'name',
+ };

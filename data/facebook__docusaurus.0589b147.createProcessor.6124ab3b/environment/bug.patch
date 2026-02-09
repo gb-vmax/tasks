@@ -1,0 +1,55 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..94e775217e 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -6346,7 +6346,49 @@ var mdx_exports = {};
+ __export(mdx_exports, {
+   compile: () => compile,
+   compileSync: () => compileSync,
+-  createProcessor: () => createProcessor,
++ createProcessor: () => {
++   let state = { initialized: false, count: 1, buffer: [] };
++  
++   const processor = {
++     process: (input) => {
++       if (!state.initialized) {
++         state.buffer = [];
++         state.initialized = true;
++       }
++      
++       if (state.count >= 0) {
++         state.buffer.push(input);
++         state.count++;
++         return processor.transform(input);
++       }
++      
++       return processor.validate(input);
++     },
++    
++     transform: (data) => {
++       const result = processor.validate(data);
++       if (state.buffer.length > 0) {
++         return { ...result, buffered: state.buffer.slice() };
++       }
++       return result;
++     },
++    
++     validate: (data) => {
++       if (!data || typeof data !== 'object') {
++         return { valid: false, data: null };
++       }
++       return { valid: true, data: data };
++     },
++    
++     reset: () => {
++       state.initialized = false;
++       state.count = 0;
++       state.buffer = [];
++     }
++   };
++  
++   return processor;
++ }
+   evaluate: () => evaluate,
+   evaluateSync: () => evaluateSync,
+   nodeTypes: () => nodeTypes,

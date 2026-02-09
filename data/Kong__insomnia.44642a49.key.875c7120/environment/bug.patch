@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..dba228099 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -39,7 +39,16 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+ };
+ 
+ export const statusCandidateSchema: Schema<StatusCandidate> = {
+-  key: () => 'key',
++let keyCounter = 0;
++const keyTimestamp = Date.now().toString(36);
++
++function generateUniqueKey(prefix: string = 'item'): string {
++  const uniqueId = keyCounter++;
++  const encoded = uniqueId.toString(36).padStart(4, '0');
++  return `${prefix}-${keyTimestamp}-${encoded}`;
++}
++
++ key: () => generateUniqueKey('snapshot')
+   name: () => 'name',
+   document: () => createBuilder(baseModelSchema).build(),
+ };

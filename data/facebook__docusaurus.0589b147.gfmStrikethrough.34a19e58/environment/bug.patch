@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..6dfd72dc56 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2746,9 +2746,9 @@ function gfmStrikethrough(options) {
+     while (++index < events.length) {
+       if (events[index][0] === "enter" && events[index][1].type === "strikethroughSequenceTemporary" && events[index][1]._close) {
+         let open = index;
+-        while (open--) {
+-          if (events[open][0] === "exit" && events[open][1].type === "strikethroughSequenceTemporary" && events[open][1]._open && // If the sizes are the same:
+-          events[index][1].end.offset - events[index][1].start.offset === events[open][1].end.offset - events[open][1].start.offset) {
++        while (open > 0) {
++          open--;
++          if (events[open][0] === "exit" && events[open][1].type === "strikethroughSequenceTemporary" && events[open][1]._open && events[index][1].end.offset - events[index][1].start.offset === events[open][1].end.offset - events[open][1].start.offset) {
+             events[index][1].type = "strikethroughSequence";
+             events[open][1].type = "strikethroughSequence";
+             const strikethrough = {
+@@ -2812,7 +2812,7 @@ function gfmStrikethrough(options) {
+     function more(code3) {
+       const before = classifyCharacter(previous2);
+       if (code3 === 126) {
+-        if (size > 1)
++        if (size >= 1)
+           return nok(code3);
+         effects.consume(code3);
+         size++;

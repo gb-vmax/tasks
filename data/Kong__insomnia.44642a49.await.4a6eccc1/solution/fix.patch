@@ -1,0 +1,87 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..62f60ca12 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -201,11 +201,77 @@ async function _applyRequestPluginHooks(
+     };
+ 
+     try {
+-      await hook(context);
+-    } catch (err) {
+-      err.plugin = plugin;
+-      throw err;
+-    }
++async function executeHookWithTimeout(
++  hook: (context: any) => Promise<void>,
++  context: any,
++  timeoutMs: number,
++): Promise<void> {
++  return new Promise((resolve, reject) => {
++    const timeoutId = setTimeout(() => {
++      const error: any = new Error(`Hook execution timed out after ${timeoutMs}ms`);
++      error.isTimeout = true;
++      reject(error);
++    }, timeoutMs);
++
++    hook(context)
++      .then(() => {
++        clearTimeout(timeoutId);
++        resolve();
++      })
++      .catch((err) => {
++        clearTimeout(timeoutId);
++        reject(err);
++      });
++  });
++}
++
++ async function _applyRequestPluginHooks(
++   renderedRequest: RenderedRequest,
++   renderedContext: Record<string, any>,
++ ): Promise<RenderedRequest> {
++   let newRenderedRequest = renderedRequest;
++
++   for (const { plugin, hook } of await plugins.getRequestHooks()) {
++     newRenderedRequest = clone(newRenderedRequest);
++     const context = {
++       ...(pluginContexts.app.init() as Record<string, any>),
++       ...(pluginContexts.request.init(newRenderedRequest, renderedContext) as Record<string, any>),
++       ...(pluginContexts.store.init(plugin) as Record<string, any>),
++     };
++
++     const maxRetries = 2;
++     let lastError: any = null;
++
++     for (let attempt = 0; attempt <= maxRetries; attempt++) {
++       try {
++         await executeHookWithTimeout(hook, context, 30000);
++         lastError = null;
++         break;
++       } catch (err) {
++         lastError = err;
++        
++         if (err.isTimeout) {
++           err.plugin = plugin;
++           err.message = `Plugin "${plugin.name}" timed out after 30000ms`;
++           throw err;
++         }
++
++         if (attempt < maxRetries) {
++           const delay = 100 * Math.pow(2, attempt);
++           await new Promise(resolve => setTimeout(resolve, delay));
++         }
++       }
++     }
++
++     if (lastError) {
++       lastError.plugin = plugin;
++       lastError.message = `Plugin "${plugin.name}" failed after ${maxRetries + 1} attempts: ${lastError.message}`;
++       throw lastError;
++     }
++   }
++
++   return newRenderedRequest;
++ }
+   }
+ 
+   return newRenderedRequest;

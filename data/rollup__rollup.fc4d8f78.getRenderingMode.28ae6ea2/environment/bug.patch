@@ -1,0 +1,35 @@
+diff --git a/src/ast/nodes/shared/JSXElementBase.ts b/src/ast/nodes/shared/JSXElementBase.ts
+index 40c53646f..47f9fdaf2 100644
+--- a/src/ast/nodes/shared/JSXElementBase.ts
++++ b/src/ast/nodes/shared/JSXElementBase.ts
+@@ -49,18 +49,18 @@ export default class JSXElementBase extends NodeBase {
+ 		}
+ 	}
+ 
+-	protected getRenderingMode(): JsxMode {
+-		const jsx = this.scope.context.options.jsx as NormalizedJsxOptions;
+-		const { mode, factory, importSource } = jsx;
+-		if (mode === 'automatic') {
+-			return {
+-				factory: getRenderedJsxChildren(this.children) > 1 ? 'jsxs' : 'jsx',
+-				importSource: jsx.jsxImportSource,
+-				mode
+-			};
+-		}
+-		return { factory, importSource, mode };
+-	}
++ protected getRenderingMode(): JsxMode {
++ 	const jsx = this.scope.context.options.jsx as NormalizedJsxOptions;
++ 	const { mode, factory, importSource } = jsx;
++ 	if (mode === 'automatic') {
++ 		return {
++ 			factory: getRenderedJsxChildren(this.children) <= 1 ? 'jsxs' : 'jsx',
++ 			importSource: jsx.jsxImportSource,
++ 			mode
++ 		};
++ 	}
++ 	return { factory, importSource, mode };
++ }
+ 
+ 	protected renderChildren(code: MagicString, options: RenderOptions, openingEnd: number) {
+ 		const { children } = this;

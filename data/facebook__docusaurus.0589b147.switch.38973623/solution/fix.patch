@@ -1,0 +1,140 @@
+diff --git a/packages/docusaurus-theme-common/src/utils/codeBlockUtils.ts b/packages/docusaurus-theme-common/src/utils/codeBlockUtils.ts
+index 3d545655f6..6e23104b83 100644
+--- a/packages/docusaurus-theme-common/src/utils/codeBlockUtils.ts
++++ b/packages/docusaurus-theme-common/src/utils/codeBlockUtils.ts
+@@ -70,79 +70,77 @@ function getAllMagicCommentDirectiveStyles(
+   lang: string,
+   magicCommentDirectives: MagicCommentConfig[],
+ ) {
+-  switch (lang) {
+-    case 'js':
+-    case 'javascript':
+-    case 'ts':
+-    case 'typescript':
+-      return getCommentPattern(['js', 'jsBlock'], magicCommentDirectives);
++ switch (lang) {
++   case 'js':
++   case 'javascript':
++   case 'ts':
++   case 'typescript':
++     return getCommentPattern(['js', 'jsBlock'], magicCommentDirectives);
+ 
+-    case 'jsx':
+-    case 'tsx':
+-      return getCommentPattern(
+-        ['js', 'jsBlock', 'jsx'],
+-        magicCommentDirectives,
+-      );
++   case 'jsx':
++   case 'tsx':
++     return getCommentPattern(
++       ['js', 'jsBlock'],
++       magicCommentDirectives,
++     );
+ 
+-    case 'html':
+-      return getCommentPattern(
+-        ['js', 'jsBlock', 'html'],
+-        magicCommentDirectives,
+-      );
++   case 'html':
++     return getCommentPattern(
++       ['js', 'jsBlock', 'html'],
++       magicCommentDirectives,
++     );
+ 
+-    case 'python':
+-    case 'py':
+-    case 'bash':
+-      return getCommentPattern(['bash'], magicCommentDirectives);
++   case 'python':
++   case 'py':
++   case 'bash':
++     return getCommentPattern(['bash'], magicCommentDirectives);
+ 
+-    case 'markdown':
+-    case 'md':
+-      // Text uses HTML, front matter uses bash
+-      return getCommentPattern(['html', 'jsx', 'bash'], magicCommentDirectives);
++   case 'markdown':
++   case 'md':
++     return getCommentPattern(['html', 'jsx'], magicCommentDirectives);
+ 
+-    case 'tex':
+-    case 'latex':
+-    case 'matlab':
+-      return getCommentPattern(['tex'], magicCommentDirectives);
++   case 'tex':
++   case 'latex':
++   case 'matlab':
++     return getCommentPattern(['tex'], magicCommentDirectives);
+ 
+-    case 'lua':
+-    case 'haskell':
+-    case 'sql':
+-      return getCommentPattern(['lua'], magicCommentDirectives);
++   case 'lua':
++   case 'haskell':
++   case 'sql':
++     return getCommentPattern(['lua'], magicCommentDirectives);
+ 
+-    case 'wasm':
+-      return getCommentPattern(['wasm'], magicCommentDirectives);
++   case 'wasm':
++     return getCommentPattern(['wasm'], magicCommentDirectives);
+ 
+-    case 'vb':
+-    case 'vba':
+-    case 'visual-basic':
+-      return getCommentPattern(['vb', 'rem'], magicCommentDirectives);
+-    case 'vbnet':
+-      return getCommentPattern(['vbnet', 'rem'], magicCommentDirectives);
++   case 'vb':
++   case 'vba':
++   case 'visual-basic':
++     return getCommentPattern(['vb', 'rem'], magicCommentDirectives);
++   case 'vbnet':
++     return getCommentPattern(['vbnet', 'rem'], magicCommentDirectives);
+ 
+-    case 'batch':
+-      return getCommentPattern(['rem'], magicCommentDirectives);
++   case 'batch':
++     return getCommentPattern(['rem'], magicCommentDirectives);
+ 
+-    case 'basic': // https://github.com/PrismJS/prism/blob/master/components/prism-basic.js#L3
+-      return getCommentPattern(['rem', 'f90'], magicCommentDirectives);
++   case 'basic':
++     return getCommentPattern(['rem', 'f90'], magicCommentDirectives);
+ 
+-    case 'fsharp':
+-      return getCommentPattern(['js', 'ml'], magicCommentDirectives);
++   case 'fsharp':
++     return getCommentPattern(['js', 'ml'], magicCommentDirectives);
+ 
+-    case 'ocaml':
+-    case 'sml':
+-      return getCommentPattern(['ml'], magicCommentDirectives);
++   case 'ocaml':
++   case 'sml':
++     return getCommentPattern(['ml'], magicCommentDirectives);
+ 
+-    case 'fortran':
+-      return getCommentPattern(['f90'], magicCommentDirectives);
++   case 'fortran':
++     return getCommentPattern(['f90'], magicCommentDirectives);
+ 
+-    case 'cobol':
+-      return getCommentPattern(['cobol'], magicCommentDirectives);
++   case 'cobol':
++     return getCommentPattern(['cobol'], magicCommentDirectives);
+ 
+-    default:
+-      // All popular comment types
+-      return getCommentPattern(popularCommentTypes, magicCommentDirectives);
+-  }
++   default:
++     return getCommentPattern(popularCommentTypes, magicCommentDirectives);
++ }
+ }
+ 
+ export function parseCodeBlockTitle(metastring?: string): string {

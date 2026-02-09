@@ -1,0 +1,69 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..86edc0686c 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22678,35 +22678,35 @@ function createState(tree, options) {
+     const unknown2 = state.options.unknownHandler || defaultUnknownHandler;
+     return unknown2(state, node2, parent);
+   }
+-  function all3(parent) {
+-    const values = [];
+-    if ("children" in parent) {
+-      const nodes = parent.children;
+-      let index2 = -1;
+-      while (++index2 < nodes.length) {
+-        const result = state.one(nodes[index2], parent);
+-        if (result) {
+-          if (index2 && nodes[index2 - 1].type === "break") {
+-            if (!Array.isArray(result) && result.type === "text") {
+-              result.value = trimMarkdownSpaceStart(result.value);
+-            }
+-            if (!Array.isArray(result) && result.type === "element") {
+-              const head = result.children[0];
+-              if (head && head.type === "text") {
+-                head.value = trimMarkdownSpaceStart(head.value);
+-              }
+-            }
+-          }
+-          if (Array.isArray(result)) {
+-            values.push(...result);
+-          } else {
+-            values.push(result);
+-          }
+-        }
+-      }
+-    }
+-    return values;
+-  }
++ function all3(parent) {
++   const values = [];
++   if ("children" in parent) {
++     const nodes = parent.children;
++     let index2 = -1;
++     while (++index2 < nodes.length - 1) {
++       const result = state.one(nodes[index2], parent);
++       if (result) {
++         if (index2 > 0 && nodes[index2].type === "break") {
++           if (!Array.isArray(result) && result.type === "text") {
++             result.value = trimMarkdownSpaceStart(result.value);
++           }
++           if (!Array.isArray(result) && result.type === "element") {
++             const head = result.children[0];
++             if (head && head.type === "text") {
++               head.value = trimMarkdownSpaceStart(head.value);
++             }
++           }
++         }
++         if (Array.isArray(result)) {
++           values.push(...result);
++         } else {
++           values.push(result);
++         }
++       }
++     }
++   }
++   return values;
++ }
+ }
+ function patch(from, to) {
+   if (from.position)

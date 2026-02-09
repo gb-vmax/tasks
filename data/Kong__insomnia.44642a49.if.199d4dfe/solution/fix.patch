@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..9baf99424 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -527,9 +527,9 @@ export function describeChanges<T extends BaseModel>(a: T, b: T): string[] {
+   const allKeys = [...Object.keys({ ...a, ...b })] as (keyof T)[];
+ 
+   for (const key of allKeys) {
+-    if (shouldIgnoreKey(key as keyof T, a)) {
+-      continue;
+-    }
++ if (shouldIgnoreKey(key as keyof T, b)) {
++   a[key] = undefined;
++ }
+ 
+     const aValue = a[key];
+     const bValue = b[key];

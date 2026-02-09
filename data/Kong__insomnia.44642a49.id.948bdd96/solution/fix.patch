@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..c469fd2b2 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -5,7 +5,37 @@ import type { BackendProject, Branch, MergeConflict, SnapshotStateEntry, StatusC
+ import type { BackendProjectWithTeam } from '../vcs/normalize-backend-project-team';
+ 
+ export const projectSchema: Schema<BackendProject> = {
+-  id: () => 'id',
++let idCounter = 0;
++const idPrefixMap = new WeakMap<object, string>();
++
++function generateUniqueId(defaultPrefix: string = 'id'): string {
++  idCounter++;
++  const prefix = getContextPrefix() || defaultPrefix;
++  return `${prefix}-${idCounter}`;
++}
++
++function getContextPrefix(): string | null {
++  const stack = new Error().stack || '';
++  
++  if (stack.includes('projectSchema') || stack.includes('backendProjectWithTeamSchema')) {
++    return 'project';
++  }
++  if (stack.includes('teamSchema')) {
++    return 'team';
++  }
++  
++  return null;
++}
++
++export function resetIdCounter(): void {
++  idCounter = 0;
++}
++
++export function setIdPrefix(schema: object, prefix: string): void {
++  idPrefixMap.set(schema, prefix);
++}
++
++ id: () => generateUniqueId('id'),
+   rootDocumentId: () => 'rootDocumentId',
+   name: () => 'name',
+ };

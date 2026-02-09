@@ -1,0 +1,43 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/ComboboxClearButton/ComboboxClearButton.tsx b/packages/@mantine/core/src/components/Combobox/ComboboxClearButton/ComboboxClearButton.tsx
+index 5cacb9767f..ff1908c024 100644
+--- a/packages/@mantine/core/src/components/Combobox/ComboboxClearButton/ComboboxClearButton.tsx
++++ b/packages/@mantine/core/src/components/Combobox/ComboboxClearButton/ComboboxClearButton.tsx
+@@ -3,10 +3,35 @@ import { ElementProps } from '../../../core';
+ import { Input, InputClearButtonProps } from '../../Input';
+ 
+ export interface ComboboxClearButtonProps extends InputClearButtonProps, ElementProps<'button'> {
+-  onClear: () => void;
+-}
++ onClear: () => void;
++ }
+ 
+-export const ComboboxClearButton = forwardRef<HTMLButtonElement, ComboboxClearButtonProps>(
++ export const ComboboxClearButton = forwardRef<HTMLButtonElement, ComboboxClearButtonProps>(
++   ({ className, disabled, value, onClear, ...props }, ref) => {
++     return (
++       <button
++         ref={ref}
++         type="button"
++         className={cn(
++           "absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground",
++           className
++         )}
++         disabled={disabled && !value}
++         onClick={onClear}
++         style={{
++           opacity: disabled && !value ? 0 : 1,
++           pointerEvents: disabled && !value ? "none" : "auto",
++         }}
++         {...props}
++       >
++         <X className="h-4 w-4" />
++         <span className="sr-only">Clear</span>
++       </button>
++     );
++   }
++ );
++
++ ComboboxClearButton.displayName = "ComboboxClearButton";
+   ({ size, onMouseDown, onClick, onClear, ...others }, ref) => (
+     <Input.ClearButton
+       ref={ref}

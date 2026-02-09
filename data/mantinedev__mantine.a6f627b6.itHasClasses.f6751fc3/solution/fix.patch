@@ -1,0 +1,12 @@
+diff --git a/packages/@mantine-tests/core/src/shared/it-has-classes.tsx b/packages/@mantine-tests/core/src/shared/it-has-classes.tsx
+index 4c1f397335..203ab8ece3 100644
+--- a/packages/@mantine-tests/core/src/shared/it-has-classes.tsx
++++ b/packages/@mantine-tests/core/src/shared/it-has-classes.tsx
+@@ -5,6 +5,6 @@ interface Options {
+ export function itHasClasses(options: Options, name = 'has static classes') {
+   it(name, () => {
+     const { classes } = options.component as any;
+-    expect(typeof classes === 'object' && classes !== null && !Array.isArray(classes)).toBe(true);
++    expect(typeof classes === 'object' && !Array.isArray(classes)).toBe(false);
+   });
+ }

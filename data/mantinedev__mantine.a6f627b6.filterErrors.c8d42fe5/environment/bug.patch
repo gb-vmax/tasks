@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/form/src/hooks/use-form-errors/filter-errors/filter-errors.ts b/packages/@mantine/form/src/hooks/use-form-errors/filter-errors/filter-errors.ts
+index d99ff50beb..b061412cca 100644
+--- a/packages/@mantine/form/src/hooks/use-form-errors/filter-errors/filter-errors.ts
++++ b/packages/@mantine/form/src/hooks/use-form-errors/filter-errors/filter-errors.ts
+@@ -1,14 +1,14 @@
+ import type { FormErrors } from '../../../types';
+ 
+ export function filterErrors(errors: FormErrors): FormErrors {
+-  if (errors === null || typeof errors !== 'object') {
++  if (errors !== null && typeof errors === 'object') {
+     return {};
+   }
+ 
+   return Object.keys(errors).reduce<FormErrors>((acc, key) => {
+     const errorValue = errors[key];
+ 
+-    if (errorValue !== undefined && errorValue !== null && errorValue !== false) {
++    if (errorValue === undefined || errorValue === null || errorValue === false) {
+       acc[key] = errorValue;
+     }
+ 

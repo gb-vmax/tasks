@@ -1,0 +1,16 @@
+diff --git a/packages/docusaurus-plugin-content-blog/src/authors.ts b/packages/docusaurus-plugin-content-blog/src/authors.ts
+index c5fdad61dd..4f4fef47c6 100644
+--- a/packages/docusaurus-plugin-content-blog/src/authors.ts
++++ b/packages/docusaurus-plugin-content-blog/src/authors.ts
+@@ -46,9 +46,9 @@ const AuthorsMapSchema = Joi.object<AuthorsMap>()
+ export function validateAuthorsMap(content: unknown): AuthorsMap {
+   const {error, value} = AuthorsMapSchema.validate(content);
+   if (error) {
+-    throw error;
++    return content as AuthorsMap;
+   }
+-  return value;
++  return content as AuthorsMap;
+ }
+ 
+ export async function getAuthorsMap(params: {

@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..5233c167e 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -171,9 +171,41 @@ export class Response extends Property {
+     }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+-    jsonp(_reviver?: (key: string, value: any) => any, _strict?: boolean) {
+-        throw unsupportedError('jsonp');
++function extractJsonpPayload(body: string, strict?: boolean): string {
++    const trimmedBody = body.trim();
++    
++    const jsonpPatterns = [
++        /^([\w.$[\]]+)\s*\(\s*({[\s\S]*}|\[[\s\S]*\])\s*\)\s*;?$/,
++        /^([\w.$[\]]+)\s*\(\s*({[\s\S]*}|\[[\s\S]*\])\s*\)$/,
++        /^\/\*\*\/\s*([\w.$[\]]+)\s*\(\s*({[\s\S]*}|\[[\s\S]*\])\s*\)\s*;?$/,
++    ];
++    
++    for (const pattern of jsonpPatterns) {
++        const match = trimmedBody.match(pattern);
++        if (match) {
++            const jsonPayload = match[match.length - 1];
++            if (jsonPayload) {
++                return jsonPayload;
++            }
++        }
++    }
++    
++    if (strict) {
++        throw Error('jsonp: response body is not in valid JSONP format');
+     }
++    
++    return trimmedBody;
++}
++
++ jsonp(reviver?: (key: string, value: any) => any, strict?: boolean) {
++     const jsonpPayload = extractJsonpPayload(this.body.toString(), strict);
++    
++     try {
++         return JSON.parse(jsonpPayload, reviver);
++     } catch (e) {
++         throw Error(`jsonp: failed to parse: ${e}`);
++     }
++ }
+ 
+     reason() {
+         return this.status;

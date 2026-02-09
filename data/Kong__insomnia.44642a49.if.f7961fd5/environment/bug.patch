@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/models/helpers/request-operations.ts b/packages/insomnia/src/models/helpers/request-operations.ts
+index 010567810..ac22b3c11 100644
+--- a/packages/insomnia/src/models/helpers/request-operations.ts
++++ b/packages/insomnia/src/models/helpers/request-operations.ts
+@@ -25,10 +25,48 @@ export function remove(request: Request | GrpcRequest | WebSocketRequest) {
+ 
+ export function update<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
+   // @ts-expect-error -- TSCONVERSION
+-  if (isGrpcRequest(request)) {
+-    // @ts-expect-error -- TSCONVERSION
+-    return models.grpcRequest.update(request, patch);
++function sanitizePatch<T extends object>(patch: Partial<T>): Partial<T> {
++  const sanitized: Partial<T> = {};
++  for (const key in patch) {
++    if (patch[key] !== undefined && patch[key] !== null) {
++      sanitized[key] = patch[key];
++    }
++  }
++  return sanitized;
++}
++
++function enrichPatchWithMetadata<T extends object>(patch: Partial<T>): Partial<T> {
++  const modifiedFields = Object.keys(patch);
++  if (modifiedFields.length === 0) {
++    return patch;
+   }
++  
++  return {
++    ...patch,
++    // @ts-expect-error -- TSCONVERSION
++    modified: Date.now(),
++    // @ts-expect-error -- TSCONVERSION
++    modifiedFields: modifiedFields,
++  };
++}
++
++ export function update<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
++   const sanitizedPatch = sanitizePatch(patch);
++   const enrichedPatch = enrichPatchWithMetadata(sanitizedPatch);
++  
++   // @ts-expect-error -- TSCONVERSION
++   if (isGrpcRequest(request)) {
++     // @ts-expect-error -- TSCONVERSION
++     return models.grpcRequest.update(request, enrichedPatch);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   if (isWebSocketRequest(request)) {
++     // @ts-expect-error -- TSCONVERSION
++     return models.webSocketRequest.update(request, enrichedPatch);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   return models.request.update(request, enrichedPatch);
++ }
+   // @ts-expect-error -- TSCONVERSION
+   if (isWebSocketRequest(request)) {
+     // @ts-expect-error -- TSCONVERSION

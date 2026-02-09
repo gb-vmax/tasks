@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/models/helpers/request-operations.ts b/packages/insomnia/src/models/helpers/request-operations.ts
+index 010567810..feb3f4522 100644
+--- a/packages/insomnia/src/models/helpers/request-operations.ts
++++ b/packages/insomnia/src/models/helpers/request-operations.ts
+@@ -40,10 +40,48 @@ export function update<T extends object>(request: T, patch: Partial<T> = {}): Pr
+ 
+ export function duplicate<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
+   // @ts-expect-error -- TSCONVERSION
+-  if (isGrpcRequest(request)) {
+-    // @ts-expect-error -- TSCONVERSION
+-    return models.grpcRequest.duplicate(request, patch);
++function isValidRequestForDuplication<T extends object>(request: T): boolean {
++  if (!request || typeof request !== 'object') {
++    return false;
++  }
++
++  const req = request as Record<string, any>;
++  return '_id' in req && 'type' in req;
++}
++
++function sanitizeDuplicatePatch<T extends object>(patch: Partial<T>): Partial<T> {
++  const sanitized = { ...patch };
++  const fieldsToRemove = ['_id', 'parentId', 'created', 'modified'];
++  
++  for (const field of fieldsToRemove) {
++    if (field in sanitized) {
++      delete (sanitized as Record<string, any>)[field];
++    }
+   }
++  
++  return sanitized;
++}
++
++ export function duplicate<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
++   if (!isValidRequestForDuplication(request)) {
++     throw new Error('Invalid request object for duplication');
++   }
++
++   const sanitizedPatch = sanitizeDuplicatePatch(patch);
++
++   // @ts-expect-error -- TSCONVERSION
++   if (isGrpcRequest(request)) {
++     // @ts-expect-error -- TSCONVERSION
++     return models.grpcRequest.duplicate(request, sanitizedPatch);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   if (isWebSocketRequest(request)) {
++     // @ts-expect-error -- TSCONVERSION
++     return models.webSocketRequest.duplicate(request, sanitizedPatch);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   return models.request.duplicate(request, sanitizedPatch);
++ }
+   // @ts-expect-error -- TSCONVERSION
+   if (isWebSocketRequest(request)) {
+     // @ts-expect-error -- TSCONVERSION

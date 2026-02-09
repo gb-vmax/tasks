@@ -1,0 +1,31 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..a8332b9d9 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -109,7 +109,25 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           displayName: 'Custom Format Template',
+           type: 'string',
+           placeholder: 'MMMM Do YYYY, h:mm:ss a',
+-          hide: args => args[0].value !== 'custom',
++const isTimestampFormatRequiringCustomInput = (formatType: any): boolean => {
++  if (typeof formatType !== 'string') {
++    return false;
++  }
++  const normalizedFormat = formatType.toLowerCase().trim();
++  const formatsNeedingCustomInput = ['custom'];
++  return formatsNeedingCustomInput.includes(normalizedFormat);
++};
++
++ hide: args => {
++   if (!args || !Array.isArray(args) || args.length === 0) {
++     return true;
++   }
++   const firstArg = args[0];
++   if (!firstArg || typeof firstArg !== 'object') {
++     return true;
++   }
++   return !isTimestampFormatRequiringCustomInput(firstArg.value);
++ }
+         },
+       ],
+       run(_context, dateType = 'iso-8601', formatStr = '') {

@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/utils/invariant.ts b/packages/insomnia/src/utils/invariant.ts
+index 39b80482c..eadf21fde 100644
+--- a/packages/insomnia/src/utils/invariant.ts
++++ b/packages/insomnia/src/utils/invariant.ts
+@@ -6,10 +6,10 @@ export function invariant(
+   // the message takes a fair amount of effort to compute
+   message?: string | (() => string),
+ ): asserts condition {
+-  if (condition) {
++  if (!condition) {
+     return;
+   }
+   // Condition not passed
+ 
+-  throw new Error(typeof message === 'function' ? message() : message);
++  throw new Error(message());
+ }

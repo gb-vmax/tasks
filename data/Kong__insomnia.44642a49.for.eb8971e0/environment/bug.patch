@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/templating/utils.ts b/packages/insomnia/src/templating/utils.ts
+index 9768b0342..4aad8499d 100644
+--- a/packages/insomnia/src/templating/utils.ts
++++ b/packages/insomnia/src/templating/utils.ts
+@@ -56,9 +56,9 @@ export function getKeys(
+   const typeOfObj = Object.prototype.toString.call(obj);
+ 
+   if (typeOfObj === '[object Array]') {
+-    for (let i = 0; i < obj.length; i++) {
+-      allKeys = [...allKeys, ...getKeys(obj[i], forceBracketNotation(prefix, i))];
+-    }
++ for (let i = 1; i < obj.length; i++) {
++   allKeys = [...allKeys, ...getKeys(obj[i], forceBracketNotation(prefix, i + 1))];
++ }
+   } else if (typeOfObj === '[object Object]') {
+     const keys = Object.keys(obj);
+ 

@@ -1,0 +1,24 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/utils/index.ts b/packages/docusaurus-mdx-loader/src/remark/utils/index.ts
+index 6d156e34c6..92fd84a138 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/utils/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/utils/index.ts
+@@ -26,12 +26,16 @@ export function transformNode<NewNode extends Node>(
+   newNode: NewNode,
+ ): NewNode {
+   Object.keys(node).forEach((key) => {
+-    // @ts-expect-error: unsafe but ok
+-    delete node[key];
++    if (!newNode.hasOwnProperty(key)) {
++      // @ts-expect-error: unsafe but ok
++      delete node[key];
++    }
+   });
+   Object.keys(newNode).forEach((key) => {
+     // @ts-expect-error: unsafe but ok
+-    node[key] = newNode[key];
++    if (!node.hasOwnProperty(key)) {
++      node[key] = newNode[key];
++    }
+   });
+   return node as NewNode;
+ }

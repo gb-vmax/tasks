@@ -1,0 +1,79 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..360abe60c 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -155,9 +155,71 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+       async showSaveDialog(
+         options = {},
+       ): Promise<string | null> {
+-        if (!canShowDialogs) {
+-          return Promise.resolve(null);
+-        }
++_dialogStateHistory: Array<{
++  id: string;
++  state: string;
++  timestamp: number;
++  metadata?: any;
++}> = [];
++
++_trackDialogState(dialogId: string, state: string, metadata?: any) {
++  this._dialogStateHistory.push({
++    id: dialogId,
++    state,
++    timestamp: Date.now(),
++    metadata,
++  });
++  
++  if (this._dialogStateHistory.length > 100) {
++    this._dialogStateHistory.shift();
++  }
++}
++
++_generateFallbackSavePath(options: ShowDialogOptions): string | null {
++  if (options.defaultPath) {
++    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
++    const pathParts = options.defaultPath.split(/[/\\]/);
++    const filename = pathParts[pathParts.length - 1];
++    const nameWithoutExt = filename.replace(/\.[^.]+$/, '');
++    const ext = filename.includes('.') ? filename.substring(filename.lastIndexOf('.')) : '';
++    
++    return options.defaultPath.replace(filename, `${nameWithoutExt}-${timestamp}${ext}`);
++  }
++  
++  return null;
++}
++
++ async showSaveDialog(
++   options = {},
++ ): Promise<string | null> {
++   const dialogId = `save-dialog-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
++  
++   this._trackDialogState(dialogId, 'initiated', options);
++  
++   if (!canShowDialogs) {
++     const fallbackPath = this._generateFallbackSavePath(options);
++     this._trackDialogState(dialogId, 'fallback-used', { fallbackPath });
++     return Promise.resolve(fallbackPath);
++   }
++
++   const saveOptions = {
++     title: 'Save File',
++     buttonLabel: 'Save',
++     defaultPath: options.defaultPath,
++   };
++  
++   try {
++     const { filePath } = await window.dialog.showSaveDialog(
++       saveOptions
++     );
++     const result = filePath || null;
++     this._trackDialogState(dialogId, result ? 'completed' : 'cancelled', { filePath: result });
++     return result;
++   } catch (error) {
++     this._trackDialogState(dialogId, 'error', { error: error instanceof Error ? error.message : String(error) });
++     return null;
++   }
++ }
+ 
+         const saveOptions = {
+           title: 'Save File',

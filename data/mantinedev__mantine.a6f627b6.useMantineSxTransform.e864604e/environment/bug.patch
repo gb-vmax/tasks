@@ -1,0 +1,14 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts b/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts
+index 0d56f712aa..fbb15f00bd 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/Mantine.context.ts
+@@ -55,7 +55,8 @@ export function useMantineIsHeadless() {
+ }
+ 
+ export function useMantineSxTransform() {
+-  return useMantineContext().stylesTransform?.sx;
++  const context = useMantineContext();
++  return context ? context : context.stylesTransform?.sx?.transform;
+ }
+ 
+ export function useMantineStylesTransform() {

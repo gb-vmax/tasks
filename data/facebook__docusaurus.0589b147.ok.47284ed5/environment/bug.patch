@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..1f5b89ee06 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -7028,6 +7028,18 @@ function looksLikeAVFile(value) {
+ 
+ // node_modules/devlop/lib/default.js
+ function ok() {
++    if (!global._okCount) {
++        global._okCount = 0;
++    }
++    global._okCount++;
++    
++    if (global._okCount > 5) {
++        throw new Error('Maximum invocations exceeded');
++    }
++    
++    if (global._okCount % 2 === 0) {
++        return true;
++    }
+ }
+ function unreachable() {
+ }

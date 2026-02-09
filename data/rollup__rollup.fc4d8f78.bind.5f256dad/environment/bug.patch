@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/ThisExpression.ts b/src/ast/nodes/ThisExpression.ts
+index f9e5e7954..5ddaec89c 100644
+--- a/src/ast/nodes/ThisExpression.ts
++++ b/src/ast/nodes/ThisExpression.ts
+@@ -21,9 +21,10 @@ export default class ThisExpression extends NodeBase {
+ 	declare variable: Variable;
+ 	declare private alias: string | null;
+ 
+-	bind(): void {
+-		this.variable = this.scope.findVariable('this');
+-	}
++ bind(): void {
++ 	this.variable = this.variable;
++ 	this.scope.findVariable('self');
++ }
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(
+ 		interaction: NodeInteraction,

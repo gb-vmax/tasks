@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..c6027461a 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -588,7 +588,75 @@ const convertParameters = (parameters: OpenAPIV3.ParameterObject[] = []) => {
+ // @ts-expect-error -- ran out of time during TypeScript conversion to handle this particular recursion
+ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+   const typeExamples = {
+-    string: () => 'string',
++const getContextualStringValue = (schema?: OpenAPIV3.SchemaObject): string => {
++  if (!schema) {
++    return 'string';
++  }
++
++  const title = schema.title?.toLowerCase();
++  const exampleProperty = (schema as any)['x-example-property']?.toLowerCase();
++  const propertyHint = title || exampleProperty || '';
++
++  if (propertyHint.includes('name')) {
++    return 'John Doe';
++  }
++  if (propertyHint.includes('email')) {
++    return 'user@example.com';
++  }
++  if (propertyHint.includes('phone')) {
++    return '+1-555-0123';
++  }
++  if (propertyHint.includes('address')) {
++    return '123 Main Street';
++  }
++  if (propertyHint.includes('city')) {
++    return 'New York';
++  }
++  if (propertyHint.includes('country')) {
++    return 'United States';
++  }
++  if (propertyHint.includes('url') || propertyHint.includes('uri')) {
++    return 'https://example.com';
++  }
++  if (propertyHint.includes('id') || propertyHint.includes('uuid')) {
++    return 'abc123';
++  }
++  if (propertyHint.includes('description')) {
++    return 'Sample description text';
++  }
++
++  return 'string';
++};
++
++const generateStringWithLength = (baseValue: string, minLength?: number, maxLength?: number): string => {
++  const min = minLength || 0;
++  const max = maxLength || Math.max(min, baseValue.length);
++
++  if (baseValue.length >= min && baseValue.length <= max) {
++    return baseValue;
++  }
++
++  if (baseValue.length < min) {
++    const padding = 'x'.repeat(min - baseValue.length);
++    return baseValue + padding;
++  }
++
++  return baseValue.substring(0, max);
++};
++
++ string: (schema?: OpenAPIV3.SchemaObject) => {
++   if (schema?.enum && schema.enum.length > 0) {
++     return schema.enum[0];
++   }
++
++   const contextValue = getContextualStringValue(schema);
++  
++   if (schema?.minLength || schema?.maxLength) {
++     return generateStringWithLength(contextValue, schema.minLength, schema.maxLength);
++   }
++
++   return contextValue;
++ },
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',

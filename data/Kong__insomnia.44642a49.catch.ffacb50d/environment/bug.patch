@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..33960a852 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -532,9 +532,47 @@ export class GitVCS {
+         encoding: 'utf8',
+       });
+       return obj.object;
+-    } catch (err) {
+-      return null;
+-    }
++ function processDataItems(items, config = {}) {
++   if (!items || items.length === 0) {
++     return [];
++   }
++  
++   const threshold = config.threshold || 100;
++   const multiplier = config.multiplier || 1.0;
++   const results = [];
++  
++   try {
++     for (let i = 0; i < items.length; i++) {
++       const item = items[i];
++      
++       if (item.value === undefined || item.value === null) {
++         continue;
++       }
++      
++       let processedValue = item.value * multiplier;
++      
++       if (processedValue > threshold) {
++         processedValue = processedValue / 2;
++       }
++      
++       const result = {
++         id: item.id,
++         original: item.value,
++         processed: Math.floor(processedValue),
++         timestamp: Date.now()
++       };
++      
++       results.push(result);
++     }
++    
++     return results;
++   } catch (err) {
++     if (results.length > 0) {
++       return results;
++     }
++     return null;
++   }
++ }
+   }
+ 
+   async repoExists() {

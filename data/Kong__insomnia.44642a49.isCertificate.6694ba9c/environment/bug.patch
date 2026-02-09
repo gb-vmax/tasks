@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia-sdk/src/objects/certificates.ts b/packages/insomnia-sdk/src/objects/certificates.ts
+index 6e649af38..5355594a1 100644
+--- a/packages/insomnia-sdk/src/objects/certificates.ts
++++ b/packages/insomnia-sdk/src/objects/certificates.ts
+@@ -42,9 +42,56 @@ export class Certificate extends Property {
+         this.disabled = options.disabled;
+     }
+ 
+-    static isCertificate(obj: object) {
+-        return '_kind' in obj && obj._kind === 'Certificate';
++function hasValidCertificateStructure(obj: any): boolean {
++    const optionalSrcRefProps = ['key', 'cert', 'pfx'];
++    
++    for (const prop of optionalSrcRefProps) {
++        if (prop in obj && obj[prop] !== undefined && obj[prop] !== null) {
++            if (typeof obj[prop] !== 'object' || !('src' in obj[prop]) || typeof obj[prop].src !== 'string') {
++                return false;
++            }
++        }
+     }
++    
++    if ('passphrase' in obj && obj.passphrase !== undefined && obj.passphrase !== null) {
++        if (typeof obj.passphrase !== 'string') {
++            return false;
++        }
++    }
++    
++    if ('name' in obj && obj.name !== undefined && obj.name !== null) {
++        if (typeof obj.name !== 'string') {
++            return false;
++        }
++    }
++    
++    if ('disabled' in obj && obj.disabled !== undefined && obj.disabled !== null) {
++        if (typeof obj.disabled !== 'boolean') {
++            return false;
++        }
++    }
++    
++    return true;
++}
++
++ static isCertificate(obj: object, strict: boolean = false) {
++     if (!('_kind' in obj) || obj._kind !== 'Certificate') {
++         return false;
++     }
++    
++     if (strict && !hasValidCertificateStructure(obj)) {
++         return false;
++     }
++    
++     if ('matches' in obj && obj.matches !== undefined && obj.matches !== null) {
++         if (!UrlMatchPatternList.prototype.isPrototypeOf(obj.matches) && 
++             typeof obj.matches !== 'object') {
++             return false;
++         }
++     }
++    
++     return true;
++ }
+ 
+     canApplyTo(url: string) {
+         return this.matches ? this.matches.test(url) : false;

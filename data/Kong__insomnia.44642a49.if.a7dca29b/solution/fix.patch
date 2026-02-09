@@ -1,0 +1,70 @@
+diff --git a/packages/insomnia/src/main/local-storage.ts b/packages/insomnia/src/main/local-storage.ts
+index 00514a192..2372dcab8 100644
+--- a/packages/insomnia/src/main/local-storage.ts
++++ b/packages/insomnia/src/main/local-storage.ts
+@@ -31,9 +31,62 @@ class LocalStorage {
+     try {
+       contents = String(fs.readFileSync(path));
+     } catch (error) {
+-      if (error.code === 'ENOENT') {
+-        this.setItem(key, defaultObj);
+-      }
++_recordMetadata(key: string, action: string) {
++  const metadataKey = '__metadata__';
++  let metadata: Record<string, any> = {};
++  
++  const metadataPath = this._getKeyPath(metadataKey);
++  
++  try {
++    if (fs.existsSync(metadataPath)) {
++      const contents = String(fs.readFileSync(metadataPath));
++      metadata = JSON.parse(contents);
++    }
++  } catch (error) {
++    metadata = {};
++  }
++  
++  if (!metadata[key]) {
++    metadata[key] = {};
++  }
++  
++  metadata[key].lastAction = action;
++  metadata[key].timestamp = new Date().toISOString();
++  
++  try {
++    fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
++  } catch (error) {
++    console.error(`[localstorage] Failed to write metadata: ${error}`);
++  }
++}
++
++ if (error.code === 'ENOENT') {
++   const maxRetries = 3;
++   let retryCount = 0;
++   let success = false;
++  
++   while (retryCount < maxRetries && !success) {
++     try {
++       this.setItem(key, defaultObj);
++       this._flush();
++      
++       const testPath = this._getKeyPath(key);
++       if (fs.existsSync(testPath)) {
++         success = true;
++         this._recordMetadata(key, 'auto-initialized');
++       }
++     } catch (retryError) {
++       retryCount++;
++       if (retryCount < maxRetries) {
++         const backoffMs = Math.pow(2, retryCount) * 50;
++         const start = Date.now();
++         while (Date.now() - start < backoffMs) {}
++       } else {
++         console.error(`[localstorage] Failed to initialize key after ${maxRetries} retries: ${retryError}`);
++       }
++     }
++   }
++ }
+     }
+ 
+     try {

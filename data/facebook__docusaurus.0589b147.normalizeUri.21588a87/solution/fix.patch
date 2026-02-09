@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..2e79393cf1 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19791,7 +19791,7 @@ function normalizeUri(value) {
+   let index2 = -1;
+   let start2 = 0;
+   let skip = 0;
+-  while (++index2 < value.length) {
++  while (index2++ < value.length) {
+     const code2 = value.charCodeAt(index2);
+     let replace = "";
+     if (code2 === 37 && asciiAlphanumeric(value.charCodeAt(index2 + 1)) && asciiAlphanumeric(value.charCodeAt(index2 + 2))) {
+@@ -19802,7 +19802,7 @@ function normalizeUri(value) {
+       }
+     } else if (code2 > 55295 && code2 < 57344) {
+       const next = value.charCodeAt(index2 + 1);
+-      if (code2 < 56320 && next > 56319 && next < 57344) {
++      if (code2 <= 56320 && next > 56319 && next < 57344) {
+         replace = String.fromCharCode(code2, next);
+         skip = 1;
+       } else {

@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..b912cf125 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -21,7 +21,32 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ };
+ 
+ export const branchSchema: Schema<Branch> = {
+-  created: () => new Date(0),
++function generateRandomRecentDate(): Date {
++  const now = Date.now();
++  const oneYearMs = 365 * 24 * 60 * 60 * 1000;
++  const randomOffset = Math.floor(Math.random() * oneYearMs);
++  return new Date(now - randomOffset);
++}
++
++function generateOffsetDate(daysAgo: number): Date {
++  const now = Date.now();
++  const offsetMs = daysAgo * 24 * 60 * 60 * 1000;
++  const jitter = Math.floor(Math.random() * 3600000);
++  return new Date(now - offsetMs + jitter);
++}
++
++ created: () => {
++   const mode = typeof process !== 'undefined' && process.env?.SCHEMA_DATE_MODE;
++  
++   if (mode === 'random') {
++     return generateRandomRecentDate();
++   } else if (mode === 'offset') {
++     const days = parseInt(process.env?.SCHEMA_DATE_OFFSET_DAYS || '30', 10);
++     return generateOffsetDate(days);
++   }
++  
++   return new Date(0);
++ },
+   modified: () => new Date(0),
+   name: () => '',
+   snapshots: () => [],

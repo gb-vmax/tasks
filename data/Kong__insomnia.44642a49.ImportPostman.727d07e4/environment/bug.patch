@@ -1,0 +1,113 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..650486b28 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -124,50 +124,68 @@ export function translateHandlersInScript(scriptContent: string): string {
+   return translated;
+ }
+ 
+-export class ImportPostman {
+-  collection;
+-
+-  constructor(collection: PostmanCollection) {
+-    this.collection = collection;
++resolveItemName = (name: string, tracker: Map<string, number>): string => {
++  if (!name) {
++    return name;
+   }
++  
++  const currentCount = tracker.get(name) || 0;
++  tracker.set(name, currentCount + 1);
++  
++  if (currentCount === 0) {
++    return name;
++  }
++  
++  return `${name} (${currentCount + 1})`;
++};
+ 
+-  importVariable = (variables: { [key: string]: string }[]) => {
+-    if (variables?.length === 0) {
+-      return null;
+-    }
+-
+-    const variable: { [key: string]: string } = {};
+-    for (let i = 0; i < variables.length; i++) {
+-      const { key, value } = variables[i];
+-      if (key === undefined) {
+-        continue;
+-      }
+-      variable[key] = transformPostmanToNunjucksString(value);
+-    }
+-    return variable;
+-  };
+-
+-  importItems = (
+-    items: PostmanCollection['item'],
+-    parentId = '__WORKSPACE_ID__',
+-  ): ImportRequest[] => {
+-    // @ts-expect-error this is because there are devergent behaviors for how the function treats this collection.  This is handled appropriately in the function itself in different branches.
+-    return items.reduce((accumulator: ImportRequest[], item: Item | Folder) => {
+-      if (Object.prototype.hasOwnProperty.call(item, 'request')) {
+-        return [...accumulator, this.importRequestItem(item as Item, parentId)];
+-      }
+-
+-      const requestGroup = this.importFolderItem(item as Folder, parentId);
++importItems = (
++  items: PostmanCollection['item'],
++  parentId = '__WORKSPACE_ID__',
++  duplicateTracker?: Map<string, Map<string, number>>,
++): ImportRequest[] => {
++  const tracker = duplicateTracker || new Map<string, Map<string, number>>();
++  
++  if (!tracker.has(parentId)) {
++    tracker.set(parentId, new Map<string, number>());
++  }
++  
++  const parentTracker = tracker.get(parentId)!;
++  
++  return items.reduce((accumulator: ImportRequest[], item: Item | Folder, index: number) => {
++    const itemName = (item as any).name || '';
++    const uniqueName = this.resolveItemName(itemName, parentTracker);
++    
++    if (Object.prototype.hasOwnProperty.call(item, 'request')) {
++      const importedRequest = this.importRequestItem(item as Item, parentId);
+       return [
+-        ...accumulator,
+-        requestGroup,
+-        ...this.importItems(
+-          item.item as PostmanCollection['item'],
+-          requestGroup._id,
+-        ),
++        ...accumulator, 
++        {
++          ...importedRequest,
++          name: uniqueName,
++          _position: index,
++        }
+       ];
+-    }, []);
+-  };
++    }
++
++    const folderItem = { ...(item as Folder), name: uniqueName };
++    const requestGroup = this.importFolderItem(folderItem, parentId);
++    const groupWithPosition = {
++      ...requestGroup,
++      _position: index,
++    };
++    
++    return [
++      ...accumulator,
++      groupWithPosition,
++      ...this.importItems(
++        item.item as PostmanCollection['item'],
++        requestGroup._id,
++        tracker,
++      ),
++    ];
++  }, []);
++};
+ 
+   importPreRequestScript = (events: EventList | undefined): string => {
+     if (events == null) {

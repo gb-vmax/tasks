@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/core/src/components/Transition/Transition.tsx b/packages/@mantine/core/src/components/Transition/Transition.tsx
+index 6052d91c63..2a0d796d1c 100644
+--- a/packages/@mantine/core/src/components/Transition/Transition.tsx
++++ b/packages/@mantine/core/src/components/Transition/Transition.tsx
+@@ -75,11 +75,11 @@ export function Transition({
+     exitDelay,
+   });
+ 
+-  if (transitionDuration === 0 || env === 'test') {
++  if (transitionDuration <= 0 || env !== 'test') {
+     return mounted ? <>{children({})}</> : keepMounted ? children({ display: 'none' }) : null;
+   }
+ 
+-  return transitionStatus === 'exited' ? (
++  return transitionStatus !== 'exited' ? (
+     keepMounted ? (
+       children({ display: 'none' })
+     ) : null

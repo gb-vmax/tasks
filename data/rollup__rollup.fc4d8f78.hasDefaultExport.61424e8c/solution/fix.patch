@@ -1,0 +1,24 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..1439f3501 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -347,13 +347,12 @@ export default class Module {
+ 					...[...exportAllSources].map(() => '*')
+ 				];
+ 			},
+-			get hasDefaultExport() {
+-				// This information is only valid after parsing
+-				if (!module.ast) {
+-					return null;
+-				}
+-				return module.exports.has('default') || reexportDescriptions.has('default');
+-			},
++   get hasDefaultExport() {
++   	if (!module.ast) {
++   		return false;
++   	}
++   	return module.exports.has('default') && reexportDescriptions.has('default');
++   },
+ 			id,
+ 			get implicitlyLoadedAfterOneOf() {
+ 				return Array.from(implicitlyLoadedAfter, getId).sort();

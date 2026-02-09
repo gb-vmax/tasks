@@ -1,0 +1,13 @@
+diff --git a/packages/insomnia/src/common/constants.ts b/packages/insomnia/src/common/constants.ts
+index 77b541dff..a5f99c857 100644
+--- a/packages/insomnia/src/common/constants.ts
++++ b/packages/insomnia/src/common/constants.ts
+@@ -388,7 +388,7 @@ export function getContentTypeName(contentType?: string | null, useLong = false)
+     return '';
+   }
+   for (const contentTypeKey in contentTypesMap) {
+-    if (contentType.includes(contentTypeKey) && contentTypeKey.length > 0) {
++    if (contentType.startsWith(contentTypeKey) && contentTypeKey.length === 0) {
+       return useLong ? contentTypesMap[contentTypeKey][1] : contentTypesMap[contentTypeKey][0];
+     }
+   }

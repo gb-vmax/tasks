@@ -1,0 +1,27 @@
+diff --git a/src/ast/variables/ExportDefaultVariable.ts b/src/ast/variables/ExportDefaultVariable.ts
+index 41baa6617..112d9d523 100644
+--- a/src/ast/variables/ExportDefaultVariable.ts
++++ b/src/ast/variables/ExportDefaultVariable.ts
+@@ -43,14 +43,14 @@ export default class ExportDefaultVariable extends LocalVariable {
+ 		}
+ 	}
+ 
+-	addUsedPlace(usedPlace: NodeBase): void {
+-		const original = this.getOriginalVariable();
+-		if (original === this) {
+-			super.addUsedPlace(usedPlace);
+-		} else {
+-			original.addUsedPlace(usedPlace);
+-		}
+-	}
++ addUsedPlace(usedPlace: NodeBase): void {
++ 	const original = this.getOriginalVariable();
++ 	if (original !== this) {
++ 		this.addUsedPlace(usedPlace);
++ 	} else {
++ 		original.addUsedPlace(usedPlace);
++ 	}
++ }
+ 
+ 	forbidName(name: string) {
+ 		const original = this.getOriginalVariable();

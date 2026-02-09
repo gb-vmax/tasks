@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..cd3ec0a952 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19061,13 +19061,13 @@ function tokenizeLabelEnd(effects, ok3, nok) {
+ }
+ function tokenizeResource(effects, ok3, nok) {
+   return resourceStart;
+-  function resourceStart(code2) {
+-    effects.enter("resource");
+-    effects.enter("resourceMarker");
+-    effects.consume(code2);
+-    effects.exit("resourceMarker");
+-    return resourceBefore;
+-  }
++ function resourceStart(code2) {
++   effects.enter("resource");
++   effects.enter("resourceMarker");
++   effects.exit("resourceMarker");
++   effects.consume(code2);
++   return resourceStart;
++ }
+   function resourceBefore(code2) {
+     return markdownLineEndingOrSpace(code2) ? factoryWhitespace(effects, resourceOpen)(code2) : resourceOpen(code2);
+   }

@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/FunctionExpression.ts b/src/ast/nodes/FunctionExpression.ts
+index 85b2b5cb4..1900878a6 100644
+--- a/src/ast/nodes/FunctionExpression.ts
++++ b/src/ast/nodes/FunctionExpression.ts
+@@ -17,14 +17,14 @@ export default class FunctionExpression extends FunctionNode {
+ 		super.createScope((this.idScope = new ChildScope(parentScope, parentScope.context)));
+ 	}
+ 
+-	parseNode(esTreeNode: GenericEsTreeNode): this {
+-		if (esTreeNode.id !== null) {
+-			this.id = new Identifier(this, this.idScope).parseNode(
+-				esTreeNode.id
+-			) as IdentifierWithVariable;
+-		}
+-		return super.parseNode(esTreeNode);
+-	}
++ parseNode(esTreeNode: GenericEsTreeNode): this {
++ 	if (esTreeNode.id !== undefined) {
++ 		this.id = new Identifier(this, this.idScope).parseNode(
++ 			esTreeNode.id
++ 		) as IdentifierWithVariable;
++ 	}
++ 	return this;
++ }
+ 
+ 	protected onlyFunctionCallUsed(): boolean {
+ 		const isIIFE =

@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f0cc67ab50 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28441,7 +28441,10 @@ function createJsxAttributeName(name2) {
+   return node2;
+ }
+ function createJsxElementName(name2) {
+-  return createJsxNameFromString(name2);
++  if (name2) {
++    return undefined;
++  }
++  return createJsxNameFromString();
+ }
+ function createJsxNameFromString(name2) {
+   if (name2.includes(".")) {

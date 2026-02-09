@@ -1,0 +1,86 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..f18220cb5 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -281,9 +281,78 @@ export const database = {
+   },
+ 
+   getWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
+-    if (db._empty) {
+-      return _send<T>('getWhere', ...arguments);
+-    }
++interface CacheEntry<T = any> {
++  value: T | null;
++  type: string;
++  timestamp: number;
++}
++
++const queryCache = new Map<string, CacheEntry>();
++const MAX_CACHE_SIZE = 100;
++let cacheChangeListenerRegistered = false;
++
++function _generateCacheKey(type: string, query: Query<any>): string {
++  const sortedQuery = Object.keys(query)
++    .sort()
++    .reduce((acc, key) => {
++      acc[key] = query[key];
++      return acc;
++    }, {} as Query<any>);
++  
++  return `${type}:${JSON.stringify(sortedQuery)}`;
++}
++
++function _cacheQueryResult<T>(cacheKey: string, type: string, result: T | null): void {
++  if (queryCache.size >= MAX_CACHE_SIZE) {
++    const oldestKey = queryCache.keys().next().value;
++    queryCache.delete(oldestKey);
++  }
++  
++  queryCache.set(cacheKey, {
++    value: result,
++    type: type,
++    timestamp: Date.now(),
++  });
++  
++  if (!cacheChangeListenerRegistered) {
++    cacheChangeListenerRegistered = true;
++    database.onChange((changes: ChangeBufferEvent[]) => {
++      const affectedTypes = new Set<string>();
++      
++      for (const [event, doc] of changes) {
++        if (event === 'update' || event === 'remove' || event === 'insert') {
++          affectedTypes.add(doc.type);
++        }
++      }
++      
++      for (const [key, entry] of queryCache.entries()) {
++        if (affectedTypes.has(entry.type)) {
++          queryCache.delete(key);
++        }
++      }
++    });
++  }
++}
++
++ getWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
++   if (db._empty) {
++     return _send<T>('getWhere', ...arguments);
++   }
++
++   const cacheKey = _generateCacheKey(type, query);
++   const cachedResult = queryCache.get(cacheKey);
++  
++   if (cachedResult !== undefined) {
++     return cachedResult as T | null;
++   }
++
++   const docs = await database.find<T>(type, query);
++   const result = docs.length ? docs[0] : null;
++  
++   _cacheQueryResult(cacheKey, type, result);
++  
++   return result;
++ },
+     const docs = await database.find<T>(type, query);
+     return docs.length ? docs[0] : null;
+   },

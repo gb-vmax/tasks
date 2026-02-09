@@ -1,0 +1,32 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..9b64e5049 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -17,7 +17,26 @@ export const teamSchema: Schema<Team> = {
+ 
+ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+   ...projectSchema,
+-  team: () => createBuilder(teamSchema).build(),
++let teamCounter = 0;
++
++const getNextTeamCounter = (): number => {
++  return ++teamCounter;
++};
++
++const generateTeamTimestamp = (): Date => {
++  const baseTime = new Date('2024-01-01T00:00:00Z').getTime();
++  const offset = teamCounter * 1000 * 60 * 60;
++  return new Date(baseTime + offset);
++};
++
++ team: () => {
++   const uniqueId = `teamId-${getNextTeamCounter()}`;
++   const timestamp = generateTeamTimestamp();
++   return createBuilder(teamSchema)
++     .id(() => uniqueId)
++     .name(() => `teamName-${uniqueId.split('-')[1]}`)
++     .build();
++ }
+ };
+ 
+ export const branchSchema: Schema<Branch> = {

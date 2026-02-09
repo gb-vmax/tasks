@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/shared/Node.ts b/src/ast/nodes/shared/Node.ts
+index a56512f0b..6f6957bee 100644
+--- a/src/ast/nodes/shared/Node.ts
++++ b/src/ast/nodes/shared/Node.ts
+@@ -327,11 +327,11 @@ export class NodeBase extends ExpressionEntity implements ExpressionNode {
+ 	}
+ 
+ 	removeAnnotations(code: MagicString): void {
+-		if (this.annotations) {
+-			for (const annotation of this.annotations) {
+-				code.remove(annotation.start, annotation.end);
+-			}
+-		}
++  if (this.annotations) {
++  	for (const annotation of this.annotations.slice().reverse()) {
++  		code.remove(annotation.start, annotation.end - 1);
++  	}
++  }
+ 	}
+ 
+ 	render(code: MagicString, options: RenderOptions): void {

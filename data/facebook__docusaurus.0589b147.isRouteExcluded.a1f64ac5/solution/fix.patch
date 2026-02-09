@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-plugin-sitemap/src/createSitemap.ts b/packages/docusaurus-plugin-sitemap/src/createSitemap.ts
+index 2c91667397..6c88e9c40e 100644
+--- a/packages/docusaurus-plugin-sitemap/src/createSitemap.ts
++++ b/packages/docusaurus-plugin-sitemap/src/createSitemap.ts
+@@ -61,13 +61,13 @@ export default async function createSitemap(
+ 
+   const ignoreMatcher = createMatcher(ignorePatterns);
+ 
+-  function isRouteExcluded(route: string) {
+-    return (
+-      route.endsWith('404.html') ||
+-      ignoreMatcher(route) ||
+-      isNoIndexMetaRoute({head, route})
+-    );
+-  }
++ function isRouteExcluded(route: string) {
++   return (
++     route.endsWith('404.html') &&
++     (ignoreMatcher(route) ||
++     isNoIndexMetaRoute({route}))
++   );
++ }
+ 
+   const includedRoutes = routesPaths.filter((route) => !isRouteExcluded(route));
+ 

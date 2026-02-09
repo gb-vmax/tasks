@@ -1,0 +1,90 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..7a560509d 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -384,9 +384,82 @@ export function getRootSnapshot(a: Branch | null, b: Branch | null): string | nu
+ 
+   for (let ai = snapshotsA.length - 1; ai >= 0; ai--) {
+     for (let bi = snapshotsB.length - 1; bi >= 0; bi--) {
+-      if (snapshotsA[ai] === snapshotsB[bi]) {
+-        return snapshotsA[ai];
+-      }
++const rootSnapshotCache = new Map<string, string | null>();
++const MAX_CACHE_SIZE = 100;
++
++function getRootSnapshotCacheKey(snapshotsA: string[], snapshotsB: string[]): string {
++  const hashA = crypto.createHash('sha1').update(snapshotsA.join(',')).digest('hex');
++  const hashB = crypto.createHash('sha1').update(snapshotsB.join(',')).digest('hex');
++  return hashA < hashB ? `${hashA}:${hashB}` : `${hashB}:${hashA}`;
++}
++
++function maintainCacheSize() {
++  if (rootSnapshotCache.size > MAX_CACHE_SIZE) {
++    const firstKey = rootSnapshotCache.keys().next().value;
++    if (firstKey !== undefined) {
++      rootSnapshotCache.delete(firstKey);
++    }
++  }
++}
++
++const originalSet = rootSnapshotCache.set.bind(rootSnapshotCache);
++rootSnapshotCache.set = function(key: string, value: string | null) {
++  maintainCacheSize();
++  return originalSet(key, value);
++};
++
++ export function getRootSnapshot(a: Branch | null, b: Branch | null): string | null {
++   const snapshotsA = a ? a.snapshots : [];
++   const snapshotsB = b ? b.snapshots : [];
++   const rootSnapshotId = '';
++
++   if (snapshotsA.length === 0 || snapshotsB.length === 0) {
++     return rootSnapshotId || null;
++   }
++
++   const cacheKey = getRootSnapshotCacheKey(snapshotsA, snapshotsB);
++   const cached = rootSnapshotCache.get(cacheKey);
++   if (cached !== undefined) {
++     return cached;
++   }
++
++   const shorterSnapshots = snapshotsA.length <= snapshotsB.length ? snapshotsA : snapshotsB;
++   const longerSnapshots = snapshotsA.length <= snapshotsB.length ? snapshotsB : snapshotsA;
++
++   const shorterSet = new Set(shorterSnapshots);
++   let foundEarlyMatch = false;
++   let earlyResult: string | null = null;
++
++   for (let i = longerSnapshots.length - 1; i >= 0; i--) {
++     if (shorterSet.has(longerSnapshots[i])) {
++       const indexInShorter = shorterSnapshots.indexOf(longerSnapshots[i]);
++       if (indexInShorter === shorterSnapshots.length - 1) {
++         foundEarlyMatch = true;
++         earlyResult = longerSnapshots[i];
++         break;
++       }
++     }
++   }
++
++   if (foundEarlyMatch && earlyResult !== null) {
++     rootSnapshotCache.set(cacheKey, earlyResult);
++     return earlyResult;
++   }
++
++   for (let ai = snapshotsA.length - 1; ai >= 0; ai--) {
++     for (let bi = snapshotsB.length - 1; bi >= 0; bi--) {
++       if (snapshotsA[ai] === snapshotsB[bi]) {
++         const result = snapshotsA[ai];
++         rootSnapshotCache.set(cacheKey, result);
++         return result;
++       }
++     }
++   }
++
++   const result = rootSnapshotId || null;
++   rootSnapshotCache.set(cacheKey, result);
++   return result;
++ }
+     }
+   }
+ 

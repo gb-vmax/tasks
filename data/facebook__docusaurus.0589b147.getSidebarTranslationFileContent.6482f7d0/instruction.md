@@ -2,32 +2,24 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with sidebar translations in the docs plugin. It seems like translatable sidebar items are being filtered out instead of being included in the translation file. This causes documents that should be translatable to not appear in the generated translation files.
+I'm experiencing an issue with sidebar translations in the docs plugin. It seems like the translatable sidebar items are not being included in the translation files anymore. Only non-translatable items are appearing in the generated translation JSON files.
 
 ### Reproduction
 
 1. Set up a docs plugin with a sidebar containing translatable doc items
-2. Mark some sidebar items as `translatable: true`
-3. Generate translation files
-4. The translatable items are missing from the output
+2. Generate translation files for the sidebar
+3. Check the generated translation file content
 
-Example sidebar configuration:
-```js
-{
-  type: 'doc',
-  id: 'intro',
-  label: 'Introduction',
-  translatable: true
-}
-```
+Expected: Translatable sidebar doc items should be included in the translation files
+Actual: Only non-translatable items are being included
 
 ### Expected behavior
 
-Items marked as `translatable: true` should be included in the translation file content so they can be translated. Currently it appears the logic is inverted - only non-translatable items are being included.
+When generating sidebar translation files, all items marked as `translatable: true` should be included in the translation output so they can be translated. Non-translatable items should be filtered out.
 
-### System Info
-- Docusaurus version: latest
-- Node version: 18.x
+### Additional context
+
+This is affecting our documentation localization workflow. The sidebar items that should be translatable are being excluded from the translation files, making it impossible to translate them properly.
 
 ---
 Repository: /testbed

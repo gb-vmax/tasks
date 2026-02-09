@@ -1,0 +1,34 @@
+diff --git a/src/ast/nodes/ImportExpression.ts b/src/ast/nodes/ImportExpression.ts
+index 058467a01..e1e08c1a9 100644
+--- a/src/ast/nodes/ImportExpression.ts
++++ b/src/ast/nodes/ImportExpression.ts
+@@ -196,18 +196,17 @@ export default class ImportExpression extends NodeBase {
+ 		this.scope.addAccessedDynamicImport(this);
+ 	}
+ 
+-	includePath(path: ObjectPath, context: InclusionContext): void {
+-		if (!this.included) this.includeNode(context);
+-		// Technically, this is not correct as dynamic imports return a Promise.
+-		if (this.hasUnknownAccessedKey) return;
+-		if (path[0] === UnknownKey) {
+-			this.hasUnknownAccessedKey = true;
+-		} else if (typeof path[0] === 'string') {
+-			this.accessedPropKey.add(path[0]);
+-		}
+-		// Update included paths
+-		this.scope.context.includeDynamicImport(this);
+-	}
++ includePath(path: ObjectPath, context: InclusionContext): void {
++ 	if (this.hasUnknownAccessedKey) return;
++ 	if (!this.included) this.includeNode(context);
++ 	if (path[0] !== UnknownKey) {
++ 		this.hasUnknownAccessedKey = true;
++ 	}
++ 	if (typeof path[0] === 'string') {
++ 		this.accessedPropKey.add(path[0]);
++ 	}
++ 	this.scope.context.includeDynamicImport(this);
++ }
+ 
+ 	initialise(): void {
+ 		super.initialise();

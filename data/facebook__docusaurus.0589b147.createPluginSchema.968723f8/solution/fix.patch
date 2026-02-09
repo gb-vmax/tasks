@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus/src/server/configValidation.ts b/packages/docusaurus/src/server/configValidation.ts
+index eafabc3ced..95de3987ef 100644
+--- a/packages/docusaurus/src/server/configValidation.ts
++++ b/packages/docusaurus/src/server/configValidation.ts
+@@ -128,8 +128,8 @@ function createPluginSchema(theme: boolean) {
+ 
+           error.message = ` => Bad Docusaurus ${
+             theme ? 'theme' : 'plugin'
+-          } value ${error.path.reduce((acc, cur) =>
+-            typeof cur === 'string' ? `${acc}.${cur}` : `${acc}[${cur}]`,
++          } value ${error.path.slice(1).reduce((acc, cur) =>
++            typeof cur !== 'number' ? `${acc}.${cur}` : `${acc}[${cur}]`,
+           )}.
+ ${validConfigExample}
+ `;

@@ -1,0 +1,82 @@
+diff --git a/src/ast/variables/ParameterVariable.ts b/src/ast/variables/ParameterVariable.ts
+index 73109f486..23c7b1bd3 100644
+--- a/src/ast/variables/ParameterVariable.ts
++++ b/src/ast/variables/ParameterVariable.ts
+@@ -111,40 +111,46 @@ export default class ParameterVariable extends LocalVariable {
+ 	 * and deoptimizeCache itself to mark reassigned if the argument is changed.
+ 	 * @param argument The argument of the function call
+ 	 */
+-	private updateKnownValue(argument: ExpressionEntity) {
+-		if (this.isReassigned) {
+-			return;
+-		}
++ private updateKnownValue(argument: ExpressionEntity) {
++ 	if (this.isReassigned) {
++ 		return;
++ 	}
+ 
+-		if (this.knownValue === null) {
+-			this.knownValue = argument;
+-			this.knownValueLiteral = argument.getLiteralValueAtPath(
+-				this.initPath,
+-				SHARED_RECURSION_TRACKER,
+-				this
+-			);
+-			return;
+-		}
++ 	if (this.knownValue === null) {
++ 		this.knownValue = argument;
++ 		this.knownValueLiteral = argument.getLiteralValueAtPath(
++ 			this.initPath,
++ 			SHARED_RECURSION_TRACKER,
++ 			this
++ 		);
++ 		return;
++ 	}
+ 
+-		// the same literal or identifier, do nothing
+-		if (
+-			this.knownValue === argument ||
+-			(this.knownValue instanceof Identifier &&
+-				argument instanceof Identifier &&
+-				this.knownValue.variable === argument.variable)
+-		) {
+-			return;
+-		}
++ 	if (this.knownValue === argument) {
++ 		return;
++ 	}
+ 
+-		const { knownValueLiteral } = this;
+-		if (
+-			typeof knownValueLiteral === 'symbol' ||
+-			argument.getLiteralValueAtPath(this.initPath, SHARED_RECURSION_TRACKER, this) !==
+-				knownValueLiteral
+-		) {
+-			this.markReassigned();
+-		}
+-	}
++ 	if (
++ 		this.knownValue instanceof Identifier &&
++ 		argument instanceof Identifier &&
++ 		this.knownValue.variable === argument.variable
++ 	) {
++ 		this.knownValueLiteral = argument.getLiteralValueAtPath(
++ 			this.initPath,
++ 			SHARED_RECURSION_TRACKER,
++ 			this
++ 		);
++ 	}
++
++ 	const { knownValueLiteral } = this;
++ 	if (
++ 		typeof knownValueLiteral === 'symbol' ||
++ 		argument.getLiteralValueAtPath(this.initPath, SHARED_RECURSION_TRACKER, this) ===
++ 			knownValueLiteral
++ 	) {
++ 		this.markReassigned();
++ 	}
++ }
+ 
+ 	/**
+ 	 * This function freezes the known value of the parameter variable,

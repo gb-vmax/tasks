@@ -1,0 +1,85 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..0a5828a3d 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -187,22 +187,66 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+       // ~~~~~~~~~~~~~~~~~~ //
+       // Deprecated Methods //
+       // ~~~~~~~~~~~~~~~~~~ //
+-      showGenericModalDialog(
+-        title,
+-        options = {},
+-      ) {
+-        console.warn(
+-          'app.showGenericModalDialog() is deprecated. Use app.dialog() instead.'
+-        );
+-        // Create DOM node so we can adapt to the new dialog() method
+-        const body = document.createElement('div');
+-
+-        if (options.html) {
+-          body.innerHTML = options.html;
++function sanitizeHtmlForDialog(html: string): string {
++  const tempDiv = document.createElement('div');
++  tempDiv.innerHTML = html;
++  
++  const dangerousTags = ['script', 'iframe', 'object', 'embed', 'link', 'style'];
++  dangerousTags.forEach(tag => {
++    const elements = tempDiv.querySelectorAll(tag);
++    elements.forEach(el => el.remove());
++  });
++  
++  const allElements = tempDiv.querySelectorAll('*');
++  allElements.forEach(el => {
++    const attributes = Array.from(el.attributes);
++    attributes.forEach(attr => {
++      if (attr.name.startsWith('on') || attr.name === 'formaction' || attr.name === 'action') {
++        el.removeAttribute(attr.name);
++      }
++      if (attr.name === 'href' || attr.name === 'src') {
++        const value = attr.value.trim().toLowerCase();
++        if (value.startsWith('javascript:') || value.startsWith('data:text/html')) {
++          el.removeAttribute(attr.name);
+         }
++      }
++    });
++  });
++  
++  return tempDiv.innerHTML;
++}
+ 
+-        return this.dialog(title, body);
+-      },
++ showGenericModalDialog(
++   title,
++   options = {},
++ ) {
++   console.warn(
++     'app.showGenericModalDialog() is deprecated. Use app.dialog() instead.'
++   );
++  
++   const body = document.createElement('div');
++
++   if (options.html) {
++     body.innerHTML = sanitizeHtmlForDialog(options.html);
++   }
++
++   const dialogOptions: DialogOptions = {};
++  
++   if (options.tall !== undefined) {
++     dialogOptions.tall = options.tall;
++   }
++   if (options.skinny !== undefined) {
++     dialogOptions.skinny = options.skinny;
++   }
++   if (options.wide !== undefined) {
++     dialogOptions.wide = options.wide;
++   }
++   if (options.onHide) {
++     dialogOptions.onHide = options.onHide;
++   }
++
++   return this.dialog(title, body, dialogOptions);
++ },
+     },
+     __private: {
+       // Provide modules that can be used in the renderer process

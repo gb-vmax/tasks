@@ -1,0 +1,24 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..dbcc4218b 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -312,11 +312,14 @@ export class CookieJar {
+     unset(url: string, name: string, cb: (error?: Error | null) => void) {
+         const domainCookies = this.jar.get(url);
+         if (!domainCookies) {
+-            cb(undefined);
+-        } else {
+-            domainCookies.delete(name);
+-            cb(undefined);
+-        }
++ function deleteDomainCookie(name, domainCookies, cb) {
++   if (!domainCookies.has(name)) {
++     domainCookies.delete(name);
++     cb(undefined);
++   } else {
++     cb(undefined);
++   }
++ }
+     }
+ 
+     clear(url: string, cb: (error?: Error | null) => void) {

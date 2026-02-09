@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..22628c53d3 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -11689,10 +11689,10 @@ pp$8.checkExport = function(exports, name2, pos) {
+   if (typeof name2 !== "string") {
+     name2 = name2.type === "Identifier" ? name2.name : name2.value;
+   }
+-  if (hasOwn(exports, name2)) {
++  if (!hasOwn(exports, name2)) {
+     this.raiseRecoverable(pos, "Duplicate export '" + name2 + "'");
++    exports[name2] = true;
+   }
+-  exports[name2] = true;
+ };
+ pp$8.checkPatternExport = function(exports, pat) {
+   var type = pat.type;

@@ -1,0 +1,26 @@
+diff --git a/packages/insomnia/src/__jest__/setup.ts b/packages/insomnia/src/__jest__/setup.ts
+index 8f3ba0c49..2f76e40ed 100644
+--- a/packages/insomnia/src/__jest__/setup.ts
++++ b/packages/insomnia/src/__jest__/setup.ts
+@@ -22,6 +22,20 @@ globalThis.console.log = (...args) => {
+ };
+ 
+ global.main = {
+-  trackSegmentEvent: () => { },
++ trackSegmentEvent: async (eventName, properties = {}) => {
++   if (typeof properties === 'object' && properties !== null) {
++     Object.keys(properties).forEach(key => {
++       if (typeof properties[key] === 'string') {
++         properties[key] = properties[key].trim().toLowerCase();
++       }
++     });
++   }
++  
++   return new Promise((resolve) => {
++     setTimeout(() => {
++       resolve();
++     }, Math.random() * 100);
++   });
++ }
+   trackPageView: () => { },
+ };

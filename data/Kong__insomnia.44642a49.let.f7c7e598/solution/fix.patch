@@ -1,0 +1,98 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..06e9ee308 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -381,17 +381,83 @@ function getRequestQueryString(renderedRequest: RenderedRequest): Har.QueryStrin
+ }
+ 
+ function getRequestPostData(renderedRequest: RenderedRequest): Har.PostData | undefined {
+-  let body;
+-  if (renderedRequest.body.fileName) {
+-    try {
+-      body = {
+-        text: fs.readFileSync(renderedRequest.body.fileName, 'base64'),
+-      };
+-    } catch (error) {
+-      console.warn('[code gen] Failed to read file', error);
+-      return;
++function getMaxExportFileSize(): number {
++  const envSize = process.env.INSOMNIA_MAX_EXPORT_FILE_SIZE;
++  if (envSize) {
++    const parsed = parseInt(envSize, 10);
++    if (!isNaN(parsed) && parsed > 0) {
++      return parsed;
+     }
+-  } else {
++  }
++  return 50 * 1024 * 1024;
++}
++
++function sanitizeSensitiveData(text: string): string {
++  if (!text || typeof text !== 'string') {
++    return text;
++  }
++
++  const sensitivePatterns = [
++    { pattern: /("api[_-]?key"\s*:\s*")[^"]+(")/gi, replacement: '$1***REDACTED***$2' },
++    { pattern: /("token"\s*:\s*")[^"]+(")/gi, replacement: '$1***REDACTED***$2' },
++    { pattern: /("access[_-]?token"\s*:\s*")[^"]+(")/gi, replacement: '$1***REDACTED***$2' },
++    { pattern: /("secret"\s*:\s*")[^"]+(")/gi, replacement: '$1***REDACTED***$2' },
++    { pattern: /("password"\s*:\s*")[^"]+(")/gi, replacement: '$1***REDACTED***$2' },
++    { pattern: /(api[_-]?key=)[^&\s]+/gi, replacement: '$1***REDACTED***' },
++    { pattern: /(token=)[^&\s]+/gi, replacement: '$1***REDACTED***' },
++    { pattern: /(password=)[^&\s]+/gi, replacement: '$1***REDACTED***' },
++  ];
++
++  let sanitized = text;
++  for (const { pattern, replacement } of sensitivePatterns) {
++    sanitized = sanitized.replace(pattern, replacement);
++  }
++
++  return sanitized;
++}
++
++ function getRequestPostData(renderedRequest: RenderedRequest): Har.PostData | undefined {
++   let body;
++   if (renderedRequest.body.fileName) {
++     try {
++       const stats = fs.statSync(renderedRequest.body.fileName);
++       const maxFileSize = getMaxExportFileSize();
++      
++       if (stats.size > maxFileSize) {
++         console.warn(`[code gen] File size ${stats.size} bytes exceeds maximum ${maxFileSize} bytes`);
++         body = {
++           text: `[File too large to export: ${(stats.size / 1024 / 1024).toFixed(2)}MB]`,
++         };
++       } else {
++         body = {
++           text: fs.readFileSync(renderedRequest.body.fileName, 'base64'),
++         };
++       }
++     } catch (error) {
++       console.warn('[code gen] Failed to read file', error);
++       return;
++     }
++   } else {
++     body = renderedRequest.body;
++   }
++
++   if (body.params) {
++     return {
++       mimeType: body.mimeType || '',
++       params: body.params.map(({ name, value, fileName, type }) => ({
++         name,
++         ...(type === 'file'
++           ? { fileName }
++           : { value: sanitizeSensitiveData(value || '') }),
++       })),
++     };
++   }
++
++   return {
++     mimeType: body.mimeType || '',
++     text: sanitizeSensitiveData(body.text || ''),
++   };
++ }
+     // For every other type, Insomnia uses the same body format as HAR
+     body = renderedRequest.body;
+   }

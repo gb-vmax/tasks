@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX text expressions not being properly serialized to markdown. When trying to convert MDX content back to markdown format, text expressions (inline `{expression}` syntax) are not being handled correctly.
+I'm experiencing an issue with MDX text expressions not being serialized correctly to markdown. When trying to convert MDX content that contains inline/text expressions (like `{variable}` within a paragraph), the serialization process fails.
 
 ### Reproduction
 
@@ -10,7 +10,7 @@ I'm experiencing an issue with MDX text expressions not being properly serialize
 import {toMarkdown} from 'mdast-util-to-markdown'
 import {mdxExpressionToMarkdown} from '@mdx-js/mdx'
 
-const mdxAst = {
+const tree = {
   type: 'root',
   children: [
     {
@@ -24,22 +24,22 @@ const mdxAst = {
   ]
 }
 
-const result = toMarkdown(mdxAst, {
+// This throws an error or produces incorrect output
+const markdown = toMarkdown(tree, {
   extensions: [mdxExpressionToMarkdown()]
 })
-
-console.log(result)
-// Expected: "Hello {name}!"
-// Getting an error or incorrect output
 ```
 
 ### Expected behavior
 
-The markdown serializer should properly handle `mdxTextExpression` nodes and convert them back to the `{expression}` syntax in the output markdown string.
+The markdown serializer should properly handle `mdxTextExpression` nodes and convert them back to their `{expression}` syntax. The output should be something like:
+```
+Hello {name}!
+```
 
-### System Info
-- @mdx-js/mdx version: 3.0.0
-- Node version: 18.x
+### Additional context
+
+This seems to have broken recently. Flow expressions (block-level `{expression}`) still work fine, but inline text expressions within paragraphs are not being handled properly.
 
 ---
 Repository: /testbed

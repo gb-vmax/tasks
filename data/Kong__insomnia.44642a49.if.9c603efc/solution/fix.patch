@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..759133987 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -277,10 +277,72 @@ export class Request extends Property {
+     }
+ 
+     addHeader(header: Header | object) {
+-        if (Header.isHeader(header)) {
+-            const headerInstance = header as Header;
+-            this.headers.add(headerInstance);
+-        } else if ('key' in header && 'value' in header) {
++function isValidHeaderKey(key: string | undefined): boolean {
++    if (!key || key.length === 0) {
++        return false;
++    }
++    
++    for (let i = 0; i < key.length; i++) {
++        const charCode = key.charCodeAt(i);
++        if (charCode < 33 || charCode > 126) {
++            return false;
++        }
++        if (key[i] === ':') {
++            return false;
++        }
++    }
++    
++    return true;
++}
++
++ addHeader(header: Header | object, options?: { duplicateStrategy?: 'append' | 'replace' | 'ignore'; ignoreCase?: boolean }) {
++     let headerToAdd: Header;
++    
++     if (Header.isHeader(header)) {
++         headerToAdd = header as Header;
++     } else if ('key' in header && 'value' in header) {
++         headerToAdd = new Header(header);
++     } else {
++         throw Error('header must be Header | {key: string; value: string}');
++     }
++    
++     if (!isValidHeaderKey(headerToAdd.key)) {
++         throw Error(`Invalid header key: "${headerToAdd.key}". Header keys cannot contain control characters, newlines, or colons.`);
++     }
++    
++     const duplicateStrategy = options?.duplicateStrategy || 'append';
++     const ignoreCase = options?.ignoreCase || false;
++    
++     if (duplicateStrategy === 'replace') {
++         const keyToMatch = ignoreCase ? headerToAdd.key?.toLowerCase() : headerToAdd.key;
++         this.headers = new HeaderList(
++             undefined,
++             this.headers.filter(
++                 existingHeader => {
++                     const existingKey = ignoreCase ? existingHeader.key?.toLowerCase() : existingHeader.key;
++                     return existingKey !== keyToMatch;
++                 },
++                 {}
++             )
++         );
++         this.headers.add(headerToAdd);
++     } else if (duplicateStrategy === 'ignore') {
++         const keyToMatch = ignoreCase ? headerToAdd.key?.toLowerCase() : headerToAdd.key;
++         const headerExists = this.headers.find(
++             existingHeader => {
++                 const existingKey = ignoreCase ? existingHeader.key?.toLowerCase() : existingHeader.key;
++                 return existingKey === keyToMatch;
++             },
++             {}
++         );
++        
++         if (!headerExists) {
++             this.headers.add(headerToAdd);
++         }
++     } else {
++         this.headers.add(headerToAdd);
++     }
++ }
+             const headerInstance = new Header(header);
+             this.headers.add(headerInstance);
+         } else {

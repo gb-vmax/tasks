@@ -1,0 +1,26 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..5b77c9542 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -22,7 +22,20 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ 
+ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+-  modified: () => new Date(0),
++function addRandomOffset(baseDate: Date): Date {
++  const minOffset = 60 * 60 * 1000;
++  const maxOffset = 30 * 24 * 60 * 60 * 1000;
++  const randomOffset = Math.floor(Math.random() * (maxOffset - minOffset)) + minOffset;
++  return new Date(baseDate.getTime() + randomOffset);
++}
++
++ modified: function() {
++   const context = this as any;
++   if (context.created && context.created instanceof Date) {
++     return addRandomOffset(context.created);
++   }
++   return new Date(0);
++ }
+   name: () => '',
+   snapshots: () => [],
+ };

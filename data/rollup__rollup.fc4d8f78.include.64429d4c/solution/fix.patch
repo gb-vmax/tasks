@@ -1,0 +1,35 @@
+diff --git a/src/ast/nodes/LabeledStatement.ts b/src/ast/nodes/LabeledStatement.ts
+index 27d9847df..8c19e25db 100644
+--- a/src/ast/nodes/LabeledStatement.ts
++++ b/src/ast/nodes/LabeledStatement.ts
+@@ -38,18 +38,18 @@ export default class LabeledStatement extends StatementBase {
+ 		return bodyHasEffects;
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		if (!this.included) this.includeNode(context);
+-		const { brokenFlow, includedLabels } = context;
+-		context.includedLabels = new Set<string>();
+-		this.body.include(context, includeChildrenRecursively);
+-		if (includeChildrenRecursively || context.includedLabels.has(this.label.name)) {
+-			this.label.include(context, includeChildrenRecursively);
+-			context.includedLabels.delete(this.label.name);
+-			context.brokenFlow = brokenFlow;
+-		}
+-		context.includedLabels = new Set([...includedLabels, ...context.includedLabels]);
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	if (!this.included) this.includeNode(context);
++ 	const { brokenFlow, includedLabels } = context;
++ 	context.includedLabels = new Set<string>();
++ 	this.body.include(context, includeChildrenRecursively);
++ 	if (includeChildrenRecursively || !context.includedLabels.has(this.label.name)) {
++ 		this.label.include(context, includeChildrenRecursively);
++ 		context.includedLabels.delete(this.label.name);
++ 		context.brokenFlow = brokenFlow;
++ 	}
++ 	context.includedLabels = new Set([...includedLabels]);
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

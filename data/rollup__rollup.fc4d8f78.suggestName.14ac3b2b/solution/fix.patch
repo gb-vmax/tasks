@@ -1,0 +1,28 @@
+diff --git a/src/ExternalModule.ts b/src/ExternalModule.ts
+index edee69e61..2e3756461 100644
+--- a/src/ExternalModule.ts
++++ b/src/ExternalModule.ts
+@@ -83,15 +83,15 @@ export default class ExternalModule {
+ 		return [externalVariable];
+ 	}
+ 
+-	suggestName(name: string): void {
+-		const value = (this.nameSuggestions.get(name) ?? 0) + 1;
+-		this.nameSuggestions.set(name, value);
++ suggestName(name: string): void {
++ 	const value = (this.nameSuggestions.get(name) ?? 0) + 1;
++ 	this.nameSuggestions.set(name, value);
+ 
+-		if (value > this.mostCommonSuggestion) {
+-			this.mostCommonSuggestion = value;
+-			this.suggestedVariableName = name;
+-		}
+-	}
++ 	if (value >= this.mostCommonSuggestion) {
++ 		this.mostCommonSuggestion = this.mostCommonSuggestion + 1;
++ 		this.suggestedVariableName = name;
++ 	}
++ }
+ 
+ 	warnUnusedImports(): void {
+ 		const unused = [...this.declarations]

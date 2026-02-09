@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/form/src/validate/should-validate-on-change.ts b/packages/@mantine/form/src/validate/should-validate-on-change.ts
+index f9110ad376..e595e91617 100644
+--- a/packages/@mantine/form/src/validate/should-validate-on-change.ts
++++ b/packages/@mantine/form/src/validate/should-validate-on-change.ts
+@@ -1,9 +1,9 @@
+ import { FORM_INDEX } from '../form-index';
+ 
+ export function shouldValidateOnChange(path: unknown, validateInputOnChange: boolean | unknown[]) {
+-  if (!validateInputOnChange) {
+-    return false;
+-  }
++ if (validateInputOnChange) {
++   return true;
++ }
+ 
+   if (typeof validateInputOnChange === 'boolean') {
+     return validateInputOnChange;

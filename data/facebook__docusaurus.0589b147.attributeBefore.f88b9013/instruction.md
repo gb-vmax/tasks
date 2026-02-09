@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-I'm encountering an issue with self-closing JSX tags in MDX. When using a self-closing tag (with `/>` syntax), the parser seems to be processing it incorrectly and the tag doesn't render as expected.
+Self-closing JSX tags are not being parsed correctly in MDX. When using a self-closing tag with the `/` marker, the parser seems to fail or produce unexpected behavior.
 
 ### Reproduction
 
@@ -10,15 +10,15 @@ I'm encountering an issue with self-closing JSX tags in MDX. When using a self-c
 <MyComponent />
 ```
 
-When I use this self-closing tag syntax in my MDX file, it's not being parsed correctly. The component either doesn't render at all or throws an error during parsing.
+When trying to parse MDX content with self-closing tags like the above, the parser doesn't handle them properly. The issue appears to be related to how the self-closing marker is processed.
 
 ### Expected behavior
 
-Self-closing JSX tags should be properly recognized and parsed. The component should render normally just like it would in regular JSX/React code.
+Self-closing JSX tags should be parsed correctly and the MDX content should render without issues. The `/` marker should be recognized as a valid self-closing indicator.
 
 ### Additional context
 
-This seems to have started happening recently. Regular non-self-closing tags like `<MyComponent></MyComponent>` work fine, but the self-closing syntax specifically is causing problems.
+This seems to have started happening recently. Regular opening/closing tag pairs like `<MyComponent></MyComponent>` work fine, but the self-closing syntax doesn't.
 
 ---
 Repository: /testbed

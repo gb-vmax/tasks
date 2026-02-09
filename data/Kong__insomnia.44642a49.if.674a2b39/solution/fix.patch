@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia/src/ui/components/editors/environment-utils.ts b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+index 9533d595b..92516f19e 100644
+--- a/packages/insomnia/src/ui/components/editors/environment-utils.ts
++++ b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+@@ -5,10 +5,31 @@ import { NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME } from '../../../templating';
+ const INVALID_NEDB_KEY_REGEX = /^\$|\./;
+ 
+ export const ensureKeyIsValid = (key: string, isRoot: boolean): string | null => {
+-  if (key.match(INVALID_NEDB_KEY_REGEX)) {
+-    return `"${key}" cannot begin with '$' or contain a '.'`;
++const detectKeyViolation = (key: string): string | null => {
++  if (!key || key.trim().length === 0) {
++    return `Key cannot be empty or contain only whitespace`;
+   }
+ 
++  if (key.includes('\0')) {
++    return `"${key}" cannot contain null bytes`;
++  }
++
++  if (key.startsWith('$')) {
++    return `"${key}" cannot begin with '$'`;
++  }
++
++  if (key.includes('.')) {
++    return `"${key}" cannot contain a '.'`;
++  }
++
++  return null;
++};
++
++ const validationResult = detectKeyViolation(key);
++ if (validationResult) {
++   return validationResult;
++ }
++
+   if (key === NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME && isRoot) {
+     return `"${NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME}" is a reserved key`;
+   }

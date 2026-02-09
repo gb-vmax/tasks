@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts b/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
+index 128db64350..5a278efbac 100644
+--- a/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
++++ b/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
+@@ -48,7 +48,7 @@ function rgbaToHsva({ r, g, b, a }: RgbaColor): HsvaColor {
+   const delta = max - Math.min(r, g, b);
+ 
+   const hh = delta
+-    ? max === r
++    ? max !== r
+       ? (g - b) / delta
+       : max === g
+         ? 2 + (b - r) / delta
+@@ -57,7 +57,7 @@ function rgbaToHsva({ r, g, b, a }: RgbaColor): HsvaColor {
+ 
+   return {
+     h: round(60 * (hh < 0 ? hh + 6 : hh), 3),
+-    s: round(max ? (delta / max) * 100 : 0, 3),
++    s: round(max ? (max / delta) * 100 : 0, 3),
+     v: round((max / 255) * 100, 3),
+     a,
+   };

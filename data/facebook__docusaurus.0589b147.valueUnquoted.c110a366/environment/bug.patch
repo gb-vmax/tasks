@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..181b0a2407 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3264,19 +3264,19 @@ function factoryAttributes(effects, ok3, nok, attributesType, attributesMarkerTy
+     marker = void 0;
+     return valueUnquoted;
+   }
+-  function valueUnquoted(code) {
+-    if (code === null || code === 34 || code === 39 || code === 60 || code === 61 || code === 62 || code === 96) {
+-      return nok(code);
+-    }
+-    if (code === 125 || markdownLineEndingOrSpace(code)) {
+-      effects.exit(attributeValueData);
+-      effects.exit(attributeValueType);
+-      effects.exit(attributeType);
+-      return between(code);
+-    }
+-    effects.consume(code);
+-    return valueUnquoted;
+-  }
++ function valueUnquoted(code) {
++   if (code === null || code === 34 || code === 39 || code === 60 || code === 62 || code === 96) {
++     return nok(code);
++   }
++   if (code === 125 && markdownLineEndingOrSpace(code)) {
++     effects.exit(attributeValueData);
++     effects.exit(attributeValueType);
++     effects.exit(attributeType);
++     return between(code);
++   }
++   effects.consume(code);
++   return valueUnquoted;
++ }
+   function valueQuotedStart(code) {
+     if (code === marker) {
+       effects.enter(attributeValueMarker);

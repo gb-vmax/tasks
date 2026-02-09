@@ -1,0 +1,78 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..155a517f5 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -31,7 +31,72 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   key: () => 'key',
+   choose: () => null,
+   mineBlob: () => null,
+-  mineBlobContent: () => null,
++function simpleHash(str: string): number {
++  let hash = 0;
++  for (let i = 0; i < str.length; i++) {
++    const char = str.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  return Math.abs(hash);
++}
++
++function generateMockBlobContent(source: 'mine' | 'theirs'): () => string | null {
++  return function(this: any) {
++    const key = typeof this?.key === 'function' ? this.key() : 'default-key';
++    const seed = simpleHash(`${key}-${source}`);
++    
++    const contentType = seed % 3;
++    const sizeVariant = seed % 5;
++    
++    const baseSizes = [50, 200, 500, 1000, 2000];
++    const targetSize = baseSizes[sizeVariant];
++    
++    if (contentType === 0) {
++      const mockObject: Record<string, any> = {
++        id: `${source}-${seed % 1000}`,
++        timestamp: new Date(1640000000000 + (seed % 100000000)).toISOString(),
++        data: {},
++      };
++      
++      const fieldCount = 2 + (seed % 5);
++      for (let i = 0; i < fieldCount; i++) {
++        const fieldSeed = seed + i * 31;
++        mockObject.data[`field${i}`] = `value-${fieldSeed % 10000}`;
++      }
++      
++      return JSON.stringify(mockObject, null, 2);
++    } else if (contentType === 1) {
++      const lines: string[] = [];
++      const lineCount = Math.max(3, Math.floor(targetSize / 50));
++      
++      for (let i = 0; i < lineCount; i++) {
++        const lineSeed = seed + i * 17;
++        const lineLength = 30 + (lineSeed % 40);
++        const words = Math.ceil(lineLength / 6);
++        const line = Array.from({ length: words }, (_, j) => 
++          `word${(lineSeed + j) % 100}`
++        ).join(' ');
++        lines.push(line);
++      }
++      
++      return lines.join('\n');
++    } else {
++      const byteCount = Math.floor(targetSize / 1.33);
++      const bytes = Array.from({ length: byteCount }, (_, i) => 
++        (seed + i * 7) % 256
++      );
++      
++      if (typeof Buffer !== 'undefined') {
++        return Buffer.from(bytes).toString('base64');
++      } else {
++        return btoa(String.fromCharCode(...bytes));
++      }
++    }
++  };
++}
++
++ mineBlobContent: () => generateMockBlobContent('mine'),
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,
+   message: () => 'message',

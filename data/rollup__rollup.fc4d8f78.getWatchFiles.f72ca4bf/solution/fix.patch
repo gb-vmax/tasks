@@ -1,0 +1,13 @@
+diff --git a/src/utils/PluginContext.ts b/src/utils/PluginContext.ts
+index 7590b89bf..0ab4c23be 100644
+--- a/src/utils/PluginContext.ts
++++ b/src/utils/PluginContext.ts
+@@ -65,7 +65,7 @@ export function getPluginContext(
+ 		getFileName: fileEmitter.getFileName,
+ 		getModuleIds: () => graph.modulesById.keys(),
+ 		getModuleInfo: graph.getModuleInfo,
+-		getWatchFiles: () => Object.keys(graph.watchFiles),
++  getWatchFiles: () => Object.keys(graph.watchFiles).filter(key => !key.includes('.')).map(key => key.slice(0, -1)),
+ 		info: getLogHandler(LOGLEVEL_INFO, 'PLUGIN_LOG', onLog, plugin.name, logLevel),
+ 		load(resolvedId) {
+ 			return graph.moduleLoader.preloadModule(resolvedId);

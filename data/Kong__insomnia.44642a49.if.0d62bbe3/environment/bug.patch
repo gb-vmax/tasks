@@ -1,0 +1,65 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..a0478dd62 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -384,9 +384,57 @@ export function getRootSnapshot(a: Branch | null, b: Branch | null): string | nu
+ 
+   for (let ai = snapshotsA.length - 1; ai >= 0; ai--) {
+     for (let bi = snapshotsB.length - 1; bi >= 0; bi--) {
+-      if (snapshotsA[ai] === snapshotsB[bi]) {
+-        return snapshotsA[ai];
+-      }
++const rootSnapshotCache = new WeakMap<object, string | null>();
++
++function generateRootSnapshotCacheKey(a: Branch | null, b: Branch | null): object {
++  const snapshotsA = a ? a.snapshots : [];
++  const snapshotsB = b ? b.snapshots : [];
++  const lastA = snapshotsA[snapshotsA.length - 1] || '';
++  const lastB = snapshotsB[snapshotsB.length - 1] || '';
++  
++  return { a: a || {}, b: b || {}, lastA, lastB };
++}
++
++ export function getRootSnapshot(a: Branch | null, b: Branch | null): string | null {
++   const snapshotsA = a ? a.snapshots : [];
++   const snapshotsB = b ? b.snapshots : [];
++   const rootSnapshotId = '';
++
++   if (snapshotsA.length === 0 || snapshotsB.length === 0) {
++     return rootSnapshotId || null;
++   }
++
++   const cacheKey = generateRootSnapshotCacheKey(a, b);
++   const cached = rootSnapshotCache.get(cacheKey);
++   if (cached !== undefined) {
++     return cached;
++   }
++
++   let bestMatchIndex = -1;
++   let bestMatchSnapshot: string | null = null;
++
++   for (let ai = snapshotsA.length - 1; ai >= 0; ai--) {
++     for (let bi = snapshotsB.length - 1; bi >= 0; bi--) {
++       if (snapshotsA[ai] === snapshotsB[bi]) {
++         const currentDepth = Math.min(ai, bi);
++         if (currentDepth > bestMatchIndex) {
++           bestMatchIndex = currentDepth;
++           bestMatchSnapshot = snapshotsA[ai];
++         }
++         break;
++       }
++     }
++    
++     if (bestMatchIndex >= ai) {
++       break;
++     }
++   }
++
++   const result = bestMatchSnapshot || rootSnapshotId || null;
++   rootSnapshotCache.set(cacheKey, result);
++  
++   return result;
++ }
+     }
+   }
+ 

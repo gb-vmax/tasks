@@ -2,30 +2,26 @@
 
 ### Describe the bug
 
-After a recent update, versioned sidebars are not being loaded correctly. The plugin is looking for sidebar files in the wrong directory path and with an incorrect filename pattern.
+After a recent update, versioned sidebars are not being loaded correctly. The documentation site fails to find the sidebar configuration files for versioned docs, resulting in broken navigation for older versions.
 
 ### Reproduction
 
-```js
-// Plugin configuration
-{
-  id: 'custom-docs',
-  // ... other options
-}
-```
+1. Set up a Docusaurus site with versioned documentation
+2. Create a new version using the versioning command
+3. Try to build or serve the site
+4. The sidebar configuration for versioned docs cannot be found
 
-When building the site with a custom plugin ID and versioned docs, the sidebar files are not found. The plugin appears to be constructing the path incorrectly.
-
-Expected file path: `versioned_sidebars/version-1.0.0-sidebars.json`
-Actual path being searched: Different location with wrong naming pattern
+The issue appears to be related to how the sidebar file paths are being constructed. The system is looking for files in the wrong location or with an incorrect naming pattern.
 
 ### Expected behavior
 
-The plugin should correctly locate versioned sidebar files using the proper directory structure and filename convention. Versioned sidebars should load without errors.
+Versioned sidebars should be loaded from the correct path with the proper filename format. The navigation should work correctly for all versioned documentation.
 
 ### System Info
+
 - Docusaurus version: Latest
 - Node version: 18.x
+- Plugin: @docusaurus/plugin-content-docs
 
 ---
 Repository: /testbed

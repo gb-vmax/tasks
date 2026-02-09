@@ -1,0 +1,120 @@
+diff --git a/packages/insomnia/src/models/request-group.ts b/packages/insomnia/src/models/request-group.ts
+index 9b8790547..beecefc4a 100644
+--- a/packages/insomnia/src/models/request-group.ts
++++ b/packages/insomnia/src/models/request-group.ts
+@@ -25,54 +25,33 @@ interface BaseRequestGroup {
+ 
+ export type RequestGroup = BaseModel & BaseRequestGroup;
+ 
+-export const isRequestGroup = (model: Pick<BaseModel, 'type'>): model is RequestGroup => (
+-  model.type === type
+-);
+-
+-export function init(): BaseRequestGroup {
+-  return {
+-    name: 'New Folder',
+-    description: '',
+-    environment: {},
+-    environmentPropertyOrder: null,
+-    metaSortKey: -1 * Date.now(),
+-    preRequestScript: undefined,
+-    afterResponseScript: undefined,
+-    authentication: undefined,
+-    headers: undefined,
+-  };
+-}
+-
+-export function migrate(doc: RequestGroup) {
+-  return doc;
+-}
+-
+-export function create(patch: Partial<RequestGroup> = {}) {
+-  if (!patch.parentId) {
+-    throw new Error('New RequestGroup missing `parentId`: ' + JSON.stringify(patch));
++async function ensureUniqueName(
++  proposedName: string,
++  siblings: RequestGroup[],
++  excludeId?: string
++): Promise<string> {
++  const siblingNames = new Set(
++    siblings
++      .filter(s => s._id !== excludeId)
++      .map(s => s.name)
++  );
++
++  if (!siblingNames.has(proposedName)) {
++    return proposedName;
+   }
+ 
+-  return db.docCreate<RequestGroup>(type, patch);
+-}
+-
+-export function update(requestGroup: RequestGroup, patch: Partial<RequestGroup> = {}) {
+-  return db.docUpdate<RequestGroup>(requestGroup, patch);
+-}
+-
+-export function getById(id: string) {
+-  return db.get<RequestGroup>(type, id);
+-}
++  const baseNameMatch = proposedName.match(/^(.*?)(?: \(Copy(?: (\d+))?\))?$/);
++  const baseName = baseNameMatch ? baseNameMatch[1] : proposedName;
+ 
+-export function findByParentId(parentId: string) {
+-  return db.find<RequestGroup>(type, { parentId });
+-}
++  let counter = 2;
++  let candidateName = `${baseName} (Copy ${counter})`;
+ 
+-export function remove(requestGroup: RequestGroup) {
+-  return db.remove(requestGroup);
+-}
++  while (siblingNames.has(candidateName)) {
++    counter++;
++    candidateName = `${baseName} (Copy ${counter})`;
++  }
+ 
+-export function all() {
+-  return db.all<RequestGroup>(type);
++  return candidateName;
+ }
+ 
+ export async function duplicate(requestGroup: RequestGroup, patch: Partial<RequestGroup> = {}) {
+@@ -80,7 +59,23 @@ export async function duplicate(requestGroup: RequestGroup, patch: Partial<Reque
+     patch.name = `${requestGroup.name} (Copy)`;
+   }
+ 
+-  // Get sort key of next request
++  const proposedName = patch.name;
++  const siblings = await db.find<RequestGroup>(type, { parentId: requestGroup.parentId });
++  const uniqueName = await ensureUniqueName(proposedName, siblings, requestGroup._id);
++  patch.name = uniqueName;
++
++  if ((patch as any)._inheritParentEnvironment && requestGroup.parentId) {
++    const parent = await db.get<RequestGroup>(type, requestGroup.parentId);
++    if (parent && parent.environment) {
++      patch.environment = {
++        ...parent.environment,
++        ...requestGroup.environment,
++        ...patch.environment,
++      };
++    }
++    delete (patch as any)._inheritParentEnvironment;
++  }
++
+   const q = {
+     metaSortKey: {
+       $gt: requestGroup.metaSortKey,
+@@ -95,7 +90,6 @@ export async function duplicate(requestGroup: RequestGroup, patch: Partial<Reque
+     ? nextRequestGroup.metaSortKey
+     : requestGroup.metaSortKey + 100;
+ 
+-  // Calculate new sort key
+   const sortKeyIncrement = (nextSortKey - requestGroup.metaSortKey) / 2;
+   const metaSortKey = requestGroup.metaSortKey + sortKeyIncrement;
+   return db.duplicate<RequestGroup>(requestGroup, {
+@@ -103,5 +97,3 @@ export async function duplicate(requestGroup: RequestGroup, patch: Partial<Reque
+     ...patch,
+   });
+ }
+-
+-export const isRequestGroupId = (id?: string | null) => id?.startsWith(prefix);

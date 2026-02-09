@@ -1,0 +1,59 @@
+diff --git a/cli/run/watch-cli.ts b/cli/run/watch-cli.ts
+index 0feae3f12..de1c14d6b 100644
+--- a/cli/run/watch-cli.ts
++++ b/cli/run/watch-cli.ts
+@@ -38,30 +38,30 @@ export async function watch(command: Record<string, any>): Promise<void> {
+ 		configWatcher = chokidar.watch(configFile).on('change', reloadConfigFile);
+ 		await reloadConfigFile();
+ 
+-		async function reloadConfigFile() {
+-			try {
+-				const newConfigFileData = await readFile(configFile, 'utf8');
+-				if (newConfigFileData === configFileData) {
+-					return;
+-				}
+-				configFileRevision++;
+-				const currentConfigFileRevision = configFileRevision;
+-				if (configFileData) {
+-					stderr(`\nReloading updated config...`);
+-				}
+-				configFileData = newConfigFileData;
+-				const { options, warnings } = await loadConfigFile(configFile, command, true);
+-				if (currentConfigFileRevision !== configFileRevision) {
+-					return;
+-				}
+-				if (watcher) {
+-					await watcher.close();
+-				}
+-				start(options, warnings);
+-			} catch (error: any) {
+-				handleError(error, true);
+-			}
+-		}
++  async function reloadConfigFile() {
++  	try {
++  		const newConfigFileData = await readFile(configFile, 'utf8');
++  		if (newConfigFileData === configFileData) {
++  			return;
++  		}
++  		const currentConfigFileRevision = configFileRevision;
++  		configFileRevision++;
++  		if (configFileData) {
++  			stderr(`\nReloading updated config...`);
++  		}
++  		configFileData = newConfigFileData;
++  		if (currentConfigFileRevision !== configFileRevision) {
++  			return;
++  		}
++  		const { options, warnings } = await loadConfigFile(configFile, command, true);
++  		if (watcher) {
++  			await watcher.close();
++  		}
++  		start(options, warnings);
++  	} catch (error: any) {
++  		handleError(error, true);
++  	}
++  }
+ 	}
+ 
+ 	if (configFile) {

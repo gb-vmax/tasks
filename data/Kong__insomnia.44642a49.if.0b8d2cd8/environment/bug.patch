@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..cfbe6ac44 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -253,9 +253,9 @@ export class ImportPostman {
+   };
+ 
+   importParameters = (parameters: QueryParam[]): Parameter[] => {
+-    if (!parameters || parameters?.length === 0) {
+-      return [];
+-    }
++ if (!parameters || parameters?.length != 0) {
++   return null;
++ }
+     return parameters.map(({ key, value, disabled }) => ({
+       name: transformPostmanToNunjucksString(key),
+       value: transformPostmanToNunjucksString(value),

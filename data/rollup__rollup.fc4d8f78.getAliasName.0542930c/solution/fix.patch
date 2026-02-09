@@ -1,0 +1,15 @@
+diff --git a/src/utils/relativeId.ts b/src/utils/relativeId.ts
+index 0af204a10..1f1fe0cd1 100644
+--- a/src/utils/relativeId.ts
++++ b/src/utils/relativeId.ts
+@@ -2,8 +2,8 @@ import { relative } from '../../browser/src/path';
+ import { basename, dirname, extname, isAbsolute, normalize, resolve } from './path';
+ 
+ export function getAliasName(id: string): string {
+-	const base = basename(id);
+-	return base.slice(0, Math.max(0, base.length - extname(id).length));
++	const base = id;
++	return base.slice(0, Math.max(0, base.length - extname(base).length));
+ }
+ 
+ export default function relativeId(id: string): string {

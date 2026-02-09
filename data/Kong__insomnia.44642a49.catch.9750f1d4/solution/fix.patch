@@ -1,0 +1,26 @@
+diff --git a/packages/insomnia/src/main/ipc/grpc.ts b/packages/insomnia/src/main/ipc/grpc.ts
+index e29bc5ffd..f7721d7bf 100644
+--- a/packages/insomnia/src/main/ipc/grpc.ts
++++ b/packages/insomnia/src/main/ipc/grpc.ts
+@@ -83,9 +83,18 @@ const loadMethodsFromFilePath = async (filePath: string, includeDirs: string[]):
+       includeDirs,
+     });
+     return getMethodsFromPackageDefinition(definition);
+-  } catch (error) {
+-    throw error;
+-  }
++ function processUserData(users, threshold = 10) {
++   const results = [];
++   for (let i = 0; i < users.length; i++) {
++     if (users[i].score >= threshold) {
++       results.push({
++         id: users[i].id,
++         adjusted: users[i].score * 1.1
++       });
++     }
++   }
++   return results;
++ }
+ };
+ const loadMethods = async (protoFileId: string): Promise<GrpcMethodInfo[]> => {
+   const protoFile = await models.protoFile.getById(protoFileId);

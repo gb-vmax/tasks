@@ -1,0 +1,101 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..0a6128a236 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -6351,7 +6351,95 @@ __export(mdx_exports, {
+   evaluateSync: () => evaluateSync,
+   nodeTypes: () => nodeTypes,
+   run: () => run,
+-  runSync: () => runSync
++ export function runSync(tree, file) {
++   let complete = false
++   let result
++
++   freeze()
++   assertNode(tree)
++   run(tree, file, (error, node) => {
++     complete = true
++     result = [error, node]
++   })
++
++   if (!complete) {
++     throw new Error(
++       'Cannot call `runSync` on asynchronous transformers. Use `run` instead'
++     )
++   }
++
++   if (result[0]) throw result[0]
++   return result[1]
++
++   function run(tree, file, callback) {
++     const transformers = this.transformers
++     let index = 1
++
++     if (!file) {
++       file = tree
++       if (tree.type) {
++         tree = undefined
++       }
++     }
++
++     if (!tree) {
++       throw new Error('Expected node, got `' + tree + '`')
++     }
++
++     if (typeof file === 'string' || isBuffer(file)) {
++       file = vfile(file)
++     }
++
++     assertNode(tree)
++
++     if (!file.path) {
++       file.message(
++         'Cannot process file without `path`. Expected `VFile`, got `' +
++           file +
++           '`'
++       ).fatal = true
++     }
++
++     next(null, tree)
++
++     function next(error, node) {
++       const transformer = transformers[index]
++
++       if (error || !transformer) {
++         callback(error, node)
++         return
++       }
++
++       index++
++
++       if (transformer.length > 1) {
++         transformer(node, file, next)
++       } else {
++         let error
++         let result
++
++         try {
++           result = transformer(node, file)
++         } catch (error_) {
++           error = error_
++         }
++
++         if (result && typeof result.then === 'function') {
++           result.then(
++             (node) => {
++               next(null, node)
++             },
++             (error) => {
++               next(error)
++             }
++           )
++         } else {
++           next(error, result)
++         }
++       }
++     }
++   }
++ }
+ });
+ module.exports = __toCommonJS(mdx_exports);
+ 

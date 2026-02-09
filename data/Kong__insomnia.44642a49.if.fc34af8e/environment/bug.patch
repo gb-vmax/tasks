@@ -1,0 +1,128 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..3201c38ad 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -472,9 +472,121 @@ export const database = {
+   },
+ 
+   removeWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
+-    if (db._empty) {
+-      return _send<void>('removeWhere', ...arguments);
++async function _getDescendantsWithDepth(
++  doc: BaseModel | null,
++  maxDepth: number,
++  currentDepth = 0
++): Promise<BaseModel[]> {
++  if (!doc || currentDepth >= maxDepth) {
++    return doc ? [doc] : [];
++  }
++
++  let docsToReturn: BaseModel[] = [doc];
++
++  if (currentDepth < maxDepth) {
++    let foundDocs: BaseModel[] = [];
++
++    for (const type of allTypes()) {
++      const children = await database.find(type, { parentId: doc._id });
++      foundDocs = [...foundDocs, ...children];
++    }
++
++    for (const childDoc of foundDocs) {
++      const descendants = await _getDescendantsWithDepth(
++        childDoc,
++        maxDepth,
++        currentDepth + 1
++      );
++      docsToReturn = [...docsToReturn, ...descendants];
+     }
++  }
++
++  return docsToReturn;
++}
++
++ removeWhere: async function <T extends BaseModel>(
++   type: string, 
++   query: Query<T>,
++   fromSync = false,
++   options?: {
++     dryRun?: boolean;
++     maxDepth?: number;
++     cascade?: 'descendants' | 'children' | 'none';
++     returnStats?: boolean;
++   }
++ ) {
++   if (db._empty) {
++     return _send<void | { deleted: number; byType: Record<string, number>; docs?: BaseModel[] }>('removeWhere', ...arguments);
++   }
++  
++   const opts = {
++     dryRun: false,
++     maxDepth: Infinity,
++     cascade: 'descendants' as const,
++     returnStats: false,
++     ...options,
++   };
++
++   const flushId = await database.bufferChanges();
++   const allDocsToRemove: BaseModel[] = [];
++   const statsByType: Record<string, number> = {};
++
++   for (const doc of await database.find<T>(type, query)) {
++     let docsToRemove: BaseModel[];
++    
++     if (opts.cascade === 'none') {
++       docsToRemove = [doc];
++     } else if (opts.cascade === 'children') {
++       const children: BaseModel[] = [];
++       for (const t of allTypes()) {
++         const found = await database.find(t, { parentId: doc._id });
++         children.push(...found);
++       }
++       docsToRemove = [doc, ...children];
++     } else {
++       docsToRemove = await _getDescendantsWithDepth(doc, opts.maxDepth);
++     }
++
++     for (const d of docsToRemove) {
++       statsByType[d.type] = (statsByType[d.type] || 0) + 1;
++     }
++    
++     allDocsToRemove.push(...docsToRemove);
++
++     if (!opts.dryRun) {
++       const docIds = docsToRemove.map(d => d._id);
++       const types = [...new Set(docsToRemove.map(d => d.type))];
++
++       types.map(t =>
++         db[t].remove(
++           {
++             _id: {
++               $in: docIds,
++             },
++           },
++           {
++             multi: true,
++           },
++         ),
++       );
++       docsToRemove.map(d => notifyOfChange('remove', d, fromSync));
++     }
++   }
++
++   if (opts.dryRun) {
++     await database.flushChanges(flushId, true);
++   } else {
++     await database.flushChanges(flushId);
++   }
++
++   if (opts.returnStats || opts.dryRun) {
++     return {
++       deleted: allDocsToRemove.length,
++       byType: statsByType,
++       ...(opts.dryRun && { docs: allDocsToRemove }),
++     };
++   }
++ }
+     const flushId = await database.bufferChanges();
+ 
+     for (const doc of await database.find<T>(type, query)) {

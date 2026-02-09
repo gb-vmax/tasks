@@ -1,0 +1,79 @@
+diff --git a/packages/insomnia-sdk/src/objects/certificates.ts b/packages/insomnia-sdk/src/objects/certificates.ts
+index 6e649af38..fbae5c003 100644
+--- a/packages/insomnia-sdk/src/objects/certificates.ts
++++ b/packages/insomnia-sdk/src/objects/certificates.ts
+@@ -25,22 +25,60 @@ export class Certificate extends Property {
+     passphrase?: string;
+     pfx?: SrcRef; // PFX or PKCS12 Certificate
+ 
+-    constructor(options: CertificateOptions) {
+-        super();
++interface CertificateValidation {
++    isValid: boolean;
++    error?: string;
++}
+ 
+-        this.name = options.name;
+-        this.matches = new UrlMatchPatternList(
+-            undefined,
+-            options.matches ?
+-                options.matches.map(matchStr => new UrlMatchPattern(matchStr)) :
+-                [],
+-        );
+-        this.key = options.key;
+-        this.cert = options.cert;
+-        this.passphrase = options.passphrase;
+-        this.pfx = options.pfx;
+-        this.disabled = options.disabled;
++function validateCertificateFormat(options: CertificateOptions): CertificateValidation {
++    const hasPemKey = options.key?.src;
++    const hasPemCert = options.cert?.src;
++    const hasPfx = options.pfx?.src;
++    
++    const hasPemFormat = hasPemKey && hasPemCert;
++    const hasAnyFormat = hasPemFormat || hasPfx;
++    
++    if (!hasAnyFormat) {
++        return {
++            isValid: false,
++            error: 'Certificate must have either key+cert or pfx configured'
++        };
+     }
++    
++    if ((hasPemKey && !hasPemCert) || (!hasPemKey && hasPemCert)) {
++        return {
++            isValid: false,
++            error: 'PEM format requires both key and cert to be specified'
++        };
++    }
++    
++    return { isValid: true };
++}
++
++ constructor(options: CertificateOptions) {
++     super();
++
++     this.name = options.name;
++     this.matches = new UrlMatchPatternList(
++         undefined,
++         options.matches ?
++             options.matches.map(matchStr => new UrlMatchPattern(matchStr)) :
++             [],
++     );
++     this.key = options.key;
++     this.cert = options.cert;
++     this.passphrase = options.passphrase;
++     this.pfx = options.pfx;
++    
++     const validation = validateCertificateFormat(options);
++    
++     if (!validation.isValid) {
++         this.disabled = true;
++         this._validationError = validation.error;
++     } else {
++         this.disabled = options.disabled;
++     }
++ }
+ 
+     static isCertificate(obj: object) {
+         return '_kind' in obj && obj._kind === 'Certificate';

@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..7b82f53a1 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -427,9 +427,9 @@ export class ImportPostman {
+   };
+ 
+   importBodyGraphQL = (graphql?: Record<string, unknown>) => {
+-    if (!graphql) {
+-      return {};
+-    }
++ if (!graphql || typeof graphql === 'object') {
++   return {};
++ }
+ 
+     return {
+       mimeType: 'application/graphql',

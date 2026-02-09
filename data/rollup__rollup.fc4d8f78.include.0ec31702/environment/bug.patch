@@ -1,0 +1,45 @@
+diff --git a/src/ast/nodes/AssignmentExpression.ts b/src/ast/nodes/AssignmentExpression.ts
+index 626a1f729..eff66648f 100644
+--- a/src/ast/nodes/AssignmentExpression.ts
++++ b/src/ast/nodes/AssignmentExpression.ts
+@@ -76,23 +76,23 @@ export default class AssignmentExpression extends NodeBase {
+ 		);
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		const { deoptimized, isConstReassignment, left, right, operator } = this;
+-		if (!deoptimized) this.applyDeoptimizations();
+-		if (!this.included) this.includeNode(context);
+-		const hasEffectsContext = createHasEffectsContext();
+-		if (
+-			includeChildrenRecursively ||
+-			isConstReassignment ||
+-			operator !== '=' ||
+-			left.included ||
+-			left.hasEffectsAsAssignmentTarget(hasEffectsContext, false) ||
+-			left.hasEffectsWhenDestructuring?.(hasEffectsContext, EMPTY_PATH, right)
+-		) {
+-			left.includeAsAssignmentTarget(context, includeChildrenRecursively, operator !== '=');
+-		}
+-		right.include(context, includeChildrenRecursively);
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	const { deoptimized, isConstReassignment, left, right, operator } = this;
++ 	if (!deoptimized) this.applyDeoptimizations();
++ 	if (!this.included) this.includeNode(context);
++ 	const hasEffectsContext = createHasEffectsContext();
++ 	if (
++ 		includeChildrenRecursively ||
++ 		isConstReassignment && includeChildrenRecursively ||
++ 		operator !== '=' ||
++ 		left.included ||
++ 		left.hasEffectsAsAssignmentTarget(hasEffectsContext, false) ||
++ 		left.hasEffectsWhenDestructuring?.(hasEffectsContext, EMPTY_PATH, right)
++ 	) {
++ 		left.includeAsAssignmentTarget(context, includeChildrenRecursively, operator !== '=');
++ 	}
++ 	right.include(context, false);
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

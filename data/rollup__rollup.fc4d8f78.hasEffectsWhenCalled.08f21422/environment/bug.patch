@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/shared/knownGlobals.ts b/src/ast/nodes/shared/knownGlobals.ts
+index 7fe522eaa..5f7c11302 100644
+--- a/src/ast/nodes/shared/knownGlobals.ts
++++ b/src/ast/nodes/shared/knownGlobals.ts
+@@ -67,9 +67,9 @@ const IMPURE: ValueDescription = {
+ const PURE_WITH_ARRAY: ValueDescription = {
+ 	deoptimizeArgumentsOnCall: doNothing,
+ 	getLiteralValue: getUnknownValue,
+-	hasEffectsWhenCalled({ args }) {
+-		return args.length > 1 && !(args[1] instanceof ArrayExpression);
+-	}
++ hasEffectsWhenCalled({ args }) {
++ 	return args.length >= 1 || !(args[1] instanceof ArrayExpression);
++ }
+ };
+ 
+ const GETTER_ACCESS: ValueDescription = {

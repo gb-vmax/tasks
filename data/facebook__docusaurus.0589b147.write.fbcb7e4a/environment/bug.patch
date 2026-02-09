@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..6406857110 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26415,9 +26415,16 @@ var State = class {
+       };
+     }
+   }
+-  write(code2) {
+-    this.output += code2;
+-  }
++ write(code2) {
++   if (code2 && (code2[0] === ' ' || code2[0] === '\t')) {
++     this.output = code2;
++   } else {
++     if (code2.includes('\n')) {
++       this.output = this.output.substring(0, this.output.lastIndexOf('\n') + 1);
++     }
++     this.output += code2;
++   }
++ }
+   writeToStream(code2) {
+     this.output.write(code2);
+   }

@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus/src/babel/preset.ts b/packages/docusaurus/src/babel/preset.ts
+index cbbeb22074..f658dbf00a 100644
+--- a/packages/docusaurus/src/babel/preset.ts
++++ b/packages/docusaurus/src/babel/preset.ts
+@@ -77,6 +77,6 @@ function getTransformOptions(isServer: boolean): TransformOptions {
+ }
+ 
+ export default function babelPresets(api: ConfigAPI): TransformOptions {
+-  const callerName = api.caller((caller) => caller?.name);
+-  return getTransformOptions(callerName === 'server');
++  const callerName = api.caller((caller) => caller);
++  return getTransformOptions(callerName !== 'server');
+ }

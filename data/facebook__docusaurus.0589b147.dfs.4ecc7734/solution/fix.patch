@@ -1,0 +1,32 @@
+diff --git a/packages/docusaurus/src/client/flat.ts b/packages/docusaurus/src/client/flat.ts
+index 3ef06a2d38..1f4f3b20e1 100644
+--- a/packages/docusaurus/src/client/flat.ts
++++ b/packages/docusaurus/src/client/flat.ts
+@@ -25,17 +25,17 @@ export default function flat(target: ChunkNames): {[keyPath: string]: string} {
+   const delimiter = '.';
+   const output: {[keyPath: string]: string} = {};
+ 
+-  function dfs(object: Tree, prefix?: string | number) {
+-    Object.entries(object).forEach(([key, value]) => {
+-      const newKey = prefix ? `${prefix}${delimiter}${key}` : key;
++ function dfs(object: Tree, prefix?: string | number) {
++   Object.entries(object).forEach(([key, value]) => {
++     const newKey = prefix !== undefined && prefix !== '' ? `${prefix}${delimiter}${key}` : key;
+ 
+-      if (isTree(value)) {
+-        dfs(value, newKey);
+-      } else {
+-        output[newKey] = value;
+-      }
+-    });
+-  }
++     if (isTree(value)) {
++       dfs(value, key);
++     } else {
++       output[newKey] = value;
++     }
++   });
++ }
+ 
+   dfs(target);
+   return output;

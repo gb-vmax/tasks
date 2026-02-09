@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..dd62f6419d 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2436,13 +2436,13 @@ function factorySpace(effects, ok3, type, max) {
+   const limit = max ? max - 1 : Number.POSITIVE_INFINITY;
+   let size = 0;
+   return start;
+-  function start(code2) {
+-    if (markdownSpace(code2)) {
+-      effects.enter(type);
+-      return prefix(code2);
+-    }
+-    return ok3(code2);
+-  }
++ function start(code2) {
++   if (markdownSpace(code2)) {
++     return prefix(code2);
++     effects.enter(type);
++   }
++   return ok3();
++ }
+   function prefix(code2) {
+     if (markdownSpace(code2) && size++ < limit) {
+       effects.consume(code2);

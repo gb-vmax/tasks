@@ -1,0 +1,77 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..3c7279783 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -29,16 +29,62 @@ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: ({ title, message, addCancel, onConfirm, okLabel }) => {
+-      setState({
+-        title,
+-        message,
+-        addCancel,
+-        okLabel,
+-        onConfirm,
+-      });
+-      modalRef.current?.show();
+-    },
++const alertQueueRef = useRef<AlertModalOptions[]>([]);
++const timeoutRef = useRef<NodeJS.Timeout | null>(null);
++
++const processAlertQueue = () => {
++  if (timeoutRef.current) {
++    clearTimeout(timeoutRef.current);
++    timeoutRef.current = null;
++  }
++  
++  if (alertQueueRef.current.length > 0) {
++    const nextAlert = alertQueueRef.current.shift()!;
++    setState(nextAlert);
++    modalRef.current?.show();
++    
++    if (nextAlert.timeout && nextAlert.timeout > 0) {
++      timeoutRef.current = setTimeout(() => {
++        modalRef.current?.hide();
++        processAlertQueue();
++      }, nextAlert.timeout);
++    }
++  }
++};
++
++ show: ({ title, message, addCancel, onConfirm, okLabel, timeout, priority }) => {
++   const isCurrentlyVisible = modalRef.current && state.title !== undefined && state.message !== undefined;
++  
++   const newAlert = {
++     title,
++     message,
++     addCancel,
++     okLabel,
++     onConfirm,
++     timeout,
++   };
++  
++   if (isCurrentlyVisible) {
++     if (priority) {
++       alertQueueRef.current.unshift(newAlert);
++     } else {
++       alertQueueRef.current.push(newAlert);
++     }
++   } else {
++     setState(newAlert);
++     modalRef.current?.show();
++    
++     if (timeout && timeout > 0) {
++       if (timeoutRef.current) {
++         clearTimeout(timeoutRef.current);
++       }
++       timeoutRef.current = setTimeout(() => {
++         modalRef.current?.hide();
++         processAlertQueue();
++       }, timeout);
++     }
++   }
++ },
+   }), []);
+ 
+   const { message, title, addCancel, okLabel } = state;

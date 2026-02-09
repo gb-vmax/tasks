@@ -1,0 +1,78 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..26761c510 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -503,9 +503,70 @@ export const database = {
+ 
+   /** Removes entries without removing their children */
+   unsafeRemove: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<void>('unsafeRemove', ...arguments);
+-    }
++async function _getOrphanedChildren(doc: BaseModel): Promise<BaseModel[]> {
++  const orphans: BaseModel[] = [];
++  
++  for (const type of allTypes()) {
++    const children = await database.find(type, { parentId: doc._id });
++    orphans.push(...children);
++  }
++  
++  return orphans;
++}
++
++function _summarizeOrphanedChildren(children: BaseModel[]): string {
++  const typeCounts = children.reduce<Record<string, number>>((acc, child) => {
++    acc[child.type] = (acc[child.type] || 0) + 1;
++    return acc;
++  }, {});
++  
++  return Object.entries(typeCounts)
++    .map(([type, count]) => `${count} ${type}`)
++    .join(', ');
++}
++
++async function _recordUnsafeRemoval(doc: BaseModel, orphanedChildren: BaseModel[]): Promise<void> {
++  const auditEntry = {
++    timestamp: Date.now(),
++    operation: 'unsafeRemove',
++    documentType: doc.type,
++    documentId: doc._id,
++    orphanedCount: orphanedChildren.length,
++    orphanedTypes: [...new Set(orphanedChildren.map(c => c.type))],
++  };
++  
++  if (typeof (globalThis as any).__insomnia_unsafe_removal_audit === 'undefined') {
++    (globalThis as any).__insomnia_unsafe_removal_audit = [];
++  }
++  
++  (globalThis as any).__insomnia_unsafe_removal_audit.push(auditEntry);
++  
++  const maxAuditEntries = 1000;
++  if ((globalThis as any).__insomnia_unsafe_removal_audit.length > maxAuditEntries) {
++    (globalThis as any).__insomnia_unsafe_removal_audit = 
++      (globalThis as any).__insomnia_unsafe_removal_audit.slice(-maxAuditEntries);
++  }
++}
++
++ unsafeRemove: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<void>('unsafeRemove', ...arguments);
++   }
++
++   const orphanedChildren = await _getOrphanedChildren(doc);
++  
++   if (orphanedChildren.length > 0) {
++     const childSummary = _summarizeOrphanedChildren(orphanedChildren);
++     console.warn(
++       `[db] Unsafe remove of ${doc.type} ${doc._id} will orphan ${orphanedChildren.length} document(s): ${childSummary}`
++     );
++    
++     await _recordUnsafeRemoval(doc, orphanedChildren);
++   }
++
++   (db[doc.type] as NeDB<T>).remove({ _id: doc._id });
++   notifyOfChange('remove', doc, fromSync);
++ },
+ 
+     (db[doc.type] as NeDB<T>).remove({ _id: doc._id });
+     notifyOfChange('remove', doc, fromSync);

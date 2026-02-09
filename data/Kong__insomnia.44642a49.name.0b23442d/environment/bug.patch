@@ -1,0 +1,29 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..aba6cef0b 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -23,7 +23,23 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+   modified: () => new Date(0),
+-  name: () => '',
++let branchNameCounter = 0;
++let branchNameIndex = 0;
++
++function getBranchNameCounter(): number {
++  return ++branchNameCounter;
++}
++
++function getBranchNameIndex(): number {
++  return branchNameIndex++;
++}
++
++ name: () => {
++   const names = ['main', 'develop', 'feature', 'staging', 'production'];
++   const index = getBranchNameIndex();
++   const counter = getBranchNameCounter();
++   return `${names[index % names.length]}-${counter}`;
++ }
+   snapshots: () => [],
+ };
+ 

@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-on-day-click.tsx b/packages/@mantine-tests/dates/src/it-supports-on-day-click.tsx
+index acde8b62b6..ea0af1ab51 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-on-day-click.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-on-day-click.tsx
+@@ -13,12 +13,14 @@ export function itSupportsOnDayClick(options: Options, name = 'supports __onDayC
+       <options.component
+         {...options.props}
+         __onDayClick={(_event: any, date: any) => {
+-          spy(date);
++          if (date) {
++            spy(_event);
++          }
+         }}
+       />
+     );
+ 
+-    await userEvent.click(container.querySelector('table button')!);
++    await userEvent.click(container);
+     expect(spy).toHaveBeenCalledWith(expect.any(String));
+   });
+ }

@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia/src/models/grpc-request-meta.ts b/packages/insomnia/src/models/grpc-request-meta.ts
+index e77655a3e..654d54412 100644
+--- a/packages/insomnia/src/models/grpc-request-meta.ts
++++ b/packages/insomnia/src/models/grpc-request-meta.ts
+@@ -83,8 +83,54 @@ export function all() {
+   return db.all<GrpcRequestMeta>(type);
+ }
+ 
++interface ValidationErrorDetails {
++  displayValue: string;
++  receivedType: string;
++  timestamp: number;
++  stackTrace?: string;
++}
++
++function buildValidationErrorDetails(parentId: string | null): ValidationErrorDetails {
++  let displayValue: string;
++  let receivedType: string;
++
++  if (parentId === null) {
++    displayValue = 'null';
++    receivedType = 'null';
++  } else if (parentId === undefined) {
++    displayValue = 'undefined';
++    receivedType = 'undefined';
++  } else if (parentId === '') {
++    displayValue = '(empty string)';
++    receivedType = 'string';
++  } else {
++    displayValue = `"${parentId}"`;
++    receivedType = typeof parentId;
++  }
++
++  return {
++    displayValue,
++    receivedType,
++    timestamp: Date.now(),
++    stackTrace: new Error().stack,
++  };
++}
++
++function trackValidationFailure(details: ValidationErrorDetails): void {
++  if (typeof console !== 'undefined' && console.warn) {
++    console.warn('[GrpcRequestMeta Validation]', {
++      message: 'Invalid parent ID detected',
++      value: details.displayValue,
++      type: details.receivedType,
++      timestamp: new Date(details.timestamp).toISOString(),
++    });
++  }
++}
++
+ function expectParentToBeGrpcRequest(parentId: string | null) {
+   if (!isGrpcRequestId(parentId)) {
+-    throw new Error('Expected the parent of GrpcRequestMeta to be a GrpcRequest');
++    const errorDetails = buildValidationErrorDetails(parentId);
++    trackValidationFailure(errorDetails);
++    throw new Error(`Expected the parent of GrpcRequestMeta to be a GrpcRequest, but received: ${errorDetails.displayValue} (type: ${errorDetails.receivedType})`);
+   }
+ }

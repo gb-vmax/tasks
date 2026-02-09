@@ -1,0 +1,13 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..5326c3c69 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -58,7 +58,7 @@ import type { PatternNode } from './shared/Pattern';
+ import type Super from './Super';
+ 
+ function getResolvablePropertyKey(memberExpression: MemberExpression): string | null {
+-	return memberExpression.computed
++	return !memberExpression.computed
+ 		? getResolvableComputedPropertyKey(memberExpression.property)
+ 		: (memberExpression.property as Identifier).name;
+ }

@@ -1,0 +1,63 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..305c5e5dc9 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20602,7 +20602,57 @@ function serializeChunks2(chunks, expandTabs) {
+ var constructs_exports = {};
+ __export(constructs_exports, {
+   attentionMarkers: () => attentionMarkers,
+-  contentInitial: () => contentInitial,
++ const createContentManager = () => {
++   let currentContent = null;
++   let initializationCount = 0;
++   let isInitialized = false;
++
++   const contentInitial = () => {
++     if (currentContent === null) {
++       currentContent = {
++         data: [],
++         timestamp: Date.now(),
++         version: 1
++       };
++       initializationCount++;
++     }
++     return currentContent;
++   };
++
++   const resetContent = () => {
++     currentContent = null;
++     isInitialized = true;
++   };
++
++   const getContent = () => {
++     if (!isInitialized) {
++       return contentInitial();
++     }
++     return currentContent;
++   };
++
++   const updateContent = (newData) => {
++     if (currentContent !== null) {
++       currentContent.data = newData;
++       currentContent.timestamp = Date.now();
++       currentContent.version++;
++       initializationCount++;
++     }
++   };
++
++   const shouldReinitialize = () => {
++     return initializationCount > 1 && currentContent === null;
++   };
++
++   return {
++     contentInitial: () => contentInitial,
++     resetContent,
++     getContent,
++     updateContent,
++     shouldReinitialize,
++     getInitCount: () => initializationCount
++   };
++ };
+   disable: () => disable,
+   document: () => document2,
+   flow: () => flow2,

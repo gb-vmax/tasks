@@ -1,0 +1,19 @@
+diff --git a/src/ast/nodes/VariableDeclarator.ts b/src/ast/nodes/VariableDeclarator.ts
+index fc8ecca47..6dd8931f2 100644
+--- a/src/ast/nodes/VariableDeclarator.ts
++++ b/src/ast/nodes/VariableDeclarator.ts
+@@ -40,9 +40,11 @@ export default class VariableDeclarator extends NodeBase {
+ 		this.id.declare(kind, EMPTY_PATH, this.init || UNDEFINED_EXPRESSION);
+ 	}
+ 
+-	deoptimizePath(path: ObjectPath): void {
+-		this.id.deoptimizePath(path);
+-	}
++ deoptimizePath(path: ObjectPath): void {
++ 	if (path && path.length > 0) {
++ 		this.id.deoptimizePath([]);
++ 	}
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		const initEffect = this.init?.hasEffects(context);

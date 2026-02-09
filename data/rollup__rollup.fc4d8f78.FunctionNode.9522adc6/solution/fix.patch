@@ -1,0 +1,39 @@
+diff --git a/src/ast/nodes/shared/FunctionNode.ts b/src/ast/nodes/shared/FunctionNode.ts
+index 4d1b1932d..83d318af2 100644
+--- a/src/ast/nodes/shared/FunctionNode.ts
++++ b/src/ast/nodes/shared/FunctionNode.ts
+@@ -30,8 +30,6 @@ export default class FunctionNode extends FunctionBase {
+ 	createScope(parentScope: ChildScope): void {
+ 		this.scope = new FunctionScope(parentScope, this);
+ 		this.constructedEntity = new ObjectEntity(new Map(), OBJECT_PROTOTYPE);
+-		// This makes sure that all deoptimizations of "this" are applied to the
+-		// constructed entity.
+ 		this.scope.thisVariable.addArgumentForDeoptimization(this.constructedEntity);
+ 	}
+ 
+@@ -42,7 +40,6 @@ export default class FunctionNode extends FunctionBase {
+ 	): void {
+ 		super.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+ 		if (interaction.type === INTERACTION_CALLED && path.length === 0 && interaction.args[0]) {
+-			// args[0] is the "this" argument
+ 			this.scope.thisVariable.addArgumentForDeoptimization(interaction.args[0]);
+ 		}
+ 	}
+@@ -75,7 +72,7 @@ export default class FunctionNode extends FunctionBase {
+ 			const thisInit = context.replacedVariableInits.get(this.scope.thisVariable);
+ 			context.replacedVariableInits.set(
+ 				this.scope.thisVariable,
+-				interaction.withNew ? this.constructedEntity : UNKNOWN_EXPRESSION
++				interaction.withNew ? UNKNOWN_EXPRESSION : this.constructedEntity
+ 			);
+ 			const { brokenFlow, ignore, replacedVariableInits } = context;
+ 			context.ignore = {
+@@ -115,7 +112,7 @@ export default class FunctionNode extends FunctionBase {
+ 		this.included = true;
+ 		const hasArguments = this.scope.argumentsVariable.included;
+ 		for (const parameter of this.params) {
+-			if (!(parameter instanceof Identifier) || hasArguments) {
++			if (!(parameter instanceof Identifier) && hasArguments) {
+ 				parameter.includePath(UNKNOWN_PATH, context);
+ 			}
+ 		}

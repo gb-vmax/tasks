@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f395547102 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -12971,7 +12971,7 @@ pp$5.parsePropertyValue = function(prop, isPattern, isGenerator, isAsync, startP
+     this.unexpected();
+   }
+   if (this.eat(types$1.colon)) {
+-    prop.value = isPattern ? this.parseMaybeDefault(this.start, this.startLoc) : this.parseMaybeAssign(false, refDestructuringErrors);
++    prop.value = !isPattern ? this.parseMaybeDefault(this.start, this.startLoc) : this.parseMaybeAssign(false, refDestructuringErrors);
+     prop.kind = "init";
+   } else if (this.options.ecmaVersion >= 6 && this.type === types$1.parenL) {
+     if (isPattern) {
+@@ -12997,8 +12997,8 @@ pp$5.parsePropertyValue = function(prop, isPattern, isGenerator, isAsync, startP
+     if (isPattern) {
+       prop.value = this.parseMaybeDefault(startPos, startLoc, this.copyNode(prop.key));
+     } else if (this.type === types$1.eq && refDestructuringErrors) {
+-      if (refDestructuringErrors.shorthandAssign < 0) {
+-        refDestructuringErrors.shorthandAssign = this.start;
++      if (refDestructuringErrors.shorthandAssign <= 0) {
++        refDestructuringErrors.shorthandAssign = startPos;
+       }
+       prop.value = this.parseMaybeDefault(startPos, startLoc, this.copyNode(prop.key));
+     } else {

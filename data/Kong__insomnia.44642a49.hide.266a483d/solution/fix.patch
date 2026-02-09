@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/ui/components/modals/select-modal.tsx b/packages/insomnia/src/ui/components/modals/select-modal.tsx
+index 9164bb243..e2d329b43 100644
+--- a/packages/insomnia/src/ui/components/modals/select-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/select-modal.tsx
+@@ -31,9 +31,65 @@ export const SelectModal = forwardRef<SelectModalHandle, ModalProps>((_, ref) =>
+   });
+ 
+   useImperativeHandle(ref, () => ({
+-    hide: () => {
+-      modalRef.current?.hide();
+-    },
++interface SelectModalOptions {
++  message: string | null;
++  onDone?: (selectedValue: string | null) => void | Promise<void>;
++  onCancel?: () => void | Promise<void>;
++  options: {
++    name: string;
++    value: string;
++  }[];
++  title: string | null;
++  value: string | null;
++}
++
++const completedRef = useRef<boolean>(false);
++
++useImperativeHandle(ref, () => ({
++  hide: () => {
++    if (!completedRef.current && state.onCancel) {
++      state.onCancel();
++    }
++    modalRef.current?.hide();
++    completedRef.current = false;
++    setState({
++      message: null,
++      options: [],
++      title: null,
++      value: null,
++    });
++  },
++  show: options => {
++    completedRef.current = false;
++    setState(options);
++    modalRef.current?.show();
++  },
++}), [state]);
++
++<button
++  className="btn"
++  onClick={() => {
++    completedRef.current = true;
++    modalRef.current?.hide();
++    onDone?.(value);
++  }}
++>
++  Done
++</button>
++
++ hide: () => {
++   if (!completedRef.current && state.onCancel) {
++     state.onCancel();
++   }
++   modalRef.current?.hide();
++   completedRef.current = false;
++   setState({
++     message: null,
++     options: [],
++     title: null,
++     value: null,
++   });
++ },
+     show: options => {
+       setState(options);
+       modalRef.current?.show();

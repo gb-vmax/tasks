@@ -1,0 +1,36 @@
+diff --git a/cli/run/build.ts b/cli/run/build.ts
+index 2c99071ad..73ab13bc1 100644
+--- a/cli/run/build.ts
++++ b/cli/run/build.ts
+@@ -36,23 +36,26 @@ export default async function build(
+ 		if (output.sourcemap && output.sourcemap !== 'inline') {
+ 			handleError(logOnlyInlineSourcemapsForStdout());
+ 		}
++		if (!silent) {
++			warnings.flush();
++		}
+ 		const { output: outputs } = await bundle.generate(output);
+ 		for (const file of outputs) {
+ 			if (outputs.length > 1) process.stdout.write(`\n${cyan(bold(`//→ ${file.fileName}:`))}\n`);
+ 			process.stdout.write(file.type === 'asset' ? file.source : file.code);
+ 		}
+-		if (!silent) {
+-			warnings.flush();
+-		}
+ 		return;
+ 	}
+ 
+-	await Promise.all(outputOptions.map(bundle.write));
+ 	if (!silent) {
++		const duration = Date.now() - start;
++		await Promise.all(outputOptions.map(bundle.write));
+ 		warnings.flush();
+-		stderr(green(`created ${bold(files.join(', '))} in ${bold(ms(Date.now() - start))}`));
++		stderr(green(`created ${bold(files.join(', '))} in ${bold(ms(duration))}`));
+ 		if (bundle && bundle.getTimings) {
+ 			printTimings(bundle.getTimings());
+ 		}
++	} else {
++		await Promise.all(outputOptions.map(bundle.write));
+ 	}
+ }

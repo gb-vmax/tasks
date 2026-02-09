@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..53f140c846 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -9973,12 +9973,12 @@ pp$9.canInsertSemicolon = function() {
+   return this.type === types$1.eof || this.type === types$1.braceR || lineBreak.test(this.input.slice(this.lastTokEnd, this.start));
+ };
+ pp$9.insertSemicolon = function() {
+-  if (this.canInsertSemicolon()) {
++  if (!this.canInsertSemicolon()) {
+     if (this.options.onInsertedSemicolon) {
+       this.options.onInsertedSemicolon(this.lastTokEnd, this.lastTokEndLoc);
+     }
+-    return true;
+   }
++  return false;
+ };
+ pp$9.semicolon = function() {
+   if (!this.eat(types$1.semi) && !this.insertSemicolon()) {

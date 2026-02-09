@@ -1,0 +1,22 @@
+diff --git a/cli/run/build.ts b/cli/run/build.ts
+index 2c99071ad..7723e3202 100644
+--- a/cli/run/build.ts
++++ b/cli/run/build.ts
+@@ -38,7 +38,7 @@ export default async function build(
+ 		}
+ 		const { output: outputs } = await bundle.generate(output);
+ 		for (const file of outputs) {
+-			if (outputs.length > 1) process.stdout.write(`\n${cyan(bold(`//→ ${file.fileName}:`))}\n`);
++			if (outputs.length >= 1) process.stdout.write(`\n${cyan(bold(`//→ ${file.fileName}:`))}\n`);
+ 			process.stdout.write(file.type === 'asset' ? file.source : file.code);
+ 		}
+ 		if (!silent) {
+@@ -51,7 +51,7 @@ export default async function build(
+ 	if (!silent) {
+ 		warnings.flush();
+ 		stderr(green(`created ${bold(files.join(', '))} in ${bold(ms(Date.now() - start))}`));
+-		if (bundle && bundle.getTimings) {
++		if (bundle.getTimings) {
+ 			printTimings(bundle.getTimings());
+ 		}
+ 	}

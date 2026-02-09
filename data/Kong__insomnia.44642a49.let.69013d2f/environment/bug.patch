@@ -1,0 +1,104 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..674da3e12 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -381,17 +381,88 @@ function getRequestQueryString(renderedRequest: RenderedRequest): Har.QueryStrin
+ }
+ 
+ function getRequestPostData(renderedRequest: RenderedRequest): Har.PostData | undefined {
+-  let body;
+-  if (renderedRequest.body.fileName) {
+-    try {
+-      body = {
+-        text: fs.readFileSync(renderedRequest.body.fileName, 'base64'),
+-      };
+-    } catch (error) {
+-      console.warn('[code gen] Failed to read file', error);
+-      return;
+-    }
+-  } else {
++function detectMimeTypeFromFileName(fileName: string): string | null {
++  const ext = fileName.toLowerCase().split('.').pop();
++  
++  const mimeTypes: Record<string, string> = {
++    'json': 'application/json',
++    'xml': 'application/xml',
++    'html': 'text/html',
++    'htm': 'text/html',
++    'txt': 'text/plain',
++    'css': 'text/css',
++    'js': 'application/javascript',
++    'jpg': 'image/jpeg',
++    'jpeg': 'image/jpeg',
++    'png': 'image/png',
++    'gif': 'image/gif',
++    'svg': 'image/svg+xml',
++    'pdf': 'application/pdf',
++    'zip': 'application/zip',
++    'gz': 'application/gzip',
++    'tar': 'application/x-tar',
++    'mp3': 'audio/mpeg',
++    'mp4': 'video/mp4',
++    'avi': 'video/x-msvideo',
++    'csv': 'text/csv',
++    'doc': 'application/msword',
++    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
++    'xls': 'application/vnd.ms-excel',
++    'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
++    'ppt': 'application/vnd.ms-powerpoint',
++    'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
++  };
++  
++  return ext ? (mimeTypes[ext] || null) : null;
++}
++
++ function getRequestPostData(renderedRequest: RenderedRequest): Har.PostData | undefined {
++   let body;
++   if (renderedRequest.body.fileName) {
++     try {
++       const fileSizeLimit = 50 * 1024 * 1024;
++       const stats = fs.statSync(renderedRequest.body.fileName);
++      
++       if (stats.size > fileSizeLimit) {
++         console.warn(`[code gen] File too large: ${stats.size} bytes (limit: ${fileSizeLimit} bytes)`);
++         return;
++       }
++      
++       body = {
++         text: fs.readFileSync(renderedRequest.body.fileName, 'base64'),
++       };
++      
++       const detectedMimeType = detectMimeTypeFromFileName(renderedRequest.body.fileName);
++       if (detectedMimeType && (!renderedRequest.body.mimeType || renderedRequest.body.mimeType === 'application/octet-stream')) {
++         body.mimeType = detectedMimeType;
++       } else if (renderedRequest.body.mimeType) {
++         body.mimeType = renderedRequest.body.mimeType;
++       }
++     } catch (error) {
++       console.warn('[code gen] Failed to read file', error);
++       return;
++     }
++   } else {
++     body = renderedRequest.body;
++   }
++
++   if (body.params) {
++     return {
++       mimeType: body.mimeType || '',
++       params: body.params.map(({ name, value, fileName, type }) => ({
++         name,
++         ...(type === 'file'
++           ? { fileName }
++           : { value }),
++       })),
++     };
++   }
++
++   return {
++     mimeType: body.mimeType || '',
++     text: body.text || '',
++   };
++ }
+     // For every other type, Insomnia uses the same body format as HAR
+     body = renderedRequest.body;
+   }

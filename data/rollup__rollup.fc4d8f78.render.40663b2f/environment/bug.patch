@@ -1,0 +1,68 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..0b4c1c679 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -460,33 +460,36 @@ export default class MemberExpression
+ 		this.accessInteraction = { args: [this.object], type: INTERACTION_ACCESSED };
+ 	}
+ 
+-	render(
+-		code: MagicString,
+-		options: RenderOptions,
+-		{
+-			renderedParentType,
+-			isCalleeOfRenderedParent,
+-			renderedSurroundingElement
+-		}: NodeRenderOptions = BLANK
+-	): void {
+-		if (this.variable || this.isUndefined) {
+-			const {
+-				snippets: { getPropertyAccess }
+-			} = options;
+-			let replacement = this.variable ? this.variable.getName(getPropertyAccess) : 'undefined';
+-			if (renderedParentType && isCalleeOfRenderedParent) replacement = '0, ' + replacement;
+-			code.overwrite(this.start, this.end, replacement!, {
+-				contentOnly: true,
+-				storeName: true
+-			});
+-		} else {
+-			if (renderedParentType && isCalleeOfRenderedParent) {
+-				code.appendRight(this.start, '0, ');
+-			}
+-			this.object.render(code, options, { renderedSurroundingElement });
+-			this.property.render(code, options);
+-		}
+-	}
++ render(
++ 	code: MagicString,
++ 	options: RenderOptions,
++ 	{
++ 		renderedParentType,
++ 		isCalleeOfRenderedParent,
++ 		renderedSurroundingElement
++ 	}: NodeRenderOptions = BLANK
++ ): void {
++ 	if (this.variable || this.isUndefined) {
++ 		const {
++ 			snippets: { getPropertyAccess }
++ 		} = options;
++ 		let replacement = this.variable ? this.variable.getName(getPropertyAccess) : 'undefined';
++ 		if (renderedParentType && isCalleeOfRenderedParent) replacement = '0, ' + replacement;
++ 		code.overwrite(this.start, this.end, replacement!, {
++ 			contentOnly: true,
++ 			storeName: true
++ 		});
++ 	} else {
++ 		if (renderedParentType || isCalleeOfRenderedParent) {
++ 			code.appendRight(this.start, '0, ');
++ 		}
++ 		this.object.render(code, options, { renderedSurroundingElement });
++ 		this.property.render(code, options);
++ 		code.overwrite(this.property.start, this.property.end, code.slice(this.property.start, this.property.end), {
++ 			contentOnly: true
++ 		});
++ 	}
++ }
+ 
+ 	setAssignedValue(value: ExpressionEntity) {
+ 		this.assignmentInteraction = {

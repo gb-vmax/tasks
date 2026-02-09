@@ -1,0 +1,180 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..d5dfc472a 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -246,11 +246,171 @@ export class RequestAuth extends Property {
+     private authOptions: Map<string, VariableList<Variable>> = new Map();
+ 
+     constructor(options: AuthOptions, parent?: Property) {
+-        super();
+-
+-        if (!RequestAuth.isValidType(options.type)) {
+-            throw Error(`invalid auth type ${options.type}`);
++private applyDefaultsAndNormalize(options: AuthOptions): AuthOptions {
++    const normalized = { ...options };
++    
++    const ensureOption = (opts: AuthOption[] | undefined, key: string, defaultValue: string): AuthOption[] => {
++        if (!opts) {
++            return [{ key, value: defaultValue }];
++        }
++        
++        const normalizedOpts = opts.map(opt => ({
++            ...opt,
++            value: typeof opt.value === 'string' ? opt.value.trim() : opt.value,
++        }));
++        
++        const hasKey = normalizedOpts.some(opt => opt.key === key);
++        if (!hasKey) {
++            normalizedOpts.push({ key, value: defaultValue });
++        }
++        
++        return normalizedOpts;
++    };
++    
++    const ensureOAuth2Option = (opts: OAuth2AuthOption[] | undefined, key: string, defaultValue: string | OAuth2Param[]): OAuth2AuthOption[] => {
++        if (!opts) {
++            return [{ key, value: defaultValue }];
+         }
++        
++        const hasKey = opts.some(opt => opt.key === key);
++        if (!hasKey) {
++            opts.push({ key, value: defaultValue });
++        }
++        
++        return opts;
++    };
++    
++    switch (options.type) {
++        case 'basic':
++            normalized.basic = ensureOption(options.basic, 'username', '');
++            normalized.basic = ensureOption(normalized.basic, 'password', '');
++            normalized.basic = ensureOption(normalized.basic, 'disabled', 'false');
++            normalized.basic = ensureOption(normalized.basic, 'useISO88591', 'false');
++            break;
++            
++        case 'bearer':
++            normalized.bearer = ensureOption(options.bearer, 'token', '');
++            normalized.bearer = ensureOption(normalized.bearer, 'disabled', 'false');
++            normalized.bearer = ensureOption(normalized.bearer, 'prefix', '');
++            break;
++            
++        case 'apikey':
++            normalized.apikey = ensureOption(options.apikey, 'key', '');
++            normalized.apikey = ensureOption(normalized.apikey, 'value', '');
++            normalized.apikey = ensureOption(normalized.apikey, 'in', 'header');
++            normalized.apikey = ensureOption(normalized.apikey, 'disabled', 'false');
++            break;
++            
++        case 'oauth1':
++            normalized.oauth1 = ensureOption(options.oauth1, 'consumerKey', '');
++            normalized.oauth1 = ensureOption(normalized.oauth1, 'consumerSecret', '');
++            normalized.oauth1 = ensureOption(normalized.oauth1, 'signatureMethod', 'HMAC-SHA1');
++            normalized.oauth1 = ensureOption(normalized.oauth1, 'version', '1.0');
++            normalized.oauth1 = ensureOption(normalized.oauth1, 'disabled', 'false');
++            normalized.oauth1 = ensureOption(normalized.oauth1, 'token', '');
++            normalized.oauth1 = ensureOption(normalized.oauth1, 'tokenSecret', '');
++            normalized.oauth1 = ensureOption(normalized.oauth1, 'includeBodyHash', 'false');
++            break;
++            
++        case 'oauth2':
++            normalized.oauth2 = ensureOAuth2Option(options.oauth2, 'grant_type', 'authorization_code');
++            normalized.oauth2 = ensureOAuth2Option(normalized.oauth2, 'disabled', 'false');
++            normalized.oauth2 = ensureOAuth2Option(normalized.oauth2, 'clientId', '');
++            normalized.oauth2 = ensureOAuth2Option(normalized.oauth2, 'clientSecret', '');
++            normalized.oauth2 = ensureOAuth2Option(normalized.oauth2, 'accessToken', '');
++            normalized.oauth2 = ensureOAuth2Option(normalized.oauth2, 'authUrl', '');
++            normalized.oauth2 = ensureOAuth2Option(normalized.oauth2, 'accessTokenUrl', '');
++            normalized.oauth2 = ensureOAuth2Option(normalized.oauth2, 'tokenRequestParams', []);
++            break;
++            
++        case 'digest':
++            normalized.digest = ensureOption(options.digest, 'username', '');
++            normalized.digest = ensureOption(normalized.digest, 'password', '');
++            normalized.digest = ensureOption(normalized.digest, 'disabled', 'false');
++            normalized.digest = ensureOption(normalized.digest, 'algorithm', 'MD5');
++            break;
++            
++        case 'hawk':
++            normalized.hawk = ensureOption(options.hawk, 'authId', '');
++            normalized.hawk = ensureOption(normalized.hawk, 'authKey', '');
++            normalized.hawk = ensureOption(normalized.hawk, 'algorithm', 'sha256');
++            normalized.hawk = ensureOption(normalized.hawk, 'disabled', 'false');
++            normalized.hawk = ensureOption(normalized.hawk, 'includePayloadHash', 'false');
++            break;
++            
++        case 'awsv4':
++            normalized.awsv4 = ensureOption(options.awsv4, 'accessKey', '');
++            normalized.awsv4 = ensureOption(normalized.awsv4, 'secretKey', '');
++            normalized.awsv4 = ensureOption(normalized.awsv4, 'region', '');
++            normalized.awsv4 = ensureOption(normalized.awsv4, 'service', '');
++            normalized.awsv4 = ensureOption(normalized.awsv4, 'disabled', 'false');
++            normalized.awsv4 = ensureOption(normalized.awsv4, 'sessionToken', '');
++            break;
++            
++        case 'ntlm':
++            normalized.ntlm = ensureOption(options.ntlm, 'username', '');
++            normalized.ntlm = ensureOption(normalized.ntlm, 'password', '');
++            normalized.ntlm = ensureOption(normalized.ntlm, 'disabled', 'false');
++            break;
++            
++        case 'asap':
++            normalized.asap = ensureOption(options.asap, 'iss', '');
++            normalized.asap = ensureOption(normalized.asap, 'sub', '');
++            normalized.asap = ensureOption(normalized.asap, 'aud', '');
++            normalized.asap = ensureOption(normalized.asap, 'kid', '');
++            normalized.asap = ensureOption(normalized.asap, 'privateKey', '');
++            normalized.asap = ensureOption(normalized.asap, 'disabled', 'false');
++            normalized.asap = ensureOption(normalized.asap, 'alg', 'RS256');
++            break;
++            
++        case 'edgegrid':
++            normalized.edgegrid = ensureOption(options.edgegrid, 'clientToken', '');
++            normalized.edgegrid = ensureOption(normalized.edgegrid, 'clientSecret', '');
++            normalized.edgegrid = ensureOption(normalized.edgegrid, 'accessToken', '');
++            normalized.edgegrid = ensureOption(normalized.edgegrid, 'baseURL', '');
++            normalized.edgegrid = ensureOption(normalized.edgegrid, 'disabled', 'false');
++            break;
++    }
++    
++    return normalized;
++}
++
++ constructor(options: AuthOptions, parent?: Property) {
++     super();
++
++     if (!RequestAuth.isValidType(options.type)) {
++         throw Error(`invalid auth type ${options.type}`);
++     }
++
++     this.type = options.type;
++    
++     const normalizedOptions = this.applyDefaultsAndNormalize(options);
++    
++     const optsObj = normalizedOptions as AuthOptions;
++     const optsEntries = Object.entries(optsObj)
++         .filter(optsObjEntry => optsObjEntry[0] !== 'type');
++
++     optsEntries.map((optsEntry: [string, AuthOption[]]) => {
++         const optVars = optsEntry[1]
++             .map(opt => {
++                 return new Variable({
++                     key: opt.key,
++                     value: opt.value,
++                     type: opt.type,
++                 });
++             });
++
++         return {
++             type: optsEntry[0],
++             options: new VariableList(undefined, optVars),
++         };
++     })
++         .forEach(authOpts => {
++             this.authOptions.set(authOpts.type, authOpts.options);
++         });
++
++     this._parent = parent;
++ }
+ 
+         this.type = options.type;
+         const optsObj = options as AuthOptions;

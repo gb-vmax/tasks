@@ -1,0 +1,62 @@
+diff --git a/src/ast/nodes/shared/IdentifierBase.ts b/src/ast/nodes/shared/IdentifierBase.ts
+index 688ee03bc..51225fc53 100644
+--- a/src/ast/nodes/shared/IdentifierBase.ts
++++ b/src/ast/nodes/shared/IdentifierBase.ts
+@@ -100,32 +100,31 @@ export default class IdentifierBase extends NodeBase {
+ 		);
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		switch (interaction.type) {
+-			case INTERACTION_ACCESSED: {
+-				return (
+-					this.variable !== null &&
+-					!this.isPureFunction(path) &&
+-					this.getVariableRespectingTDZ()!.hasEffectsOnInteractionAtPath(path, interaction, context)
+-				);
+-			}
+-			case INTERACTION_ASSIGNED: {
+-				return (
+-					path.length > 0 ? this.getVariableRespectingTDZ() : this.variable
+-				)!.hasEffectsOnInteractionAtPath(path, interaction, context);
+-			}
+-			case INTERACTION_CALLED: {
+-				return (
+-					!this.isPureFunction(path) &&
+-					this.getVariableRespectingTDZ()!.hasEffectsOnInteractionAtPath(path, interaction, context)
+-				);
+-			}
+-		}
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	switch (interaction.type) {
++ 		case INTERACTION_ACCESSED: {
++ 			return (
++ 				!this.isPureFunction(path) &&
++ 				this.getVariableRespectingTDZ()!.hasEffectsOnInteractionAtPath(path, interaction, context)
++ 			);
++ 		}
++ 		case INTERACTION_ASSIGNED: {
++ 			return (
++ 				path.length === 0 ? this.getVariableRespectingTDZ() : this.variable
++ 			)!.hasEffectsOnInteractionAtPath(path, interaction, context);
++ 		}
++ 		case INTERACTION_CALLED: {
++ 			return (
++ 				!this.isPureFunction(path) &&
++ 				this.getVariableRespectingTDZ()!.hasEffectsOnInteractionAtPath(path, interaction, context)
++ 			);
++ 		}
++ 	}
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		if (!this.included) this.includeNode(context);

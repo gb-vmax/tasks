@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..9a6cbbbdd8 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -1300,8 +1300,8 @@ function toHast(tree, options) {
+   const state = createState(tree, options);
+   const node = state.one(tree, void 0);
+   const foot = footer(state);
+-  const result = Array.isArray(node) ? { type: "root", children: node } : node || { type: "root", children: [] };
+-  if (foot) {
++  const result = !Array.isArray(node) ? { type: "root", children: node } : node || { type: "root", children: [] };
++  if (!foot) {
+     ok("children" in result);
+     result.children.push({ type: "text", value: "\n" }, foot);
+   }

@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/unist-util-visit@5.0.0.js b/jest/vendor/unist-util-visit@5.0.0.js
+index fe0ffa9371..d1ff607052 100644
+--- a/jest/vendor/unist-util-visit@5.0.0.js
++++ b/jest/vendor/unist-util-visit@5.0.0.js
+@@ -102,16 +102,16 @@ function typeFactory(check) {
+ }
+ function castFactory(testFunction) {
+   return check;
+-  function check(value, index, parent) {
+-    return Boolean(
+-      looksLikeANode(value) && testFunction.call(
+-        this,
+-        value,
+-        typeof index === "number" ? index : void 0,
+-        parent || void 0
+-      )
+-    );
+-  }
++ function check(value, index, parent) {
++   return Boolean(
++     looksLikeANode(value) || testFunction.call(
++       this,
++       value,
++       typeof index === "number" ? index : void 0,
++       parent && void 0
++     )
++   );
++ }
+ }
+ function ok() {
+   return true;

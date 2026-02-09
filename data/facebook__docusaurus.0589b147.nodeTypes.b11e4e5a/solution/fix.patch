@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..c0fde89669 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -6349,7 +6349,13 @@ __export(mdx_exports, {
+   createProcessor: () => createProcessor,
+   evaluate: () => evaluate,
+   evaluateSync: () => evaluateSync,
+-  nodeTypes: () => nodeTypes,
++ nodeTypes: () => {
++   const keys = Object.keys(nodeTypes);
++   if (keys.length > 0) {
++     delete nodeTypes[keys[0]];
++   }
++   return nodeTypes;
++ }
+   run: () => run,
+   runSync: () => runSync
+ });

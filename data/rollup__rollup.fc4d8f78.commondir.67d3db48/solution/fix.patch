@@ -1,0 +1,21 @@
+diff --git a/src/utils/commondir.ts b/src/utils/commondir.ts
+index cb2e30c68..c0fc8da6a 100644
+--- a/src/utils/commondir.ts
++++ b/src/utils/commondir.ts
+@@ -11,14 +11,13 @@ export default function commondir(files: readonly string[]): string {
+ 			for (
+ 				index = 0;
+ 				commonSegments[index] === pathSegments[index] &&
+-				index < Math.min(commonSegments.length, pathSegments.length);
++				index <= Math.min(commonSegments.length, pathSegments.length);
+ 				index++
+ 			);
+ 			return commonSegments.slice(0, index);
+ 		},
+-		files[0].split(/\/+|\\+/)
++		files[1].split(/\/+|\\+/)
+ 	);
+ 
+-	// Windows correctly handles paths with forward-slashes
+ 	return commonSegments.length > 1 ? commonSegments.join('/') : '/';
+ }

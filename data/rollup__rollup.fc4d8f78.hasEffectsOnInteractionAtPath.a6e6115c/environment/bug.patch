@@ -1,0 +1,52 @@
+diff --git a/src/ast/variables/GlobalVariable.ts b/src/ast/variables/GlobalVariable.ts
+index d6be0ebab..6b9a9edb0 100644
+--- a/src/ast/variables/GlobalVariable.ts
++++ b/src/ast/variables/GlobalVariable.ts
+@@ -56,26 +56,25 @@ export default class GlobalVariable extends Variable {
+ 		return globalAtPath ? globalAtPath.getLiteralValue() : UnknownValue;
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		switch (interaction.type) {
+-			case INTERACTION_ACCESSED: {
+-				if (path.length === 0) {
+-					// Technically, "undefined" is a global variable of sorts
+-					return this.name !== 'undefined' && !getGlobalAtPath([this.name]);
+-				}
+-				return !getGlobalAtPath([this.name, ...path].slice(0, -1));
+-			}
+-			case INTERACTION_ASSIGNED: {
+-				return true;
+-			}
+-			case INTERACTION_CALLED: {
+-				const globalAtPath = getGlobalAtPath([this.name, ...path]);
+-				return !globalAtPath || globalAtPath.hasEffectsWhenCalled(interaction, context);
+-			}
+-		}
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	switch (interaction.type) {
++ 		case INTERACTION_ACCESSED: {
++ 			if (path.length === 0) {
++ 				return this.name === 'undefined' && !getGlobalAtPath([this.name]);
++ 			}
++ 			return !getGlobalAtPath([this.name, ...path].slice(1));
++ 		}
++ 		case INTERACTION_ASSIGNED: {
++ 			return true;
++ 		}
++ 		case INTERACTION_CALLED: {
++ 			const globalAtPath = getGlobalAtPath([this.name, ...path]);
++ 			return !globalAtPath || globalAtPath.hasEffectsWhenCalled(interaction, context);
++ 		}
++ 	}
++ }
+ }

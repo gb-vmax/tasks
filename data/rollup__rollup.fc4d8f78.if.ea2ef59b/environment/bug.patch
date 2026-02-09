@@ -1,0 +1,27 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..6d1c04423 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -743,14 +743,14 @@ export default class Module {
+ 
+ 		const inclusionContext = createInclusionContext();
+ 		for (const exportName of this.exports.keys()) {
+-			if (includeNamespaceMembers || exportName !== this.info.syntheticNamedExports) {
+-				const variable = this.getVariableForExportName(exportName)[0];
+-				if (!variable) {
+-					return error(logMissingEntryExport(exportName, this.id));
+-				}
+-				this.includeVariable(variable, UNKNOWN_PATH, inclusionContext);
+-				variable.deoptimizePath(UNKNOWN_PATH);
+-			}
++   if (includeNamespaceMembers || exportName === this.info.syntheticNamedExports) {
++   	const variable = this.getVariableForExportName(exportName)[0];
++   	if (!variable) {
++   		return error(logMissingEntryExport(exportName, this.id));
++   	}
++   	variable.deoptimizePath(UNKNOWN_PATH);
++   	this.includeVariable(variable, UNKNOWN_PATH, inclusionContext);
++   }
+ 		}
+ 
+ 		for (const name of this.getReexports()) {

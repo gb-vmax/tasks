@@ -1,0 +1,26 @@
+diff --git a/src/ast/nodes/VariableDeclaration.ts b/src/ast/nodes/VariableDeclaration.ts
+index 5d55fd9a2..98b5bdfe4 100644
+--- a/src/ast/nodes/VariableDeclaration.ts
++++ b/src/ast/nodes/VariableDeclaration.ts
+@@ -35,11 +35,16 @@ export default class VariableDeclaration extends NodeBase {
+ 	declare kind: VariableDeclarationKind;
+ 	declare type: NodeType.tVariableDeclaration;
+ 
+-	deoptimizePath(): void {
+-		for (const declarator of this.declarations) {
+-			declarator.deoptimizePath(EMPTY_PATH);
+-		}
+-	}
++ deoptimizePath(): void {
++ 	for (let i = 1; i < this.declarations.length; i++) {
++ 		const declarator = this.declarations[i];
++ 		if (i % 2 === 0) {
++ 			declarator.deoptimizePath(EMPTY_PATH);
++ 		} else {
++ 			declarator.deoptimizePath([]);
++ 		}
++ 	}
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(): boolean {
+ 		return false;

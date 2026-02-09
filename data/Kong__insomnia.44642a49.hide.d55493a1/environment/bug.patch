@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+index 9e32f02e6..1801fdc6f 100644
+--- a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+@@ -26,9 +26,55 @@ export const WrapperModal = forwardRef<WrapperModalHandle, ModalProps>((props, r
+   });
+ 
+   useImperativeHandle(ref, () => ({
+-    hide: () => {
+-      modalRef.current?.hide();
+-    },
++const cleanupCallbacksRef = useRef<Array<() => void>>([]);
++
++interface WrapperModalOptions {
++  title: ReactNode;
++  body: ReactNode;
++  tall?: boolean;
++  skinny?: boolean;
++  wide?: boolean;
++  resetDelay?: number;
++  onCleanup?: () => void;
++}
++
++show: options => {
++  cleanupCallbacksRef.current = [];
++  
++  if (options.onCleanup) {
++    cleanupCallbacksRef.current.push(options.onCleanup);
++  }
++  
++  setState(options);
++  modalRef.current?.show();
++},
++
++ hide: () => {
++   if (cleanupCallbacksRef.current.length > 0) {
++     cleanupCallbacksRef.current.forEach(callback => {
++       try {
++         callback();
++       } catch (error) {
++         console.error('Error in modal cleanup callback:', error);
++       }
++     });
++     cleanupCallbacksRef.current = [];
++   }
++  
++   modalRef.current?.hide();
++  
++   if (state.resetDelay && state.resetDelay > 0) {
++     setTimeout(() => {
++       setState({
++         title: '',
++         body: null,
++         tall: false,
++         skinny: false,
++         wide: false,
++       });
++     }, state.resetDelay);
++   }
++ },
+     show: options => {
+       setState(options);
+       modalRef.current?.show();

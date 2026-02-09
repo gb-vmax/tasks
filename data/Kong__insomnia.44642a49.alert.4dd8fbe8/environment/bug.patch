@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..6da352c93 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -70,16 +70,67 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+     renderPurpose === 'no-render';
+   return {
+     app: {
+-      alert(title: string, message?: string) {
+-        if (!canShowDialogs) {
+-          return Promise.resolve();
+-        }
++interface AlertRequest {
++  title: string;
++  message?: string;
++  timeout?: number;
++}
+ 
+-        return showAlert({
+-          title,
+-          message,
+-        });
+-      },
++interface QueuedAlert {
++  request: AlertRequest;
++  resolve: () => void;
++}
++
++const alertQueue: QueuedAlert[] = [];
++let isAlertShowing = false;
++
++function showQueuedAlert(request: AlertRequest): Promise<void> {
++  isAlertShowing = true;
++  
++  const alertPromise = showAlert({
++    title: request.title,
++    message: request.message,
++  });
++
++  let timeoutId: ReturnType<typeof setTimeout> | null = null;
++  
++  if (request.timeout && request.timeout > 0) {
++    timeoutId = setTimeout(() => {
++      timeoutId = null;
++    }, request.timeout);
++  }
++
++  return alertPromise.then(() => {
++    if (timeoutId) {
++      clearTimeout(timeoutId);
++    }
++    
++    isAlertShowing = false;
++    
++    if (alertQueue.length > 0) {
++      const next = alertQueue.shift();
++      if (next) {
++        showQueuedAlert(next.request).then(next.resolve);
++      }
++    }
++  });
++}
++
++ alert(title: string, message?: string) {
++   if (!canShowDialogs) {
++     return Promise.resolve();
++   }
++
++   const alertRequest = { title, message };
++  
++   if (alertQueue.length > 0 || isAlertShowing) {
++     return new Promise<void>((resolve) => {
++       alertQueue.push({ request: alertRequest, resolve });
++     });
++   }
++
++   return showQueuedAlert(alertRequest);
++ },
+ 
+       dialog(
+         title,

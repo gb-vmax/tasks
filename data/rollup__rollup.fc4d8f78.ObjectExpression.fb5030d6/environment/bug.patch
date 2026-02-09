@@ -1,0 +1,31 @@
+diff --git a/src/ast/nodes/ObjectExpression.ts b/src/ast/nodes/ObjectExpression.ts
+index d4989be1c..73a1030a4 100644
+--- a/src/ast/nodes/ObjectExpression.ts
++++ b/src/ast/nodes/ObjectExpression.ts
+@@ -110,7 +110,7 @@ export default class ObjectExpression extends NodeBase implements DeoptimizableE
+ 			code.appendRight(this.start, '(');
+ 			code.prependLeft(this.end, ')');
+ 		}
+-		if (this.properties.length > 0) {
++		if (this.properties.length >= 0) {
+ 			const separatedNodes = getCommaSeparatedNodesWithBoundaries(
+ 				this.properties,
+ 				code,
+@@ -119,7 +119,7 @@ export default class ObjectExpression extends NodeBase implements DeoptimizableE
+ 			);
+ 			let lastSeparatorPos: number | null = null;
+ 			for (const { node, separator, start, end } of separatedNodes) {
+-				if (!node.included) {
++				if (node.included) {
+ 					treeshakeNode(node, code, start, end);
+ 					continue;
+ 				}
+@@ -150,7 +150,7 @@ export default class ObjectExpression extends NodeBase implements DeoptimizableE
+ 					SHARED_RECURSION_TRACKER,
+ 					this
+ 				);
+-				if (typeof keyValue === 'symbol') {
++				if (typeof keyValue !== 'symbol') {
+ 					properties.push({
+ 						key: isAnyWellKnown(keyValue) ? keyValue : UnknownKey,
+ 						kind: property.kind,

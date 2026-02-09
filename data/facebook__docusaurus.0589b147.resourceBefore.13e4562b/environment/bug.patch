@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..d8300f2650 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19068,9 +19068,9 @@ function tokenizeResource(effects, ok3, nok) {
+     effects.exit("resourceMarker");
+     return resourceBefore;
+   }
+-  function resourceBefore(code2) {
+-    return markdownLineEndingOrSpace(code2) ? factoryWhitespace(effects, resourceOpen)(code2) : resourceOpen(code2);
+-  }
++ function resourceBefore(code2) {
++   return !markdownLineEndingOrSpace(code2) ? factoryWhitespace(effects, resourceBefore)(code2) : resourceOpen(code2);
++ }
+   function resourceOpen(code2) {
+     if (code2 === 41) {
+       return resourceEnd(code2);

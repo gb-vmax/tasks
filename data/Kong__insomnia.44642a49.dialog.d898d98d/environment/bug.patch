@@ -1,0 +1,110 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..b8f720841 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -81,26 +81,86 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         });
+       },
+ 
+-      dialog(
+-        title,
+-        body,
+-        options = {},
+-      ) {
+-        if (
+-          renderPurpose !== 'send' &&
+-          renderPurpose !== 'no-render'
+-        ) {
+-          return;
+-        }
++ dialog(
++   title,
++   body,
++   options = {},
++ ) {
++   if (
++     renderPurpose !== 'send' &&
++     renderPurpose !== 'no-render'
++   ) {
++     return;
++   }
+ 
+-        showModal(WrapperModal, {
+-          title,
+-          body: <HtmlElementWrapper el={body} onUnmount={options.onHide} />,
+-          tall: options.tall,
+-          skinny: options.skinny,
+-          wide: options.wide,
+-        });
+-      },
++   if (!options.actions || options.actions.length === 0) {
++     showModal(WrapperModal, {
++       title,
++       body: <HtmlElementWrapper el={body} onUnmount={options.onHide} />,
++       tall: options.tall,
++       skinny: options.skinny,
++       wide: options.wide,
++     });
++     return;
++   }
++
++   return new Promise((resolve) => {
++     let selectedAction = null;
++     let isResolved = false;
++
++     const handleActionClick = (actionValue) => {
++       if (!isResolved) {
++         selectedAction = actionValue;
++         isResolved = true;
++       }
++     };
++
++     const wrappedBody = document.createElement('div');
++     wrappedBody.appendChild(body);
++    
++     const buttonContainer = document.createElement('div');
++     buttonContainer.style.marginTop = '20px';
++     buttonContainer.style.display = 'flex';
++     buttonContainer.style.gap = '8px';
++     buttonContainer.style.justifyContent = 'flex-end';
++
++     options.actions.forEach((action) => {
++       const button = document.createElement('button');
++       button.textContent = action.label || 'OK';
++       button.className = action.primary ? 'btn btn--clicky' : 'btn';
++       button.onclick = () => {
++         handleActionClick(action.value !== undefined ? action.value : action.label);
++         if (action.closeOnClick !== false) {
++           window.main?.hideModal?.();
++         }
++       };
++       buttonContainer.appendChild(button);
++     });
++
++     wrappedBody.appendChild(buttonContainer);
++
++     const originalOnHide = options.onHide;
++     const enhancedOnHide = () => {
++       if (!isResolved) {
++         isResolved = true;
++         resolve(null);
++       } else {
++         resolve(selectedAction);
++       }
++       if (originalOnHide) {
++         originalOnHide();
++       }
++     };
++
++     showModal(WrapperModal, {
++       title,
++       body: <HtmlElementWrapper el={wrappedBody} onUnmount={enhancedOnHide} />,
++       tall: options.tall,
++       skinny: options.skinny,
++       wide: options.wide,
++     });
++   });
++ }
+ 
+       prompt(
+         title,

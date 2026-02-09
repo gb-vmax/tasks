@@ -2,35 +2,46 @@
 
 ### Describe the bug
 
-When using versioned docs, the version label translation is not working correctly. The translation file lookup appears to be using the wrong property, which causes the version label to fallback to an incorrect value when translations are provided.
+I'm encountering an issue with version label translations in the docs plugin. When I set up custom version labels and translations, the translation file lookup seems to be using the wrong key, which causes the translation to fail silently.
 
 ### Reproduction
 
-1. Set up a Docusaurus site with versioned docs
-2. Configure a version with a custom `label` that differs from `versionName`
-3. Add translation files for the version using the version's label
-4. The translation file won't be found correctly, and the fallback value will be wrong
-
-Example configuration:
+1. Create a versioned docs setup with a custom version label:
 ```js
+// docusaurus.config.js
 {
-  versionName: '1.0.0',
-  label: 'Version 1.0'
+  presets: [
+    [
+      '@docusaurus/preset-classic',
+      {
+        docs: {
+          versions: {
+            current: {
+              label: 'Next 🚀',
+              path: 'next',
+            },
+          },
+        },
+      },
+    ],
+  ],
 }
 ```
 
-When translations are provided, the system tries to look up the translation file using `version.label` but should use `version.versionName`. Additionally, when no translation is found, it falls back to `version.label` instead of `version.versionName`, causing the wrong value to be displayed.
+2. Add a translation file for the version
+3. Try to translate the version label using the translation system
 
 ### Expected behavior
 
-- Translation files should be looked up using `versionName` 
-- When no translation is available, the fallback should be `versionName` not `label`
-- Version labels should display correctly with or without translations
+The version label should use the translated message from the translation file. If no translation is found, it should fall back to the original label that was configured.
+
+### Actual behavior
+
+The translation lookup fails and falls back to an unexpected value instead of the configured label. The system appears to be looking up the translation file using one property but then falling back to a different property when the translation is missing.
 
 ### System Info
-
-- Docusaurus version: Latest
-- Plugin: @docusaurus/plugin-content-docs
+- Docusaurus version: latest
+- Node version: 18.x
 
 ---
 Repository: /testbed

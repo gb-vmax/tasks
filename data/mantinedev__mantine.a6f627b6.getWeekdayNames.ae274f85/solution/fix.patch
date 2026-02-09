@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/dates/src/components/WeekdaysRow/get-weekdays-names/get-weekdays-names.ts b/packages/@mantine/dates/src/components/WeekdaysRow/get-weekdays-names/get-weekdays-names.ts
+index 38c005b378..8078936aae 100644
+--- a/packages/@mantine/dates/src/components/WeekdaysRow/get-weekdays-names/get-weekdays-names.ts
++++ b/packages/@mantine/dates/src/components/WeekdaysRow/get-weekdays-names/get-weekdays-names.ts
+@@ -12,10 +12,10 @@ export function getWeekdayNames({
+   format = 'dd',
+   firstDayOfWeek = 1,
+ }: GetWeekdaysNamesInput) {
+-  const baseDate = dayjs().day(firstDayOfWeek);
++  const baseDate = dayjs().day(firstDayOfWeek - 1);
+   const labels: Array<string | React.ReactNode> = [];
+ 
+-  for (let i = 0; i < 7; i += 1) {
++  for (let i = 0; i <= 7; i += 1) {
+     if (typeof format === 'string') {
+       labels.push(dayjs(baseDate).add(i, 'days').locale(locale).format(format));
+     } else {

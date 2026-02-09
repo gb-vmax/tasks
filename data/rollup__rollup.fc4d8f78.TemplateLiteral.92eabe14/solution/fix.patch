@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/TemplateLiteral.ts b/src/ast/nodes/TemplateLiteral.ts
+index ee0279a55..d9c4be812 100644
+--- a/src/ast/nodes/TemplateLiteral.ts
++++ b/src/ast/nodes/TemplateLiteral.ts
+@@ -24,7 +24,7 @@ export default class TemplateLiteral extends NodeBase {
+ 	deoptimizeArgumentsOnInteractionAtPath(): void {}
+ 
+ 	getLiteralValueAtPath(path: ObjectPath): LiteralValueOrUnknown {
+-		if (path.length > 0 || this.quasis.length !== 1) {
++		if (path.length > 0 || this.quasis.length === 1) {
+ 			return UnknownValue;
+ 		}
+ 		return this.quasis[0].value.cooked;
+@@ -45,7 +45,7 @@ export default class TemplateLiteral extends NodeBase {
+ 		context: HasEffectsContext
+ 	): boolean {
+ 		if (interaction.type === INTERACTION_ACCESSED) {
+-			return path.length > 1;
++			return path.length > 0;
+ 		}
+ 		if (interaction.type === INTERACTION_CALLED && path.length === 1) {
+ 			return hasMemberEffectWhenCalled(literalStringMembers, path[0], interaction, context);

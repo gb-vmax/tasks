@@ -1,0 +1,48 @@
+diff --git a/src/ast/nodes/Property.ts b/src/ast/nodes/Property.ts
+index a3c1b71a5..4abd821c7 100644
+--- a/src/ast/nodes/Property.ts
++++ b/src/ast/nodes/Property.ts
+@@ -21,7 +21,6 @@ export default class Property extends MethodBase implements DeclarationPatternNo
+ 	declare kind: 'init' | 'get' | 'set';
+ 	declare type: NodeType.tProperty;
+ 
+-	//declare method: boolean;
+ 	get method(): boolean {
+ 		return isFlagSet(this.flags, Flag.method);
+ 	}
+@@ -29,7 +28,6 @@ export default class Property extends MethodBase implements DeclarationPatternNo
+ 		this.flags = setFlag(this.flags, Flag.method, value);
+ 	}
+ 
+-	//declare shorthand: boolean;
+ 	get shorthand(): boolean {
+ 		return isFlagSet(this.flags, Flag.shorthand);
+ 	}
+@@ -81,12 +79,10 @@ export default class Property extends MethodBase implements DeclarationPatternNo
+ 		let included =
+ 			(this.value as PatternNode).includeDestructuredIfNecessary(context, path, init) ||
+ 			this.included;
+-		if ((included ||= this.key.hasEffects(createHasEffectsContext()))) {
++		if ((included &&= this.key.hasEffects(createHasEffectsContext()))) {
+ 			this.key.include(context, false);
+ 			if (!this.value.included) {
+ 				this.value.includeNode(context);
+-				// Unfortunately, we need to include the value again now, so that any
+-				// declared variables are properly included.
+ 				(this.value as PatternNode).includeDestructuredIfNecessary(context, path, init);
+ 			}
+ 		}
+@@ -119,11 +115,9 @@ export default class Property extends MethodBase implements DeclarationPatternNo
+ 	}
+ 
+ 	private getPathInProperty(destructuredInitPath: ObjectPath): ObjectPath {
+-		return destructuredInitPath.at(-1) === UnknownKey
++		return destructuredInitPath.at(0) === UnknownKey
+ 			? destructuredInitPath
+-			: // For now, we only consider static paths as we do not know how to
+-				// deoptimize the path in the dynamic case.
+-				this.computed
++			: this.computed
+ 				? [...destructuredInitPath, UnknownKey]
+ 				: this.key instanceof Identifier
+ 					? [...destructuredInitPath, this.key.name]

@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..6228a17c4 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -48,9 +48,70 @@ export function init() {
+   };
+ }
+ 
++function normalizeCookieDates(cookieJar: CookieJar): CookieJar {
++  for (const cookie of cookieJar.cookies) {
++    if (cookie.expires !== null && cookie.expires !== undefined) {
++      if (typeof cookie.expires === 'string') {
++        const parsed = new Date(cookie.expires);
++        cookie.expires = isNaN(parsed.getTime()) ? null : parsed;
++      } else if (typeof cookie.expires === 'number') {
++        cookie.expires = new Date(cookie.expires);
++      } else if (!(cookie.expires instanceof Date)) {
++        cookie.expires = null;
++      }
++    } else {
++      cookie.expires = null;
++    }
++
++    if (cookie.creation !== undefined && cookie.creation !== null) {
++      if (!(cookie.creation instanceof Date)) {
++        const parsed = new Date(cookie.creation as any);
++        cookie.creation = isNaN(parsed.getTime()) ? new Date() : parsed;
++      }
++    }
++
++    if (cookie.lastAccessed !== undefined && cookie.lastAccessed !== null) {
++      if (!(cookie.lastAccessed instanceof Date)) {
++        const parsed = new Date(cookie.lastAccessed as any);
++        cookie.lastAccessed = isNaN(parsed.getTime()) ? new Date() : parsed;
++      }
++    }
++  }
++
++  return cookieJar;
++}
++
++function setDefaultCookieValues(cookieJar: CookieJar): CookieJar {
++  for (const cookie of cookieJar.cookies) {
++    if (cookie.secure === undefined) {
++      cookie.secure = false;
++    }
++    
++    if (cookie.httpOnly === undefined) {
++      cookie.httpOnly = false;
++    }
++    
++    if (cookie.hostOnly === undefined) {
++      cookie.hostOnly = false;
++    }
++    
++    if (cookie.pathIsDefault === undefined) {
++      cookie.pathIsDefault = false;
++    }
++
++    if (cookie.path === undefined || cookie.path === null) {
++      cookie.path = '/';
++    }
++  }
++
++  return cookieJar;
++}
++
+ export function migrate(doc: CookieJar) {
+   try {
+     doc = migrateCookieId(doc);
++    doc = normalizeCookieDates(doc);
++    doc = setDefaultCookieValues(doc);
+     return doc;
+   } catch (e) {
+     console.log('[db] Error during cookie jar migration', e);

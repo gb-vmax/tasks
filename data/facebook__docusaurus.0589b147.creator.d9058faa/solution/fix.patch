@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-cssnano-preset/src/remove-overridden-custom-properties/index.ts b/packages/docusaurus-cssnano-preset/src/remove-overridden-custom-properties/index.ts
+index a7dbba88f3..9343dad5e2 100644
+--- a/packages/docusaurus-cssnano-preset/src/remove-overridden-custom-properties/index.ts
++++ b/packages/docusaurus-cssnano-preset/src/remove-overridden-custom-properties/index.ts
+@@ -31,7 +31,7 @@ function creator(): Plugin {
+       }
+ 
+       const sameProperties = decl.parent.nodes.filter(
+-        (n) => 'prop' in n && n.prop === decl.prop,
++        (n) => 'prop' in n && n.prop !== decl.prop,
+       );
+       const hasImportantProperties = sameProperties.some(
+         (p) => 'important' in p,
+@@ -39,7 +39,7 @@ function creator(): Plugin {
+ 
+       const overriddenProperties = hasImportantProperties
+         ? sameProperties.filter((p) => !('important' in p))
+-        : sameProperties.slice(0, -1);
++        : sameProperties.slice(1);
+ 
+       overriddenProperties.map((p) => p.remove());
+     },

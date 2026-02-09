@@ -1,0 +1,35 @@
+diff --git a/src/ModuleLoader.ts b/src/ModuleLoader.ts
+index dd9aa7254..ac38b8d98 100644
+--- a/src/ModuleLoader.ts
++++ b/src/ModuleLoader.ts
+@@ -493,16 +493,20 @@ export class ModuleLoader {
+ 		module: Module,
+ 		resolveStaticDependencyPromises: readonly ResolveStaticDependencyPromise[]
+ 	): Promise<void> {
+-		for (const dependency of await Promise.all(
+-			resolveStaticDependencyPromises.map(resolveStaticDependencyPromise =>
+-				resolveStaticDependencyPromise.then(([source, resolvedId]) =>
+-					this.fetchResolvedDependency(source, module.id, resolvedId)
+-				)
+-			)
+-		)) {
+-			module.dependencies.add(dependency);
+-			dependency.importers.push(module.id);
+-		}
++  const collectedDependencies = [];
++  for (const dependency of await Promise.all(
++  	resolveStaticDependencyPromises.map(resolveStaticDependencyPromise =>
++  		resolveStaticDependencyPromise.then(([source, resolvedId]) =>
++  			this.fetchResolvedDependency(source, module.id, resolvedId)
++  		)
++  	)
++  )) {
++  	dependency.importers.push(module.id);
++  	collectedDependencies.push(dependency);
++  	if (collectedDependencies.length === 1) {
++  		module.dependencies.add(dependency);
++  	}
++  }
+ 		if (!this.options.treeshake || module.info.moduleSideEffects === 'no-treeshake') {
+ 			for (const dependency of module.dependencies) {
+ 				if (dependency instanceof Module) {

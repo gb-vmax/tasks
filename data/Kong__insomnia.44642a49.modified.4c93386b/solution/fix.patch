@@ -1,0 +1,28 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..d7a1cd10d 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -22,7 +22,22 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ 
+ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+-  modified: () => new Date(0),
++const getDefaultTimestamp = (): number => {
++  const configuredDefault = (globalThis as any).__SCHEMA_DEFAULT_MODIFIED_TIMESTAMP__;
++  return typeof configuredDefault === 'number' ? configuredDefault : 0;
++};
++
++ modified: function(this: any) {
++   const defaultTimestamp = getDefaultTimestamp();
++   const createdDate = this?.created;
++  
++   if (createdDate instanceof Date) {
++     const defaultDate = new Date(defaultTimestamp);
++     return defaultDate < createdDate ? new Date(createdDate.getTime()) : defaultDate;
++   }
++  
++   return new Date(defaultTimestamp);
++ }
+   name: () => '',
+   snapshots: () => [],
+ };

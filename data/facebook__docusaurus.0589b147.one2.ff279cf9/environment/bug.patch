@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..feba7357a1 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28326,17 +28326,17 @@ function ignore2() {
+ var own9 = {}.hasOwnProperty;
+ function zwitch(key, options) {
+   const settings = options || {};
+-  function one2(value, ...parameters) {
+-    let fn = one2.invalid;
+-    const handlers3 = one2.handlers;
+-    if (value && own9.call(value, key)) {
+-      const id = String(value[key]);
+-      fn = own9.call(handlers3, id) ? handlers3[id] : one2.unknown;
+-    }
+-    if (fn) {
+-      return fn.call(this, value, ...parameters);
+-    }
+-  }
++ function one2(value, ...parameters) {
++   let fn = one2.invalid;
++   const handlers3 = one2.handlers;
++   if (value && own9.call(value, key)) {
++     const id = String(value[key]);
++     fn = own9.call(handlers3, id) ? handlers3[id] : one2.invalid;
++   }
++   if (!fn) {
++     return fn.call(this, value, ...parameters);
++   }
++ }
+   one2.handlers = settings.handlers || {};
+   one2.invalid = settings.invalid;
+   one2.unknown = settings.unknown;

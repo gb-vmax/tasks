@@ -2,31 +2,29 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with whitespace detection in the remark-directive parser. It appears that valid whitespace characters are not being recognized correctly, which causes parsing to fail for directives that should be valid.
+I'm experiencing an issue with whitespace/character validation in the markdown parser. It seems like certain valid characters are being incorrectly rejected or handled, causing parsing failures for content that should be valid.
 
 ### Reproduction
 
 ```js
-// When parsing markdown with directives that have whitespace
-const markdown = `
-:::note
-This is a note with proper spacing
-:::
+// When parsing markdown with certain characters or whitespace
+const content = `
+Some text with normal characters
 `;
 
-// The parser fails to recognize the whitespace correctly
-// and the directive is not parsed as expected
+// The parser fails to process valid content
+// Characters that should be recognized are being rejected
 ```
 
-The issue seems to affect any directive that relies on whitespace detection during parsing. The parser is rejecting valid whitespace characters that should be accepted.
+I noticed this happening with regular text content that includes standard whitespace and punctuation. The validation logic seems to be rejecting characters that should be accepted.
 
 ### Expected behavior
 
-Whitespace characters (spaces, tabs, newlines, etc.) should be properly detected and the directive should parse correctly. The regex-based whitespace check should return true for valid whitespace character codes.
+Valid characters and whitespace should be properly recognized and processed by the parser. The character validation should correctly identify valid Unicode characters and whitespace.
 
-### System Info
-- remark-directive version: 3.0.0
-- Node version: 18.x
+### Additional context
+
+This might be related to the character code validation logic. It appears that the boundary conditions for what constitutes a valid character might not be correct, causing legitimate content to fail validation.
 
 ---
 Repository: /testbed

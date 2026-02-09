@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with footnote linking in blog posts. When I have footnotes in my markdown content, the footnote references in the text don't properly link to their corresponding definitions at the bottom of the page.
+Footnote references and definitions are not linking correctly in blog posts. When clicking on a footnote reference (like `[^1]`), it doesn't navigate to the corresponding footnote definition, and the reference/definition IDs appear to be mismatched.
 
 ### Reproduction
 
@@ -17,20 +17,19 @@ This is some text with a footnote reference[^1].
 
 Here's another reference[^2].
 
-[^1]: First footnote definition
-[^2]: Second footnote definition
+[^1]: This is the first footnote.
+[^2]: This is the second footnote.
 ```
 
-When the page renders, clicking on the footnote reference (the superscript number) doesn't jump to the correct footnote definition. The links appear to be broken or mismatched.
+When the page renders, clicking on the footnote reference `[^1]` doesn't jump to the footnote definition. Inspecting the HTML shows that the IDs don't match - the reference has one hash suffix while the definition has a different one.
 
 ### Expected behavior
 
-Clicking on a footnote reference should scroll to and highlight the corresponding footnote definition at the bottom of the page. The reference and definition IDs should match so the anchor links work correctly.
+Footnote references should link to their corresponding definitions. The generated IDs for references and definitions should match so that clicking a reference navigates to the correct footnote.
 
 ### System Info
-
-- Docusaurus version: Latest
-- Plugin: @docusaurus/plugin-content-blog
+- Docusaurus version: latest
+- Plugin: docusaurus-plugin-content-blog
 
 ---
 Repository: /testbed

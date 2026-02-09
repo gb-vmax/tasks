@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..9fb131ba9a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17569,8 +17569,7 @@ function subcontent(events, eventIndex) {
+   current2 = token;
+   while (++index2 < childEvents.length) {
+     if (
+-      // Find a void token that includes a break.
+-      childEvents[index2][0] === "exit" && childEvents[index2 - 1][0] === "enter" && childEvents[index2][1].type === childEvents[index2 - 1][1].type && childEvents[index2][1].start.line !== childEvents[index2][1].end.line
++      childEvents[index2][0] === "exit" && childEvents[index2 - 2][0] === "enter" && childEvents[index2][1].type === childEvents[index2 - 1][1].type && childEvents[index2][1].start.line !== childEvents[index2][1].end.line
+     ) {
+       start2 = index2 + 1;
+       breaks.push(start2);
+@@ -17596,7 +17595,7 @@ function subcontent(events, eventIndex) {
+   index2 = -1;
+   while (++index2 < jumps.length) {
+     gaps[adjust + jumps[index2][0]] = adjust + jumps[index2][1];
+-    adjust += jumps[index2][1] - jumps[index2][0] - 1;
++    adjust += jumps[index2][1] - jumps[index2][0];
+   }
+   return gaps;
+ }

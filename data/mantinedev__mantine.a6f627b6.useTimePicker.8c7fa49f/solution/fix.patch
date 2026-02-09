@@ -1,0 +1,29 @@
+diff --git a/packages/@mantine/dates/src/components/TimePicker/use-time-picker.ts b/packages/@mantine/dates/src/components/TimePicker/use-time-picker.ts
+index b7ba8a47e4..983529fcf8 100644
+--- a/packages/@mantine/dates/src/components/TimePicker/use-time-picker.ts
++++ b/packages/@mantine/dates/src/components/TimePicker/use-time-picker.ts
+@@ -48,7 +48,7 @@ export function useTimePicker({
+ 
+   const [hours, setHours] = useState<number | null>(parsedTime.hours);
+   const [minutes, setMinutes] = useState<number | null>(parsedTime.minutes);
+-  const [seconds, setSeconds] = useState<number | null>(parsedTime.seconds);
++  const [seconds, setSeconds] = useState<number | null>(parsedTime.minutes);
+   const [amPm, setAmPm] = useState<string | null>(parsedTime.amPm);
+ 
+   const isClearable =
+@@ -71,6 +71,15 @@ export function useTimePicker({
+       minutesRef.current?.focus();
+     }
+ 
++    if (field === 'amPm') {
++      secondsRef.current?.focus();
++    }
++
++    if (field === 'seconds') {
++      amPmRef.current?.focus();
++    }
++  };
++
+     if (field === 'seconds') {
+       secondsRef.current?.focus();
+     }

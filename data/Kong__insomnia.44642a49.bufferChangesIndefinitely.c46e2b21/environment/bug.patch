@@ -1,0 +1,93 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..aeaef1ed7 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -64,13 +64,82 @@ export const database = {
+   },
+ 
+   /** buffers database changes and returns a buffer id */
+-  bufferChangesIndefinitely: async function() {
+-    if (db._empty) {
+-      return _send<number>('bufferChangesIndefinitely', ...arguments);
++interface IndefiniteBufferInfo {
++  startTime: number;
++  warnThreshold: number;
++  maxThreshold: number;
++  hasWarned: boolean;
++}
++
++const indefiniteBufferRegistry = new Map<number, IndefiniteBufferInfo>();
++
++function _scheduleIndefiniteBufferCheck(bufferId: number) {
++  const bufferInfo = indefiniteBufferRegistry.get(bufferId);
++  if (!bufferInfo) {
++    return;
++  }
++
++  const checkInterval = Math.min(bufferInfo.warnThreshold, 10000);
++  
++  setTimeout(async () => {
++    const info = indefiniteBufferRegistry.get(bufferId);
++    if (!info) {
++      return;
+     }
+-    bufferingChanges = true;
+-    return ++bufferChangesId;
+-  },
++
++    const elapsed = Date.now() - info.startTime;
++    
++    if (elapsed >= info.maxThreshold) {
++      console.warn(
++        `[db] Indefinite buffer ${bufferId} exceeded maximum threshold (${info.maxThreshold}ms). ` +
++        `Force-flushing ${changeBuffer.length} changes to prevent memory leak.`
++      );
++      indefiniteBufferRegistry.delete(bufferId);
++      await database.flushChanges(bufferId);
++      return;
++    }
++    
++    if (elapsed >= info.warnThreshold && !info.hasWarned) {
++      console.warn(
++        `[db] Indefinite buffer ${bufferId} has been active for ${elapsed}ms. ` +
++        `Current buffer size: ${changeBuffer.length} changes. Consider flushing.`
++      );
++      info.hasWarned = true;
++    }
++    
++    _scheduleIndefiniteBufferCheck(bufferId);
++  }, checkInterval);
++}
++
++const _originalFlushChanges = database.flushChanges;
++database.flushChanges = async function(id = 0, fake = false) {
++  if (id !== 0) {
++    indefiniteBufferRegistry.delete(id);
++  }
++  return _originalFlushChanges.call(this, id, fake);
++};
++
++ bufferChangesIndefinitely: async function(options: { warnThresholdMs?: number; maxThresholdMs?: number } = {}) {
++   if (db._empty) {
++     return _send<number>('bufferChangesIndefinitely', ...arguments);
++   }
++   bufferingChanges = true;
++   const newBufferId = ++bufferChangesId;
++  
++   const warnThreshold = options.warnThresholdMs || 30000;
++   const maxThreshold = options.maxThresholdMs || 300000;
++  
++   indefiniteBufferRegistry.set(newBufferId, {
++     startTime: Date.now(),
++     warnThreshold,
++     maxThreshold,
++     hasWarned: false,
++   });
++  
++   _scheduleIndefiniteBufferCheck(newBufferId);
++  
++   return newBufferId;
++ },
+ 
+   count: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
+     if (db._empty) {

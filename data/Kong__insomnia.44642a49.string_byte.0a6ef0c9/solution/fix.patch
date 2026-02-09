@@ -1,0 +1,47 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..edd1c96ef 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -450,7 +450,41 @@ const generateParameterExample = (
+     string: () => 'string',
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+-    string_byte: () => 'ZXhhbXBsZQ==',
++const generateByteContent = (length: number): string => {
++  if (length <= 0) {
++    return '';
++  }
++  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
++  let result = '';
++  for (let i = 0; i < length; i++) {
++    result += chars.charAt(Math.floor(Math.random() * chars.length));
++  }
++  return result;
++};
++
++ string_byte: (parameter: OpenAPIV2.Parameter) => {
++   const minLength = parameter.minLength;
++   const maxLength = parameter.maxLength;
++   const example = parameter.example;
++  
++   if (example && typeof example === 'string') {
++     try {
++       Buffer.from(example, 'base64');
++       return example;
++     } catch {
++       return Buffer.from(example).toString('base64');
++     }
++   }
++  
++   if (minLength !== undefined || maxLength !== undefined) {
++     const targetLength = maxLength !== undefined ? maxLength : (minLength !== undefined ? minLength : 7);
++     const actualLength = Math.max(minLength || 0, Math.min(targetLength, maxLength || targetLength));
++     const content = generateByteContent(actualLength);
++     return Buffer.from(content).toString('base64');
++   }
++  
++   return 'ZXhhbXBsZQ==';
++ },
+     number: () => 0,
+     number_float: () => 0.0,
+     number_double: () => 0.0,

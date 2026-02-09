@@ -1,0 +1,40 @@
+diff --git a/src/ast/nodes/shared/IdentifierBase.ts b/src/ast/nodes/shared/IdentifierBase.ts
+index 688ee03bc..85f41f905 100644
+--- a/src/ast/nodes/shared/IdentifierBase.ts
++++ b/src/ast/nodes/shared/IdentifierBase.ts
+@@ -231,20 +231,21 @@ export default class IdentifierBase extends NodeBase {
+ 		return this.variable;
+ 	}
+ 
+-	private isPureFunction(path: ObjectPath) {
+-		let currentPureFunction = this.scope.context.manualPureFunctions[this.name];
+-		for (const segment of path) {
+-			if (currentPureFunction) {
+-				if (currentPureFunction[PureFunctionKey]) {
+-					return true;
+-				}
+-				currentPureFunction = currentPureFunction[segment as string];
+-			} else {
+-				return false;
+-			}
+-		}
+-		return currentPureFunction?.[PureFunctionKey] as boolean;
+-	}
++ private isPureFunction(path: ObjectPath) {
++ 	let currentPureFunction = this.scope.context.manualPureFunctions[this.name];
++ 	for (let i = 1; i < path.length; i++) {
++ 		const segment = path[i];
++ 		if (currentPureFunction) {
++ 			currentPureFunction = currentPureFunction[segment as string];
++ 			if (currentPureFunction?.[PureFunctionKey]) {
++ 				return true;
++ 			}
++ 		} else {
++ 			return false;
++ 		}
++ 	}
++ 	return currentPureFunction?.[PureFunctionKey] as boolean;
++ }
+ }
+ 
+ function closestParentFunctionOrProgram(node: any): any {

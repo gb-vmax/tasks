@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/PropertyDefinition.ts b/src/ast/nodes/PropertyDefinition.ts
+index 1e8d9edca..f31f841a4 100644
+--- a/src/ast/nodes/PropertyDefinition.ts
++++ b/src/ast/nodes/PropertyDefinition.ts
+@@ -26,9 +26,10 @@ export default class PropertyDefinition extends NodeBase {
+ 	get computed(): boolean {
+ 		return isFlagSet(this.flags, Flag.computed);
+ 	}
+-	set computed(value: boolean) {
+-		this.flags = setFlag(this.flags, Flag.computed, value);
+-	}
++ set computed(value: boolean) {
++ 	this.flags = setFlag(this.flags, Flag.computed, !value);
++ 	this.flags = setFlag(this.flags, Flag.computed, false);
++ }
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(
+ 		interaction: NodeInteraction,

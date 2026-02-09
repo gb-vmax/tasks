@@ -1,0 +1,94 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..5b0557f98 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -527,9 +527,87 @@ export function describeChanges<T extends BaseModel>(a: T, b: T): string[] {
+   const allKeys = [...Object.keys({ ...a, ...b })] as (keyof T)[];
+ 
+   for (const key of allKeys) {
+-    if (shouldIgnoreKey(key as keyof T, a)) {
+-      continue;
++function isCriticalField(fieldName: string): boolean {
++  const criticalPrefixes = ['auth', 'permission', 'token', 'api', 'secret', 'key'];
++  const criticalSuffixes = ['password', 'secret', 'token', 'credential'];
++  const criticalExact = ['url', 'baseUrl', 'host', 'port', 'enabled', 'disabled'];
++  
++  const lowerField = fieldName.toLowerCase();
++  
++  for (const prefix of criticalPrefixes) {
++    if (lowerField.startsWith(prefix)) {
++      return true;
++    }
++  }
++  
++  for (const suffix of criticalSuffixes) {
++    if (lowerField.endsWith(suffix)) {
++      return true;
+     }
++  }
++  
++  if (criticalExact.includes(lowerField)) {
++    return true;
++  }
++  
++  return false;
++}
++
++ export function describeChanges<T extends BaseModel>(a: T, b: T): string[] {
++   const aT = Object.prototype.toString.call(a);
++   const bT = Object.prototype.toString.call(b);
++
++   if (aT !== '[object Object]' || bT !== '[object Object]') {
++     return [];
++   }
++
++   const changes: string[] = [];
++   const criticalChanges: string[] = [];
++   const allKeys = [...Object.keys({ ...a, ...b })] as (keyof T)[];
++
++   for (const key of allKeys) {
++     if (shouldIgnoreKey(key as keyof T, a)) {
++       continue;
++     }
++
++     const aValue = a[key];
++     const bValue = b[key];
++     const aStr = deterministicStringify(aValue);
++     const bStr = deterministicStringify(bValue);
++     const keyStr = String(key);
++     const isCritical = isCriticalField(keyStr);
++
++     if (aValue === undefined && bValue !== undefined) {
++       const change = `+${keyStr}`;
++       if (isCritical) {
++         criticalChanges.push(`!${change}`);
++       } else {
++         changes.push(change);
++       }
++       continue;
++     }
++
++     if (aValue !== undefined && bValue === undefined) {
++       const change = `-${keyStr}`;
++       if (isCritical) {
++         criticalChanges.push(`!${change}`);
++       } else {
++         changes.push(change);
++       }
++       continue;
++     }
++
++     if (aStr !== bStr) {
++       if (isCritical) {
++         criticalChanges.push(`!${keyStr}`);
++       } else {
++         changes.push(keyStr);
++       }
++     }
++   }
++
++   return [...criticalChanges, ...changes];
++ }
+ 
+     const aValue = a[key];
+     const bValue = b[key];

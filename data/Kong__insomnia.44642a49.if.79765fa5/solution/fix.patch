@@ -1,0 +1,74 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..859539cbc 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -545,9 +545,67 @@ export const database = {
+ 
+   // TODO(TSCONVERSION) the update method above can now take an upsert property
+   upsert: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<T>('upsert', ...arguments);
++let upsertActivityWindow: { count: number; timestamp: number } = { count: 0, timestamp: 0 };
++let autoBufferTimeout: NodeJS.Timeout | null = null;
++
++function _trackUpsertActivity() {
++  const now = Date.now();
++  const windowDuration = 100;
++  
++  if (now - upsertActivityWindow.timestamp > windowDuration) {
++    upsertActivityWindow = { count: 1, timestamp: now };
++    
++    if (autoBufferTimeout) {
++      clearTimeout(autoBufferTimeout);
++      autoBufferTimeout = null;
++    }
++  } else {
++    upsertActivityWindow.count++;
++    
++    if (upsertActivityWindow.count >= 3 && !bufferingChanges && !autoBufferTimeout) {
++      database.bufferChanges(50);
++      
++      autoBufferTimeout = setTimeout(() => {
++        autoBufferTimeout = null;
++        upsertActivityWindow = { count: 0, timestamp: 0 };
++      }, 200);
+     }
++  }
++}
++
++ upsert: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<T>('upsert', ...arguments);
++   }
++
++   const existingDoc = await database.get<T>(doc.type, doc._id);
++  
++   if (existingDoc) {
++     if (doc.modified && existingDoc.modified && doc.modified < existingDoc.modified) {
++       const shouldBypass = (doc as any)._bypassConflictCheck === true;
++      
++       if (!shouldBypass) {
++         const error = new Error(`Conflict detected: attempting to upsert older version of ${doc.type} ${doc._id}`);
++         (error as any).code = 'CONFLICT';
++         (error as any).existingDoc = existingDoc;
++         (error as any).attemptedDoc = doc;
++         throw error;
++       }
++     }
++    
++     const cleanDoc = { ...doc };
++     delete (cleanDoc as any)._bypassConflictCheck;
++    
++     _trackUpsertActivity();
++     return database.update<T>(cleanDoc, fromSync);
++   } else {
++     const cleanDoc = { ...doc };
++     delete (cleanDoc as any)._bypassConflictCheck;
++    
++     _trackUpsertActivity();
++     return database.insert<T>(cleanDoc, fromSync);
++   }
++ },
+     const existingDoc = await database.get<T>(doc.type, doc._id);
+ 
+     if (existingDoc) {

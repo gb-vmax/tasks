@@ -1,0 +1,102 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..da19af3d6 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -33,15 +33,90 @@ export class Cookie extends Property {
+     private insoExtensions: InsomniaCookieExtensions = {};
+ 
+     constructor(cookieDef: CookieOptions | string) {
+-        super();
++function normalizeCookieDomain(domain: string, hostOnly?: boolean): string {
++    let normalized = domain.toLowerCase().trim();
++    
++    if (hostOnly) {
++        normalized = normalized.replace(/^\.+/, '');
++    } else {
++        if (normalized && !normalized.startsWith('.')) {
++            normalized = '.' + normalized;
++        }
++    }
++    
++    return normalized;
++}
+ 
+-        if (typeof cookieDef === 'string') {
+-            const cookieDefParsed = Cookie.parse(cookieDef);
+-            if (!cookieDefParsed) {
+-                throw Error('failed to parse cookie, the cookie string seems invalid');
+-            }
+-            cookieDef = cookieDefParsed;
++function resolveExpiryConflict(
++    expires: Date | string | null | undefined,
++    maxAge: number | 'Infinity' | '-Infinity'
++): Date | string | null | undefined {
++    const now = new Date();
++    let expiresDate: Date | null = null;
++    
++    if (expires instanceof Date) {
++        expiresDate = expires;
++    } else if (typeof expires === 'string') {
++        const parsedDate = new Date(expires);
++        if (!isNaN(parsedDate.getTime())) {
++            expiresDate = parsedDate;
+         }
++    }
++    
++    if (maxAge === 'Infinity') {
++        return expiresDate || 'Infinity';
++    }
++    
++    if (maxAge === '-Infinity' || maxAge < 0) {
++        return new Date(0);
++    }
++    
++    const maxAgeDate = new Date(now.getTime() + maxAge * 1000);
++    
++    if (!expiresDate) {
++        return maxAgeDate;
++    }
++    
++    return expiresDate < maxAgeDate ? expiresDate : maxAgeDate;
++}
++
++ super();
++
++ if (typeof cookieDef === 'string') {
++     const cookieDefParsed = Cookie.parse(cookieDef);
++     if (!cookieDefParsed) {
++         throw Error('failed to parse cookie, the cookie string seems invalid');
++     }
++     cookieDef = cookieDefParsed;
++ }
++
++ const def = { ...cookieDef };
++
++ if (def.domain) {
++     def.domain = normalizeCookieDomain(def.domain, def.hostOnly);
++ }
++
++ if (def.expires !== undefined && def.maxAge !== undefined && def.maxAge !== null) {
++     def.expires = resolveExpiryConflict(def.expires, def.maxAge);
++     def.maxAge = undefined;
++ }
++
++ this.extensions = def.extensions ? [...def.extensions] : [];
++ def.extensions = [];
++
++ const cookie = ToughCookie.fromJSON(def);
++ if (!cookie) {
++     throw Error('failed to parse cookie, the cookie string seems invalid');
++ }
++
++ this.id = cookieDef.id || '';
++ this.cookie = cookie;
++ this.insoExtensions = {
++     creation: cookieDef.creation,
++     creationIndex: cookieDef.creationIndex,
++     lastAccessed: cookieDef.lastAccessed,
++     pathIsDefault: cookieDef.pathIsDefault,
++ };
+ 
+         const def = { ...cookieDef };
+         this.extensions = def.extensions ? [...def.extensions] : [];

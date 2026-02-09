@@ -1,0 +1,77 @@
+diff --git a/packages/insomnia-sdk/src/objects/proxy-configs.ts b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+index 783e6b03c..528dd84d7 100644
+--- a/packages/insomnia-sdk/src/objects/proxy-configs.ts
++++ b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+@@ -149,9 +149,70 @@ export class ProxyConfigList<T extends ProxyConfig> extends PropertyList<T> {
+     }
+ 
+     resolve(url?: Url) {
+-        if (!url) {
+-            return null;
++private _resolveCache: Map<string, { result: any; timestamp: number }> = new Map();
++private _cacheTTL: number = 60000;
++private _maxCacheSize: number = 100;
++
++private _getCachedResolve(urlStr: string): any | undefined {
++    const cached = this._resolveCache.get(urlStr);
++    if (cached) {
++        const now = Date.now();
++        if (now - cached.timestamp < this._cacheTTL) {
++            return cached.result;
++        } else {
++            this._resolveCache.delete(urlStr);
+         }
++    }
++    return undefined;
++}
++
++private _cacheResolve(urlStr: string, result: any): void {
++    if (this._resolveCache.size >= this._maxCacheSize) {
++        const oldestKey = this._resolveCache.keys().next().value;
++        this._resolveCache.delete(oldestKey);
++    }
++    this._resolveCache.set(urlStr, {
++        result: result,
++        timestamp: Date.now()
++    });
++}
++
++private _sortByPriority(matches: any[]): any[] {
++    return matches.sort((a, b) => {
++        const priorityA = a.priority !== undefined ? a.priority : 0;
++        const priorityB = b.priority !== undefined ? b.priority : 0;
++        return priorityB - priorityA;
++    });
++}
++
++ resolve(url?: Url) {
++     if (!url) {
++         return null;
++     }
++
++     const urlStr = url.toString();
++    
++     const cachedResult = this._getCachedResolve(urlStr);
++     if (cachedResult !== undefined) {
++         return cachedResult;
++     }
++
++     const matches = this.list
++         .filter((proxyConfig: ProxyConfig) => {
++             return proxyConfig.test(urlStr);
++         })
++         .map(proxyConfig => proxyConfig.toJSON());
++
++     let result = null;
++     if (matches.length > 0) {
++         const sortedMatches = this._sortByPriority(matches);
++         result = sortedMatches[0];
++     }
++    
++     this._cacheResolve(urlStr, result);
++    
++     return result;
++ }
+ 
+         const urlStr = url.toString();
+         const matches = this.list

@@ -2,27 +2,26 @@
 
 ### Describe the bug
 
-I'm encountering an issue with MDX parsing where `export` statements are not being recognized correctly. It seems like any statement starting with `export` followed by a space is being treated as valid MDX ESM syntax, even when it shouldn't be.
+I'm encountering an issue with MDX parsing where `export` statements without a space after the keyword are being incorrectly accepted. The parser seems to be consuming characters even when they shouldn't form a valid export statement.
 
 ### Reproduction
 
-```mdx
-exportable content here
+```js
+// This should NOT be valid but is being parsed:
+exportSomething
+
+// Only this should be valid:
+export Something
 ```
 
-The parser incorrectly accepts this as valid MDX ESM syntax when it should only accept actual `export` statements like:
-
-```mdx
-export const foo = 'bar'
-```
+When parsing MDX content, the tokenizer appears to accept `export` followed immediately by any character (without the required space), which leads to invalid syntax being treated as valid ESM exports.
 
 ### Expected behavior
 
-The parser should only recognize valid `export` statements (the keyword `export` followed by a space and valid export syntax). Random words starting with "export" should not trigger the ESM parsing logic.
+The parser should only recognize `export` when it's followed by a space (code 32). Currently it seems to be accepting `export` followed by any character and treating it as a valid export statement, which breaks proper MDX validation.
 
 ### System Info
 - remark-mdx version: 3.0.0
-- Node version: Latest
 
 ---
 Repository: /testbed

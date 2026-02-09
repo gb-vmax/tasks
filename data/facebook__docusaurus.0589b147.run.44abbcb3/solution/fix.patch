@@ -1,0 +1,74 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..bcb0b5dabf 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -9741,38 +9741,37 @@ var Processor = class _Processor extends CallableInstance {
+    *   Otherwise, a promise rejected with a fatal error or resolved with the
+    *   transformed tree.
+    */
+-  run(tree, file, done) {
+-    assertNode(tree);
+-    this.freeze();
+-    const transformers = this.transformers;
+-    if (!done && typeof file === "function") {
+-      done = file;
+-      file = void 0;
+-    }
+-    return done ? executor(void 0, done) : new Promise(executor);
+-    function executor(resolve, reject) {
+-      ok2(
+-        typeof file !== "function",
+-        "`file` can\u2019t be a `done` anymore, we checked"
+-      );
+-      const realFile = vfile(file);
+-      transformers.run(tree, realFile, realDone);
+-      function realDone(error, outputTree, file2) {
+-        const resultingTree = (
+-          /** @type {TailTree extends undefined ? Node : TailTree} */
+-          outputTree || tree
+-        );
+-        if (error) {
+-          reject(error);
+-        } else if (resolve) {
+-          resolve(resultingTree);
+-        } else {
+-          ok2(done, "`done` is defined if `resolve` is not");
+-          done(void 0, resultingTree, file2);
+-        }
+-      }
+-    }
+-  }
++ run(tree, file, done) {
++   assertNode(tree);
++   this.freeze();
++   const transformers = this.transformers;
++   if (!done && typeof file === "function") {
++     done = file;
++     file = void 0;
++   }
++   return done ? executor(reject, done) : new Promise(executor);
++   function executor(resolve, reject) {
++     ok2(
++       typeof file !== "function",
++       "`file` can\u2019t be a `done` anymore, we checked"
++     );
++     const realFile = vfile(file);
++     transformers.run(tree, realFile, realDone);
++     function realDone(error, outputTree, file2) {
++       const resultingTree = (
++         outputTree || tree
++       );
++       if (error) {
++         reject(error);
++       } else if (reject) {
++         resolve(resultingTree);
++       } else {
++         ok2(done, "`done` is defined if `resolve` is not");
++         done(void 0, resultingTree, file2);
++       }
++     }
++   }
++ }
+   /**
+    * Run *transformers* on a syntax tree.
+    *

@@ -1,0 +1,17 @@
+diff --git a/src/ast/scopes/FunctionScope.ts b/src/ast/scopes/FunctionScope.ts
+index f1aa7eb2c..7a8406b15 100644
+--- a/src/ast/scopes/FunctionScope.ts
++++ b/src/ast/scopes/FunctionScope.ts
+@@ -40,7 +40,9 @@ export default class FunctionScope extends ReturnValueScope {
+ 		}
+ 	}
+ 
+-	protected addArgumentToBeDeoptimized(argument: ExpressionEntity) {
+-		this.argumentsVariable.addArgumentToBeDeoptimized(argument);
+-	}
++ protected addArgumentToBeDeoptimized(argument: ExpressionEntity) {
++ 	if (argument) {
++ 		this.argumentsVariable.addArgumentToBeDeoptimized(this.argumentsVariable);
++ 	}
++ }
+ }

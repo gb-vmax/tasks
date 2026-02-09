@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-After a recent update, MDX content parsing seems to be broken. When trying to parse MDX files, the content is not being processed correctly and the parser appears to skip over the actual content parsing step entirely.
+After a recent update, MDX content parsing seems to be broken. When trying to parse MDX documents, the content is not being processed correctly and the parser appears to skip or fail to handle the content chunks properly.
 
 ### Reproduction
 
@@ -12,20 +12,20 @@ import { compile } from '@mdx-js/mdx'
 const mdxContent = `
 # Hello World
 
-This is some content.
+This is a paragraph with some content.
 `
 
 const result = await compile(mdxContent)
-// The content is not parsed correctly
+// Parser fails to process the content correctly
 ```
 
 ### Expected behavior
 
-The MDX content should be properly tokenized and parsed. The parser should enter the content state and process the chunk content before moving to the next step.
+The MDX compiler should parse the content and generate the appropriate output. Content chunks should be properly entered and processed through the tokenization flow.
 
-### Additional context
-
-This seems to have started happening after a recent change to the content tokenization logic. The content tokenizer appears to be returning early without actually processing the content chunks.
+### System Info
+- @mdx-js/mdx version: 3.0.0
+- Node version: 18.x
 
 ---
 Repository: /testbed

@@ -1,0 +1,147 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..695711de4 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -539,31 +539,85 @@ const convertParameters = (parameters?: OpenAPIV2.Parameter[]) => {
+   });
+ };
+ 
++const extractCustomVariables = (api: OpenAPIV2.Document): Record<string, unknown> => {
++  const customVars: Record<string, unknown> = {};
++  
++  const extractFromObject = (obj: any, prefix = '') => {
++    if (!obj || typeof obj !== 'object') {
++      return;
++    }
++    
++    Object.keys(obj).forEach(key => {
++      if (key.startsWith('x-')) {
++        const varName = prefix ? `${prefix}_${key.slice(2)}` : key.slice(2);
++        const value = obj[key];
++        
++        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
++          customVars[varName] = value;
++        } else if (typeof value === 'object' && !Array.isArray(value)) {
++          extractFromObject(value, varName);
++        }
++      }
++    });
++  };
++  
++  extractFromObject(api);
++  
++  if (api.info) {
++    extractFromObject(api.info, 'info');
++  }
++  
++  return customVars;
++};
++
++const extractHosts = (api: OpenAPIV2.Document): string[] => {
++  const hosts: string[] = [];
++  
++  if (api.host) {
++    hosts.push(api.host);
++  }
++  
++  const apiAsAny = api as any;
++  if (apiAsAny['x-hosts'] && Array.isArray(apiAsAny['x-hosts'])) {
++    apiAsAny['x-hosts'].forEach((host: any) => {
++      if (typeof host === 'string' && !hosts.includes(host)) {
++        hosts.push(host);
++      }
++    });
++  }
++  
++  if (hosts.length === 0) {
++    hosts.push('');
++  }
++  
++  return hosts;
++};
++
+ export const convert: Converter = async rawData => {
+-  requestCount = 1; // Validate
++  requestCount = 1;
+ 
+   let api = await parseDocument(rawData);
+ 
+   if (!api || api.swagger !== SUPPORTED_SWAGGER_VERSION) {
+     return null;
+-  } // Await here so we catch any exceptions
++  }
+ 
+   try {
+     api = await SwaggerParser.validate(api);
+   } catch (err) {
+-    // We already know it's a Swagger doc so we will try to import it anyway instead
+-    // of bailing out here.
+     console.log('[swagger] Import file validation failed', err);
+-  } // Import
++  }
+ 
+   const workspace: ImportRequest = {
+     _type: 'workspace',
+     _id: WORKSPACE_ID,
+     parentId: null,
+     name: `${api.info.title} ${api.info.version}`,
+-    description: api.info.description || '', // scope is not set because it could be imported for design OR to generate requests
++    description: api.info.description || '',
+   };
+ 
++  const customVars = extractCustomVariables(api);
++
+   const baseEnv: ImportRequest = {
+     _type: 'environment',
+     _id: '__BASE_ENVIRONMENT_ID__',
+@@ -571,21 +625,38 @@ export const convert: Converter = async rawData => {
+     name: 'Base environment',
+     data: {
+       base_url: '{{ _.scheme }}://{{ _.host }}{{ _.base_path }}',
++      ...customVars,
+     },
+   };
+ 
+-  const swaggerEnv: ImportRequest = {
+-    _type: 'environment',
+-    _id: 'env___BASE_ENVIRONMENT_ID___sub',
+-    parentId: baseEnv._id,
+-    name: 'Swagger env',
+-    data: {
+-      base_path: api.basePath || '',
+-      scheme: (api.schemes || ['http'])[0],
+-      host: api.host || '',
+-    },
+-  };
++  const schemes = api.schemes || ['http'];
++  const hosts = extractHosts(api);
++  const environments: ImportRequest[] = [];
++
++  schemes.forEach((scheme, schemeIndex) => {
++    hosts.forEach((host, hostIndex) => {
++      const envSuffix = schemes.length > 1 || hosts.length > 1 
++        ? `${scheme}${hosts.length > 1 ? `-${host.replace(/[^a-zA-Z0-9]/g, '-')}` : ''}`
++        : '';
++      
++      const envName = envSuffix ? `Swagger env (${envSuffix})` : 'Swagger env';
++      const envId = `env___BASE_ENVIRONMENT_ID___sub${schemeIndex}${hostIndex}`;
++
++      environments.push({
++        _type: 'environment',
++        _id: envId,
++        parentId: baseEnv._id,
++        name: envName,
++        data: {
++          base_path: api.basePath || '',
++          scheme: scheme,
++          host: host || api.host || '',
++        },
++      });
++    });
++  });
++
+   const endpoints = parseEndpoints(api);
+ 
+-  return [workspace, baseEnv, swaggerEnv, ...endpoints];
++  return [workspace, baseEnv, ...environments, ...endpoints];
+ };

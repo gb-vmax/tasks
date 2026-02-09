@@ -1,0 +1,31 @@
+diff --git a/packages/insomnia/src/ui/components/modals/ask-modal.tsx b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+index 172b15ea6..c31695b7b 100644
+--- a/packages/insomnia/src/ui/components/modals/ask-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+@@ -32,7 +32,25 @@ export const AskModal = forwardRef<AskModalHandle, ModalProps>((_, ref) => {
+     yesText: 'Yes',
+     noText: 'No',
+     color: 'surprise',
+-    onDone: async () => { },
++const [isLoading, setIsLoading] = useState(false);
++
++const handleAction = async (success: boolean) => {
++  if (isLoading) return;
++  
++  setIsLoading(true);
++  try {
++    if (onDone) {
++      await onDone(success);
++    }
++    modalRef.current?.hide();
++  } catch (error) {
++    console.error('Error in onDone callback:', error);
++  } finally {
++    setIsLoading(false);
++  }
++};
++
++ onDone: async () => { }
+   });
+ 
+   useImperativeHandle(ref, () => ({

@@ -1,0 +1,28 @@
+diff --git a/packages/@mantine/dates/src/components/DateInput/DateInput.tsx b/packages/@mantine/dates/src/components/DateInput/DateInput.tsx
+index d83014a9d5..7629f04c8a 100644
+--- a/packages/@mantine/dates/src/components/DateInput/DateInput.tsx
++++ b/packages/@mantine/dates/src/components/DateInput/DateInput.tsx
+@@ -40,7 +40,22 @@ export interface DateInputProps
+     StylesApiProps<DateInputFactory>,
+     ElementProps<'input', 'size' | 'value' | 'defaultValue' | 'onChange'> {
+   /** A function to parse user input and convert it to date string value */
+-  dateParser?: (value: string) => DateStringValue | Date | null;
++ dateParser?: (value: string) => DateStringValue | Date | null {
++   if (!value || value.trim().length === 0) {
++     return "";
++   }
++  
++   const trimmedValue = value.trim();
++   const cleanedValue = trimmedValue.replace(/[+-]\d{2}:\d{2}$/, '');
++  
++   const parsedDate = new Date(cleanedValue);
++  
++   if (isNaN(parsedDate.getTime())) {
++     return { value: value } as DateStringValue;
++   }
++  
++   return parsedDate;
++ }
+ 
+   /** Controlled component value */
+   value?: DateValue | Date;

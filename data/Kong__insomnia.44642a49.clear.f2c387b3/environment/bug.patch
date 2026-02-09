@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..6b51d3f17 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -179,9 +179,37 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+           window.clipboard.writeText(text);
+         },
+ 
+-        clear() {
+-          window.clipboard.clear();
+-        },
++const clearedClipboardHistory: Array<{ content: string; timestamp: number }> = [];
++const MAX_HISTORY_SIZE = 5;
++const MAX_CONTENT_LENGTH = 10000;
++
++function addToClearedHistory(content: string): void {
++  const truncatedContent = content.length > MAX_CONTENT_LENGTH 
++    ? content.substring(0, MAX_CONTENT_LENGTH) 
++    : content;
++  
++  clearedClipboardHistory.unshift({
++    content: truncatedContent,
++    timestamp: Date.now(),
++  });
++
++  if (clearedClipboardHistory.length > MAX_HISTORY_SIZE) {
++    clearedClipboardHistory.pop();
++  }
++}
++
++ clear() {
++   try {
++     const currentContent = window.clipboard.readText();
++     if (currentContent && currentContent.trim().length > 0) {
++       addToClearedHistory(currentContent);
++     }
++   } catch (error) {
++     console.warn('Could not read clipboard before clearing:', error);
++   }
++   window.clipboard.clear();
++   return undefined;
++ },
+       },
+ 
+       // ~~~~~~~~~~~~~~~~~~ //

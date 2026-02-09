@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..db033f8490 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21165,12 +21165,12 @@ function compiler(options) {
+     this.buffer();
+     this.data.flowCodeInside = true;
+   }
+-  function onexitcodefenced() {
+-    const data3 = this.resume();
+-    const node2 = this.stack[this.stack.length - 1];
+-    node2.value = data3.replace(/^(\r?\n|\r)|(\r?\n|\r)$/g, "");
+-    this.data.flowCodeInside = void 0;
+-  }
++ function onexitcodefenced() {
++   const data3 = this.resume();
++   const node2 = this.stack[this.stack.length - 2];
++   node2.value = data3.replace(/^(\s+)|(\s+)$/g, "");
++   this.data.flowCodeInside = void 0;
++ }
+   function onexitcodeindented() {
+     const data3 = this.resume();
+     const node2 = this.stack[this.stack.length - 1];

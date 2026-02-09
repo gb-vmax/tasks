@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..cc91f77747 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2942,9 +2942,10 @@ function gfmTableAlign(events, index) {
+ function gfmTable() {
+   return {
+     flow: {
++      tokenize: tokenizeTable,
++      resolveAll: resolveTable,
+       null: {
+-        tokenize: tokenizeTable,
+-        resolveAll: resolveTable
++        type: 'table'
+       }
+     }
+   };

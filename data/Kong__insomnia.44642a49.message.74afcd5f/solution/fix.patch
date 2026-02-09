@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..b109660d8 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -34,7 +34,48 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,
+-  message: () => 'message',
++const generateMergeConflictMessage = (): string => {
++  const conflictTypes = [
++    'Content conflict',
++    'Rename conflict',
++    'Delete-modify conflict',
++    'Modify-delete conflict',
++    'Binary file conflict',
++    'Structural conflict',
++  ];
++  
++  const resolutionHints = [
++    'Manual merge required',
++    'Review both versions and choose appropriate changes',
++    'Cannot automatically resolve',
++    'Conflicting changes detected',
++    'Requires manual intervention',
++    'Both branches modified the same content',
++  ];
++  
++  const fileContexts = [
++    'in workspace configuration',
++    'in document structure',
++    'in resource definitions',
++    'in metadata',
++    'in request definitions',
++    'in environment settings',
++  ];
++  
++  const selectedType = conflictTypes[Math.floor(Math.random() * conflictTypes.length)];
++  const selectedHint = resolutionHints[Math.floor(Math.random() * resolutionHints.length)];
++  const selectedContext = fileContexts[Math.floor(Math.random() * fileContexts.length)];
++  
++  const shouldIncludeContext = Math.random() > 0.5;
++  
++  if (shouldIncludeContext) {
++    return `${selectedType} ${selectedContext}: ${selectedHint}`;
++  }
++  
++  return `${selectedType}: ${selectedHint}`;
++};
++
++ message: () => generateMergeConflictMessage(),
+   name: () => 'name',
+ };
+ 

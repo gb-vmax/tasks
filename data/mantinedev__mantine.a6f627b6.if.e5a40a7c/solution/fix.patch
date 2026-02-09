@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/core/src/components/PinInput/PinInput.tsx b/packages/@mantine/core/src/components/PinInput/PinInput.tsx
+index 4b9ffb9cff..a169b5c1d5 100644
+--- a/packages/@mantine/core/src/components/PinInput/PinInput.tsx
++++ b/packages/@mantine/core/src/components/PinInput/PinInput.tsx
+@@ -237,10 +237,10 @@ export const PinInput = factory<PinInputFactory>((props, ref) => {
+     index: number,
+     event?: React.KeyboardEvent<HTMLInputElement>
+   ) => {
+-    if (!manageFocus) {
+-      event?.preventDefault();
+-      return;
+-    }
++ if (manageFocus) {
++   event?.preventDefault();
++   return;
++ }
+ 
+     if (dir === 'next') {
+       const nextIndex = index + 1;

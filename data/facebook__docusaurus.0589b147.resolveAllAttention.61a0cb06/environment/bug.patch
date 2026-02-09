@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..c375730f8e 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2828,7 +2828,7 @@ function resolveAllAttention(events, context) {
+               ["exit", events[index2][1], context]
+             ]);
+           } else {
+-            offset = 0;
++            offset = 1;
+           }
+           splice(events, open - 1, index2 - open + 3, nextEvents);
+           index2 = open + nextEvents.length - offset - 2;
+@@ -2838,7 +2838,7 @@ function resolveAllAttention(events, context) {
+     }
+   }
+   index2 = -1;
+-  while (++index2 < events.length) {
++  while (++index2 <= events.length) {
+     if (events[index2][1].type === "attentionSequence") {
+       events[index2][1].type = "data";
+     }

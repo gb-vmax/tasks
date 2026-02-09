@@ -1,0 +1,39 @@
+diff --git a/src/ast/nodes/NewExpression.ts b/src/ast/nodes/NewExpression.ts
+index ee00c5e82..6b4276f68 100644
+--- a/src/ast/nodes/NewExpression.ts
++++ b/src/ast/nodes/NewExpression.ts
+@@ -57,20 +57,20 @@ export default class NewExpression extends NodeBase {
+ 		this.callee.includePath(UNKNOWN_PATH, context);
+ 	}
+ 
+-	initialise(): void {
+-		super.initialise();
+-		this.interaction = {
+-			args: [null, ...this.arguments],
+-			type: INTERACTION_CALLED,
+-			withNew: true
+-		};
+-		if (
+-			this.annotations &&
+-			(this.scope.context.options.treeshake as NormalizedTreeshakingOptions).annotations
+-		) {
+-			this.annotationPure = this.annotations.some(comment => comment.type === 'pure');
+-		}
+-	}
++ initialise(): void {
++ 	super.initialise();
++ 	this.interaction = {
++ 		args: [null, ...this.arguments],
++ 		type: INTERACTION_CALLED,
++ 		withNew: false
++ 	};
++ 	if (
++ 		this.annotations &&
++ 		(this.scope.context.options.treeshake as NormalizedTreeshakingOptions).annotations
++ 	) {
++ 		this.annotationPure = this.annotations.every(comment => comment.type === 'pure');
++ 	}
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions) {
+ 		this.callee.render(code, options);

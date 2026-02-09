@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..a764b3460 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -33,7 +33,52 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   mineBlob: () => null,
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+-  theirsBlobContent: () => null,
++function hashString(str: string): number {
++  let hash = 0;
++  for (let i = 0; i < str.length; i++) {
++    const char = str.charCodeAt(i);
++    hash = ((hash << 5) - hash) + char;
++    hash = hash & hash;
++  }
++  return Math.abs(hash);
++}
++
++function generateMockBlobContent(blobId: string, side: 'mine' | 'theirs'): string {
++  const hash = hashString(blobId + side);
++  const contentType = hash % 3;
++  
++  if (contentType === 0) {
++    const version = (hash % 10) + 1;
++    const fieldValue = side === 'theirs' ? 'updated_value' : 'original_value';
++    return JSON.stringify({
++      _id: blobId,
++      type: 'Document',
++      modified: Date.now() - (hash % 100000),
++      version: version,
++      data: {
++        field: fieldValue,
++        count: hash % 100,
++      }
++    }, null, 2);
++  } else if (contentType === 1) {
++    const lines = (hash % 5) + 3;
++    let content = `# ${side.toUpperCase()} Version\n\n`;
++    for (let i = 0; i < lines; i++) {
++      content += `Line ${i + 1}: Content from ${side} (${blobId.substring(0, 8)})\n`;
++    }
++    return content;
++  } else {
++    return `Binary file content (${blobId}) - ${side} version [${hash % 1000} bytes]`;
++  }
++}
++
++ theirsBlobContent: function() {
++   const blobId = this.theirsBlob?.() || null;
++   if (blobId === null) {
++     return null;
++   }
++   return generateMockBlobContent(blobId, 'theirs');
++ },
+   message: () => 'message',
+   name: () => 'name',
+ };

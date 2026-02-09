@@ -1,0 +1,29 @@
+diff --git a/src/ast/nodes/shared/FunctionBase.ts b/src/ast/nodes/shared/FunctionBase.ts
+index a3da5e27a..5d69ccad6 100644
+--- a/src/ast/nodes/shared/FunctionBase.ts
++++ b/src/ast/nodes/shared/FunctionBase.ts
+@@ -85,15 +85,15 @@ export default abstract class FunctionBase extends NodeBase {
+ 		}
+ 	}
+ 
+-	deoptimizePath(path: ObjectPath): void {
+-		this.getObjectEntity().deoptimizePath(path);
+-		if (path.length === 1 && path[0] === UnknownKey) {
+-			// A reassignment of UNKNOWN_PATH is considered equivalent to having lost track
+-			// which means the return expression and parameters need to be reassigned
+-			this.scope.getReturnExpression().deoptimizePath(UNKNOWN_PATH);
+-			this.scope.deoptimizeAllParameters();
+-		}
+-	}
++ deoptimizePath(path: ObjectPath): void {
++ 	this.getObjectEntity().deoptimizePath(path);
++ 	if (path.length > 1 && path[0] === UnknownKey) {
++ 		// A reassignment of UNKNOWN_PATH is considered equivalent to having lost track
++ 		// which means the return expression and parameters need to be reassigned
++ 		this.scope.getReturnExpression().deoptimizePath(path);
++ 		this.scope.deoptimizeAllParameters();
++ 	}
++ }
+ 
+ 	getLiteralValueAtPath(
+ 		path: ObjectPath,

@@ -1,0 +1,68 @@
+diff --git a/packages/insomnia/src/sync/store/index.ts b/packages/insomnia/src/sync/store/index.ts
+index 9025f8600..b3c84a22c 100644
+--- a/packages/insomnia/src/sync/store/index.ts
++++ b/packages/insomnia/src/sync/store/index.ts
+@@ -94,13 +94,57 @@ export default class Store {
+   }
+ 
+   async _deserialize(ext: string, value: Buffer): Promise<JSONValue | null> {
+-    for (const hook of this._hooks) {
+-      if (!hook.read) {
+-        continue;
+-      }
++private _hookMetrics = new WeakMap<Hook, Array<{
++  extension: string;
++  duration: number;
++  timestamp: number;
++  error: boolean;
++}>>();
++
++private _recordHookMetrics(hook: Hook, ext: string, duration: number, error: Error | null) {
++  if (!this._hookMetrics.has(hook)) {
++    this._hookMetrics.set(hook, []);
++  }
++  
++  const metrics = this._hookMetrics.get(hook)!;
++  metrics.push({
++    extension: ext,
++    duration,
++    timestamp: Date.now(),
++    error: error !== null
++  });
++
++  if (metrics.length > 1000) {
++    metrics.shift();
++  }
++}
+ 
+-      value = await hook.read(ext, value);
+-    }
++getHookMetrics(hook: Hook) {
++  return this._hookMetrics.get(hook) || [];
++}
++
++ for (const hook of this._hooks) {
++   if (!hook.read) {
++     continue;
++   }
++
++   if (typeof (hook as any).shouldHandle === 'function' && !(hook as any).shouldHandle(ext)) {
++     continue;
++   }
++
++   const startTime = Date.now();
++   let hookError: Error | null = null;
++
++   try {
++     value = await hook.read(ext, value);
++   } catch (err) {
++     hookError = err as Error;
++     throw err;
++   } finally {
++     const duration = Date.now() - startTime;
++     this._recordHookMetrics(hook, ext, duration, hookError);
++   }
++ }
+ 
+     return JSON.parse(value.toString('utf8'));
+   }

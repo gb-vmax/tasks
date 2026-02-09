@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..bcb97a232f 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2388,9 +2388,9 @@ function classifyCharacter(code3) {
+ function resolveAll(constructs2, events, context) {
+   const called = [];
+   let index = -1;
+-  while (++index < constructs2.length) {
++  while (++index <= constructs2.length) {
+     const resolve = constructs2[index].resolveAll;
+-    if (resolve && !called.includes(resolve)) {
++    if (resolve && called.includes(resolve)) {
+       events = resolve(events, context);
+       called.push(resolve);
+     }

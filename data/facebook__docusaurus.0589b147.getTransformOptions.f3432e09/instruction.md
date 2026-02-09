@@ -2,27 +2,25 @@
 
 ### Describe the bug
 
-After a recent update, I'm experiencing issues with ES module imports in the browser build. The code seems to be generating incorrect module references that break at runtime.
+I'm experiencing an issue with the Babel configuration in Docusaurus where the `compact` option is not being applied correctly for client-side builds. The code generated for the browser is not being compacted, resulting in unnecessarily large bundle sizes with extra whitespace and newlines.
 
 ### Reproduction
 
-When building a Docusaurus project and running it in the browser, I'm getting errors related to module imports. The runtime helpers appear to be using the wrong module format.
+1. Create a new Docusaurus project or use an existing one
+2. Build the project for production
+3. Inspect the generated JavaScript bundles in the `build` directory
+4. Notice that the client-side bundles contain unnecessary whitespace and newlines
 
-Steps to reproduce:
-1. Build a Docusaurus project for browser/client-side
-2. Check the generated JavaScript output
-3. Notice that ES modules are not being used correctly for runtime helpers
-
-The issue seems to be related to how Babel is configured for client vs server builds. The server build works fine, but the browser build is generating code that expects CommonJS modules when it should be using ES modules.
+The server-side code appears to be compacted correctly, but the client bundles are not.
 
 ### Expected behavior
 
-The browser build should generate code that uses ES modules (`import`/`export`) for runtime helpers, not CommonJS (`require`). The `useESModules` option should be enabled for client-side builds to ensure compatibility with modern browsers.
+Both server and client builds should have the `compact` option enabled to omit all optional newlines and whitespace when generating code. This should result in smaller bundle sizes for production builds.
 
 ### System Info
-- Docusaurus version: latest
+- Docusaurus version: Latest
 - Node version: 18.x
-- Browser: Chrome/Firefox
+- Build target: Production
 
 ---
 Repository: /testbed

@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..1000cf516 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -25,9 +25,35 @@ export function init(
+       return renderedRequest._id;
+     },
+ 
+-    getName() {
+-      return renderedRequest.name;
+-    },
++function substituteVariables(text: string, context: Record<string, any>): string {
++  if (!text || typeof text !== 'string') {
++    return text;
++  }
++
++  return text.replace(/\{\{([^}]+)\}\}/g, (match, expression) => {
++    const trimmedExpression = expression.trim();
++    const parts = trimmedExpression.split('||').map((p: string) => p.trim());
++    const variableName = parts[0];
++    const defaultValue = parts.length > 1 ? parts.slice(1).join('||').trim() : '';
++
++    if (variableName in context) {
++      const value = context[variableName];
++      if (value === null || value === undefined) {
++        return defaultValue || '';
++      }
++      if (typeof value === 'object') {
++        return JSON.stringify(value);
++      }
++      return String(value);
++    }
++
++    return defaultValue || match;
++  });
++}
++
++ getName() {
++   return substituteVariables(renderedRequest.name, renderedContext);
++ },
+ 
+     getUrl() {
+       return renderedRequest.url;

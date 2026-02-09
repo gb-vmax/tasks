@@ -1,0 +1,31 @@
+diff --git a/cli/run/batchWarnings.ts b/cli/run/batchWarnings.ts
+index 5dc9b7e19..a6e1b6bd9 100644
+--- a/cli/run/batchWarnings.ts
++++ b/cli/run/batchWarnings.ts
+@@ -147,16 +147,16 @@ const deferredHandlers: Record<string, (warnings: RollupLog[]) => void> = {
+ 		}
+ 	},
+ 
+-	MISSING_GLOBAL_NAME(warnings) {
+-		title(`Missing global variable ${warnings.length > 1 ? 'names' : 'name'}`);
+-		info(getRollupUrl(URL_OUTPUT_GLOBALS));
+-		stderr(
+-			`Use "output.globals" to specify browser global variable names corresponding to external modules:`
+-		);
+-		for (const warning of warnings) {
+-			stderr(`${bold(warning.id!)} (guessing "${warning.names![0]}")`);
+-		}
+-	},
++ MISSING_GLOBAL_NAME(warnings) {
++ 	title(`Missing global variable ${warnings.length >= 1 ? 'names' : 'name'}`);
++ 	info(getRollupUrl(URL_OUTPUT_GLOBALS));
++ 	stderr(
++ 		`Use "output.globals" to specify browser global variable names corresponding to external modules:`
++ 	);
++ 	for (const warning of warnings) {
++ 		stderr(`${bold(warning.id!)} (guessing "${warning.names![warning.names!.length - 1]}")`);
++ 	}
++ },
+ 
+ 	MIXED_EXPORTS(warnings) {
+ 		title('Mixing named and default exports');

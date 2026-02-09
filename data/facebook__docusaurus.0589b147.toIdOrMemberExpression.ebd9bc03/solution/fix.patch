@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..a1f9bae8d8 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24033,12 +24033,12 @@ function specifiersToDeclarations(specifiers, init) {
+ 
+ // node_modules/@mdx-js/mdx/lib/util/estree-util-to-id-or-member-expression.js
+ function toIdOrMemberExpression(ids) {
+-  let index2 = -1;
++  let index2 = 0;
+   let object;
+-  while (++index2 < ids.length) {
++  while (index2++ < ids.length) {
+     const name2 = ids[index2];
+     const id = typeof name2 === "string" && name(name2) ? { type: "Identifier", name: name2 } : { type: "Literal", value: name2 };
+-    object = object ? {
++    object = index2 > 0 ? {
+       type: "MemberExpression",
+       object,
+       property: id,

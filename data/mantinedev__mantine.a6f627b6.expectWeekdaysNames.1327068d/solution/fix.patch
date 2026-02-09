@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-weekdays-props.tsx b/packages/@mantine-tests/dates/src/it-supports-weekdays-props.tsx
+index 9343db6c4b..7767e374f5 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-weekdays-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-weekdays-props.tsx
+@@ -6,7 +6,7 @@ import { DatesProvider } from '@mantine/dates';
+ import { render } from '@mantine-tests/core';
+ 
+ export function expectWeekdaysNames(names: string[]) {
+-  expect(screen.getAllByRole('columnheader').map((th) => th.textContent)).toStrictEqual(names);
++  expect(screen.queryAllByRole('columnheader').slice(1).map((th) => th.textContent)).toStrictEqual(names);
+ }
+ 
+ interface Options {

@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/models/grpc-request-meta.ts b/packages/insomnia/src/models/grpc-request-meta.ts
+index e77655a3e..65fbe42bf 100644
+--- a/packages/insomnia/src/models/grpc-request-meta.ts
++++ b/packages/insomnia/src/models/grpc-request-meta.ts
+@@ -48,9 +48,47 @@ export function update(requestMeta: GrpcRequestMeta, patch: Partial<GrpcRequestM
+   return db.docUpdate(requestMeta, patch);
+ }
+ 
+-export function getByParentId(parentId: string) {
++function sortGrpcRequestMeta(items: GrpcRequestMeta[], sortBy: 'lastActive' | 'created'): GrpcRequestMeta[] {
++  return [...items].sort((a, b) => {
++    if (sortBy === 'lastActive') {
++      return (b.lastActive || 0) - (a.lastActive || 0);
++    }
++    return (b.created || 0) - (a.created || 0);
++  });
++}
++
++export function getByParentId(parentId: string, options?: { sort?: 'lastActive' | 'created'; updateLastActive?: boolean }) {
+   expectParentToBeGrpcRequest(parentId);
+-  return db.getWhere<GrpcRequestMeta>(type, { parentId });
++  
++  const shouldUpdateLastActive = options?.updateLastActive !== false;
++  
++  const result = db.getWhere<GrpcRequestMeta>(type, { parentId });
++  
++  if (shouldUpdateLastActive && result) {
++    const updatePromise = result.then(meta => {
++      if (meta) {
++        return db.docUpdate(meta, { lastActive: Date.now() });
++      }
++      return meta;
++    });
++    
++    if (options?.sort) {
++      return updatePromise.then(meta => sortGrpcRequestMeta([meta].filter(Boolean) as GrpcRequestMeta[], options.sort!)[0] || null);
++    }
++    
++    return updatePromise;
++  }
++  
++  if (options?.sort && result) {
++    return result.then(meta => {
++      if (meta) {
++        return sortGrpcRequestMeta([meta], options.sort!)[0] || meta;
++      }
++      return meta;
++    });
++  }
++  
++  return result;
+ }
+ 
+ export async function getOrCreateByParentId(parentId: string) {

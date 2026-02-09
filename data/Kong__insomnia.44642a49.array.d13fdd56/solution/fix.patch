@@ -1,0 +1,91 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..130ec0846 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -478,15 +478,78 @@ const generateParameterExample = (
+ 
+       return example;
+     },
+-    array: ({ items, collectionFormat }: OpenAPIV2.Parameter) => {
+-      const value = generateParameterExample(items, ancestors);
++const generateUniqueValue = (baseValue: any, index: number, itemSchema: OpenAPIV2.Parameter): any => {
++  if (typeof baseValue === 'string') {
++    if (itemSchema.format === 'email') {
++      return `user${index + 1}@example.com`;
++    }
++    if (itemSchema.format === 'date-time') {
++      const date = new Date();
++      date.setDate(date.getDate() + index);
++      return date.toISOString();
++    }
++    return `${baseValue}${index > 0 ? index + 1 : ''}`;
++  }
++  
++  if (typeof baseValue === 'number') {
++    return baseValue + index;
++  }
++  
++  if (typeof baseValue === 'boolean') {
++    return index % 2 === 0;
++  }
++  
++  if (Array.isArray(baseValue)) {
++    return [...baseValue, index];
++  }
++  
++  if (typeof baseValue === 'object' && baseValue !== null) {
++    return { ...baseValue, _variant: index + 1 };
++  }
++  
++  return baseValue;
++};
+ 
+-      if (collectionFormat === 'csv') {
+-        return value;
+-      } else {
+-        return [value];
+-      }
+-    },
++ array: ({ items, collectionFormat, minItems, maxItems, uniqueItems }: OpenAPIV2.Parameter) => {
++   const determineItemCount = () => {
++     if (minItems !== undefined && minItems > 0) {
++       return Math.min(minItems, maxItems !== undefined ? maxItems : minItems);
++     }
++     if (maxItems !== undefined && maxItems > 0) {
++       return Math.min(maxItems, 3);
++     }
++     return uniqueItems ? 3 : 2;
++   };
++
++   const itemCount = determineItemCount();
++   const values: any[] = [];
++
++   for (let i = 0; i < itemCount; i++) {
++     const value = generateParameterExample(items, ancestors);
++    
++     if (uniqueItems && values.length > 0) {
++       const modifiedValue = generateUniqueValue(value, i, items);
++       values.push(modifiedValue);
++     } else {
++       values.push(value);
++     }
++   }
++
++   const collectionFormatDelimiters: { [key: string]: string } = {
++     csv: ',',
++     ssv: ' ',
++     tsv: '\t',
++     pipes: '|',
++   };
++
++   const delimiter = collectionFormatDelimiters[collectionFormat || ''];
++
++   if (delimiter) {
++     return values.map(v => typeof v === 'object' ? JSON.stringify(v) : String(v)).join(delimiter);
++   }
++
++   return values;
++ },
+   };
+ 
+   if (typeof parameter === 'string') {

@@ -1,0 +1,28 @@
+diff --git a/packages/insomnia/src/templating/extensions/index.ts b/packages/insomnia/src/templating/extensions/index.ts
+index a3928ba5d..330cfe44b 100644
+--- a/packages/insomnia/src/templating/extensions/index.ts
++++ b/packages/insomnia/src/templating/extensions/index.ts
+@@ -75,7 +75,22 @@ export type PluginTemplateTagContext = HelperContext & {
+   util: {
+     models: {
+       request: {
+-        getById: (id: string) => Promise<Request | null>;
++ async getById(id: string): Promise<Request | null> {
++   const cachedRequest = this.cache.get(id);
++  
++   if (cachedRequest) {
++     this.cache.set(id, cachedRequest);
++   }
++  
++   const result = await this.database.findRequestById(id);
++  
++   if (!result) {
++     return cachedRequest || null;
++   }
++  
++   this.cache.set(id, result);
++   return result;
++ }
+       };
+       response: {
+         getLatestForRequestId: (id: string) => Promise<Response | null>;

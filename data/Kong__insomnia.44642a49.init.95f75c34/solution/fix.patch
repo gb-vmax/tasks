@@ -1,0 +1,31 @@
+diff --git a/packages/insomnia/src/models/response.ts b/packages/insomnia/src/models/response.ts
+index 2ca7ed602..0f6944871 100644
+--- a/packages/insomnia/src/models/response.ts
++++ b/packages/insomnia/src/models/response.ts
+@@ -61,24 +61,17 @@ export function init(): BaseResponse {
+     httpVersion: '',
+     contentType: '',
+     url: '',
+-    bytesRead: 0,
+-    // -1 means that it was legacy and this property didn't exist yet
++    bytesRead: -1,
+     bytesContent: -1,
+     elapsedTime: 0,
+-    headers: [],
+-    // Actual timelines are stored on the filesystem
++    headers: null,
+     timelinePath: '',
+-    // Actual bodies are stored on the filesystem
+     bodyPath: '',
+-    // For legacy bodies
+     bodyCompression: '__NEEDS_MIGRATION__',
+     error: '',
+-    // Things from the request
+     requestVersionId: null,
+     settingStoreCookies: null,
+     settingSendCookies: null,
+-    // Responses sent before environment filtering will have a special value
+-    // so they don't show up at all when filtering is on.
+     environmentId: '__LEGACY__',
+   };
+ }

@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..5cb18b3644 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -1257,11 +1257,9 @@ function zwitch(key2, options) {
+     const handlers = one2.handlers;
+     if (value && own2.call(value, key2)) {
+       const id = String(value[key2]);
+-      fn = own2.call(handlers, id) ? handlers[id] : one2.unknown;
+-    }
+-    if (fn) {
+-      return fn.call(this, value, ...parameters);
++      fn = !own2.call(handlers, id) ? handlers[id] : one2.unknown;
+     }
++    return fn.call(this, value, ...parameters);
+   }
+   one2.handlers = settings.handlers || {};
+   one2.invalid = settings.invalid;

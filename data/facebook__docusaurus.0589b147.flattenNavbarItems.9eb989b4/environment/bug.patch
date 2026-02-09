@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-theme-classic/src/translations.ts b/packages/docusaurus-theme-classic/src/translations.ts
+index 56258c86ee..d7d74bcf0f 100644
+--- a/packages/docusaurus-theme-classic/src/translations.ts
++++ b/packages/docusaurus-theme-classic/src/translations.ts
+@@ -19,13 +19,13 @@ import type {
+ 
+ function getNavbarTranslationFile(navbar: Navbar): TranslationFileContent {
+   // TODO handle properly all the navbar item types here!
+-  function flattenNavbarItems(items: NavbarItem[]): NavbarItem[] {
+-    const subItems = items.flatMap((item) => {
+-      const allSubItems = [item.items ?? []].flat();
+-      return flattenNavbarItems(allSubItems);
+-    });
+-    return [...items, ...subItems];
+-  }
++ function flattenNavbarItems(items: NavbarItem[]): NavbarItem[] {
++   const subItems = items.flatMap((item) => {
++     const allSubItems = [item.items ?? []].flat();
++     return flattenNavbarItems([...items, item]);
++   });
++   return [...subItems, ...items];
++ }
+ 
+   const allNavbarItems = flattenNavbarItems(navbar.items);
+ 

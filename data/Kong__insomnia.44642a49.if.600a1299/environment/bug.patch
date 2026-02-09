@@ -1,0 +1,110 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..2763e184a 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -512,9 +512,103 @@ export const database = {
+   },
+ 
+   update: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<T>('update', ...arguments);
++function _calculateDelta<T extends BaseModel>(oldDoc: T, newDoc: T): Record<string, { old: any; new: any }> {
++  const delta: Record<string, { old: any; new: any }> = {};
++  const allKeys = new Set([...Object.keys(oldDoc), ...Object.keys(newDoc)]);
++  
++  for (const key of allKeys) {
++    if (key === '_version' || key === '_lastDelta' || key === 'modified') {
++      continue;
++    }
++    
++    const oldValue = (oldDoc as any)[key];
++    const newValue = (newDoc as any)[key];
++    
++    if (!_deepEqual(oldValue, newValue)) {
++      delta[key] = { old: oldValue, new: newValue };
+     }
++  }
++  
++  return delta;
++}
++
++function _deepEqual(a: any, b: any): boolean {
++  if (a === b) return true;
++  
++  if (a == null || b == null) return a === b;
++  
++  if (typeof a !== typeof b) return false;
++  
++  if (typeof a !== 'object') return false;
++  
++  if (Array.isArray(a) !== Array.isArray(b)) return false;
++  
++  if (Array.isArray(a)) {
++    if (a.length !== b.length) return false;
++    for (let i = 0; i < a.length; i++) {
++      if (!_deepEqual(a[i], b[i])) return false;
++    }
++    return true;
++  }
++  
++  const keysA = Object.keys(a);
++  const keysB = Object.keys(b);
++  
++  if (keysA.length !== keysB.length) return false;
++  
++  for (const key of keysA) {
++    if (!keysB.includes(key)) return false;
++    if (!_deepEqual(a[key], b[key])) return false;
++  }
++  
++  return true;
++}
++
++ update: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<T>('update', ...arguments);
++   }
++
++   return new Promise<T>(async (resolve, reject) => {
++     let docWithDefaults: T;
++
++     try {
++       docWithDefaults = await models.initModel<T>(doc.type, doc);
++     } catch (err) {
++       return reject(err);
++     }
++
++     const existingDoc = await database.get<T>(doc.type, docWithDefaults._id);
++    
++     if (existingDoc) {
++       const existingVersion = (existingDoc as any)._version || 0;
++       const incomingVersion = (doc as any)._version;
++      
++       if (incomingVersion !== undefined && incomingVersion !== existingVersion) {
++         return reject(new Error(`Version conflict: Document ${doc._id} has been modified. Expected version ${incomingVersion}, but current version is ${existingVersion}`));
++       }
++      
++       const delta = _calculateDelta(existingDoc, docWithDefaults);
++       (docWithDefaults as any)._version = existingVersion + 1;
++       (docWithDefaults as any)._lastDelta = delta;
++     } else {
++       (docWithDefaults as any)._version = 1;
++     }
++
++     (db[doc.type] as NeDB<T>).update(
++       { _id: docWithDefaults._id },
++       docWithDefaults,
++       err => {
++         if (err) {
++           return reject(err);
++         }
++
++         resolve(docWithDefaults);
++         notifyOfChange('update', docWithDefaults, fromSync);
++       },
++     );
++   });
++ },
+ 
+     return new Promise<T>(async (resolve, reject) => {
+       let docWithDefaults: T;

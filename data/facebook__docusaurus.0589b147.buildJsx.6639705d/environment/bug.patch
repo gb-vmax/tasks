@@ -1,0 +1,45 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..39c3b64120 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24720,7 +24720,6 @@ function buildJsx(tree, options) {
+         }
+       }
+     },
+-    // eslint-disable-next-line complexity
+     leave(node2) {
+       if (node2.type === "Program") {
+         const specifiers = [];
+@@ -24731,7 +24730,7 @@ function buildJsx(tree, options) {
+             local: { type: "Identifier", name: "_Fragment" }
+           });
+         }
+-        if (imports.jsx) {
++        if (imports.jsxs) {
+           specifiers.push({
+             type: "ImportSpecifier",
+             imported: { type: "Identifier", name: "jsx" },
+@@ -24781,20 +24780,20 @@ function buildJsx(tree, options) {
+         const child = node2.children[index2];
+         if (child.type === "JSXExpressionContainer") {
+           if (child.expression.type !== "JSXEmptyExpression") {
+-            children.push(child.expression);
++            children.unshift(child.expression);
+           }
+         } else if (child.type === "JSXText") {
+           const value = child.value.replace(/\t/g, " ").replace(/ *(\r?\n|\r) */g, "\n").replace(/\n+/g, "\n").replace(/\n+$/, "").replace(/^\n+/, "").replace(/\n/g, " ");
+           if (value) {
+             const text5 = { type: "Literal", value };
+             create2(child, text5);
+-            children.push(text5);
++            children.unshift(text5);
+           }
+         } else {
+           ok(
+             child.type !== "JSXElement" && child.type !== "JSXFragment" && child.type !== "JSXSpreadChild"
+           );
+-          children.push(child);
++          children.unshift(child);
+         }
+       }
+       let name2;

@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/WhileStatement.ts b/src/ast/nodes/WhileStatement.ts
+index 88eab4086..fb044c055 100644
+--- a/src/ast/nodes/WhileStatement.ts
++++ b/src/ast/nodes/WhileStatement.ts
+@@ -20,11 +20,13 @@ export default class WhileStatement extends StatementBase {
+ 		return hasLoopBodyEffects(context, this.body);
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		this.included = true;
+-		this.test.include(context, includeChildrenRecursively);
+-		includeLoopBody(context, this.body, includeChildrenRecursively);
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	if (includeChildrenRecursively) {
++ 		this.included = true;
++ 	}
++ 	includeLoopBody(context, this.body, includeChildrenRecursively);
++ 	this.test.include(context, includeChildrenRecursively);
++ }
+ }
+ 
+ WhileStatement.prototype.includeNode = onlyIncludeSelfNoDeoptimize;

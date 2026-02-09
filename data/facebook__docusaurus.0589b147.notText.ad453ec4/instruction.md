@@ -2,27 +2,29 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with text parsing where the parser seems to be entering the wrong token type. When parsing content, it appears that text nodes are being incorrectly labeled, which is causing downstream issues with the AST structure.
+I'm encountering an issue with text parsing where the parser seems to be entering the wrong token type. When processing content that should be treated as "data", it appears to be incorrectly labeled as "text" instead, which is causing downstream parsing problems.
 
 ### Reproduction
 
 ```js
-// Parse markdown content with text
-const result = remark.parse('Some regular text content')
+// Parse markdown content with text nodes
+const processor = remark();
+const result = processor.parse('some text content');
 
-// The AST shows incorrect token types for text nodes
-console.log(result)
+// The AST shows incorrect token types for data nodes
+// Expected: nodes with type "data"
+// Actual: nodes are being marked as "text" instead
 ```
 
-When I inspect the generated AST, text content that should be properly categorized is showing up with the wrong type identifier. This affects any processing that relies on the correct token structure.
+This seems to happen specifically when the parser encounters content that isn't at a break point. The token type being assigned doesn't match what the rest of the parsing logic expects.
 
 ### Expected behavior
 
-Text nodes in the parsed AST should have the correct type identifier so that subsequent processing steps can properly handle the content.
+Text content should be properly categorized with the correct token type ("data") so that subsequent parsing stages can handle it appropriately. The token type mismatch is causing issues with how the content is being processed.
 
 ### System Info
 - remark version: 15.0.1
-- Node version: 18.x
+- Node version: Latest
 
 ---
 Repository: /testbed

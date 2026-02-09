@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b590c42025 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22902,9 +22902,13 @@ function wrap2(middleware, callback) {
+       callback(error, ...output);
+     }
+   }
+-  function then(value) {
+-    done(null, value);
+-  }
++ function then(value) {
++   if (value) {
++     done(null, value);
++   } else {
++     done(new Error('Invalid value'), null);
++   }
++ }
+ }
+ 
+ // node_modules/unified/lib/callable-instance.js

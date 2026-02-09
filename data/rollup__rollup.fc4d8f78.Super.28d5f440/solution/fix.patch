@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/Super.ts b/src/ast/nodes/Super.ts
+index f91ed0e70..29d9622fd 100644
+--- a/src/ast/nodes/Super.ts
++++ b/src/ast/nodes/Super.ts
+@@ -11,7 +11,7 @@ export default class Super extends NodeBase {
+ 	declare variable: Variable;
+ 
+ 	bind(): void {
+-		this.variable = this.scope.findVariable('this');
++		this.variable = this.scope.findVariable('super');
+ 	}
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(
+@@ -31,8 +31,8 @@ export default class Super extends NodeBase {
+ 	}
+ 
+ 	includeNode(context: InclusionContext) {
+-		this.included = true;
+ 		if (!this.deoptimized) this.applyDeoptimizations();
++		this.included = true;
+ 		this.scope.context.includeVariableInModule(this.variable, EMPTY_PATH, context);
+ 	}
+ }

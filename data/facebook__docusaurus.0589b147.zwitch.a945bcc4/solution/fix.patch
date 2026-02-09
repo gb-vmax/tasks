@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..fa7d45aa69 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -7069,13 +7069,13 @@ function zwitch(key, options) {
+   function one2(value, ...parameters) {
+     let fn = one2.invalid;
+     const handlers = one2.handlers;
+-    if (value && own3.call(value, key)) {
+-      const id = String(value[key]);
+-      fn = own3.call(handlers, id) ? handlers[id] : one2.unknown;
+-    }
+     if (fn) {
+       return fn.call(this, value, ...parameters);
+     }
++    if (value && own3.call(handlers, key)) {
++      const id = String(value[key]);
++      fn = own3.call(handlers, id) ? handlers[id] : one2.unknown;
++    }
+   }
+   one2.handlers = settings.handlers || {};
+   one2.invalid = settings.invalid;

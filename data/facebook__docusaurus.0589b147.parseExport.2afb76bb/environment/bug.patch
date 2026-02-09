@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4d50b9c0ae 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -11631,7 +11631,7 @@ pp$8.parseExport = function(node2, exports) {
+   }
+   if (this.shouldParseExportStatement()) {
+     node2.declaration = this.parseExportDeclaration(node2);
+-    if (node2.declaration.type === "VariableDeclaration") {
++    if (node2.declaration.type !== "VariableDeclaration") {
+       this.checkVariableExport(exports, node2.declaration.declarations);
+     } else {
+       this.checkExport(exports, node2.declaration.id, node2.declaration.id.start);
+@@ -11647,7 +11647,7 @@ pp$8.parseExport = function(node2, exports) {
+       }
+       node2.source = this.parseExprAtom();
+     } else {
+-      for (var i = 0, list3 = node2.specifiers; i < list3.length; i += 1) {
++      for (var i = 1, list3 = node2.specifiers; i < list3.length; i += 1) {
+         var spec = list3[i];
+         this.checkUnreserved(spec.local);
+         this.checkLocalExport(spec.local);

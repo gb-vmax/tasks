@@ -2,23 +2,23 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with inline code parsing in MDX. When I have inline code that contains spaces after the opening backtick, the parsing behaves incorrectly and the output is malformed.
+I'm experiencing an issue with inline code parsing in MDX where spaces after opening backticks are being consumed incorrectly. When I have inline code that starts with a space (like `` ` foo` ``), the space is not being preserved in the output.
 
 ### Reproduction
 
 ```markdown
-`  code with leading spaces`
+This is some text with ` foo` inline code.
 ```
 
-When this is parsed, the spaces are not being handled correctly and the inline code block doesn't render as expected. It seems like the tokenizer is transitioning to the wrong state after consuming space characters.
+When this is parsed, the space after the opening backtick seems to be handled incorrectly, causing unexpected behavior in the tokenization process.
 
 ### Expected behavior
 
-Inline code with leading/trailing spaces should be parsed correctly and preserve the spaces within the code block. The space characters should be part of the code content, not cause the parser to break or produce unexpected output.
+The space should be treated as part of the code content and preserved in the output. Inline code like `` ` foo` `` should render with the leading space intact.
 
-### Additional context
-
-This appears to affect any inline code that has spaces immediately after the opening backtick or before the closing backtick. The issue manifests when trying to include formatted code snippets that need to preserve whitespace.
+### System Info
+- @mdx-js/mdx version: 3.0.0
+- Node version: Latest
 
 ---
 Repository: /testbed

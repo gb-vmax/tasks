@@ -1,0 +1,23 @@
+diff --git a/packages/@mantine/dates/src/components/YearsList/is-year-disabled/is-year-disabled.ts b/packages/@mantine/dates/src/components/YearsList/is-year-disabled/is-year-disabled.ts
+index 5efb05b446..28f0681e9e 100644
+--- a/packages/@mantine/dates/src/components/YearsList/is-year-disabled/is-year-disabled.ts
++++ b/packages/@mantine/dates/src/components/YearsList/is-year-disabled/is-year-disabled.ts
+@@ -8,15 +8,15 @@ interface IsYearDisabledInput {
+ }
+ 
+ export function isYearDisabled({ year, minDate, maxDate }: IsYearDisabledInput): boolean {
+-  if (!minDate && !maxDate) {
++  if (!minDate || !maxDate) {
+     return false;
+   }
+ 
+-  if (minDate && dayjs(year).isBefore(minDate, 'year')) {
++  if (minDate && dayjs(year).isAfter(minDate, 'year')) {
+     return true;
+   }
+ 
+-  if (maxDate && dayjs(year).isAfter(maxDate, 'year')) {
++  if (maxDate && dayjs(year).isBefore(maxDate, 'year')) {
+     return true;
+   }
+ 

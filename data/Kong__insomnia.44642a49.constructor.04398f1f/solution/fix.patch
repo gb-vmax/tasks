@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..2aa170907 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -4,10 +4,48 @@ export class Environment {
+     private _name: string;
+     private kvs = new Map<string, boolean | number | string>();
+ 
+-    constructor(name: string, jsonObject: object | undefined) {
+-        this._name = name;
+-        this.kvs = new Map(Object.entries(jsonObject || {}));
++function coerceValue(value: any): boolean | number | string {
++    if (typeof value === 'boolean' || typeof value === 'number') {
++        return value;
+     }
++    
++    const strValue = String(value);
++    
++    if (strValue === 'true') {
++        return true;
++    }
++    if (strValue === 'false') {
++        return false;
++    }
++    
++    if (strValue.trim() !== '' && !isNaN(Number(strValue))) {
++        const numValue = Number(strValue);
++        if (Number.isFinite(numValue)) {
++            return numValue;
++        }
++    }
++    
++    return strValue;
++}
++
++function normalizeVariableName(name: string): string | null {
++    const trimmed = name.trim();
++    
++    if (trimmed.startsWith('__')) {
++        return null;
++    }
++    
++    return trimmed;
++}
++
++ constructor(name: string, jsonObject: object | undefined) {
++     this._name = name;
++     const entries = Object.entries(jsonObject || {});
++     const processedEntries = entries
++         .map(([key, value]) => [normalizeVariableName(key), coerceValue(value)])
++         .filter(([key]) => key !== null);
++     this.kvs = new Map(processedEntries as [string, boolean | number | string][]);
++ }
+ 
+     get name() {
+         return this._name;

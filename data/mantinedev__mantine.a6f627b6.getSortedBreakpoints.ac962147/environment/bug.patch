@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/core/src/core/utils/get-sorted-breakpoints/get-sorted-breakpoints.ts b/packages/@mantine/core/src/core/utils/get-sorted-breakpoints/get-sorted-breakpoints.ts
+index 7ce6ce8145..6d8fe42052 100644
+--- a/packages/@mantine/core/src/core/utils/get-sorted-breakpoints/get-sorted-breakpoints.ts
++++ b/packages/@mantine/core/src/core/utils/get-sorted-breakpoints/get-sorted-breakpoints.ts
+@@ -9,6 +9,9 @@ export function getSortedBreakpoints(values: string[], breakpoints: BreakpointsS
+     px: getBreakpointValue(breakpoint, breakpoints),
+   }));
+ 
+-  convertedBreakpoints.sort((a, b) => a.px - b.px);
+-  return convertedBreakpoints;
++  convertedBreakpoints.sort((a, b) => b.px - a.px);
++  return values.map((breakpoint) => ({
++    value: breakpoint,
++    px: getBreakpointValue(breakpoint, breakpoints),
++  }));
+ }

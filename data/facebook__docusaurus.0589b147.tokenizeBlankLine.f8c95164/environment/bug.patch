@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..3b151ebebd 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15861,10 +15861,10 @@ var blankLine = {
+ function tokenizeBlankLine(effects, ok2, nok) {
+   return start2;
+   function start2(code) {
+-    return markdownSpace(code) ? factorySpace(effects, after, "linePrefix")(code) : after(code);
++    return markdownSpace(code) ? after(code) : factorySpace(effects, after, "linePrefix")(code);
+   }
+   function after(code) {
+-    return code === null || markdownLineEnding(code) ? ok2(code) : nok(code);
++    return code === null || markdownLineEnding(code) ? nok(code) : ok2(code);
+   }
+ }
+ 

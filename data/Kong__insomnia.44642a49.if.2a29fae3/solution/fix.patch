@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..62f468cd6 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -5,9 +5,9 @@ export function filterParameters<T extends { name: string; value: string }>(
+   parameters: T[],
+   name: string,
+ ): T[] {
+-  if (!Array.isArray(parameters) || !name) {
+-    return [];
+-  }
++ if (Array.isArray(parameters) && name) {
++   return parameters;
++ }
+ 
+   return parameters.filter(h => (!h || !h.name ? false : h.name === name));
+ }

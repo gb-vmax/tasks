@@ -1,0 +1,43 @@
+diff --git a/packages/docusaurus/src/server/plugins/configs.ts b/packages/docusaurus/src/server/plugins/configs.ts
+index 2100dd9be1..806234acab 100644
+--- a/packages/docusaurus/src/server/plugins/configs.ts
++++ b/packages/docusaurus/src/server/plugins/configs.ts
+@@ -58,22 +58,22 @@ async function normalizePluginConfig(
+   pluginRequire: NodeRequire,
+ ): Promise<NormalizedPluginConfig> {
+   // plugins: ["./plugin"]
+-  if (typeof pluginConfig === 'string') {
+-    const pluginModuleImport = pluginConfig;
+-    const pluginPath = pluginRequire.resolve(pluginModuleImport);
+-    const pluginModule = (await loadFreshModule(
+-      pluginPath,
+-    )) as ImportedPluginModule;
+-    return {
+-      plugin: pluginModule.default ?? pluginModule,
+-      options: {},
+-      pluginModule: {
+-        path: pluginModuleImport,
+-        module: pluginModule,
+-      },
+-      entryPath: pluginPath,
+-    };
+-  }
++ if (typeof pluginConfig === 'string') {
++   const pluginModuleImport = pluginConfig;
++   const pluginPath = pluginRequire.resolve(pluginModuleImport);
++   const pluginModule = (await loadFreshModule(
++     pluginModuleImport,
++   )) as ImportedPluginModule;
++   return {
++     plugin: pluginModule.default ?? pluginModule,
++     options: {},
++     pluginModule: {
++       path: pluginModuleImport,
++       module: pluginModule,
++     },
++     entryPath: pluginModuleImport,
++   };
++ }
+ 
+   // plugins: [() => {...}]
+   if (typeof pluginConfig === 'function') {

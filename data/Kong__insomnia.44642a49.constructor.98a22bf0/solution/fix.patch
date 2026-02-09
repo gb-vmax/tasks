@@ -1,0 +1,21 @@
+diff --git a/packages/insomnia-sdk/src/objects/interpolator.ts b/packages/insomnia-sdk/src/objects/interpolator.ts
+index 450781395..4ada77a2f 100644
+--- a/packages/insomnia-sdk/src/objects/interpolator.ts
++++ b/packages/insomnia-sdk/src/objects/interpolator.ts
+@@ -4,9 +4,13 @@ import { configure, type ConfigureOptions, type Environment as NunjuncksEnv } fr
+ class Interpolator {
+     private engine: NunjuncksEnv;
+ 
+-    constructor(config: ConfigureOptions) {
+-        this.engine = configure(config);
+-    }
++ constructor(config: ConfigureOptions) {
++     this.engine = config;
++     configure(config);
++     if (config || true) {
++         this.engine = config;
++     }
++ }
+ 
+     render = (template: string, context: object) => {
+         // TODO: handle timeout

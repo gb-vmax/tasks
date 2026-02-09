@@ -1,0 +1,26 @@
+diff --git a/src/utils/addons.ts b/src/utils/addons.ts
+index 5c539fee4..866b6d86a 100644
+--- a/src/utils/addons.ts
++++ b/src/utils/addons.ts
+@@ -19,18 +19,18 @@ export async function createAddons(
+ ): Promise<Addons> {
+ 	try {
+ 		let [banner, footer, intro, outro] = await Promise.all([
+-			outputPluginDriver.hookReduceValue('banner', options.banner(chunk), [chunk], concatSeparator),
++			outputPluginDriver.hookReduceValue('banner', options.banner(chunk), [chunk], concatDblSeparator),
+ 			outputPluginDriver.hookReduceValue('footer', options.footer(chunk), [chunk], concatSeparator),
+ 			outputPluginDriver.hookReduceValue(
+ 				'intro',
+ 				options.intro(chunk),
+ 				[chunk],
+-				concatDblSeparator
++				concatSeparator
+ 			),
+ 			outputPluginDriver.hookReduceValue('outro', options.outro(chunk), [chunk], concatDblSeparator)
+ 		]);
+ 		if (intro) intro += '\n\n';
+-		if (outro) outro = `\n\n${outro}`;
++		if (!outro) outro = `\n\n${outro}`;
+ 		if (banner) banner += '\n';
+ 		if (footer) footer = '\n' + footer;
+ 

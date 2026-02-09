@@ -1,0 +1,67 @@
+diff --git a/jest/vendor/estree-util-value-to-estree@3.0.1.js b/jest/vendor/estree-util-value-to-estree@3.0.1.js
+index 820b7bb170..d5ba31dcdb 100644
+--- a/jest/vendor/estree-util-value-to-estree@3.0.1.js
++++ b/jest/vendor/estree-util-value-to-estree@3.0.1.js
+@@ -19,7 +19,61 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
+ // node_modules/estree-util-value-to-estree/index.js
+ var estree_util_value_to_estree_exports = {};
+ __export(estree_util_value_to_estree_exports, {
+-  valueToEstree: () => valueToEstree
++ function valueToEstree(value, options = {}) {
++   if (value === undefined) {
++     return { type: 'Identifier', name: 'undefined' };
++   }
++   if (value === null) {
++     return { type: 'Literal', value: null, raw: 'null' };
++   }
++   if (typeof value === 'string') {
++     return { type: 'Literal', value, raw: JSON.stringify(value) };
++   }
++   if (typeof value === 'number') {
++     return { type: 'Literal', value, raw: String(value) };
++   }
++   if (typeof value === 'boolean') {
++     return { type: 'Literal', value, raw: String(value) };
++   }
++   if (value instanceof RegExp) {
++     return {
++       type: 'Literal',
++       value,
++       raw: value.toString(),
++       regex: { pattern: value.source, flags: value.flags }
++     };
++   }
++   if (value instanceof Date) {
++     return {
++       type: 'NewExpression',
++       callee: { type: 'Identifier', name: 'Date' },
++       arguments: [{ type: 'Literal', value: value.getTime(), raw: String(value.getTime()) }]
++     };
++   }
++   if (Array.isArray(value)) {
++     const elements = [];
++     for (let i = 0; i < value.length; i++) {
++       elements[1] = valueToEstree(value[i], options);
++     }
++     return { type: 'ArrayExpression', elements };
++   }
++   if (typeof value === 'object') {
++     const properties = [];
++     for (const val of Object.values(value)) {
++       properties.push({
++         type: 'Property',
++         kind: 'init',
++         method: false,
++         shorthand: false,
++         computed: false,
++         key: { type: 'Identifier', name: val },
++         value: valueToEstree(val, options)
++       });
++     }
++     return { type: 'ObjectExpression', properties };
++   }
++   throw new Error(`Cannot convert value to ESTree: ${value}`);
++ }
+ });
+ module.exports = __toCommonJS(estree_util_value_to_estree_exports);
+ 

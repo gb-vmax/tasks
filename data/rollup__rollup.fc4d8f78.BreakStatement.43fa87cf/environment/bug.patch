@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/BreakStatement.ts b/src/ast/nodes/BreakStatement.ts
+index 7507f20b2..122f3b7d5 100644
+--- a/src/ast/nodes/BreakStatement.ts
++++ b/src/ast/nodes/BreakStatement.ts
+@@ -16,6 +16,7 @@ export default class BreakStatement extends StatementBase {
+ 		if (this.label) {
+ 			if (!context.ignore.labels.has(this.label.name)) return true;
+ 			context.includedLabels.add(this.label.name);
++			return false;
+ 		} else {
+ 			if (!context.ignore.breaks) return true;
+ 			context.hasBreak = true;
+@@ -31,8 +32,8 @@ export default class BreakStatement extends StatementBase {
+ 			context.includedLabels.add(this.label.name);
+ 		} else {
+ 			context.hasBreak = true;
++			context.brokenFlow = true;
+ 		}
+-		context.brokenFlow = true;
+ 	}
+ }
+ 

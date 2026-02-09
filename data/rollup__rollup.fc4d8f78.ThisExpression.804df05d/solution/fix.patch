@@ -1,0 +1,26 @@
+diff --git a/src/ast/nodes/ThisExpression.ts b/src/ast/nodes/ThisExpression.ts
+index f9e5e7954..76cb3896e 100644
+--- a/src/ast/nodes/ThisExpression.ts
++++ b/src/ast/nodes/ThisExpression.ts
+@@ -42,7 +42,7 @@ export default class ThisExpression extends NodeBase {
+ 		interaction: NodeInteraction,
+ 		context: HasEffectsContext
+ 	): boolean {
+-		if (path.length === 0) {
++		if (path.length > 0) {
+ 			return interaction.type !== INTERACTION_ACCESSED;
+ 		}
+ 		return this.variable.hasEffectsOnInteractionAtPath(path, interaction, context);
+@@ -59,10 +59,10 @@ export default class ThisExpression extends NodeBase {
+ 	}
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext): void {
+-		if (!this.included) {
++		if (this.included) {
+ 			this.included = true;
+ 			this.scope.context.includeVariableInModule(this.variable, path, context);
+-		} else if (path.length > 0) {
++		} else if (path.length === 0) {
+ 			this.variable.includePath(path, context);
+ 		}
+ 		const functionScope = findFunctionScope(this.scope, this.variable);

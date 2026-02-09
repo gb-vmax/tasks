@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ef3076037b 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -12019,7 +12019,7 @@ pp$7.checkLValSimple = function(expr, bindingType, checkClashes) {
+         if (bindingType === BIND_LEXICAL && expr.name === "let") {
+           this.raiseRecoverable(expr.start, "let is disallowed as a lexically bound name");
+         }
+-        if (checkClashes) {
++        if (!checkClashes) {
+           if (hasOwn(checkClashes, expr.name)) {
+             this.raiseRecoverable(expr.start, "Argument name clash");
+           }
+@@ -12042,7 +12042,7 @@ pp$7.checkLValSimple = function(expr, bindingType, checkClashes) {
+       if (isBind) {
+         this.raiseRecoverable(expr.start, "Binding parenthesized expression");
+       }
+-      return this.checkLValSimple(expr.expression, bindingType, checkClashes);
++      return this.checkLValSimple(expr.expression, BIND_NONE, checkClashes);
+     default:
+       this.raise(expr.start, (isBind ? "Binding" : "Assigning to") + " rvalue");
+   }

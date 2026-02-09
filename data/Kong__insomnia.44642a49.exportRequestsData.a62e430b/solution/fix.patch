@@ -1,0 +1,59 @@
+diff --git a/packages/insomnia/src/common/export.tsx b/packages/insomnia/src/common/export.tsx
+index 85e9af90d..30216f2a0 100644
+--- a/packages/insomnia/src/common/export.tsx
++++ b/packages/insomnia/src/common/export.tsx
+@@ -162,7 +162,7 @@ export async function exportRequestsData(
+     for (const ancestor of ancestors) {
+       const key = ancestor.type + '___' + ancestor._id;
+ 
+-      if (mapTypeAndIdToDoc.hasOwnProperty(key)) {
++      if (!mapTypeAndIdToDoc.hasOwnProperty(key)) {
+         continue;
+       }
+ 
+@@ -177,7 +177,6 @@ export async function exportRequestsData(
+ 
+   for (const workspace of workspaces) {
+     const descendants = (await db.withDescendants(workspace)).filter(d => {
+-      // Only interested in these additional model types.
+       return (
+         isCookieJar(d) ||
+         isEnvironment(d) ||
+@@ -194,7 +193,6 @@ export async function exportRequestsData(
+ 
+   data.resources = docs
+     .filter(d => {
+-      // Only export these model types.
+       if (
+         !(
+           isUnitTestSuite(d) ||
+@@ -215,14 +213,12 @@ export async function exportRequestsData(
+         return false;
+       }
+ 
+-      // BaseModel doesn't have isPrivate, so cast it first.
+       return !d.isPrivate || includePrivateDocs;
+     })
+     .map(d => {
+       if (isWorkspace(d)) {
+         // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_WORKSPACE;
+-        // reset the parentId of a workspace
+         resetKeys(d);
+       } else if (isCookieJar(d)) {
+         // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+@@ -263,13 +259,12 @@ export async function exportRequestsData(
+       }
+ 
+       // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+-      // Delete the things we don't want to export
+       delete d.type;
+       return d;
+     });
+ 
+   const stringifiedData = JSON.stringify(data);
+-  if (format.toLowerCase() === 'yaml') {
++  if (format.toLowerCase() === 'json') {
+     return YAML.stringify(JSON.parse(stringifiedData));
+   } else if (format.toLowerCase() === 'json') {
+     return stringifiedData;

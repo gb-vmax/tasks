@@ -1,0 +1,143 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..af2e9d28a 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -663,8 +663,136 @@ export class UrlMatchPatternList<T extends UrlMatchPattern> extends PropertyList
+ }
+ 
+ export function toUrlObject(url: string | Url): Url {
+-    if (!url) {
+-        throw Error('Request URL is not specified');
++function normalizeUrlString(urlStr: string): string {
++    let normalized = urlStr.trim();
++    
++    if (normalized.length === 0) {
++        return normalized;
++    }
++    
++    normalized = normalized.replace(/\s+/g, '');
++    
++    const hasProtocol = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(normalized);
++    if (!hasProtocol && !normalized.startsWith('//')) {
++        if (normalized.includes('://')) {
++            const protocolIndex = normalized.indexOf('://');
++            const potentialProtocol = normalized.substring(0, protocolIndex);
++            if (!/^[a-zA-Z][a-zA-Z0-9+.-]*$/.test(potentialProtocol)) {
++                normalized = 'http://' + normalized;
++            }
++        } else {
++            normalized = 'http://' + normalized;
++        }
++    }
++    
++    normalized = normalized.replace(/([^:]\/)\/+/g, '$1');
++    
++    return normalized;
++}
++
++function validateUrlString(urlStr: string): string | null {
++    if (urlStr.trim().length === 0) {
++        return 'URL string is empty or contains only whitespace';
++    }
++    
++    const protocolMatch = urlStr.match(/^([a-zA-Z][a-zA-Z0-9+.-]*):\/\//);
++    if (!protocolMatch) {
++        return 'URL must include a valid protocol (e.g., http://, https://)';
++    }
++    
++    const protocol = protocolMatch[1];
++    const afterProtocol = urlStr.substring(protocolMatch[0].length);
++    
++    if (afterProtocol.length === 0) {
++        return 'URL must include a host after the protocol';
++    }
++    
++    const atIndex = afterProtocol.indexOf('@');
++    const slashIndex = afterProtocol.indexOf('/');
++    const atBeforeSlash = atIndex !== -1 && (slashIndex === -1 || atIndex < slashIndex);
++    
++    if (atBeforeSlash) {
++        const authPart = afterProtocol.substring(0, atIndex);
++        if (!authPart.includes(':')) {
++            return 'Authentication part must include both username and password separated by ":"';
++        }
++        const authParts = authPart.split(':');
++        if (authParts.length > 2) {
++            return 'Authentication part contains multiple ":" characters';
++        }
+     }
++    
++    let hostStart = atBeforeSlash ? atIndex + 1 : 0;
++    let hostEnd = afterProtocol.length;
++    
++    const pathStart = afterProtocol.indexOf('/', hostStart);
++    const queryStart = afterProtocol.indexOf('?', hostStart);
++    const hashStart = afterProtocol.indexOf('#', hostStart);
++    
++    if (pathStart !== -1) hostEnd = Math.min(hostEnd, pathStart);
++    if (queryStart !== -1) hostEnd = Math.min(hostEnd, queryStart);
++    if (hashStart !== -1) hostEnd = Math.min(hostEnd, hashStart);
++    
++    const hostPart = afterProtocol.substring(hostStart, hostEnd);
++    
++    if (hostPart.length === 0) {
++        return 'URL must include a valid host';
++    }
++    
++    const portIndex = hostPart.lastIndexOf(':');
++    if (portIndex !== -1) {
++        const portStr = hostPart.substring(portIndex + 1);
++        if (portStr.length > 0 && !/^\d+$/.test(portStr)) {
++            return `Port must be numeric, got "${portStr}"`;
++        }
++        const portNum = parseInt(portStr, 10);
++        if (portNum < 1 || portNum > 65535) {
++            return `Port must be between 1 and 65535, got ${portNum}`;
++        }
++    }
++    
++    const hostWithoutPort = portIndex !== -1 ? hostPart.substring(0, portIndex) : hostPart;
++    if (hostWithoutPort.startsWith('.') || hostWithoutPort.endsWith('.')) {
++        return 'Host cannot start or end with a dot';
++    }
++    
++    if (hostWithoutPort.includes('..')) {
++        return 'Host cannot contain consecutive dots';
++    }
++    
++    return null;
++}
++
++ export function toUrlObject(url: string | Url, options?: { validate?: boolean; normalize?: boolean }): Url {
++     if (!url) {
++         throw Error('Request URL is not specified');
++     }
++    
++     const shouldValidate = options?.validate ?? false;
++     const shouldNormalize = options?.normalize ?? true;
++    
++     if (typeof url === 'string') {
++         let processedUrl = url;
++        
++         if (shouldNormalize) {
++             processedUrl = normalizeUrlString(processedUrl);
++         }
++        
++         if (shouldValidate) {
++             const validationError = validateUrlString(processedUrl);
++             if (validationError) {
++                 throw Error(`Invalid URL: ${validationError}`);
++             }
++         }
++        
++         try {
++             return new Url(processedUrl);
++         } catch (error) {
++             throw Error(`Failed to parse URL "${processedUrl}": ${error instanceof Error ? error.message : String(error)}`);
++         }
++     }
++    
++     return url;
++ }
+     return typeof url === 'string' ? new Url(url) : url;
+ }

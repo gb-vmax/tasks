@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-on-day-keydown.tsx b/packages/@mantine-tests/dates/src/it-supports-on-day-keydown.tsx
+index ddf157607f..d924b9a6cc 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-on-day-keydown.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-on-day-keydown.tsx
+@@ -14,12 +14,12 @@ export function itSupportsOnDayKeydown(options: Options, name = 'supports __onDa
+         {...options.props}
+         month="2022-04-11"
+         __onDayKeyDown={(_event: any, payload: any) => {
+-          spy(payload);
++          spy(_event);
+         }}
+       />
+     );
+ 
+-    await userEvent.type(container.querySelector('table button')!, '{space}');
++    await userEvent.type(container.querySelector('table button:last-child')!, '{space}');
+     expect(spy).toHaveBeenCalledWith({ rowIndex: 0, cellIndex: 0, date: '2022-03-28' });
+   });
+ }

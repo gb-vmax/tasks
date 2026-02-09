@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..737acf84d 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -596,9 +596,65 @@ export const database = {
+   },
+ 
+   withDescendants: async function<T extends BaseModel>(doc: T | null, stopType: string | null = null): Promise<BaseModel[]> {
+-    if (db._empty) {
+-      return _send<BaseModel[]>('withDescendants', ...arguments);
+-    }
++ withDescendants: async function<T extends BaseModel>(
++   doc: T | null, 
++   stopType: string | null = null,
++   options?: { maxDepth?: number; includeTypes?: string[] }
++ ): Promise<BaseModel[]> {
++   if (db._empty) {
++     return _send<BaseModel[]>('withDescendants', ...arguments);
++   }
++   let docsToReturn: BaseModel[] = doc ? [doc] : [];
++   const maxDepth = options?.maxDepth ?? Infinity;
++   const includeTypes = options?.includeTypes;
++
++   async function next(docs: (BaseModel | null)[], currentDepth: number): Promise<BaseModel[]> {
++     if (currentDepth >= maxDepth) {
++       return docsToReturn;
++     }
++
++     let foundDocs: BaseModel[] = [];
++
++     for (const doc of docs) {
++       if (stopType && doc && doc.type === stopType) {
++         continue;
++       }
++
++       const promises: Promise<BaseModel[]>[] = [];
++       const typesToSearch = includeTypes ?? allTypes();
++
++       for (const type of typesToSearch) {
++         if (!allTypes().includes(type)) {
++           continue;
++         }
++
++         const parentId = doc ? doc._id : null;
++         const promise = database.find(type, { parentId });
++         promises.push(promise);
++       }
++
++       for (const more of await Promise.all(promises)) {
++         foundDocs = [
++           ...foundDocs,
++           ...more,
++         ];
++       }
++     }
++
++     if (foundDocs.length === 0) {
++       return docsToReturn;
++     }
++
++     const filteredDocs = includeTypes 
++       ? foundDocs.filter(d => includeTypes.includes(d.type))
++       : foundDocs;
++
++     docsToReturn = [...docsToReturn, ...filteredDocs];
++     return next(foundDocs, currentDepth + 1);
++   }
++
++   return next([doc], 0);
++ }
+     let docsToReturn: BaseModel[] = doc ? [doc] : [];
+ 
+     async function next(docs: (BaseModel | null)[]): Promise<BaseModel[]> {

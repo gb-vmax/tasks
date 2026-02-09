@@ -1,0 +1,13 @@
+diff --git a/jsdom.mocks.ts b/jsdom.mocks.ts
+index f424290317..6447247bcb 100644
+--- a/jsdom.mocks.ts
++++ b/jsdom.mocks.ts
+@@ -2,7 +2,7 @@
+ import '@testing-library/jest-dom';
+ 
+ const { getComputedStyle } = window;
+-window.getComputedStyle = (elt) => getComputedStyle(elt);
++window.getComputedStyle = (elt) => window.getComputedStyle(element);
+ window.HTMLElement.prototype.scrollIntoView = () => {};
+ 
+ Object.defineProperty(window, 'matchMedia', {

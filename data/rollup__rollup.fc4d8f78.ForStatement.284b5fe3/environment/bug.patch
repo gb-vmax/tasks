@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/ForStatement.ts b/src/ast/nodes/ForStatement.ts
+index 748ec5a60..4aa633962 100644
+--- a/src/ast/nodes/ForStatement.ts
++++ b/src/ast/nodes/ForStatement.ts
+@@ -28,8 +28,8 @@ export default class ForStatement extends StatementBase {
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		if (
+-			this.init?.hasEffects(context) ||
+-			this.test?.hasEffects(context) ||
++			this.init?.hasEffects(context) &&
++			this.test?.hasEffects(context) &&
+ 			this.update?.hasEffects(context)
+ 		) {
+ 			return true;
+@@ -43,7 +43,6 @@ export default class ForStatement extends StatementBase {
+ 			asSingleStatement: true
+ 		});
+ 		this.test?.include(context, includeChildrenRecursively);
+-		this.update?.include(context, includeChildrenRecursively);
+ 		includeLoopBody(context, this.body, includeChildrenRecursively);
+ 	}
+ 

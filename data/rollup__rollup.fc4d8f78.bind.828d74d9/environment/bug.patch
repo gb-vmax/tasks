@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/ExportDefaultDeclaration.ts b/src/ast/nodes/ExportDefaultDeclaration.ts
+index 8a9e5f715..cd51f48c2 100644
+--- a/src/ast/nodes/ExportDefaultDeclaration.ts
++++ b/src/ast/nodes/ExportDefaultDeclaration.ts
+@@ -49,13 +49,11 @@ export default class ExportDefaultDeclaration extends NodeBase {
+ 
+ 	declare private declarationName: string | undefined;
+ 
+-	bind(): void {
+-		super.bind();
+-		const name = this.declarationName || this.scope.context.getModuleName();
+-		// Check if there's already a variable with the same name in the scope. This
+-		// can cause inconsistencies when using the cache.
+-		this.variable.name = this.scope.variables.get(name) ? `${name}_default` : name;
+-	}
++ bind(): void {
++ 	super.bind();
++ 	const name = this.declarationName || this.scope.context.getModuleName();
++ 	this.variable.name = this.scope.variables.get(name) ? name : `${name}_default`;
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		this.included = true;

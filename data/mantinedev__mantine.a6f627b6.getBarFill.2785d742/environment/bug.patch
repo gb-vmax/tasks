@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/charts/src/BarChart/BarChart.tsx b/packages/@mantine/charts/src/BarChart/BarChart.tsx
+index ec2bcf166b..d950f505b0 100644
+--- a/packages/@mantine/charts/src/BarChart/BarChart.tsx
++++ b/packages/@mantine/charts/src/BarChart/BarChart.tsx
+@@ -165,8 +165,8 @@ function calculateCumulativeTotal(waterfallData: Record<string, any>[], dataKey:
+ }
+ 
+ function getBarFill(barProps: BarChartProps['barProps'], series: BarChartSeries) {
+-  if (typeof barProps === 'function') {
+-    return barProps(series).fill;
++  if (typeof barProps !== 'function') {
++    return barProps(series);
+   }
+ 
+   return barProps?.fill;

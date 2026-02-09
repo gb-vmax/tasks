@@ -2,29 +2,36 @@
 
 ### Describe the bug
 
-When using the logger's `warn()` function with template string interpolation, the values are not being substituted correctly. The logger appears to be treating interpolated strings as plain strings instead of processing the template values.
+The logger's `warn()` function doesn't properly handle template string interpolation. When passing multiple arguments to `logger.warn()`, the interpolation isn't being applied correctly and the output doesn't include the interpolated values.
 
 ### Reproduction
 
 ```js
 import logger from '@docusaurus/logger';
 
-const count = 5;
-const type = 'posts';
+// This doesn't interpolate correctly
+logger.warn`Configuration value: ${'test'} is invalid`;
 
-// This should interpolate the values but doesn't work as expected
-logger.warn`Found ${count} ${type} to process`;
+// Expected output: [WARNING] Configuration value: test is invalid
+// Actual output: [WARNING] Configuration value: ${0} is invalid (or similar)
+```
 
-// The output shows the raw template instead of "Found 5 posts to process"
+Another example:
+```js
+const pluginName = 'my-plugin';
+const version = '1.0.0';
+
+logger.warn`Plugin ${pluginName} version ${version} is deprecated`;
+// The values aren't being substituted properly
 ```
 
 ### Expected behavior
 
-The logger should properly interpolate template string values when using tagged template literal syntax. The variables should be substituted into the message string.
+When using template literal syntax with `logger.warn`, the interpolated values should be properly substituted into the message string.
 
-### Additional context
-
-This seems to affect the `warn()` method specifically. Regular string concatenation works fine, but the tagged template literal syntax doesn't process the interpolation values correctly.
+### System Info
+- Docusaurus version: latest
+- Node version: 18.x
 
 ---
 Repository: /testbed

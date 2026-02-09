@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..da334f910 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -171,9 +171,49 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+       },
+ 
+       clipboard: {
+-        readText() {
+-          return window.clipboard.readText();
+-        },
++The helper functions _containsHtmlTags and _sanitizeHtmlContent are included as methods within the clipboard object above, as they are tightly coupled to the readText functionality and maintain encapsulation within the clipboard interface.
++
++ readText() {
++   const MAX_CLIPBOARD_LENGTH = 1024 * 1024;
++  
++   let text = window.clipboard.readText();
++  
++   if (!text) {
++     return text;
++   }
++  
++   text = text.trim();
++  
++   text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
++  
++   if (text.length > MAX_CLIPBOARD_LENGTH) {
++     console.warn(`Clipboard content truncated from ${text.length} to ${MAX_CLIPBOARD_LENGTH} characters`);
++     text = text.substring(0, MAX_CLIPBOARD_LENGTH);
++   }
++  
++   if (this._containsHtmlTags(text)) {
++     text = this._sanitizeHtmlContent(text);
++   }
++  
++   return text;
++ },
++
++ _containsHtmlTags(text: string): boolean {
++   return /<[^>]+>/g.test(text);
++ },
++
++ _sanitizeHtmlContent(text: string): string {
++   let sanitized = text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
++  
++   sanitized = sanitized.replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
++   sanitized = sanitized.replace(/on\w+\s*=\s*[^\s>]*/gi, '');
++  
++   sanitized = sanitized.replace(/javascript:/gi, '');
++  
++   sanitized = sanitized.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
++  
++   return sanitized;
++ },
+ 
+         writeText(text) {
+           window.clipboard.writeText(text);

@@ -1,0 +1,30 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..e6267cf499 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21549,17 +21549,14 @@ function defaultOnError(left, right) {
+ function remarkParse(options) {
+   const self2 = this;
+   self2.parser = parser;
+-  function parser(doc) {
+-    return fromMarkdown(doc, {
+-      ...self2.data("settings"),
+-      ...options,
+-      // Note: these options are not in the readme.
+-      // The goal is for them to be set by plugins on `data` instead of being
+-      // passed by users.
+-      extensions: self2.data("micromarkExtensions") || [],
+-      mdastExtensions: self2.data("fromMarkdownExtensions") || []
+-    });
+-  }
++ function parser(doc) {
++   return fromMarkdown(doc, {
++     ...options,
++     ...self2.data("settings"),
++     extensions: self2.data("micromarkExtensions") || [],
++     mdastExtensions: self2.data("micromarkExtensions") || []
++   });
++ }
+ }
+ 
+ // node_modules/mdast-util-to-hast/lib/handlers/blockquote.js

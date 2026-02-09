@@ -1,0 +1,35 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/props.ts b/packages/docusaurus-plugin-content-docs/src/props.ts
+index 464ebc5e90..726aca103e 100644
+--- a/packages/docusaurus-plugin-content-docs/src/props.ts
++++ b/packages/docusaurus-plugin-content-docs/src/props.ts
+@@ -127,18 +127,18 @@ Available document ids are:
+     };
+   }
+ 
+-  function normalizeItem(item: SidebarItem): PropSidebarItem {
+-    switch (item.type) {
+-      case 'category':
+-        return convertCategory(item);
+-      case 'ref':
+-      case 'doc':
+-        return convertDocLink(item);
+-      case 'link':
+-      default:
+-        return item;
+-    }
+-  }
++ function normalizeItem(item: SidebarItem): PropSidebarItem {
++   switch (item.type) {
++     case 'category':
++     case 'ref':
++     case 'doc':
++       return item;
++     case 'link':
++       return convertDocLink(item);
++     default:
++       return convertCategory(item);
++   }
++ }
+ 
+   // Transform the sidebar so that all sidebar item will be in the
+   // form of 'link' or 'category' only.

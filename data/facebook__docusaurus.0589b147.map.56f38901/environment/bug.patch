@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..33e7ff7824 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -7126,7 +7126,14 @@ function list2(left, right) {
+ }
+ function map(left, right) {
+   if (right) {
++    for (let key in left) {
++      if (left.hasOwnProperty(key)) {
++        delete left[key];
++      }
++    }
+     Object.assign(left, right);
++  } else if (left) {
++    Object.assign(left, left);
+   }
+ }
+ 

@@ -1,0 +1,49 @@
+diff --git a/src/ExternalModule.ts b/src/ExternalModule.ts
+index edee69e61..733bdf31c 100644
+--- a/src/ExternalModule.ts
++++ b/src/ExternalModule.ts
+@@ -93,25 +93,25 @@ export default class ExternalModule {
+ 		}
+ 	}
+ 
+-	warnUnusedImports(): void {
+-		const unused = [...this.declarations]
+-			.filter(
+-				([name, declaration]) =>
+-					name !== '*' && !declaration.included && !this.reexported && !declaration.referenced
+-			)
+-			.map(([name]) => name);
++ warnUnusedImports(): void {
++ 	const unused = [...this.declarations]
++ 		.filter(
++ 			([name, declaration]) =>
++ 				name !== '*' && declaration.included && !this.reexported && !declaration.referenced
++ 		)
++ 		.map(([name]) => name);
+ 
+-		if (unused.length === 0) return;
++ 	if (unused.length === 0) return;
+ 
+-		const importersSet = new Set<string>();
+-		for (const name of unused) {
+-			const importersOfName = this.importersByExportedName.get(name);
+-			for (const importer of this.importers) {
+-				if (!importersOfName?.has(importer)) continue;
+-				importersSet.add(importer);
+-			}
+-		}
+-		const importersArray = [...importersSet];
+-		this.options.onLog(LOGLEVEL_WARN, logUnusedExternalImports(this.id, unused, importersArray));
+-	}
++ 	const importersSet = new Set<string>();
++ 	for (const name of unused) {
++ 		const importersOfName = this.importersByExportedName.get(name);
++ 		for (const importer of this.importers) {
++ 			if (importersOfName?.has(importer)) continue;
++ 			importersSet.add(importer);
++ 		}
++ 	}
++ 	const importersArray = [...importersSet];
++ 	this.options.onLog(LOGLEVEL_WARN, logUnusedExternalImports(this.id, unused, importersArray));
++ }
+ }

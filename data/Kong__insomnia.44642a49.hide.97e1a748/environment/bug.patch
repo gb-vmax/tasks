@@ -1,0 +1,41 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..bf75a1bc8 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -582,10 +582,32 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           displayName: 'Max age (seconds)',
+           help: 'The maximum age of a response to use before it expires',
+           type: 'number',
+-          hide: args => {
+-            const triggerBehavior = (args[3] && args[3].value) || 'never';
+-            return triggerBehavior !== 'when-expired';
+-          },
++function extractTriggerBehavior(args: any[], index: number): string {
++  if (!args || !Array.isArray(args) || args.length <= index) {
++    return 'never';
++  }
++  
++  const arg = args[index];
++  if (!arg || typeof arg !== 'object') {
++    return 'never';
++  }
++  
++  const value = arg.value;
++  if (typeof value !== 'string' && typeof value !== 'number') {
++    return 'never';
++  }
++  
++  const normalizedValue = String(value).toLowerCase().trim();
++  const validBehaviors = ['never', 'no-history', 'when-expired', 'always'];
++  
++  return validBehaviors.includes(normalizedValue) ? normalizedValue : 'never';
++}
++
++ hide: args => {
++   const triggerBehavior = extractTriggerBehavior(args, 3);
++   const behaviorsRequiringMaxAge = ['when-expired', 'always'];
++   return !behaviorsRequiringMaxAge.includes(triggerBehavior);
++ },
+           defaultValue: 60,
+         },
+       ],

@@ -1,0 +1,86 @@
+diff --git a/packages/insomnia-sdk/src/objects/proxy-configs.ts b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+index 783e6b03c..1dff04be2 100644
+--- a/packages/insomnia-sdk/src/objects/proxy-configs.ts
++++ b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+@@ -149,9 +149,78 @@ export class ProxyConfigList<T extends ProxyConfig> extends PropertyList<T> {
+     }
+ 
+     resolve(url?: Url) {
+-        if (!url) {
+-            return null;
+-        }
++private _resolutionCache: Map<string, { result: any; timestamp: number }> = new Map();
++private _cacheTTL: number = 300000;
++private _maxCacheSize: number = 1000;
++
++private _calculateMatchSpecificity(proxyConfig: ProxyConfig, url: string): number {
++    let score = 0;
++    
++    const protocols = proxyConfig.getProtocols();
++    score += protocols.length * 10;
++    
++    const match = proxyConfig.match;
++    const pathPart = match.substring(match.indexOf('://') + 3);
++    
++    const wildcardCount = (pathPart.match(/\*/g) || []).length;
++    score -= wildcardCount * 5;
++    
++    const pathSegments = pathPart.split('/').filter(s => s.length > 0 && s !== '*');
++    score += pathSegments.length * 20;
++    
++    const hasExactDomain = !pathPart.startsWith('*') && pathPart.includes('.');
++    if (hasExactDomain) {
++        score += 30;
++    }
++    
++    const urlLower = url.toLowerCase();
++    const matchLower = match.toLowerCase();
++    if (urlLower.includes(matchLower.split('*')[0].substring(matchLower.indexOf('://') + 3))) {
++        score += 15;
++    }
++    
++    return score;
++}
++
++ resolve(url?: Url) {
++     if (!url) {
++         return null;
++     }
++
++     const urlStr = url.toString();
++    
++     const cacheKey = urlStr;
++     const cached = this._resolutionCache.get(cacheKey);
++     if (cached && Date.now() - cached.timestamp < this._cacheTTL) {
++         this._resolutionCache.delete(cacheKey);
++         this._resolutionCache.set(cacheKey, cached);
++         return cached.result;
++     }
++
++     const matches = this.list
++         .filter((proxyConfig: ProxyConfig) => {
++             return proxyConfig.test(urlStr);
++         })
++         .map(proxyConfig => ({
++             config: proxyConfig,
++             score: this._calculateMatchSpecificity(proxyConfig, urlStr)
++         }))
++         .sort((a, b) => b.score - a.score);
++
++     const result = matches.length > 0 ? matches[0].config.toJSON() : null;
++    
++     if (this._resolutionCache.size >= this._maxCacheSize) {
++         const firstKey = this._resolutionCache.keys().next().value;
++         this._resolutionCache.delete(firstKey);
++     }
++    
++     this._resolutionCache.set(cacheKey, {
++         result: result,
++         timestamp: Date.now()
++     });
++
++     return result;
++ }
+ 
+         const urlStr = url.toString();
+         const matches = this.list

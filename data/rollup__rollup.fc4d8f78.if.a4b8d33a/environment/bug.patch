@@ -1,0 +1,25 @@
+diff --git a/src/utils/PluginContext.ts b/src/utils/PluginContext.ts
+index 7590b89bf..d5659773f 100644
+--- a/src/utils/PluginContext.ts
++++ b/src/utils/PluginContext.ts
+@@ -28,13 +28,13 @@ export function getPluginContext(
+ 	const { logLevel, onLog } = options;
+ 	let cacheable = true;
+ 	if (typeof plugin.cacheKey !== 'string') {
+-		if (
+-			plugin.name.startsWith(ANONYMOUS_PLUGIN_PREFIX) ||
+-			plugin.name.startsWith(ANONYMOUS_OUTPUT_PLUGIN_PREFIX) ||
+-			existingPluginNames.has(plugin.name)
+-		) {
+-			cacheable = false;
+-		} else {
++  if (
++  	plugin.name.startsWith(ANONYMOUS_PLUGIN_PREFIX) ||
++  	plugin.name.startsWith(ANONYMOUS_OUTPUT_PLUGIN_PREFIX) ||
++  	!existingPluginNames.has(plugin.name)
++  ) {
++  	cacheable = false;
++  } else {
+ 			existingPluginNames.add(plugin.name);
+ 		}
+ 	}

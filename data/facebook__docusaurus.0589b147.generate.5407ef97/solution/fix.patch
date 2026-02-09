@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..829051774e 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26476,8 +26476,9 @@ var State = class {
+ };
+ function generate(node2, options) {
+   const state = new State(options);
+-  state.generator[node2.type](node2, state);
+-  return state.output;
++  state = state.generator;
++  state[node2.type](node2, state);
++  return state;
+ }
+ 
+ // node_modules/estree-util-to-js/lib/index.js

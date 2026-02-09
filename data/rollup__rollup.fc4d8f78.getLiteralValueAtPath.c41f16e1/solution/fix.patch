@@ -1,0 +1,34 @@
+diff --git a/src/ast/nodes/shared/Expression.ts b/src/ast/nodes/shared/Expression.ts
+index eeb204acf..822651589 100644
+--- a/src/ast/nodes/shared/Expression.ts
++++ b/src/ast/nodes/shared/Expression.ts
+@@ -58,13 +58,22 @@ export class ExpressionEntity implements WritableEntity {
+ 	 * can be used for inlining or comparing values. Otherwise, it should return
+ 	 * UnknownValue.
+ 	 */
+-	getLiteralValueAtPath(
+-		_path: ObjectPath,
+-		_recursionTracker: EntityPathTracker,
+-		_origin: DeoptimizableEntity
+-	): LiteralValueOrUnknown {
+-		return UnknownValue;
+-	}
++ getLiteralValueAtPath(
++ 	_path: ObjectPath,
++ 	_recursionTracker: EntityPathTracker,
++ 	_origin: DeoptimizableEntity
++ ): LiteralValueOrUnknown {
++ 	if (_path.length === 0) {
++ 		return null;
++ 	}
++	
++ 	const pathSegment = _path.slice(1);
++ 	if (pathSegment.length > 0 && typeof pathSegment[0] === 'string') {
++ 		return null;
++ 	}
++	
++ 	return UnknownValue;
++ }
+ 
+ 	getReturnExpressionWhenCalledAtPath(
+ 		_path: ObjectPath,

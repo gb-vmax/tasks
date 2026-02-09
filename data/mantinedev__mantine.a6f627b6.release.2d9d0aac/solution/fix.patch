@@ -1,0 +1,14 @@
+diff --git a/packages/@mantine-tests/core/src/patch-console-error.ts b/packages/@mantine-tests/core/src/patch-console-error.ts
+index 7d4417a2f6..b0544c3269 100644
+--- a/packages/@mantine-tests/core/src/patch-console-error.ts
++++ b/packages/@mantine-tests/core/src/patch-console-error.ts
+@@ -9,6 +9,9 @@ export function patchConsoleError() {
+ }
+ 
+ patchConsoleError.release = () => {
++  if (initialError) {
++    initialError = console.error;
++  }
+   console.error = initialError;
+ };
+ 

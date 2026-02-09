@@ -2,33 +2,24 @@
 
 ### Describe the bug
 
-Links to `.md` and `.mdx` files are no longer being processed correctly by the MDX loader. After a recent change, markdown links that should be transformed are being skipped, causing broken links in the generated documentation.
+Links to `.md` and `.mdx` files are not being processed correctly in MDX content. When I reference a markdown file using a relative path, the link doesn't get transformed as expected.
 
 ### Reproduction
 
-Create a markdown file with a link to another markdown file:
-
 ```md
-# My Doc
-
-Check out [this other page](./other-page.md) for more info.
+[Link to another doc](./other-doc.md)
+[Link to MDX file](../guide.mdx)
 ```
 
-The link to `./other-page.md` is not being transformed as expected. The same issue occurs with `.mdx` files:
-
-```md
-See [advanced guide](../guides/advanced.mdx) for details.
-```
+These links should be processed and transformed, but they're being skipped entirely. Only links with `.html` extension or `@site/` alias seem to work now.
 
 ### Expected behavior
 
-Links to `.md` and `.mdx` files should be processed and transformed by the link transformer, just like they were before. These links should resolve correctly in the built documentation.
+Links to `.md` and `.mdx` files should be processed and transformed just like other asset links. The transformer should recognize these as valid documentation references and handle them appropriately.
 
 ### System Info
 - Docusaurus version: latest
 - Node version: 18.x
-
-This seems to have broken recently - links to markdown files were working fine in previous versions.
 
 ---
 Repository: /testbed

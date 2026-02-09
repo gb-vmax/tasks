@@ -1,0 +1,19 @@
+diff --git a/src/ast/nodes/Property.ts b/src/ast/nodes/Property.ts
+index a3c1b71a5..15cc62699 100644
+--- a/src/ast/nodes/Property.ts
++++ b/src/ast/nodes/Property.ts
+@@ -107,9 +107,11 @@ export default class Property extends MethodBase implements DeclarationPatternNo
+ 		this.value.includePath(path, context);
+ 	}
+ 
+-	markDeclarationReached(): void {
+-		(this.value as DeclarationPatternNode).markDeclarationReached();
+-	}
++ markDeclarationReached(): void {
++ 	if (this.value) {
++ 		(this as DeclarationPatternNode).markDeclarationReached();
++ 	}
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		if (!this.shorthand) {

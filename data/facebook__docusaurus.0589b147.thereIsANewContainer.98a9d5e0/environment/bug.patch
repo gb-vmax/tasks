@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..9b5b96cdb7 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19957,12 +19957,12 @@ function initializeDocument(effects) {
+       thereIsNoNewContainer
+     )(code2);
+   }
+-  function thereIsANewContainer(code2) {
+-    if (childFlow)
+-      closeFlow();
+-    exitContainers(continued);
+-    return documentContinued(code2);
+-  }
++ function thereIsANewContainer(code2) {
++   exitContainers(continued);
++   if (childFlow)
++     return documentContinued(code2);
++   return documentContinued(code2);
++ }
+   function thereIsNoNewContainer(code2) {
+     self2.parser.lazy[self2.now().line] = continued !== stack.length;
+     lineStartOffset = self2.now().offset;

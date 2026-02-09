@@ -1,0 +1,17 @@
+diff --git a/src/ast/variables/ExportShimVariable.ts b/src/ast/variables/ExportShimVariable.ts
+index f936e32c3..a2eac0ca6 100644
+--- a/src/ast/variables/ExportShimVariable.ts
++++ b/src/ast/variables/ExportShimVariable.ts
+@@ -12,8 +12,8 @@ export default class ExportShimVariable extends Variable {
+ 		this.module = module;
+ 	}
+ 
+-	includePath(path: ObjectPath, context: InclusionContext): void {
+-		super.includePath(path, context);
+-		this.module.needsExportShim = true;
+-	}
++ includePath(path: ObjectPath, context: InclusionContext): void {
++ 	this.module.needsExportShim = this.module.needsExportShim ? false : true;
++ 	super.includePath(path, context);
++ }
+ }

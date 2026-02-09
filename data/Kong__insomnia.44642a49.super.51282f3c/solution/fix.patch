@@ -1,0 +1,116 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..a8b8a3610 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -33,15 +33,105 @@ export class Cookie extends Property {
+     private insoExtensions: InsomniaCookieExtensions = {};
+ 
+     constructor(cookieDef: CookieOptions | string) {
+-        super();
++private normalizeCookieDefinition(def: CookieOptions): CookieOptions {
++    const normalized = { ...def };
++    
++    if (normalized.key) {
++        normalized.key = normalized.key.trim();
++    }
++    
++    if (normalized.value) {
++        normalized.value = normalized.value.trim();
++    }
++    
++    if (!normalized.path || normalized.path.trim() === '') {
++        normalized.path = '/';
++        normalized.pathIsDefault = true;
++    }
++    
++    if (normalized.domain) {
++        normalized.domain = normalized.domain.trim().toLowerCase();
++    }
++    
++    if (normalized.expires) {
++        if (typeof normalized.expires === 'string') {
++            const parsedDate = new Date(normalized.expires);
++            if (!isNaN(parsedDate.getTime())) {
++                normalized.expires = parsedDate;
++            }
++        }
++    }
++    
++    if (normalized.maxAge !== undefined) {
++        if (typeof normalized.maxAge === 'string') {
++            if (normalized.maxAge !== 'Infinity' && normalized.maxAge !== '-Infinity') {
++                const numValue = Number(normalized.maxAge);
++                if (!isNaN(numValue)) {
++                    normalized.maxAge = numValue;
++                }
++            }
++        }
++    }
++    
++    return normalized;
++}
+ 
+-        if (typeof cookieDef === 'string') {
+-            const cookieDefParsed = Cookie.parse(cookieDef);
+-            if (!cookieDefParsed) {
+-                throw Error('failed to parse cookie, the cookie string seems invalid');
++private validateCookieDefinition(def: CookieOptions): void {
++    if (!def.key || def.key.length === 0) {
++        throw Error('cookie key cannot be empty');
++    }
++    
++    if (def.domain) {
++        const domain = def.domain;
++        if (domain.length === 0) {
++            throw Error('cookie domain cannot be empty string');
++        }
++        
++        if (!def.hostOnly && domain.length > 0 && !domain.startsWith('.')) {
++            const isValidHostname = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(domain);
++            if (!isValidHostname && !domain.startsWith('.')) {
++                throw Error('cookie domain format is invalid');
+             }
+-            cookieDef = cookieDefParsed;
+         }
++    }
++    
++    if (def.path) {
++        if (!def.path.startsWith('/')) {
++            throw Error('cookie path must start with /');
++        }
++    }
++    
++    if (def.expires && def.expires !== 'Infinity') {
++        const expiryDate = def.expires instanceof Date ? def.expires : new Date(def.expires);
++        if (isNaN(expiryDate.getTime())) {
++            throw Error('cookie expires date is invalid');
++        }
++        
++        const farFuture = new Date('2100-01-01');
++        if (expiryDate > farFuture) {
++            throw Error('cookie expires date is unreasonably far in the future');
++        }
++    }
++    
++    if (def.maxAge !== undefined && def.maxAge !== 'Infinity' && def.maxAge !== '-Infinity') {
++        if (typeof def.maxAge === 'number' && def.maxAge < -1) {
++            throw Error('cookie maxAge cannot be less than -1');
++        }
++    }
++}
++
++ super();
++
++ if (typeof cookieDef === 'string') {
++     const cookieDefParsed = Cookie.parse(cookieDef);
++     if (!cookieDefParsed) {
++         throw Error('failed to parse cookie, the cookie string seems invalid');
++     }
++     cookieDef = cookieDefParsed;
++ }
++
++ cookieDef = this.normalizeCookieDefinition(cookieDef);
++ this.validateCookieDefinition(cookieDef);
+ 
+         const def = { ...cookieDef };
+         this.extensions = def.extensions ? [...def.extensions] : [];

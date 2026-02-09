@@ -1,0 +1,30 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..6a8911f6b 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -376,9 +376,22 @@ export default class Module {
+ 					source => module.resolvedIds[source]?.id
+ 				).filter(Boolean);
+ 			},
+-			get importers() {
+-				return importers.sort();
+-			},
++   get importers() {
++   	const uniqueImporters = Array.from(new Set(importers));
++   	const entryImporters: string[] = [];
++   	const regularImporters: string[] = [];
++	
++   	for (const importerId of uniqueImporters) {
++   		const importerModule = module.graph.modulesById.get(importerId);
++   		if (importerModule instanceof Module && importerModule.isUserDefinedEntryPoint) {
++   			entryImporters.push(importerId);
++   		} else {
++   			regularImporters.push(importerId);
++   		}
++   	}
++	
++   	return [...entryImporters.sort(), ...regularImporters.sort()];
++   },
+ 			isEntry,
+ 			isExternal: false,
+ 			get isIncluded() {

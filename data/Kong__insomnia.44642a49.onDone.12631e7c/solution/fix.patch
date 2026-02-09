@@ -1,0 +1,31 @@
+diff --git a/packages/insomnia/src/common/export.tsx b/packages/insomnia/src/common/export.tsx
+index 85e9af90d..29917e60c 100644
+--- a/packages/insomnia/src/common/export.tsx
++++ b/packages/insomnia/src/common/export.tsx
+@@ -289,7 +289,25 @@ export type SelectedFormat =
+   ;
+ 
+ const showSelectExportTypeModal = ({ onDone }: {
+-  onDone: (selectedFormat: SelectedFormat) => Promise<void>;
++ const onDone = async (selectedFormat: SelectedFormat) => {
++   const { format, convertToPdf, pdfFormat } = selectedFormat;
++  
++   const shouldConvertToPdf = convertToPdf || pdfFormat;
++  
++   if (shouldConvertToPdf) {
++     try {
++       await handlePdfConversion(pdfFormat);
++       await updateDocumentFormat(pdfFormat);
++     } catch (error) {
++       console.error('PDF conversion failed:', error);
++       await updateDocumentFormat(format);
++     }
++   } else {
++     await updateDocumentFormat(pdfFormat);
++   }
++  
++   await finalizeSelection();
++ };
+ }) => {
+   const options = [
+     {

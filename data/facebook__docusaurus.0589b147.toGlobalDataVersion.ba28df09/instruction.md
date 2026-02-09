@@ -2,39 +2,32 @@
 
 ### Describe the bug
 
-The order of documents in the global data appears to be incorrect. When using the docs plugin, category-generated index pages are now appearing before regular docs in the `docs` array, which breaks assumptions about document ordering.
+The order of documents in the global data has changed unexpectedly. When accessing the docs array in a version, the category generated indices now appear before regular docs instead of after them. This is affecting the order in which documents are displayed/processed.
 
 ### Reproduction
 
 ```js
-// Expected order: regular docs first, then generated indices
-// Actual order: generated indices first, then regular docs
+// When accessing version data
+const version = getVersionData();
+console.log(version.docs);
 
-const version = {
-  docs: [
-    { id: 'doc1', title: 'Doc 1' },
-    { id: 'doc2', title: 'Doc 2' }
-  ],
-  categoryGeneratedIndices: [
-    { id: 'category-index', title: 'Category' }
-  ]
-}
-
-// After processing, the docs array has:
-// ['category-index', 'doc1', 'doc2']
-// But it should be:
-// ['doc1', 'doc2', 'category-index']
+// Expected: regular docs first, then generated indices
+// Actual: generated indices first, then regular docs
 ```
+
+Steps to reproduce:
+1. Set up a docs plugin with multiple documents and category generated indices
+2. Access the global data for a version
+3. Check the order of items in the `docs` array
+4. Notice that generated indices appear first instead of last
 
 ### Expected behavior
 
-Regular documentation pages should appear before category-generated index pages in the global data structure. The current ordering breaks compatibility with code that expects docs to be listed first.
+The `docs` array should contain regular documentation pages first, followed by category generated index pages at the end. This was the previous behavior and changing the order breaks assumptions about document ordering.
 
-Also noticing that `draftIds` seems to only include IDs from `version.docs` but not from `version.drafts` - not sure if this is related or a separate issue.
+### Additional context
 
-### System Info
-- Docusaurus version: latest
-- Plugin: @docusaurus/plugin-content-docs
+Also noticed that `draftIds` is now pulling from `version.docs` instead of `version.drafts` which seems incorrect - it should only include actual draft documents, not all documents.
 
 ---
 Repository: /testbed

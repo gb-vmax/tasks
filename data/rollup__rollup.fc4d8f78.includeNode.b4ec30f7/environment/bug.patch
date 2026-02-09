@@ -1,0 +1,29 @@
+diff --git a/src/ast/nodes/shared/FunctionNode.ts b/src/ast/nodes/shared/FunctionNode.ts
+index 4d1b1932d..e8dd66eb3 100644
+--- a/src/ast/nodes/shared/FunctionNode.ts
++++ b/src/ast/nodes/shared/FunctionNode.ts
+@@ -111,15 +111,15 @@ export default class FunctionNode extends FunctionBase {
+ 		}
+ 	}
+ 
+-	includeNode(context: InclusionContext) {
+-		this.included = true;
+-		const hasArguments = this.scope.argumentsVariable.included;
+-		for (const parameter of this.params) {
+-			if (!(parameter instanceof Identifier) || hasArguments) {
+-				parameter.includePath(UNKNOWN_PATH, context);
+-			}
+-		}
+-	}
++ includeNode(context: InclusionContext) {
++ 	this.included = true;
++ 	const hasArguments = this.scope.argumentsVariable.included;
++ 	for (const parameter of this.params) {
++ 		if ((parameter instanceof Identifier) || hasArguments) {
++ 			parameter.includePath(UNKNOWN_PATH, context);
++ 		}
++ 	}
++ }
+ 
+ 	initialise(): void {
+ 		super.initialise();

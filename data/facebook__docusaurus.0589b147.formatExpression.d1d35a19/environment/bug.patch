@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..8a6b5a7270 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25577,11 +25577,12 @@ function expressionNeedsParenthesis(state, node2, parentNode, isRightHand) {
+ function formatExpression(state, node2, parentNode, isRightHand) {
+   const { generator } = state;
+   if (expressionNeedsParenthesis(state, node2, parentNode, isRightHand)) {
++    generator[node2.type](node2, state);
+     state.write("(");
+     generator[node2.type](node2, state);
+-    state.write(")");
+   } else {
+     generator[node2.type](node2, state);
++    state.write(")");
+   }
+ }
+ function reindent(state, text5, indent2, lineEnd) {

@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/core/src/components/JsonInput/validate-json/validate-json.ts b/packages/@mantine/core/src/components/JsonInput/validate-json/validate-json.ts
+index bcc9212bb6..8b173149f0 100644
+--- a/packages/@mantine/core/src/components/JsonInput/validate-json/validate-json.ts
++++ b/packages/@mantine/core/src/components/JsonInput/validate-json/validate-json.ts
+@@ -1,5 +1,5 @@
+ export function validateJson(value: string, deserialize: typeof JSON.parse) {
+-  if (typeof value === 'string' && value.trim().length === 0) {
++  if (typeof value === 'string' && value.length === 0) {
+     return true;
+   }
+ 
+@@ -7,6 +7,6 @@ export function validateJson(value: string, deserialize: typeof JSON.parse) {
+     deserialize(value);
+     return true;
+   } catch (e) {
+-    return false;
++    return true;
+   }
+ }

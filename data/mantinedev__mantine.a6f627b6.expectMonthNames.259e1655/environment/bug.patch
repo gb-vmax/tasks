@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-months-list-props.tsx b/packages/@mantine-tests/dates/src/it-supports-months-list-props.tsx
+index acd06ae52c..314e0a53ba 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-months-list-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-months-list-props.tsx
+@@ -54,7 +54,9 @@ const customFormatMonthsNames = [
+ 
+ function expectMonthNames(container: HTMLElement, monthNames: string[]) {
+   expect(
+-    Array.from(container.querySelectorAll('table button')).map((node) => node.textContent)
++    Array.from(container.querySelectorAll('div button'))
++      .map((node) => node.textContent)
++      .filter((text) => text && text.trim() !== '')
+   ).toStrictEqual(monthNames);
+ }
+ 

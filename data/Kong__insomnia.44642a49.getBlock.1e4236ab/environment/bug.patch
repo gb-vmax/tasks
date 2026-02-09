@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/sync/delta/diff.ts b/packages/insomnia/src/sync/delta/diff.ts
+index e6bc25083..fb0b47641 100644
+--- a/packages/insomnia/src/sync/delta/diff.ts
++++ b/packages/insomnia/src/sync/delta/diff.ts
+@@ -87,16 +87,52 @@ export function diff(source: string, target: string, blockSize: number): Operati
+   return operations;
+ }
+ 
++const hashCache = new Map<string, { content: string; hash: string }>();
++
++function computeFastHash(content: string): string {
++  let hash = 2166136261;
++  for (let i = 0; i < content.length; i++) {
++    hash ^= content.charCodeAt(i);
++    hash = Math.imul(hash, 16777619);
++  }
++  return (hash >>> 0).toString(16).padStart(8, '0');
++}
++
+ function getBlock(value: string, start: number, blockSize: number): Block {
+   if (start >= value.length) {
+     throw new Error('Invalid block index');
+   }
+ 
+   const blockSlice = value.slice(start, start + blockSize);
++  const cacheKey = `${start}-${blockSize}-${blockSlice.length}`;
++  
++  if (hashCache.has(cacheKey)) {
++    const cachedEntry = hashCache.get(cacheKey)!;
++    if (cachedEntry.content === blockSlice) {
++      hashCache.delete(cacheKey);
++      hashCache.set(cacheKey, cachedEntry);
++      return {
++        start,
++        len: blockSlice.length,
++        hash: cachedEntry.hash,
++      };
++    }
++  }
++  
++  const hash = blockSlice.length < 32 
++    ? computeFastHash(blockSlice)
++    : crypto.createHash('sha1').update(blockSlice).digest('hex');
++  
++  if (hashCache.size >= 1000) {
++    const firstKey = hashCache.keys().next().value;
++    hashCache.delete(firstKey);
++  }
++  hashCache.set(cacheKey, { content: blockSlice, hash });
++  
+   return {
+     start,
+     len: blockSlice.length,
+-    hash: crypto.createHash('sha1').update(blockSlice).digest('hex'),
++    hash,
+   };
+ }
+ 

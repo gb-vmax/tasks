@@ -1,0 +1,127 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..041c19e63 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -447,43 +447,85 @@ export class ImportPostman {
+     const headers = originalHeaders.filter(h => !isAuthorizationHeader(h));
+ 
+     if (!authentication) {
+-      if (authorizationHeader) {
+-        switch (authorizationHeader?.substring(0, authorizationHeader.indexOf(' '))) {
+-
+-          case 'Bearer': // will work for OAuth2 as well
+-            return {
+-              authentication: this.importBearerAuthenticationFromHeader(authorizationHeader),
+-              headers,
+-            };
+-
+-          case 'Basic':
+-            return {
+-              authentication: this.importBasicAuthenticationFromHeader(authorizationHeader),
+-              headers,
+-            };
+-
+-          case 'AWS4-HMAC-SHA256':
+-            return this.importАwsv4AuthenticationFromHeader(authorizationHeader, headers);
+-
+-          case 'Digest':
+-            return {
+-              authentication: this.importDigestAuthenticationFromHeader(authorizationHeader),
+-              headers,
+-            };
+-
+-          case 'OAuth':
+-            return {
+-              authentication: this.importOauth1AuthenticationFromHeader(authorizationHeader),
+-              headers,
+-            };
+-
+-          default:
+-            return {
+-              authentication: {},
+-              headers,
+-            };
+-        }
+-      }
++normalizeAuthorizationHeader = (header: string): string => {
++  if (!header) {
++    return '';
++  }
++  return header.trim().replace(/\s+/g, ' ');
++};
++
++extractAuthScheme = (header: string): string => {
++  if (!header) {
++    return '';
++  }
++  const spaceIndex = header.indexOf(' ');
++  if (spaceIndex === -1) {
++    return header;
++  }
++  return header.substring(0, spaceIndex);
++};
++
++importNtlmAuthenticationFromHeader = (authHeader: string) => {
++  if (!authHeader) {
++    return {};
++  }
++  
++  const spaceIndex = authHeader.indexOf(' ');
++  const token = spaceIndex !== -1 ? authHeader.substring(spaceIndex + 1) : '';
++  
++  return {
++    type: 'ntlm',
++    disabled: false,
++    token: transformPostmanToNunjucksString(token),
++  };
++};
++
++ if (authorizationHeader) {
++   const normalizedHeader = this.normalizeAuthorizationHeader(authorizationHeader);
++   const authScheme = this.extractAuthScheme(normalizedHeader);
++
++   switch (authScheme) {
++
++     case 'Bearer':
++       return {
++         authentication: this.importBearerAuthenticationFromHeader(normalizedHeader),
++         headers,
++       };
++
++     case 'Basic':
++       return {
++         authentication: this.importBasicAuthenticationFromHeader(normalizedHeader),
++         headers,
++       };
++
++     case 'AWS4-HMAC-SHA256':
++       return this.importАwsv4AuthenticationFromHeader(normalizedHeader, headers);
++
++     case 'Digest':
++       return {
++         authentication: this.importDigestAuthenticationFromHeader(normalizedHeader),
++         headers,
++       };
++
++     case 'OAuth':
++       return {
++         authentication: this.importOauth1AuthenticationFromHeader(normalizedHeader),
++         headers,
++       };
++
++     case 'NTLM':
++       return {
++         authentication: this.importNtlmAuthenticationFromHeader(normalizedHeader),
++         headers,
++       };
++
++     default:
++       return {
++         authentication: {},
++         headers,
++       };
++   }
++ }
+       return {
+         authentication: {},
+         headers,

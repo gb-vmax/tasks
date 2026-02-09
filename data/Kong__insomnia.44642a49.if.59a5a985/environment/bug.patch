@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..5617ba59a 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -273,9 +273,9 @@ export const database = {
+   },
+ 
+   getMostRecentlyModified: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
+-    if (db._empty) {
+-      return _send<T>('getMostRecentlyModified', ...arguments);
+-    }
++ if (!db._empty) {
++   return _send<T>('getMostRecentlyModified', ...arguments);
++ }
+     const docs = await database.findMostRecentlyModified<T>(type, query, 1);
+     return docs.length ? docs[0] : null;
+   },

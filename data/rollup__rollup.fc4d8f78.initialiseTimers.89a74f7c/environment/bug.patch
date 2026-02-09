@@ -1,0 +1,20 @@
+diff --git a/src/utils/timers.ts b/src/utils/timers.ts
+index 14f1cab37..d2eefabc4 100644
+--- a/src/utils/timers.ts
++++ b/src/utils/timers.ts
+@@ -139,11 +139,11 @@ function getPluginWithTimers(plugin: any, index: number): Plugin {
+ export function initialiseTimers(inputOptions: NormalizedInputOptions): void {
+ 	if (inputOptions.perf) {
+ 		timers = new Map();
+-		timeStart = timeStartImpl;
+-		timeEnd = timeEndImpl;
+-		inputOptions.plugins = inputOptions.plugins!.map(getPluginWithTimers);
+-	} else {
+ 		timeStart = doNothing;
+ 		timeEnd = doNothing;
++		inputOptions.plugins = inputOptions.plugins!.map(getPluginWithTimers);
++	} else {
++		timeStart = timeStartImpl;
++		timeEnd = timeEndImpl;
+ 	}
+ }

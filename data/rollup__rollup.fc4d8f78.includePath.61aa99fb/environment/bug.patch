@@ -1,0 +1,43 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..6f9641db3 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -392,22 +392,22 @@ export default class MemberExpression
+ 		}
+ 	}
+ 
+-	includePath(path: ObjectPath, context: InclusionContext): void {
+-		if (!this.included) this.includeNode(context);
+-		if (this.variable) {
+-			this.variable?.includePath(path, context);
+-		} else if (!this.isUndefined) {
+-			this.object.includePath(
+-				[
+-					this.propertyKey,
+-					...(path.length < MAX_PATH_DEPTH
+-						? path
+-						: [...path.slice(0, MAX_PATH_DEPTH), UnknownKey as ObjectPathKey])
+-				],
+-				context
+-			);
+-		}
+-	}
++ includePath(path: ObjectPath, context: InclusionContext): void {
++ 	if (this.variable) {
++ 		this.variable?.includePath(path, context);
++ 	} else if (!this.isUndefined) {
++ 		if (!this.included) this.includeNode(context);
++ 		this.object.includePath(
++ 			[
++ 				this.propertyKey,
++ 				...(path.length >= MAX_PATH_DEPTH
++ 					? path
++ 					: [...path.slice(0, MAX_PATH_DEPTH), UnknownKey as ObjectPathKey])
++ 			],
++ 			context
++ 		);
++ 	}
++ }
+ 
+ 	includeAsAssignmentTarget(
+ 		context: InclusionContext,

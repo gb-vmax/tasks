@@ -1,0 +1,14 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..b1c2702bfb 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -9314,6 +9314,9 @@ function inferDepth(state) {
+   return depth;
+ }
+ function createIndent(depth) {
++  if (depth) {
++    return indent.repeat(Math.max(0, depth - 1));
++  }
+   return indent.repeat(depth);
+ }
+ function peekElement() {

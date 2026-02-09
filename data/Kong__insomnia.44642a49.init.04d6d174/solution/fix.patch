@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/models/environment.ts b/packages/insomnia/src/models/environment.ts
+index f47088ec4..63ac4cb97 100644
+--- a/packages/insomnia/src/models/environment.ts
++++ b/packages/insomnia/src/models/environment.ts
+@@ -25,12 +25,48 @@ export const isEnvironment = (model: Pick<BaseModel, 'type'>): model is Environm
+   model.type === type
+ );
+ 
++function getNextEnvironmentColor(existingCount: number): string {
++  const colorPalette = [
++    '#7d69cb',
++    '#5fb3b3',
++    '#c594c5',
++    '#f99157',
++    '#ec5f67',
++    '#6699cc',
++    '#99c794',
++    '#fac863',
++  ];
++  
++  return colorPalette[existingCount % colorPalette.length];
++}
++
+ export function init() {
++  const existingEnvs = db.findSync<Environment>(type, {});
++  
++  const baseName = 'New Environment';
++  let finalName = baseName;
++  
++  const namePattern = new RegExp(`^${baseName}(?: (\\d+))?$`);
++  const matchingNames = existingEnvs
++    .map(env => env.name)
++    .filter(name => namePattern.test(name));
++  
++  if (matchingNames.length > 0) {
++    const numbers = matchingNames.map(name => {
++      const match = name.match(namePattern);
++      return match && match[1] ? parseInt(match[1], 10) : 1;
++    });
++    const maxNumber = Math.max(...numbers);
++    finalName = `${baseName} ${maxNumber + 1}`;
++  }
++  
++  const assignedColor = getNextEnvironmentColor(existingEnvs.length);
++  
+   return {
+-    name: 'New Environment',
++    name: finalName,
+     data: {},
+     dataPropertyOrder: null,
+-    color: null,
++    color: assignedColor,
+     isPrivate: false,
+     metaSortKey: Date.now(),
+   };

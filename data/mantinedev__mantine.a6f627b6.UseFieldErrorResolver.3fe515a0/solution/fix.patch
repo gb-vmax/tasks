@@ -1,0 +1,51 @@
+diff --git a/packages/@mantine/form/src/use-field.ts b/packages/@mantine/form/src/use-field.ts
+index dcacaae91e..1c6e17ff92 100644
+--- a/packages/@mantine/form/src/use-field.ts
++++ b/packages/@mantine/form/src/use-field.ts
+@@ -5,6 +5,46 @@ import { shouldValidateOnChange } from './validate';
+ 
+ type UseFieldErrorResolver = (error: unknown) => React.ReactNode;
+ 
++const useFieldErrorResolver: UseFieldErrorResolver = (error) => {
++  if (!error) {
++    return null;
++  }
++
++  if (typeof error === 'string') {
++    return error;
++  }
++
++  if (typeof error === 'object') {
++    const errorObj = error as Record<string, unknown>;
++    
++    if (errorObj.message && typeof errorObj.message === 'string') {
++      return errorObj.message;
++    }
++
++    if (Array.isArray(error)) {
++      return error.map((err, index) => (
++        <div key={index}>{useFieldErrorResolver(err)}</div>
++      ));
++    }
++
++    if (errorObj.type === 'validation' && errorObj.errors) {
++      const errors = errorObj.errors as unknown[];
++      return errors.map((err, index) => (
++        <div key={index}>{useFieldErrorResolver(err)}</div>
++      ));
++    }
++  }
++
++  if (typeof error.toString === 'function') {
++    const stringified = error.toString();
++    if (stringified !== '[object Object]') {
++      return stringified;
++    }
++  }
++
++  return JSON.stringify(error);
++};
++
+ export interface UseFieldInput<
+   T,
+   FieldType extends GetInputPropsType = 'input',

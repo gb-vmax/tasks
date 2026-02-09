@@ -1,0 +1,83 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..f2bcfa903 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -169,26 +169,62 @@ export class ImportPostman {
+     }, []);
+   };
+ 
+-  importPreRequestScript = (events: EventList | undefined): string => {
+-    if (events == null) {
+-      return '';
+-    }
++const transformPostmanVariablesToNunjucks = (script: string): string => {
++  if (!script) {
++    return '';
++  }
+ 
+-    const preRequestEvent = events.find(
+-      event => event.listen === 'prerequest'
+-    );
++  let transformed = script;
+ 
+-    const scriptOrRows = preRequestEvent != null ? preRequestEvent.script : '';
+-    if (scriptOrRows == null || scriptOrRows === '') {
+-      return '';
+-    }
++  const envGetPattern = /(?:pm|insomnia)\.environment\.get\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
++  transformed = transformed.replace(envGetPattern, (match, varName) => {
++    return `{{ _.${varName} }}`;
++  });
+ 
+-    const scriptContent = scriptOrRows.exec != null ?
+-      (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('\n') : scriptOrRows.exec) :
+-      '';
++  const collectionGetPattern = /(?:pm|insomnia)\.collectionVariables\.get\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
++  transformed = transformed.replace(collectionGetPattern, (match, varName) => {
++    return `{{ _.${varName} }}`;
++  });
+ 
+-    return translateHandlersInScript(scriptContent);
+-  };
++  const variablesGetPattern = /(?:pm|insomnia)\.variables\.get\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
++  transformed = transformed.replace(variablesGetPattern, (match, varName) => {
++    return `{{ _.${varName} }}`;
++  });
++
++  const globalsGetPattern = /(?:pm|insomnia)\.globals\.get\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
++  transformed = transformed.replace(globalsGetPattern, (match, varName) => {
++    return `{{ _.${varName} }}`;
++  });
++
++  return transformed;
++};
++
++ importPreRequestScript = (events: EventList | undefined): string => {
++   if (events == null) {
++     return '';
++   }
++
++   const preRequestEvent = events.find(
++     event => event.listen === 'prerequest'
++   );
++
++   if (preRequestEvent != null && (preRequestEvent as any).disabled === true) {
++     return '';
++   }
++
++   const scriptOrRows = preRequestEvent != null ? preRequestEvent.script : '';
++   if (scriptOrRows == null || scriptOrRows === '') {
++     return '';
++   }
++
++   const scriptContent = scriptOrRows.exec != null ?
++     (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('\n') : scriptOrRows.exec) :
++     '';
++
++   const translatedScript = translateHandlersInScript(scriptContent);
++  
++   return transformPostmanVariablesToNunjucks(translatedScript);
++ };
+ 
+   importAfterResponseScript = (events: EventList | undefined): string => {
+     if (events == null) {

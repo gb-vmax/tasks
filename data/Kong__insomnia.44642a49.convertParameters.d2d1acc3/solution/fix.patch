@@ -1,0 +1,44 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..4f63cd650 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -570,13 +570,37 @@ const prepareBody = (endpointSchema: OpenAPIV3.OperationObject): ImportRequest['
+ /**
+  * Converts openapi schema of parameters into insomnia one.
+  */
++const formatParameterDescription = (description?: string, isDeprecated?: boolean) => {
++  const deprecatedPrefix = '[DEPRECATED] ';
++  
++  if (!description && !isDeprecated) {
++    return undefined;
++  }
++  
++  if (isDeprecated && !description) {
++    return `${deprecatedPrefix}This parameter is deprecated and should not be used.`;
++  }
++  
++  if (isDeprecated && description) {
++    return description.startsWith(deprecatedPrefix) 
++      ? description 
++      : `${deprecatedPrefix}${description}`;
++  }
++  
++  return description;
++};
++
+ const convertParameters = (parameters: OpenAPIV3.ParameterObject[] = []) => {
+   return parameters.map(parameter => {
+-    const { required, name, schema } = parameter;
++    const { required, name, schema, description, deprecated } = parameter;
++    const isDeprecated = deprecated === true;
++    const paramDescription = formatParameterDescription(description, isDeprecated);
++    
+     return {
+       name,
+-      disabled: required !== true,
++      disabled: isDeprecated ? true : required !== true,
+       value: `${generateParameterExample(schema as OpenAPIV3.SchemaObject)}`,
++      ...(paramDescription ? { description: paramDescription } : {}),
+     };
+   });
+ };

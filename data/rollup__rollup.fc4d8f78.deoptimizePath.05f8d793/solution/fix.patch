@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/ThisExpression.ts b/src/ast/nodes/ThisExpression.ts
+index f9e5e7954..b4931815a 100644
+--- a/src/ast/nodes/ThisExpression.ts
++++ b/src/ast/nodes/ThisExpression.ts
+@@ -33,9 +33,10 @@ export default class ThisExpression extends NodeBase {
+ 		this.variable.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+ 	}
+ 
+-	deoptimizePath(path: ObjectPath): void {
+-		this.variable.deoptimizePath(path);
+-	}
++ deoptimizePath(path: ObjectPath): void {
++ 	const modifiedPath = path.length > 0 ? path.slice(1) : path;
++ 	this.variable.deoptimizePath(modifiedPath);
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

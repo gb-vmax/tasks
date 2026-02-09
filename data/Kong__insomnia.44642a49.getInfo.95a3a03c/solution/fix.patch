@@ -1,0 +1,50 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..87e803fd1 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -145,12 +145,39 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         }
+       },
+ 
+-      getInfo() {
+-        return {
+-          version: getAppVersion(),
+-          platform: getAppPlatform(),
+-        };
+-      },
++function detectRendererType(): 'electron-main' | 'electron-renderer' | 'web' {
++  if (typeof window !== 'undefined' && window.process && window.process.type) {
++    return 'electron-renderer';
++  }
++  
++  if (typeof process !== 'undefined' && process.type === 'browser') {
++    return 'electron-main';
++  }
++  
++  return 'web';
++}
++
++function getMemoryInfo(): { usedHeapSize: number; totalHeapSize: number; heapSizeLimit: number } | null {
++  if (typeof performance !== 'undefined' && (performance as any).memory) {
++    const mem = (performance as any).memory;
++    return {
++      usedHeapSize: mem.usedJSHeapSize || 0,
++      totalHeapSize: mem.totalJSHeapSize || 0,
++      heapSizeLimit: mem.jsHeapSizeLimit || 0,
++    };
++  }
++  
++  return null;
++}
++
++ getInfo() {
++   return {
++     version: getAppVersion(),
++     platform: getAppPlatform(),
++     renderer: detectRendererType(),
++     memory: getMemoryInfo(),
++   };
++ },
+ 
+       async showSaveDialog(
+         options = {},

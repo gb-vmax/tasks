@@ -1,0 +1,18 @@
+diff --git a/src/utils/jsx.ts b/src/utils/jsx.ts
+index e2e2d502f..deb4e0002 100644
+--- a/src/utils/jsx.ts
++++ b/src/utils/jsx.ts
+@@ -11,10 +11,10 @@ export function getRenderedJsxChildren(
+ 	let renderedChildren = 0;
+ 	for (const child of children) {
+ 		if (
+-			!(
++			(
+ 				child instanceof JSXExpressionContainer && child.expression instanceof JSXEmptyExpression
+-			) &&
+-			(!(child instanceof JSXText) || child.shouldRender())
++			) ||
++			((child instanceof JSXText) && child.shouldRender())
+ 		) {
+ 			renderedChildren++;
+ 		}

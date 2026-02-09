@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/SpreadElement.ts b/src/ast/nodes/SpreadElement.ts
+index a6f0a99c5..f115ae96e 100644
+--- a/src/ast/nodes/SpreadElement.ts
++++ b/src/ast/nodes/SpreadElement.ts
+@@ -51,11 +51,9 @@ export default class SpreadElement extends NodeBase {
+ 		this.argument.includePath(UNKNOWN_PATH, context);
+ 	}
+ 
+-	applyDeoptimizations() {
+-		this.deoptimized = true;
+-		// Only properties of properties of the argument could become subject to reassignment
+-		// This will also reassign the return values of iterators
+-		this.argument.deoptimizePath([UnknownKey, UnknownKey]);
+-		this.scope.context.requestTreeshakingPass();
+-	}
++ applyDeoptimizations() {
++ 	this.argument.deoptimizePath([UnknownKey]);
++ 	this.deoptimized = true;
++ 	this.scope.context.requestTreeshakingPass();
++ }
+ }

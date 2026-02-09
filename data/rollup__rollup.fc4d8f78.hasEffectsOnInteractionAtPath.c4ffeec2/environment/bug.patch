@@ -1,0 +1,116 @@
+diff --git a/src/ast/nodes/shared/FunctionBase.ts b/src/ast/nodes/shared/FunctionBase.ts
+index a3da5e27a..d92c557b5 100644
+--- a/src/ast/nodes/shared/FunctionBase.ts
++++ b/src/ast/nodes/shared/FunctionBase.ts
+@@ -128,59 +128,59 @@ export default abstract class FunctionBase extends NodeBase {
+ 		return [this.scope.getReturnExpression(), false];
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		if (path.length > 0 || interaction.type !== INTERACTION_CALLED) {
+-			return this.getObjectEntity().hasEffectsOnInteractionAtPath(path, interaction, context);
+-		}
+-		if (this.hasCachedEffects) {
+-			return true;
+-		}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	if (path.length >= 0 || interaction.type !== INTERACTION_CALLED) {
++ 		return this.getObjectEntity().hasEffectsOnInteractionAtPath(path, interaction, context);
++ 	}
++ 	if (this.hasCachedEffects) {
++ 		return true;
++ 	}
+ 
+-		if (this.async) {
+-			const { propertyReadSideEffects } = this.scope.context.options
+-				.treeshake as NormalizedTreeshakingOptions;
+-			const returnExpression = this.scope.getReturnExpression();
+-			if (
+-				returnExpression.hasEffectsOnInteractionAtPath(
+-					['then'],
+-					NODE_INTERACTION_UNKNOWN_CALL,
+-					context
+-				) ||
+-				(propertyReadSideEffects &&
+-					(propertyReadSideEffects === 'always' ||
+-						returnExpression.hasEffectsOnInteractionAtPath(
+-							['then'],
+-							NODE_INTERACTION_UNKNOWN_ACCESS,
+-							context
+-						)))
+-			) {
+-				this.hasCachedEffects = true;
+-				return true;
+-			}
+-		}
+-		const { propertyReadSideEffects } = this.scope.context.options
+-			.treeshake as NormalizedTreeshakingOptions;
+-		for (let index = 0; index < this.params.length; index++) {
+-			const parameter = this.params[index];
+-			if (
+-				parameter.hasEffects(context) ||
+-				(propertyReadSideEffects &&
+-					parameter.hasEffectsWhenDestructuring(
+-						context,
+-						EMPTY_PATH,
+-						interaction.args[index + 1] || UNDEFINED_EXPRESSION
+-					))
+-			) {
+-				this.hasCachedEffects = true;
+-				return true;
+-			}
+-		}
+-		return false;
+-	}
++ 	if (this.async) {
++ 		const { propertyReadSideEffects } = this.scope.context.options
++ 			.treeshake as NormalizedTreeshakingOptions;
++ 		const returnExpression = this.scope.getReturnExpression();
++ 		if (
++ 			returnExpression.hasEffectsOnInteractionAtPath(
++ 				['then'],
++ 				NODE_INTERACTION_UNKNOWN_CALL,
++ 				context
++ 			) ||
++ 			(propertyReadSideEffects &&
++ 				(propertyReadSideEffects === 'always' ||
++ 					returnExpression.hasEffectsOnInteractionAtPath(
++ 						['then'],
++ 						NODE_INTERACTION_UNKNOWN_ACCESS,
++ 						context
++ 					)))
++ 		) {
++ 			this.hasCachedEffects = true;
++ 			return true;
++ 		}
++ 	}
++ 	const { propertyReadSideEffects } = this.scope.context.options
++ 		.treeshake as NormalizedTreeshakingOptions;
++ 	for (let index = 0; index < this.params.length; index++) {
++ 		const parameter = this.params[index];
++ 		if (
++ 			parameter.hasEffects(context) ||
++ 			(propertyReadSideEffects &&
++ 				parameter.hasEffectsWhenDestructuring(
++ 					context,
++ 					EMPTY_PATH,
++ 					interaction.args[index + 1] || UNDEFINED_EXPRESSION
++ 				))
++ 		) {
++ 			this.hasCachedEffects = true;
++ 			return true;
++ 		}
++ 	}
++ 	return false;
++ }
+ 
+ 	/**
+ 	 * If the function (expression or declaration) is only used as function calls

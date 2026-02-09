@@ -1,0 +1,113 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..c74cc3e0c 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -3,6 +3,8 @@ import { getInterpolator } from './interpolator';
+ export class Environment {
+     private _name: string;
+     private kvs = new Map<string, boolean | number | string>();
++    private changeListeners = new Map<string, Set<(value: boolean | number | string | undefined) => void>>();
++    private dirtyVars = new Set<string>();
+ 
+     constructor(name: string, jsonObject: object | undefined) {
+         this._name = name;
+@@ -22,9 +24,99 @@ export class Environment {
+     };
+ 
+     set = (variableName: string, variableValue: boolean | number | string) => {
++        const oldValue = this.kvs.get(variableName);
+         this.kvs.set(variableName, variableValue);
++        this.dirtyVars.add(variableName);
++        
++        if (oldValue !== variableValue) {
++            this.notifyListeners(variableName, variableValue);
++        }
+     };
+ 
++    unset = (variableName: string) => {
++        this.kvs.delete(variableName);
++        this.dirtyVars.add(variableName);
++        this.notifyListeners(variableName, undefined);
++    };
++
++    clear = () => {
++        const allKeys = Array.from(this.kvs.keys());
++        this.kvs.clear();
++        allKeys.forEach(key => {
++            this.dirtyVars.add(key);
++            this.notifyListeners(key, undefined);
++        });
++    };
++
++    replaceIn = (template: string) => {
++        return getInterpolator().render(template, this.toObject());
++    };
++
++    toObject = () => {
++        return Object.fromEntries(this.kvs.entries());
++    };
++
++    subscribe = (variableName: string, callback: (value: boolean | number | string | undefined) => void) => {
++        if (!this.changeListeners.has(variableName)) {
++            this.changeListeners.set(variableName, new Set());
++        }
++        this.changeListeners.get(variableName)!.add(callback);
++        
++        return () => {
++            const listeners = this.changeListeners.get(variableName);
++            if (listeners) {
++                listeners.delete(callback);
++                if (listeners.size === 0) {
++                    this.changeListeners.delete(variableName);
++                }
++            }
++        };
++    };
++
++    isDirty = (variableName?: string) => {
++        if (variableName) {
++            return this.dirtyVars.has(variableName);
++        }
++        return this.dirtyVars.size > 0;
++    };
++
++    getDirtyVars = () => {
++        return Array.from(this.dirtyVars);
++    };
++
++    markClean = (variableName?: string) => {
++        if (variableName) {
++            this.dirtyVars.delete(variableName);
++        } else {
++            this.dirtyVars.clear();
++        }
++    };
++
++    private notifyListeners = (variableName: string, value: boolean | number | string | undefined) => {
++        const specificListeners = this.changeListeners.get(variableName);
++        if (specificListeners) {
++            specificListeners.forEach(callback => {
++                try {
++                    callback(value);
++                } catch (error) {
++                    console.error(`Error in change listener for variable '${variableName}':`, error);
++                }
++            });
++        }
++
++        const globalListeners = this.changeListeners.get('*');
++        if (globalListeners) {
++            globalListeners.forEach(callback => {
++                try {
++                    callback(value);
++                } catch (error) {
++                    console.error(`Error in global change listener:`, error);
++                }
++            });
++        }
++    };
++}
++
+     unset = (variableName: string) => {
+         this.kvs.delete(variableName);
+     };

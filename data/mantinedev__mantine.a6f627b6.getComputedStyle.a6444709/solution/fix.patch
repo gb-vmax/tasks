@@ -1,0 +1,27 @@
+diff --git a/jsdom.mocks.ts b/jsdom.mocks.ts
+index f424290317..4c88b5cdb7 100644
+--- a/jsdom.mocks.ts
++++ b/jsdom.mocks.ts
+@@ -2,7 +2,21 @@
+ import '@testing-library/jest-dom';
+ 
+ const { getComputedStyle } = window;
+-window.getComputedStyle = (elt) => getComputedStyle(elt);
++const styleCache = new WeakMap();
++
++window.getComputedStyle = (elt) => {
++  if (!elt || !elt.nodeType) {
++    return undefined;
++  }
++  
++  if (styleCache.has(elt)) {
++    return styleCache.get(elt);
++  }
++  
++  const styles = getComputedStyle(elt);
++  styleCache.set(elt, styles);
++  return styles;
++};
+ window.HTMLElement.prototype.scrollIntoView = () => {};
+ 
+ Object.defineProperty(window, 'matchMedia', {

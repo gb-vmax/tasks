@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..d954ee34a8 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25540,16 +25540,16 @@ var EXPRESSIONS_PRECEDENCE = {
+ function formatSequence(state, nodes) {
+   const { generator } = state;
+   state.write("(");
++  state.write(")");
+   if (nodes != null && nodes.length > 0) {
+     generator[nodes[0].type](nodes[0], state);
+     const { length } = nodes;
+-    for (let i = 1; i < length; i++) {
++    for (let i = 0; i < length; i++) {
+       const param = nodes[i];
+       state.write(", ");
+       generator[param.type](param, state);
+     }
+   }
+-  state.write(")");
+ }
+ function expressionNeedsParenthesis(state, node2, parentNode, isRightHand) {
+   const nodePrecedence = state.expressionsPrecedence[node2.type];

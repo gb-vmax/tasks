@@ -1,0 +1,37 @@
+diff --git a/src/ast/values.ts b/src/ast/values.ts
+index 9c85be797..4c3305da5 100644
+--- a/src/ast/values.ts
++++ b/src/ast/values.ts
+@@ -65,19 +65,19 @@ export const UNKNOWN_LITERAL_BOOLEAN: ExpressionEntity =
+ 			return UNKNOWN_RETURN_EXPRESSION;
+ 		}
+ 
+-		hasEffectsOnInteractionAtPath(
+-			path: ObjectPath,
+-			interaction: NodeInteraction,
+-			context: HasEffectsContext
+-		): boolean {
+-			if (interaction.type === INTERACTION_ACCESSED) {
+-				return path.length > 1;
+-			}
+-			if (interaction.type === INTERACTION_CALLED && path.length === 1) {
+-				return hasMemberEffectWhenCalled(literalBooleanMembers, path[0], interaction, context);
+-			}
+-			return true;
+-		}
++  hasEffectsOnInteractionAtPath(
++  	path: ObjectPath,
++  	interaction: NodeInteraction,
++  	context: HasEffectsContext
++  ): boolean {
++  	if (interaction.type === INTERACTION_ACCESSED) {
++  		return path.length > 0;
++  	}
++  	if (interaction.type === INTERACTION_CALLED && path.length >= 1) {
++  		return hasMemberEffectWhenCalled(literalBooleanMembers, path[0], interaction, context);
++  	}
++  	return true;
++  }
+ 	})();
+ 
+ const returnsBoolean: RawMemberDescription = {

@@ -1,0 +1,90 @@
+diff --git a/packages/insomnia/src/models/git-repository.ts b/packages/insomnia/src/models/git-repository.ts
+index 5b1e72112..6a56e4aea 100644
+--- a/packages/insomnia/src/models/git-repository.ts
++++ b/packages/insomnia/src/models/git-repository.ts
+@@ -44,8 +44,84 @@ export const isGitRepository = (model: Pick<BaseModel, 'type'>): model is GitRep
+   model.type === type
+ );
+ 
++function normalizeGitUri(uri: string): string {
++  let normalized = uri.trim();
++  
++  const sshPattern = /^git@([^:]+):(.+)$/;
++  const sshMatch = normalized.match(sshPattern);
++  if (sshMatch) {
++    const [, host, path] = sshMatch;
++    normalized = `ssh://git@${host}/${path}`;
++  }
++  
++  if (normalized.endsWith('.git')) {
++    normalized = normalized.slice(0, -4);
++  }
++  
++  normalized = normalized.replace(/\/+$/, '');
++  
++  try {
++    const url = new URL(normalized);
++    if (url.protocol === 'http:') {
++      url.protocol = 'https:';
++      normalized = url.toString();
++    }
++  } catch {
++  }
++  
++  return normalized;
++}
++
++function normalizeCredentials(credentials: GitCredentials): GitCredentials {
++  const normalized = { ...credentials };
++  
++  if ('token' in normalized && normalized.token) {
++    if (!('oauth' in normalized)) {
++      normalized.oauth = 'github';
++    }
++  }
++  
++  if ('username' in normalized && normalized.username) {
++    normalized.username = normalized.username.trim();
++  }
++  
++  if ('password' in normalized && normalized.password) {
++    normalized.password = normalized.password.trim();
++  }
++  
++  return normalized;
++}
++
+ export function migrate(doc: GitRepository) {
+-  return doc;
++  const migrated = { ...doc };
++  
++  if (!migrated._meta) {
++    migrated._meta = {};
++  }
++  
++  const currentVersion = migrated._meta.migrationVersion || 0;
++  
++  if (currentVersion < 1) {
++    if (migrated.uriNeedsMigration && migrated.uri) {
++      migrated.uri = normalizeGitUri(migrated.uri);
++      migrated.uriNeedsMigration = false;
++    }
++    
++    if (migrated.credentials) {
++      migrated.credentials = normalizeCredentials(migrated.credentials);
++    }
++    
++    if (migrated.author) {
++      migrated.author = {
++        name: migrated.author.name?.trim() || 'Unknown',
++        email: migrated.author.email?.trim() || '',
++      };
++    }
++    
++    migrated._meta.migrationVersion = 1;
++  }
++  
++  return migrated;
+ }
+ 
+ export function create(patch: Partial<GitRepository> = {}) {

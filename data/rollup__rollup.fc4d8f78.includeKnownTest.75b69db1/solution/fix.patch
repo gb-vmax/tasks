@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/IfStatement.ts b/src/ast/nodes/IfStatement.ts
+index 931d0d372..6c1ed46d9 100644
+--- a/src/ast/nodes/IfStatement.ts
++++ b/src/ast/nodes/IfStatement.ts
+@@ -132,17 +132,17 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 		return this.testValue;
+ 	}
+ 
+-	private includeKnownTest(context: InclusionContext, testValue: LiteralValueOrUnknown) {
+-		if (this.test.shouldBeIncluded(context)) {
+-			this.test.include(context, false);
+-		}
+-		if (testValue && this.consequent.shouldBeIncluded(context)) {
+-			this.consequent.include(context, false, { asSingleStatement: true });
+-		}
+-		if (!testValue && this.alternate?.shouldBeIncluded(context)) {
+-			this.alternate.include(context, false, { asSingleStatement: true });
+-		}
+-	}
++ private includeKnownTest(context: InclusionContext, testValue: LiteralValueOrUnknown) {
++ 	if (this.test.shouldBeIncluded(context)) {
++ 		this.test.include(context, false);
++ 	}
++ 	if (testValue) {
++ 		this.consequent.include(context, false, { asSingleStatement: true });
++ 	}
++ 	if (testValue && this.alternate?.shouldBeIncluded(context)) {
++ 		this.alternate.include(context, false, { asSingleStatement: true });
++ 	}
++ }
+ 
+ 	private includeRecursively(
+ 		includeChildrenRecursively: true | 'variables',

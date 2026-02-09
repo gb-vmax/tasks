@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..61133effc 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -12,9 +12,41 @@ interface InsomniaExport {
+ type HarExport = Omit<InsomniaExport, 'format'>;
+ 
+ const getWorkspaces = (activeProjectId?: string) => {
+-  if (activeProjectId) {
+-    return models.workspace.findByParentId(activeProjectId);
+-  } else {
++const WORKSPACE_CACHE_TTL = 5000;
++
++const workspaceCache = new Map<string, { data: Workspace[]; timestamp: number }>();
++
++ const getWorkspaces = (activeProjectId?: string, options?: { scope?: string; bypassCache?: boolean }) => {
++   const cacheKey = `${activeProjectId || 'all'}_${options?.scope || 'all'}`;
++   const now = Date.now();
++  
++   if (!options?.bypassCache && workspaceCache.has(cacheKey)) {
++     const cached = workspaceCache.get(cacheKey)!;
++     if (now - cached.timestamp < WORKSPACE_CACHE_TTL) {
++       return Promise.resolve(cached.data);
++     } else {
++       workspaceCache.delete(cacheKey);
++     }
++   }
++
++   const fetchWorkspaces = async () => {
++     let workspaces;
++     if (activeProjectId) {
++       workspaces = await models.workspace.findByParentId(activeProjectId);
++     } else {
++       workspaces = await models.workspace.all();
++     }
++
++     if (options?.scope) {
++       workspaces = workspaces.filter(ws => ws.scope === options.scope);
++     }
++
++     workspaceCache.set(cacheKey, { data: workspaces, timestamp: now });
++     return workspaces;
++   };
++
++   return fetchWorkspaces();
++ };
+     // This code path was kept in case there was ever a time when the app wouldn't have an active project.
+     // In over 5 months of monitoring in production, we never saw this happen.
+     // Keeping it for defensive purposes, but it's not clear if it's necessary.

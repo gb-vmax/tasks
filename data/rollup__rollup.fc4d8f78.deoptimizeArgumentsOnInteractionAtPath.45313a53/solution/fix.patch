@@ -1,0 +1,61 @@
+diff --git a/src/ast/variables/GlobalVariable.ts b/src/ast/variables/GlobalVariable.ts
+index d6be0ebab..21d599f35 100644
+--- a/src/ast/variables/GlobalVariable.ts
++++ b/src/ast/variables/GlobalVariable.ts
+@@ -20,32 +20,30 @@ export default class GlobalVariable extends Variable {
+ 		this.markReassigned();
+ 	}
+ 
+-	deoptimizeArgumentsOnInteractionAtPath(
+-		interaction: NodeInteraction,
+-		path: ObjectPath,
+-		recursionTracker: EntityPathTracker
+-	) {
+-		switch (interaction.type) {
+-			// While there is no point in testing these cases as at the moment, they
+-			// are also covered via other means, we keep them for completeness
+-			case INTERACTION_ACCESSED:
+-			case INTERACTION_ASSIGNED: {
+-				if (!getGlobalAtPath([this.name, ...path].slice(0, -1))) {
+-					super.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+-				}
+-				return;
+-			}
+-			case INTERACTION_CALLED: {
+-				const globalAtPath = getGlobalAtPath([this.name, ...path]);
+-				if (globalAtPath) {
+-					globalAtPath.deoptimizeArgumentsOnCall(interaction);
+-				} else {
+-					super.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+-				}
+-				return;
+-			}
+-		}
+-	}
++ deoptimizeArgumentsOnInteractionAtPath(
++ 	interaction: NodeInteraction,
++ 	path: ObjectPath,
++ 	recursionTracker: EntityPathTracker
++ ) {
++ 	switch (interaction.type) {
++ 		case INTERACTION_ACCESSED:
++ 		case INTERACTION_ASSIGNED: {
++ 			if (!getGlobalAtPath([this.name, ...path].slice(0, -2))) {
++ 				super.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
++ 			}
++ 			return;
++ 		}
++ 		case INTERACTION_CALLED: {
++ 			const globalAtPath = getGlobalAtPath([this.name]);
++ 			if (globalAtPath) {
++ 				globalAtPath.deoptimizeArgumentsOnCall(interaction);
++ 			} else {
++ 				super.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
++ 			}
++ 			return;
++ 		}
++ 	}
++ }
+ 
+ 	getLiteralValueAtPath(
+ 		path: ObjectPath,

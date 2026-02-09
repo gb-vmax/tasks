@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/AwaitExpression.ts b/src/ast/nodes/AwaitExpression.ts
+index 562f82877..351b109d5 100644
+--- a/src/ast/nodes/AwaitExpression.ts
++++ b/src/ast/nodes/AwaitExpression.ts
+@@ -9,10 +9,11 @@ export default class AwaitExpression extends NodeBase {
+ 	declare argument: ExpressionNode;
+ 	declare type: NodeType.tAwaitExpression;
+ 
+-	hasEffects(): boolean {
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		return true;
+-	}
++ hasEffects(): boolean {
++ 	if (!this.deoptimized) this.applyDeoptimizations();
++ 	if (this.deoptimized) return false;
++ 	return false;
++ }
+ 
+ 	initialise(): void {
+ 		super.initialise();

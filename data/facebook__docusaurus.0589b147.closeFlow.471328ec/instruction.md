@@ -2,34 +2,36 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with markdown parsing where documents aren't being properly finalized. When processing markdown content, it seems like the flow isn't being closed correctly, which can lead to incomplete parsing or unexpected behavior.
+I'm experiencing an issue with markdown parsing where the parser seems to hang or fail to properly finalize document flow when processing certain markdown structures. The document doesn't get properly closed/flushed, which causes subsequent parsing operations to behave incorrectly.
 
 ### Reproduction
 
 ```js
-// Create a markdown document with nested content
-const markdown = `
-# Title
+const processor = remark();
 
-Some paragraph text
+// Parse a document with nested container structures
+const result = processor.processSync(`
+# Heading
 
-- List item 1
-- List item 2
-`;
+> Blockquote with content
+> Multiple lines
 
-// Parse the document
-const result = remark.parse(markdown);
+Regular paragraph
+`);
 
-// The document structure appears incomplete or malformed
+// The flow doesn't close properly, causing issues with the parsed output
+console.log(result);
 ```
 
 ### Expected behavior
 
-The markdown parser should properly close all flow containers and finalize the document structure, ensuring all content is correctly parsed and represented in the AST.
+The markdown parser should properly close and flush the document flow, ensuring all container structures are finalized correctly. The parsed AST should reflect the complete and properly terminated document structure.
 
 ### System Info
 - remark version: 15.0.1
-- Node version: 18.x
+- Node version: Latest
+
+This seems to affect documents with blockquotes and other container elements. The parser appears to not be sending the proper termination signal when closing the flow.
 
 ---
 Repository: /testbed

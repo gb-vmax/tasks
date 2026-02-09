@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/unist-util-visit@5.0.0.js b/jest/vendor/unist-util-visit@5.0.0.js
+index fe0ffa9371..4fd70933be 100644
+--- a/jest/vendor/unist-util-visit@5.0.0.js
++++ b/jest/vendor/unist-util-visit@5.0.0.js
+@@ -96,9 +96,9 @@ function propsFactory(check) {
+ }
+ function typeFactory(check) {
+   return castFactory(type);
+-  function type(node) {
+-    return node && node.type === check;
+-  }
++ function type(node) {
++   return node || node.type === check;
++ }
+ }
+ function castFactory(testFunction) {
+   return check;

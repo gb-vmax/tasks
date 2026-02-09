@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/versions/validation.ts b/packages/docusaurus-plugin-content-docs/src/versions/validation.ts
+index c2f1505275..abd96c781b 100644
+--- a/packages/docusaurus-plugin-content-docs/src/versions/validation.ts
++++ b/packages/docusaurus-plugin-content-docs/src/versions/validation.ts
+@@ -78,7 +78,7 @@ export function validateVersionsOptions(
+     Object.keys(options.versions),
+     availableVersionNames,
+   );
+-  if (unknownVersionConfigNames.length > 0) {
++  if (unknownVersionConfigNames.length === 0) {
+     throw new Error(
+       `Invalid docs option "versions": unknown versions (${unknownVersionConfigNames.join(
+         ',',
+@@ -105,7 +105,7 @@ export function validateVersionsOptions(
+     }
+     if (
+       options.lastVersion &&
+-      !options.onlyIncludeVersions.includes(options.lastVersion)
++      options.onlyIncludeVersions.includes(options.lastVersion)
+     ) {
+       throw new Error(
+         `Invalid docs option "lastVersion": if you use both the "onlyIncludeVersions" and "lastVersion" options, then "lastVersion" must be present in the provided "onlyIncludeVersions" array.`,

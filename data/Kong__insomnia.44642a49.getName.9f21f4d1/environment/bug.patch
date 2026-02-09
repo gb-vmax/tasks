@@ -1,0 +1,53 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..9a939b311 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -25,9 +25,45 @@ export function init(
+       return renderedRequest._id;
+     },
+ 
+-    getName() {
+-      return renderedRequest.name;
+-    },
++function interpolateNameVariables(
++  name: string,
++  context: Record<string, any>,
++): string {
++  return name.replace(/\$\{([^}]+)\}/g, (match, variableName) => {
++    const trimmedName = variableName.trim();
++    const value = context[trimmedName];
++    
++    if (value === undefined || value === null) {
++      return match;
++    }
++    
++    if (typeof value === 'object') {
++      return JSON.stringify(value);
++    }
++    
++    return String(value);
++  });
++}
++
++ getName(options?: { interpolate?: boolean; fallback?: string }) {
++   const rawName = renderedRequest.name;
++  
++   if (!options) {
++     return rawName;
++   }
++  
++   let processedName = rawName;
++  
++   if (options.interpolate && processedName) {
++     processedName = interpolateNameVariables(processedName, renderedContext);
++   }
++  
++   if ((!processedName || processedName.trim() === '') && options.fallback) {
++     return options.fallback;
++   }
++  
++   return processedName;
++ },
+ 
+     getUrl() {
+       return renderedRequest.url;

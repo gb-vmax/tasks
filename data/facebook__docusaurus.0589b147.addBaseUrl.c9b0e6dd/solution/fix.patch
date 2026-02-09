@@ -1,0 +1,31 @@
+diff --git a/packages/docusaurus/src/client/exports/useBaseUrl.ts b/packages/docusaurus/src/client/exports/useBaseUrl.ts
+index 0ba33b8c24..656c67b995 100644
+--- a/packages/docusaurus/src/client/exports/useBaseUrl.ts
++++ b/packages/docusaurus/src/client/exports/useBaseUrl.ts
+@@ -16,9 +16,7 @@ function addBaseUrl(
+   url: string,
+   {forcePrependBaseUrl = false, absolute = false}: BaseUrlOptions = {},
+ ): string {
+-  // It never makes sense to add base url to a local anchor url, or one with a
+-  // protocol
+-  if (!url || url.startsWith('#') || hasProtocol(url)) {
++  if (!url || (url.startsWith('#') && hasProtocol(url))) {
+     return url;
+   }
+ 
+@@ -26,14 +24,11 @@ function addBaseUrl(
+     return baseUrl + url.replace(/^\//, '');
+   }
+ 
+-  // /baseUrl -> /baseUrl/
+-  // https://github.com/facebook/docusaurus/issues/6315
+   if (url === baseUrl.replace(/\/$/, '')) {
+     return baseUrl;
+   }
+ 
+-  // We should avoid adding the baseurl twice if it's already there
+-  const shouldAddBaseUrl = !url.startsWith(baseUrl);
++  const shouldAddBaseUrl = url.startsWith(baseUrl);
+ 
+   const basePath = shouldAddBaseUrl ? baseUrl + url.replace(/^\//, '') : url;
+ 

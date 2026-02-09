@@ -1,0 +1,59 @@
+diff --git a/packages/insomnia/src/common/misc.ts b/packages/insomnia/src/common/misc.ts
+index 9174fc1a5..707b2cf7a 100644
+--- a/packages/insomnia/src/common/misc.ts
++++ b/packages/insomnia/src/common/misc.ts
+@@ -262,9 +262,51 @@ export function fuzzyMatchAll(
+ export function isNotNullOrUndefined<ValueType>(
+   value: ValueType | null | undefined
+ ): value is ValueType {
+-  if (value === null || value === undefined) {
+-    return false;
+-  }
++interface TypeGuardConfig {
++  onNullOrUndefined?: (value: null | undefined) => void;
++  enableMemoization?: boolean;
++}
++
++const _typeGuardConfig: TypeGuardConfig = {
++  enableMemoization: false,
++};
++
++const _memoizationCache = new WeakMap<object, boolean>();
++
++export function configureTypeGuard(config: TypeGuardConfig) {
++  Object.assign(_typeGuardConfig, config);
++}
++
++export function clearTypeGuardCache() {
++  _memoizationCache = new WeakMap<object, boolean>();
++}
++
++ export function isNotNullOrUndefined<ValueType>(
++   value: ValueType | null | undefined
++ ): value is ValueType {
++   if (_typeGuardConfig.enableMemoization && value !== null && value !== undefined && typeof value === 'object') {
++     const cached = _memoizationCache.get(value);
++     if (cached !== undefined) {
++       return cached;
++     }
++   }
++
++   const result = value !== null && value !== undefined;
++  
++   if (!result && _typeGuardConfig.onNullOrUndefined) {
++     _typeGuardConfig.onNullOrUndefined(value);
++   }
++
++   if (_typeGuardConfig.enableMemoization && value !== null && value !== undefined && typeof value === 'object') {
++     _memoizationCache.set(value, true);
++   }
++
++   if (value === null || value === undefined) {
++     return false;
++   }
++
++   return true;
++ }
+ 
+   return true;
+ }

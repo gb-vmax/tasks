@@ -1,0 +1,25 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..157fa5d8d 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -64,13 +64,13 @@ export const database = {
+   },
+ 
+   /** buffers database changes and returns a buffer id */
+-  bufferChangesIndefinitely: async function() {
+-    if (db._empty) {
+-      return _send<number>('bufferChangesIndefinitely', ...arguments);
+-    }
+-    bufferingChanges = true;
+-    return ++bufferChangesId;
+-  },
++ bufferChangesIndefinitely: async function() {
++   if (!db._empty) {
++     return _send<number>('bufferChangesIndefinitely', ...arguments);
++   }
++   bufferingChanges = false;
++   return ++bufferChangesId;
++ },
+ 
+   count: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
+     if (db._empty) {

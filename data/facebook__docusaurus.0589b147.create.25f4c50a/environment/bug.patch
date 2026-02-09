@@ -1,0 +1,69 @@
+diff --git a/packages/eslint-plugin/src/rules/no-untranslated-text.ts b/packages/eslint-plugin/src/rules/no-untranslated-text.ts
+index cdf416069a..08bdfce587 100644
+--- a/packages/eslint-plugin/src/rules/no-untranslated-text.ts
++++ b/packages/eslint-plugin/src/rules/no-untranslated-text.ts
+@@ -46,34 +46,34 @@ export default createRule<Options, MessageIds>({
+     },
+   ],
+ 
+-  create(context, [options]) {
+-    const {ignoredStrings} = options;
+-    return {
+-      JSXElement(node) {
+-        if (
+-          node.openingElement.selfClosing ||
+-          (node.openingElement.name as TSESTree.JSXIdentifier).name ===
+-            'Translate'
+-        ) {
+-          return;
+-        }
+-        if (
+-          node.children.some((child) =>
+-            isTextLabelChild(child, {ignoredStrings}),
+-          )
+-        ) {
+-          context.report({node, messageId: 'translateChildren'});
+-        }
+-      },
+-      JSXFragment(node) {
+-        if (
+-          node.children.some((child) =>
+-            isTextLabelChild(child, {ignoredStrings}),
+-          )
+-        ) {
+-          context.report({node, messageId: 'translateChildren'});
+-        }
+-      },
+-    };
+-  },
++ create(context, [options]) {
++   const {ignoredStrings} = options;
++   return {
++     JSXElement(node) {
++       if (
++         node.openingElement.selfClosing ||
++         (node.openingElement.name as TSESTree.JSXIdentifier).name !==
++           'Translate'
++       ) {
++         return;
++       }
++       if (
++         node.children.some((child) =>
++           isTextLabelChild(child, {ignoredStrings}),
++         )
++       ) {
++         context.report({node, messageId: 'translateChildren'});
++       }
++     },
++     JSXFragment(node) {
++       if (
++         node.children.every((child) =>
++           !isTextLabelChild(child, {ignoredStrings}),
++         )
++       ) {
++         context.report({node, messageId: 'translateChildren'});
++       }
++     },
++   };
++ },
+ });

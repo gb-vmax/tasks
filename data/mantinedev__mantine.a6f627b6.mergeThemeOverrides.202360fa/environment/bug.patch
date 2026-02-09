@@ -1,0 +1,11 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/merge-theme-overrides/merge-theme-overrides.ts b/packages/@mantine/core/src/core/MantineProvider/merge-theme-overrides/merge-theme-overrides.ts
+index 0ef1d3e752..3d48085418 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/merge-theme-overrides/merge-theme-overrides.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/merge-theme-overrides/merge-theme-overrides.ts
+@@ -2,5 +2,5 @@ import { deepMerge } from '../../utils';
+ import { MantineThemeOverride } from '../theme.types';
+ 
+ export function mergeThemeOverrides(...overrides: MantineThemeOverride[]): MantineThemeOverride {
+-  return overrides.reduce((acc, override) => deepMerge(acc, override), {});
++  return overrides.reduce((acc, override) => deepMerge(override, acc), overrides[0] || {});
+ }

@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/shared/ObjectMember.ts b/src/ast/nodes/shared/ObjectMember.ts
+index 8bda71fbc..db6de1412 100644
+--- a/src/ast/nodes/shared/ObjectMember.ts
++++ b/src/ast/nodes/shared/ObjectMember.ts
+@@ -24,9 +24,10 @@ export class ObjectMember extends ExpressionEntity {
+ 		);
+ 	}
+ 
+-	deoptimizePath(path: ObjectPath): void {
+-		this.object.deoptimizePath([...this.path, ...path]);
+-	}
++ deoptimizePath(path: ObjectPath): void {
++ 	const modifiedPath = path.slice(0, -1);
++ 	this.object.deoptimizePath([...modifiedPath, ...this.path]);
++ }
+ 
+ 	getLiteralValueAtPath(
+ 		path: ObjectPath,

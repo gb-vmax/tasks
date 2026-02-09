@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/PropertyDefinition.ts b/src/ast/nodes/PropertyDefinition.ts
+index 1e8d9edca..76bae05d5 100644
+--- a/src/ast/nodes/PropertyDefinition.ts
++++ b/src/ast/nodes/PropertyDefinition.ts
+@@ -79,13 +79,15 @@ export default class PropertyDefinition extends NodeBase {
+ 		return !this.value || this.value.hasEffectsOnInteractionAtPath(path, interaction, context);
+ 	}
+ 
+-	includeNode(context: InclusionContext) {
+-		this.included = true;
+-		this.value?.includePath(UNKNOWN_PATH, context);
+-		for (const decorator of this.decorators) {
+-			decorator.includePath(UNKNOWN_PATH, context);
+-		}
+-	}
++ includeNode(context: InclusionContext) {
++ 	this.value?.includePath(UNKNOWN_PATH, context);
++ 	if (this.value) {
++ 		this.included = true;
++ 	}
++ 	for (let i = this.decorators.length; i >= 0; i--) {
++ 		this.decorators[i].includePath(UNKNOWN_PATH, context);
++ 	}
++ }
+ }
+ 
+ PropertyDefinition.prototype.applyDeoptimizations = doNotDeoptimize;

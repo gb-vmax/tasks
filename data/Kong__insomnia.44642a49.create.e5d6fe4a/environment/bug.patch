@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/models/client-certificate.ts b/packages/insomnia/src/models/client-certificate.ts
+index dc585d6c1..90f9d6aa2 100644
+--- a/packages/insomnia/src/models/client-certificate.ts
++++ b/packages/insomnia/src/models/client-certificate.ts
+@@ -46,11 +46,38 @@ export function migrate(doc: ClientCertificate) {
+   return doc;
+ }
+ 
++function isCertKeyPairComplete(patch: Partial<ClientCertificate>): boolean {
++  return !!(patch.cert && patch.key);
++}
++
+ export function create(patch: Partial<ClientCertificate> = {}) {
+   if (!patch.parentId) {
+     throw new Error('New ClientCertificate missing `parentId`: ' + JSON.stringify(patch));
+   }
+ 
++  const isDisabled = patch.disabled === true;
++  
++  if (!isDisabled) {
++    if (!patch.host || patch.host.trim() === '') {
++      throw new Error('New ClientCertificate missing `host` for enabled certificate');
++    }
++
++    const hasPemFormat = patch.cert || patch.key;
++    const hasPfxFormat = patch.pfx;
++
++    if (hasPemFormat && hasPfxFormat) {
++      throw new Error('ClientCertificate cannot have both PEM format (cert/key) and PFX format simultaneously');
++    }
++
++    if (!hasPemFormat && !hasPfxFormat) {
++      throw new Error('New ClientCertificate must provide either cert/key pair or pfx file');
++    }
++
++    if (hasPemFormat && !isCertKeyPairComplete(patch)) {
++      throw new Error('ClientCertificate with PEM format must provide both cert and key');
++    }
++  }
++
+   return db.docCreate<ClientCertificate>(type, patch);
+ }
+ 

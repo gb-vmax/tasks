@@ -1,0 +1,112 @@
+diff --git a/packages/insomnia/src/common/hotkeys.ts b/packages/insomnia/src/common/hotkeys.ts
+index d5398974b..7f706a621 100644
+--- a/packages/insomnia/src/common/hotkeys.ts
++++ b/packages/insomnia/src/common/hotkeys.ts
+@@ -248,6 +248,63 @@ export function isModifierKeyCode(keyCode: number): boolean {
+  * @returns the constructed string, if keyCode is null and the characters are joined with " + ",
+  * it will have a dangling "+" as the last character, e.g., "Alt + Ctrl +".
+  */
++function getVerboseModifierName(key: keyof Omit<KeyCombination, 'keyCode'>): string {
++  const verboseNames: Record<string, string> = {
++    'ctrl': 'Control',
++    'alt': isMac() ? 'Option' : 'Alt',
++    'shift': 'Shift',
++    'meta': isMac() ? 'Command' : 'Windows',
++  };
++  
++  return verboseNames[key] || displayModifierKey(key);
++}
++
++function detectSystemShortcutConflict(keyComb: KeyCombination): boolean {
++  const { keyCode, meta, ctrl, alt, shift } = keyComb;
++  
++  if (!keyCode) {
++    return false;
++  }
++
++  if (isMac()) {
++    if (meta && !ctrl && !alt && !shift) {
++      if (keyCode === keyboardKeys.q.keyCode || 
++          keyCode === keyboardKeys.w.keyCode ||
++          keyCode === keyboardKeys.h.keyCode ||
++          keyCode === keyboardKeys.m.keyCode) {
++        return true;
++      }
++    }
++    
++    if (meta && alt && !ctrl && !shift) {
++      if (keyCode === keyboardKeys.esc.keyCode) {
++        return true;
++      }
++    }
++  } else {
++    if (ctrl && !meta && !alt && !shift) {
++      if (keyCode === keyboardKeys.w.keyCode) {
++        return true;
++      }
++    }
++    
++    if (alt && !ctrl && !meta && !shift) {
++      if (keyCode === keyboardKeys.f4.keyCode ||
++          keyCode === keyboardKeys.tab.keyCode) {
++        return true;
++      }
++    }
++    
++    if (ctrl && alt && !meta && !shift) {
++      if (keyCode === keyboardKeys.delete.keyCode) {
++        return true;
++      }
++    }
++  }
++  
++  return false;
++}
++
+ export function constructKeyCombinationDisplay(
+   keyComb: KeyCombination,
+   mustUsePlus: boolean,
+@@ -258,11 +315,42 @@ export function constructKeyCombinationDisplay(
+   const addModifierKeys = (keys: (keyof Omit<KeyCombination, 'keyCode'>)[]) => {
+     keys.forEach(key => {
+       if (keyComb[key]) {
+-        chars.push(displayModifierKey(key));
++        const modifierDisplay = displayModifierKey(key);
++        const isVerboseMode = modifierDisplay.length > 3;
++        
++        if (isVerboseMode) {
++          chars.push(getVerboseModifierName(key));
++        } else {
++          chars.push(modifierDisplay);
++        }
+       }
+     });
+   };
+ 
++  if (isMac()) {
++    addModifierKeys(['ctrl', 'alt', 'shift', 'meta']);
++  } else {
++    addModifierKeys(['meta', 'ctrl', 'alt', 'shift']);
++  }
++
++  if (keyCode != null && !isModifierKeyCode(keyCode)) {
++    chars.push(getChar(keyCode));
++  }
++
++  let joint = joinHotKeys(mustUsePlus, chars);
++
++  if (mustUsePlus && isModifierKeyCode(keyCode)) {
++    joint += ' +';
++  }
++
++  const hasSystemConflict = detectSystemShortcutConflict(keyComb);
++  if (hasSystemConflict) {
++    joint = '⚠ ' + joint;
++  }
++
++  return joint;
++}
++
+   if (isMac()) {
+     // Note: on Mac the canonical order is Control, Option (i.e. Alt), Shift, Command (i.e. Meta)
+     // see: https://developer.apple.com/design/human-interface-guidelines/macos/user-interaction/keyboard

@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia/src/ui/components/modals/ask-modal.tsx b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+index 172b15ea6..7d6c37150 100644
+--- a/packages/insomnia/src/ui/components/modals/ask-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+@@ -32,7 +32,75 @@ export const AskModal = forwardRef<AskModalHandle, ModalProps>((_, ref) => {
+     yesText: 'Yes',
+     noText: 'No',
+     color: 'surprise',
+-    onDone: async () => { },
++interface State {
++  title: string;
++  message: React.ReactNode;
++  yesText: string;
++  noText: string;
++  color: string;
++  onDone?: (success: boolean) => Promise<void>;
++  history?: Array<{ timestamp: number; action: string; title: string }>;
++  timeoutId?: NodeJS.Timeout;
++  autoCloseMs?: number;
++}
++
++export interface AskModalOptions {
++  title?: string;
++  message: React.ReactNode;
++  onDone?: (success: boolean) => Promise<void>;
++  yesText?: string;
++  noText?: string;
++  color?: string;
++  autoCloseMs?: number;
++}
++
++const setupAutoClose = (
++  modalRef: React.RefObject<ModalHandle>,
++  timeoutMs: number,
++  onDone?: (success: boolean) => Promise<void>,
++  setState?: (updater: (prev: State) => State) => void
++): NodeJS.Timeout => {
++  const timeoutId = setTimeout(() => {
++    modalRef.current?.hide();
++    onDone?.(false);
++    if (setState) {
++      setState(prev => ({
++        ...prev,
++        history: [
++          ...(prev.history || []),
++          {
++            timestamp: Date.now(),
++            action: 'timeout',
++            title: prev.title,
++          },
++        ],
++        timeoutId: undefined,
++      }));
++    }
++  }, timeoutMs);
++  return timeoutId;
++};
++
++const cleanupTimeout = (timeoutId?: NodeJS.Timeout) => {
++  if (timeoutId) {
++    clearTimeout(timeoutId);
++  }
++};
++
++ onDone: async (success: boolean) => {
++   const historyEntry = {
++     timestamp: Date.now(),
++     action: success ? 'confirmed' : 'cancelled',
++     title: state.title,
++   };
++   setState(prev => ({
++     ...prev,
++     history: [...(prev.history || []), historyEntry],
++   }));
++   if (state.timeoutId) {
++     clearTimeout(state.timeoutId);
++   }
++ }
+   });
+ 
+   useImperativeHandle(ref, () => ({

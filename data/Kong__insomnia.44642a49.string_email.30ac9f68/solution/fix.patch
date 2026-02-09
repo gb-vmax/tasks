@@ -1,0 +1,50 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..c71b16ff4 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -448,7 +448,44 @@ const generateParameterExample = (
+     ) => null | string | boolean | number | Record<string, unknown>;
+   } = {
+     string: () => 'string',
+-    string_email: () => 'user@example.com',
++const extractUsernameFromParameterName = (paramName: string): string | null => {
++  const emailPattern = /email|mail|e-mail/i;
++  const cleanName = paramName
++    .replace(emailPattern, '')
++    .replace(/[_-]/g, '')
++    .toLowerCase();
++  
++  if (cleanName && cleanName.length > 0 && cleanName.length < 20) {
++    return cleanName;
++  }
++  
++  const commonPrefixes = ['user', 'admin', 'customer', 'client', 'account', 'member', 'contact'];
++  for (const prefix of commonPrefixes) {
++    if (paramName.toLowerCase().includes(prefix)) {
++      return prefix;
++    }
++  }
++  
++  return null;
++};
++
++ string_email: (parameter: OpenAPIV2.Parameter) => {
++       if (typeof parameter === 'object') {
++         if (parameter.example && typeof parameter.example === 'string') {
++           return parameter.example;
++         }
++         if (parameter.default && typeof parameter.default === 'string') {
++           return parameter.default;
++         }
++         if (parameter.name) {
++           const username = extractUsernameFromParameterName(parameter.name);
++           if (username) {
++             return `${username}@example.com`;
++           }
++         }
++       }
++       return 'user@example.com';
++     },
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,

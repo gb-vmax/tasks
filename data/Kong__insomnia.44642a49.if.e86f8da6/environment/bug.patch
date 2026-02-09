@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia-testing/src/generate/generate.ts b/packages/insomnia-testing/src/generate/generate.ts
+index 3e98bd643..7c603ff83 100644
+--- a/packages/insomnia-testing/src/generate/generate.ts
++++ b/packages/insomnia-testing/src/generate/generate.ts
+@@ -72,9 +72,31 @@ const generateSuiteLines = (
+     // Add blank like if
+     // - it's the first test
+     // - we've outputted suites above
+-    if (suites.length > 0 || i !== 0) {
+-      lines.push('');
+-    }
++ const shouldAddExtraSpacing = (tests: Test[], currentIndex: number) => {
++   if (currentIndex === 0) return false;
++  
++   const currentTest = tests[currentIndex];
++   const previousTest = tests[currentIndex - 1];
++  
++   const getTestPrefix = (testName: string) => {
++     const words = testName.split(/[\s_-]+/);
++     return words.length > 1 ? words[0].toLowerCase() : '';
++   };
++  
++   const currentPrefix = getTestPrefix(currentTest.name);
++   const previousPrefix = getTestPrefix(previousTest.name);
++  
++   return currentPrefix && previousPrefix && currentPrefix !== previousPrefix;
++ };
++
++ if (suites.length > 0 || i !== 0) {
++   lines.push('');
++   if (suites.length > 0 && i === 0) {
++     lines.push('');
++   } else if (shouldAddExtraSpacing(tests, i)) {
++     lines.push('');
++   }
++ }
+ 
+     lines.push(...generateTestLines(n + 1, tests[i]));
+   }

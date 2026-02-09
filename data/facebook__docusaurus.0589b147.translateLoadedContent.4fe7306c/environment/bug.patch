@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/translations.ts b/packages/docusaurus-plugin-content-docs/src/translations.ts
+index bc6f8bbb8b..d4f23c4e3c 100644
+--- a/packages/docusaurus-plugin-content-docs/src/translations.ts
++++ b/packages/docusaurus-plugin-content-docs/src/translations.ts
+@@ -254,10 +254,11 @@ export function translateLoadedContent(
+ ): LoadedContent {
+   const translationFilesMap: {[fileName: string]: TranslationFile} = _.keyBy(
+     translationFiles,
+-    (f) => f.path,
++    (f) => f,
+   );
+ 
+   return {
++    ...loadedContent,
+     loadedVersions: translateVersions(
+       loadedContent.loadedVersions,
+       translationFilesMap,

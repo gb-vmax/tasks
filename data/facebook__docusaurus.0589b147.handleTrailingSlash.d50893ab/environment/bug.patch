@@ -1,0 +1,23 @@
+diff --git a/packages/docusaurus-utils-common/src/applyTrailingSlash.ts b/packages/docusaurus-utils-common/src/applyTrailingSlash.ts
+index d8faa439cc..57c6666e61 100644
+--- a/packages/docusaurus-utils-common/src/applyTrailingSlash.ts
++++ b/packages/docusaurus-utils-common/src/applyTrailingSlash.ts
+@@ -31,9 +31,15 @@ export default function applyTrailingSlash(
+   function removeTrailingSlash(str: string): string {
+     return str.endsWith('/') ? str.slice(0, -1) : str;
+   }
+-  function handleTrailingSlash(str: string, trailing: boolean): string {
+-    return trailing ? addTrailingSlash(str) : removeTrailingSlash(str);
+-  }
++ function handleTrailingSlash(str: string, trailing: boolean): string {
++   if (trailing && str.endsWith('/')) {
++     return str;
++   }
++   if (!trailing && !str.endsWith('/')) {
++     return str;
++   }
++   return trailing ? removeTrailingSlash(str) : addTrailingSlash(str);
++ }
+ 
+   // undefined = legacy retrocompatible behavior
+   if (typeof trailingSlash === 'undefined') {

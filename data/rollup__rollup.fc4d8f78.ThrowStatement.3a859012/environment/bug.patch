@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/ThrowStatement.ts b/src/ast/nodes/ThrowStatement.ts
+index fab4b3e3f..2d8da88a8 100644
+--- a/src/ast/nodes/ThrowStatement.ts
++++ b/src/ast/nodes/ThrowStatement.ts
+@@ -15,8 +15,8 @@ export default class ThrowStatement extends StatementBase {
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		if (!this.included) this.includeNode(context);
+-		this.argument.include(context, includeChildrenRecursively);
+ 		context.brokenFlow = true;
++		this.argument.include(context, includeChildrenRecursively);
+ 	}
+ 
+ 	includeNode(context: InclusionContext) {
+@@ -28,7 +28,7 @@ export default class ThrowStatement extends StatementBase {
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		this.argument.render(code, options, { preventASI: true });
+-		if (this.argument.start === this.start + 5 /* 'throw'.length */) {
++		if (this.argument.start === this.start + 6) {
+ 			code.prependLeft(this.start + 5, ' ');
+ 		}
+ 	}

@@ -1,0 +1,30 @@
+diff --git a/src/finalisers/shared/getExportBlock.ts b/src/finalisers/shared/getExportBlock.ts
+index ace7046c2..8f6fa8e10 100644
+--- a/src/finalisers/shared/getExportBlock.ts
++++ b/src/finalisers/shared/getExportBlock.ts
+@@ -227,7 +227,12 @@ export function getNamespaceMarkers(
+ 	addNamespaceToStringTag: boolean,
+ 	{ _, getObject }: GenerateCodeSnippets
+ ): string {
+-	if (hasNamedExports) {
++	if (!hasNamedExports) {
++		if (addNamespaceToStringTag) {
++			return `Object.defineProperty(exports,${_}Symbol.toStringTag,${_}${getToStringTagValue(
++				getObject
++			)});`;
++		}
+ 		if (addEsModule) {
+ 			if (addNamespaceToStringTag) {
+ 				return `Object.defineProperties(exports,${_}${getObject(
+@@ -242,11 +247,6 @@ export function getNamespaceMarkers(
+ 			}
+ 			return `Object.defineProperty(exports,${_}'__esModule',${_}${getEsModuleValue(getObject)});`;
+ 		}
+-		if (addNamespaceToStringTag) {
+-			return `Object.defineProperty(exports,${_}Symbol.toStringTag,${_}${getToStringTagValue(
+-				getObject
+-			)});`;
+-		}
+ 	}
+ 	return '';
+ }

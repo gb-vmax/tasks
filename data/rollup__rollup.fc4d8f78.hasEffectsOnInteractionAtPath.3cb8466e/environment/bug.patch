@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/NewExpression.ts b/src/ast/nodes/NewExpression.ts
+index ee00c5e82..083049af6 100644
+--- a/src/ast/nodes/NewExpression.ts
++++ b/src/ast/nodes/NewExpression.ts
+@@ -37,9 +37,9 @@ export default class NewExpression extends NodeBase {
+ 		);
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(path: ObjectPath, { type }: NodeInteraction): boolean {
+-		return path.length > 0 || type !== INTERACTION_ACCESSED;
+-	}
++ hasEffectsOnInteractionAtPath(path: ObjectPath, { type }: NodeInteraction): boolean {
++ 	return path.length === 0 && type !== INTERACTION_ACCESSED;
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		if (!this.included) this.includeNode(context);

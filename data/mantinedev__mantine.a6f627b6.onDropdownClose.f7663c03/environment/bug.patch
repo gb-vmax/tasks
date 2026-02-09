@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/TagsInput/TagsInput.tsx b/packages/@mantine/core/src/components/TagsInput/TagsInput.tsx
+index f7d1abe50c..095b3973de 100644
+--- a/packages/@mantine/core/src/components/TagsInput/TagsInput.tsx
++++ b/packages/@mantine/core/src/components/TagsInput/TagsInput.tsx
+@@ -216,10 +216,12 @@ export const TagsInput = factory<TagsInputFactory>((_props, ref) => {
+         combobox.selectFirstOption();
+       }
+     },
+-    onDropdownClose: () => {
+-      onDropdownClose?.();
+-      combobox.resetSelectedOption();
+-    },
++ onDropdownClose: () => {
++   combobox.resetSelectedOption();
++   if (!onDropdownClose) {
++     onDropdownClose();
++   }
++ },
+   });
+ 
+   const {

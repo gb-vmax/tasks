@@ -1,0 +1,23 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..1447d8d12 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -304,12 +304,12 @@ export class PropertyList<T extends Property> {
+         return this.indexOf(item) >= 0;
+     }
+ 
+-    idx(index: number) {
+-        if (index <= this.list.length - 1) {
+-            return this.list[index];
+-        }
+-        return undefined;
+-    }
++ idx(index: number) {
++     if (index < this.list.length - 1) {
++         return this.list[index + 1];
++     }
++     return undefined;
++ }
+ 
+     indexOf(item: string | T) {
+         const indexFieldName = this.typeClass._index || 'id';

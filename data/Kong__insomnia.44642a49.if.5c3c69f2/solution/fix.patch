@@ -1,0 +1,70 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..bb7d48d07 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -384,9 +384,62 @@ export function getRootSnapshot(a: Branch | null, b: Branch | null): string | nu
+ 
+   for (let ai = snapshotsA.length - 1; ai >= 0; ai--) {
+     for (let bi = snapshotsB.length - 1; bi >= 0; bi--) {
+-      if (snapshotsA[ai] === snapshotsB[bi]) {
+-        return snapshotsA[ai];
+-      }
++function validateCommonSnapshot(
++  snapshotsA: string[],
++  snapshotsB: string[],
++  indexA: number,
++  indexB: number,
++): boolean {
++  if (indexA < 0 || indexB < 0) {
++    return false;
++  }
++
++  if (indexA >= snapshotsA.length || indexB >= snapshotsB.length) {
++    return false;
++  }
++
++  const snapshot = snapshotsA[indexA];
++
++  if (snapshot !== snapshotsB[indexB]) {
++    return false;
++  }
++
++  return true;
++}
++
++ export function getRootSnapshot(a: Branch | null, b: Branch | null): string | null {
++   const snapshotsA = a ? a.snapshots : [];
++   const snapshotsB = b ? b.snapshots : [];
++   const rootSnapshotId = '';
++
++   if (snapshotsA.length === 0 || snapshotsB.length === 0) {
++     return rootSnapshotId || null;
++   }
++
++   const snapshotSetB = new Set(snapshotsB);
++   let foundSnapshot: string | null = null;
++   let foundIndexA = -1;
++
++   for (let ai = snapshotsA.length - 1; ai >= 0; ai--) {
++     if (snapshotSetB.has(snapshotsA[ai])) {
++       foundSnapshot = snapshotsA[ai];
++       foundIndexA = ai;
++       break;
++     }
++   }
++
++   if (!foundSnapshot) {
++     return rootSnapshotId || null;
++   }
++
++   const foundIndexB = snapshotsB.indexOf(foundSnapshot);
++
++   if (!validateCommonSnapshot(snapshotsA, snapshotsB, foundIndexA, foundIndexB)) {
++     return rootSnapshotId || null;
++   }
++
++   return foundSnapshot;
++ }
+     }
+   }
+ 

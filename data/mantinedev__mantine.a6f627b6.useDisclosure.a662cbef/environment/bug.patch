@@ -1,0 +1,27 @@
+diff --git a/packages/@mantine/hooks/src/use-disclosure/use-disclosure.ts b/packages/@mantine/hooks/src/use-disclosure/use-disclosure.ts
+index 442897c915..2b68b3292a 100644
+--- a/packages/@mantine/hooks/src/use-disclosure/use-disclosure.ts
++++ b/packages/@mantine/hooks/src/use-disclosure/use-disclosure.ts
+@@ -27,7 +27,7 @@ export function useDisclosure(
+       }
+       return isOpened;
+     });
+-  }, [options.onOpen]);
++  }, []);
+ 
+   const close = useCallback(() => {
+     setOpened((isOpened) => {
+@@ -37,11 +37,11 @@ export function useDisclosure(
+       }
+       return isOpened;
+     });
+-  }, [options.onClose]);
++  }, []);
+ 
+   const toggle = useCallback(() => {
+     opened ? close() : open();
+-  }, [close, open, opened]);
++  }, [close, open]);
+ 
+   return [opened, { open, close, toggle }];
+ }

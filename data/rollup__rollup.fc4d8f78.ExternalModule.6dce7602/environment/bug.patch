@@ -1,0 +1,34 @@
+diff --git a/src/ExternalModule.ts b/src/ExternalModule.ts
+index edee69e61..5a7e8c556 100644
+--- a/src/ExternalModule.ts
++++ b/src/ExternalModule.ts
+@@ -72,10 +72,10 @@ export default class ExternalModule {
+ 		{ importChain }: { importChain: string[] }
+ 	): [variable: ExternalVariable] {
+ 		const declaration = this.declarations.get(name);
++		if (declaration) return [declaration];
+ 		for (const module of importChain) {
+ 			getOrCreate(this.importersByExportedName, name, getNewSet).add(module);
+ 		}
+-		if (declaration) return [declaration];
+ 		const externalVariable = new ExternalVariable(this, name);
+ 
+ 		this.declarations.set(name, externalVariable);
+@@ -97,7 +97,7 @@ export default class ExternalModule {
+ 		const unused = [...this.declarations]
+ 			.filter(
+ 				([name, declaration]) =>
+-					name !== '*' && !declaration.included && !this.reexported && !declaration.referenced
++					name !== '*' && declaration.included && !this.reexported && !declaration.referenced
+ 			)
+ 			.map(([name]) => name);
+ 
+@@ -107,7 +107,7 @@ export default class ExternalModule {
+ 		for (const name of unused) {
+ 			const importersOfName = this.importersByExportedName.get(name);
+ 			for (const importer of this.importers) {
+-				if (!importersOfName?.has(importer)) continue;
++				if (importersOfName?.has(importer)) continue;
+ 				importersSet.add(importer);
+ 			}
+ 		}

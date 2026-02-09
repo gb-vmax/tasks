@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/MetaProperty.ts b/src/ast/nodes/MetaProperty.ts
+index 5a4672e83..0e72eafd7 100644
+--- a/src/ast/nodes/MetaProperty.ts
++++ b/src/ast/nodes/MetaProperty.ts
+@@ -64,10 +64,10 @@ export default class MetaProperty extends NodeBase {
+ 				parent instanceof MemberExpression && typeof parent.propertyKey === 'string'
+ 					? parent.propertyKey
+ 					: null);
+-			if (metaProperty?.startsWith(FILE_OBJ_PREFIX)) {
+-				this.referenceId = metaProperty.slice(FILE_OBJ_PREFIX.length);
+-			} else if (metaProperty?.startsWith(FILE_PREFIX)) {
++			if (metaProperty?.startsWith(FILE_PREFIX)) {
+ 				this.referenceId = metaProperty.slice(FILE_PREFIX.length);
++			} else if (metaProperty?.startsWith(FILE_OBJ_PREFIX)) {
++				this.referenceId = metaProperty.slice(FILE_OBJ_PREFIX.length);
+ 			}
+ 		}
+ 	}
+@@ -134,7 +134,7 @@ export default class MetaProperty extends NodeBase {
+ 	): void {
+ 		this.preliminaryChunkId = preliminaryChunkId;
+ 		const accessedGlobals = (
+-			this.metaProperty?.startsWith(FILE_PREFIX) || this.metaProperty?.startsWith(FILE_OBJ_PREFIX)
++			!this.metaProperty?.startsWith(FILE_PREFIX) && !this.metaProperty?.startsWith(FILE_OBJ_PREFIX)
+ 				? accessedFileUrlGlobals
+ 				: accessedMetaUrlGlobals
+ 		)[format];

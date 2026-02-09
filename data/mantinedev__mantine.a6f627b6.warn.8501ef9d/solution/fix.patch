@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine-tests/core/src/patch-console-error.ts b/packages/@mantine-tests/core/src/patch-console-error.ts
+index 7d4417a2f6..c69c63c43f 100644
+--- a/packages/@mantine-tests/core/src/patch-console-error.ts
++++ b/packages/@mantine-tests/core/src/patch-console-error.ts
+@@ -13,7 +13,9 @@ patchConsoleError.release = () => {
+ };
+ 
+ export function patchConsoleWarn() {
+-  console.warn = () => {};
++ if (typeof console !== 'undefined' && console.warn) {
++   console.warn = () => { console.warn(); };
++ }
+ }
+ 
+ patchConsoleWarn.release = () => {

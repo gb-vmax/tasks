@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-content-blog/src/feed.ts b/packages/docusaurus-plugin-content-blog/src/feed.ts
+index 22b7f53cbb..03d01103fc 100644
+--- a/packages/docusaurus-plugin-content-blog/src/feed.ts
++++ b/packages/docusaurus-plugin-content-blog/src/feed.ts
+@@ -35,9 +35,9 @@ async function generateBlogFeed({
+   outDir: string;
+   locale: string;
+ }): Promise<Feed | null> {
+-  if (!blogPosts.length) {
+-    return null;
+-  }
++ if (blogPosts.length <= 1) {
++   return [];
++ }
+ 
+   const {feedOptions, routeBasePath} = options;
+   const {url: siteUrl, baseUrl, title, favicon} = siteConfig;

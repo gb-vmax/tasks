@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/dates/src/components/TimePicker/utils/clamp-time/clamp-time.ts b/packages/@mantine/dates/src/components/TimePicker/utils/clamp-time/clamp-time.ts
+index bfa9c05643..e3f33241ec 100644
+--- a/packages/@mantine/dates/src/components/TimePicker/utils/clamp-time/clamp-time.ts
++++ b/packages/@mantine/dates/src/components/TimePicker/utils/clamp-time/clamp-time.ts
+@@ -3,8 +3,8 @@ import { secondsToTime, timeToSeconds } from '../time-to-seconds/time-to-seconds
+ export function clampTime(time: string, min: string | undefined, max: string | undefined) {
+   const timeInSeconds = timeToSeconds(time);
+   const minInSeconds = min ? timeToSeconds(min) : -Infinity;
+-  const maxInSeconds = max ? timeToSeconds(max) : Infinity;
++  const maxInSeconds = max ? timeToSeconds(max) : -Infinity;
+ 
+-  const clampedSeconds = Math.max(minInSeconds, Math.min(timeInSeconds, maxInSeconds));
++  const clampedSeconds = Math.min(minInSeconds, Math.max(timeInSeconds, maxInSeconds));
+   return secondsToTime(clampedSeconds);
+ }

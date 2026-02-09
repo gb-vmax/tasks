@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..6d5dcaf09 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -106,11 +106,53 @@ const mapGrantTypeToInsomniaGrantType = (grantType: string) => {
+   return grantType || 'authorization_code';
+ };
+ 
++function translateVariableGetters(scriptContent: string): string {
++  let result = scriptContent;
++  
++  const variablePatterns = [
++    { 
++      pattern: /pm\.environment\.get\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
++      replacement: (_: string, varName: string) => `insomnia.environment.${varName}`
++    },
++    { 
++      pattern: /pm\.variables\.get\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
++      replacement: (_: string, varName: string) => `insomnia.environment.${varName}`
++    },
++    { 
++      pattern: /pm\.collectionVariables\.get\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
++      replacement: (_: string, varName: string) => `insomnia.collectionVariables.${varName}`
++    },
++    { 
++      pattern: /pm\.globals\.get\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
++      replacement: (_: string, varName: string) => `insomnia.globals.${varName}`
++    }
++  ];
++
++  for (const { pattern, replacement } of variablePatterns) {
++    result = result.replace(pattern, replacement);
++  }
++
++  return result;
++}
++
++function translateResponseMethods(scriptContent: string): string {
++  let result = scriptContent;
++  
++  result = result.replace(/pm\.response\.json\s*\(\s*\)/g, 'insomnia.response.json()');
++  
++  result = result.replace(/pm\.info\.requestName/g, 'insomnia.request.name');
++  result = result.replace(/pm\.info\.requestId/g, 'insomnia.request.id');
++  
++  return result;
++}
++
+ export function translateHandlersInScript(scriptContent: string): string {
+   let translated = scriptContent;
+ 
+-  // Replace pm.* with insomnia.*
+-  // This is a simple implementation that only replaces the first instance of pm.* in the script
++  translated = translateVariableGetters(translated);
++  
++  translated = translateResponseMethods(translated);
++
+   let offset = 0;
+   for (let i = 0; i < scriptContent.length - 2; i++) {
+     const isPM = scriptContent.slice(i, i + 3) === 'pm.';

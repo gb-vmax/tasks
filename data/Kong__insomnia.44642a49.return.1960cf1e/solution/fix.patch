@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/models/request.ts b/packages/insomnia/src/models/request.ts
+index 75cf602ae..a47c47448 100644
+--- a/packages/insomnia/src/models/request.ts
++++ b/packages/insomnia/src/models/request.ts
+@@ -328,13 +328,48 @@ export function create(patch: Partial<Request> = {}) {
+ }
+ 
+ export function getById(id: string): Promise<Request | null> {
+-  return db.get(type, id);
++function buildParentIdFilter(
++  parentId: string,
++  options?: {
++    excludePrivate?: boolean;
++  }
++): Record<string, any> {
++  const filter: Record<string, any> = { parentId };
++  
++  if (options?.excludePrivate) {
++    filter.isPrivate = false;
++  }
++  
++  return filter;
+ }
+ 
+-export function getByParentId(parentId: string) {
+-  return db.getWhere<Request>(type, { parentId: parentId });
++function sortRequestsByMetaKey(
++  requests: Request[],
++  order: 'asc' | 'desc'
++): Request[] {
++  return requests.sort((a, b) => {
++    const diff = a.metaSortKey - b.metaSortKey;
++    return order === 'asc' ? diff : -diff;
++  });
+ }
+ 
++ export function getByParentId(
++   parentId: string,
++   options?: {
++     excludePrivate?: boolean;
++     sortByKey?: 'asc' | 'desc';
++   }
++ ) {
++   const filter = buildParentIdFilter(parentId, options);
++   const results = db.getWhere<Request>(type, filter);
++  
++   if (options?.sortByKey) {
++     return results.then(requests => sortRequestsByMetaKey(requests, options.sortByKey!));
++   }
++  
++   return results;
++ }
++
+ export function findByParentId(parentId: string) {
+   return db.find<Request>(type, { parentId: parentId });
+ }

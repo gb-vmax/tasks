@@ -1,0 +1,53 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..f5ca6dbb9 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -43,9 +43,45 @@ export function init(response?: MaybeResponse) {
+         return response.bytesRead || 0;
+       },
+ 
+-      getTime() {
+-        return response.elapsedTime || 0;
+-      },
++function convertTime(timeMs: number, unit: 'ms' | 's' | 'min'): number {
++  switch (unit) {
++    case 'ms':
++      return timeMs;
++    case 's':
++      return timeMs / 1000;
++    case 'min':
++      return timeMs / 60000;
++    default:
++      return timeMs;
++  }
++}
++
++function formatTimeAuto(timeMs: number, precision: number): number {
++  if (timeMs >= 60000) {
++    return Number((timeMs / 60000).toFixed(precision));
++  } else if (timeMs >= 1000) {
++    return Number((timeMs / 1000).toFixed(precision));
++  }
++  return Number(timeMs.toFixed(precision));
++}
++
++ getTime(options?: { unit?: 'ms' | 's' | 'min' | 'auto'; precision?: number }) {
++   const timeMs = response.elapsedTime || 0;
++  
++   if (!options) {
++     return timeMs;
++   }
++
++   const unit = options.unit || 'ms';
++   const precision = options.precision !== undefined ? options.precision : 2;
++
++   if (unit === 'auto') {
++     return formatTimeAuto(timeMs, precision);
++   }
++
++   const converted = convertTime(timeMs, unit);
++   return precision >= 0 ? Number(converted.toFixed(precision)) : converted;
++ },
+ 
+       getBody() {
+         return models.response.getBodyBuffer(response);

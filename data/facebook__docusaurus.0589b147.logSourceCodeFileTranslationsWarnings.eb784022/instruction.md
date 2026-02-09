@@ -1,28 +1,24 @@
 # Bug Report
 
-### Describe the bug
+### Bug: Translation warnings showing incorrect file path information
 
-I'm seeing an issue with translation extraction warnings where the wrong warnings are being displayed for each file. When multiple files have translation warnings, all files show the same warning messages (from the first file) instead of their own specific warnings.
+I noticed something weird with the translation extraction warnings. When I have multiple files with translation warnings, the warning messages are showing the wrong warnings for each file.
 
 ### Reproduction
 
-1. Have multiple source code files with different translation extraction warnings
-2. Run translation extraction
-3. Observe that all warning messages show the warnings from the first file, not the actual warnings for each respective file
+Let's say I have two files with translation issues:
+- `file1.tsx` has warning: "Missing translation key 'header.title'"
+- `file2.tsx` has warning: "Invalid translation format for 'footer.text'"
 
-For example, if you have:
-- `file1.tsx` with warning "Missing translation key A"
-- `file2.tsx` with warning "Missing translation key B"
-
-Both files will display "Missing translation key A" in the logs instead of their respective warnings.
+When the extraction runs, both files show the same warning message (the one from the first file), instead of showing their respective warnings.
 
 ### Expected behavior
 
-Each file should display its own translation extraction warnings. The warning log for `file2.tsx` should show "Missing translation key B", not the warnings from `file1.tsx`.
+Each file should display its own specific warnings, not the warnings from the first file in the list.
 
-### System Info
-- Docusaurus version: latest
-- Node version: 18.x
+### Additional context
+
+This makes it really hard to debug translation issues since you can't tell which file actually has which problem. The file paths in the log messages are correct, but the warning content itself is always from the first file.
 
 ---
 Repository: /testbed

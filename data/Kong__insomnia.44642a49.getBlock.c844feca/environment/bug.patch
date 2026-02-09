@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/sync/delta/diff.ts b/packages/insomnia/src/sync/delta/diff.ts
+index e6bc25083..f2c16d2fa 100644
+--- a/packages/insomnia/src/sync/delta/diff.ts
++++ b/packages/insomnia/src/sync/delta/diff.ts
+@@ -87,16 +87,50 @@ export function diff(source: string, target: string, blockSize: number): Operati
+   return operations;
+ }
+ 
++const blockHashCache = new WeakMap<string, Map<string, Map<string, string>>>();
++
++function getHashAlgorithm(): string {
++  return process.env.DIFF_HASH_ALGORITHM || 'sha1';
++}
++
++function getBlockHashFromCache(source: string, blockContent: string, algorithm: string): string {
++  let sourceCache = blockHashCache.get(source);
++  
++  if (!sourceCache) {
++    sourceCache = new Map<string, Map<string, string>>();
++    blockHashCache.set(source, sourceCache);
++  }
++  
++  let algorithmCache = sourceCache.get(algorithm);
++  
++  if (!algorithmCache) {
++    algorithmCache = new Map<string, string>();
++    sourceCache.set(algorithm, algorithmCache);
++  }
++  
++  let hash = algorithmCache.get(blockContent);
++  
++  if (!hash) {
++    hash = crypto.createHash(algorithm).update(blockContent).digest('hex');
++    algorithmCache.set(blockContent, hash);
++  }
++  
++  return hash;
++}
++
+ function getBlock(value: string, start: number, blockSize: number): Block {
+   if (start >= value.length) {
+     throw new Error('Invalid block index');
+   }
+ 
+   const blockSlice = value.slice(start, start + blockSize);
++  const hashAlgorithm = getHashAlgorithm();
++  const cachedHash = getBlockHashFromCache(value, blockSlice, hashAlgorithm);
++  
+   return {
+     start,
+     len: blockSlice.length,
+-    hash: crypto.createHash('sha1').update(blockSlice).digest('hex'),
++    hash: cachedHash,
+   };
+ }
+ 

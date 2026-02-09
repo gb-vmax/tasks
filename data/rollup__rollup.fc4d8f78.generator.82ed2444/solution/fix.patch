@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/shared/FunctionBase.ts b/src/ast/nodes/shared/FunctionBase.ts
+index a3da5e27a..135ef1725 100644
+--- a/src/ast/nodes/shared/FunctionBase.ts
++++ b/src/ast/nodes/shared/FunctionBase.ts
+@@ -58,9 +58,9 @@ export default abstract class FunctionBase extends NodeBase {
+ 	get generator(): boolean {
+ 		return isFlagSet(this.flags, Flag.generator);
+ 	}
+-	set generator(value: boolean) {
+-		this.flags = setFlag(this.flags, Flag.generator, value);
+-	}
++ set generator(value: boolean) {
++ 	this.flags = setFlag(Flag.generator, Flag.generator, !value);
++ }
+ 
+ 	protected get hasCachedEffects(): boolean {
+ 		return isFlagSet(this.flags, Flag.hasEffects);

@@ -2,26 +2,32 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with blank line handling in MDX parsing. It appears that blank lines are being processed incorrectly, causing the parser to fail or behave unexpectedly when encountering certain markdown structures with empty lines.
+I'm experiencing an issue with blank line handling in MDX parsing. It seems like the parser is incorrectly identifying or processing blank lines in certain contexts, which is causing unexpected behavior when parsing MDX content.
 
 ### Reproduction
 
-When parsing MDX content with blank lines following specific tokens, the parser doesn't handle them correctly:
-
-```mdx
+```js
+const mdxContent = `
 Some content here
 
-Another line after blank line
-```
+Another line after blank
+`;
 
-The parser seems to be treating blank lines in an inverted way - it's calling the wrong callback depending on whether a blank line is present or not. This causes the parsing flow to break or produce unexpected results.
+// Parse the MDX content
+const result = parseMDX(mdxContent);
+
+// The blank line is not being handled correctly
+// Expected the parser to recognize the blank line properly
+// but it seems to be failing in the wrong direction
+```
 
 ### Expected behavior
 
-Blank lines should be properly recognized and the parser should continue processing subsequent content correctly. The tokenizer should call the appropriate success/failure callbacks based on whether a blank line is actually present.
+The parser should correctly identify and handle blank lines in MDX content. When there's a blank line between content blocks, it should be properly recognized and the parsing should succeed without issues.
 
-### System Info
-- remark-mdx version: 3.0.0
+### Additional context
+
+This might be related to how the tokenizer processes line endings and blank lines. The issue appears to affect content that has blank lines separating different sections.
 
 ---
 Repository: /testbed

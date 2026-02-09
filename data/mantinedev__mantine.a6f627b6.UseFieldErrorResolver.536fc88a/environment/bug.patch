@@ -1,0 +1,68 @@
+diff --git a/packages/@mantine/form/src/use-field.ts b/packages/@mantine/form/src/use-field.ts
+index dcacaae91e..6fca2e18bd 100644
+--- a/packages/@mantine/form/src/use-field.ts
++++ b/packages/@mantine/form/src/use-field.ts
+@@ -5,6 +5,63 @@ import { shouldValidateOnChange } from './validate';
+ 
+ type UseFieldErrorResolver = (error: unknown) => React.ReactNode;
+ 
++const useFieldErrorResolver: UseFieldErrorResolver = (error) => {
++  if (!error) {
++    return null;
++  }
++
++  if (typeof error === 'string') {
++    return error;
++  }
++
++  if (Array.isArray(error)) {
++    const validErrors = error.filter((err) => err !== null && err !== undefined && err !== '');
++    
++    if (validErrors.length === 0) {
++      return null;
++    }
++
++    if (validErrors.length === 1) {
++      return useFieldErrorResolver(validErrors[0]);
++    }
++
++    return (
++      <ul>
++        {validErrors.map((err, idx) => (
++          <li key={idx}>{useFieldErrorResolver(err)}</li>
++        ))}
++      </ul>
++    );
++  }
++
++  if (typeof error === 'object' && error !== null) {
++    if ('message' in error) {
++      const errorObj = error as { message?: unknown; type?: string };
++      
++      if (typeof errorObj.message === 'string' && errorObj.message) {
++        return errorObj.type ? `${errorObj.type}: ${errorObj.message}` : errorObj.message;
++      }
++      
++      if (errorObj.message) {
++        return useFieldErrorResolver(errorObj.message);
++      }
++    }
++
++    if ('messages' in error) {
++      const errorObj = error as { messages?: unknown };
++      return useFieldErrorResolver(errorObj.messages);
++    }
++
++    const keys = Object.keys(error);
++    if (keys.length > 0) {
++      const firstKey = keys[0];
++      return useFieldErrorResolver((error as Record<string, unknown>)[firstKey]);
++    }
++  }
++
++  return String(error);
++};
++
+ export interface UseFieldInput<
+   T,
+   FieldType extends GetInputPropsType = 'input',

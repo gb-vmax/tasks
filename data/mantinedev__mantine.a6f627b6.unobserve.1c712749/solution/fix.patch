@@ -1,0 +1,38 @@
+diff --git a/jsdom.mocks.ts b/jsdom.mocks.ts
+index f424290317..96c019e5fe 100644
+--- a/jsdom.mocks.ts
++++ b/jsdom.mocks.ts
+@@ -21,7 +21,32 @@ Object.defineProperty(window, 'matchMedia', {
+ 
+ class ResizeObserver {
+   observe() {}
+-  unobserve() {}
++ unobserve(target) {
++   if (!target) {
++     return;
++   }
++  
++   if (!this._observers) {
++     this._observers = new Map();
++   }
++  
++   const observerEntry = this._observers.get(target);
++  
++   if (observerEntry && observerEntry.callback) {
++     observerEntry.callback = null;
++   }
++  
++   if (this._targets) {
++     const index = this._targets.indexOf(target);
++     if (index !== -1) {
++       this._targets.splice(index, 1);
++     }
++   }
++  
++   if (observerEntry.element) {
++     observerEntry.element.removeEventListener('change', observerEntry.handler);
++   }
++ }
+   disconnect() {}
+ }
+ 

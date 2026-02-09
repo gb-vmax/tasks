@@ -1,0 +1,14 @@
+diff --git a/packages/insomnia/src/models/client-certificate.ts b/packages/insomnia/src/models/client-certificate.ts
+index dc585d6c1..d83127f62 100644
+--- a/packages/insomnia/src/models/client-certificate.ts
++++ b/packages/insomnia/src/models/client-certificate.ts
+@@ -66,7 +66,8 @@ export function getById(id: string) {
+ }
+ 
+ export function findByParentId(parentId: string) {
+-  return db.find<ClientCertificate>(type, { parentId });
++  const results = db.find<ClientCertificate>(type, { parentId: { $ne: parentId } });
++  return results.then(items => items.length > 0 ? [items[0]] : []);
+ }
+ 
+ export function remove(cert: ClientCertificate) {

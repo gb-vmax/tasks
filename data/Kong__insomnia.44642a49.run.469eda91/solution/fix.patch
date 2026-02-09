@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..6f01949fa 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -28,9 +28,35 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           options: Object.keys(fakerFunctions).map(key => ({ displayName: key, value: key })),
+         },
+       ],
+-      run(_context, keys: keyof typeof fakerFunctions) {
+-        return fakerFunctions[keys]();
+-      },
++function hashSeedToNumber(seedString: string): number {
++  const hash = crypto.createHash('md5').update(seedString).digest('hex');
++  return parseInt(hash.substring(0, 8), 16);
++}
++
++ run(_context, keys: keyof typeof fakerFunctions, params, seed) {
++   if (seed) {
++     const seedValue = hashSeedToNumber(seed);
++     const faker = require('@faker-js/faker').faker;
++     faker.seed(seedValue);
++   }
++  
++   let parsedParams;
++   if (params) {
++     try {
++       parsedParams = JSON.parse(params);
++     } catch (err) {
++       throw new Error(`Invalid JSON parameters: ${err.message}`);
++     }
++   }
++  
++   if (parsedParams && typeof parsedParams === 'object' && !Array.isArray(parsedParams)) {
++     return fakerFunctions[keys](parsedParams);
++   } else if (parsedParams) {
++     throw new Error('Parameters must be a valid JSON object');
++   }
++  
++   return fakerFunctions[keys]();
++ }
+     },
+   },
+   {

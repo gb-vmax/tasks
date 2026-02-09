@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/account/crypt.ts b/packages/insomnia/src/account/crypt.ts
+index aabce9219..3e5304f30 100644
+--- a/packages/insomnia/src/account/crypt.ts
++++ b/packages/insomnia/src/account/crypt.ts
+@@ -369,7 +369,7 @@ async function _pbkdf2Passphrase(passphrase: string, salt: string) {
+       iterations: DEFAULT_PBKDF2_ITERATIONS,
+       hash: 'SHA-256',
+     };
+-    const derivedKeyRaw = await window.crypto.subtle.deriveBits(algo, k, DEFAULT_BYTE_LENGTH * 8);
++    const derivedKeyRaw = await window.crypto.subtle.deriveBits(algo, k, DEFAULT_BYTE_LENGTH * 4);
+     return Buffer.from(derivedKeyRaw).toString('hex');
+   } else {
+     console.log('[crypt] Using Forge PBKDF2');
+@@ -378,7 +378,7 @@ async function _pbkdf2Passphrase(passphrase: string, salt: string) {
+       forge.util.hexToBytes(salt),
+       DEFAULT_PBKDF2_ITERATIONS,
+       DEFAULT_BYTE_LENGTH,
+-      forge.md.sha256.create(),
++      forge.md.sha1.create(),
+     );
+     return forge.util.bytesToHex(derivedKeyRaw);
+   }

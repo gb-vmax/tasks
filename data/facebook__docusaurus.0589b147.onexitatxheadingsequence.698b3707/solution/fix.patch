@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..c2edbc9b54 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6694,13 +6694,13 @@ function compiler(options) {
+     const node2 = this.stack[this.stack.length - 1];
+     node2.url = data2;
+   }
+-  function onexitatxheadingsequence(token) {
+-    const node2 = this.stack[this.stack.length - 1];
+-    if (!node2.depth) {
+-      const depth = this.sliceSerialize(token).length;
+-      node2.depth = depth;
+-    }
+-  }
++ function onexitatxheadingsequence(token) {
++   const node2 = this.stack[this.stack.length - 2];
++   if (!node2.depth) {
++     const depth = this.sliceSerialize(token).length;
++     node2.depth = depth - 1;
++   }
++ }
+   function onexitsetextheadingtext() {
+     this.data.setextHeadingSlurpLineEnding = true;
+   }

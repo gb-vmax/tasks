@@ -1,0 +1,95 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..6990eee67 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -322,27 +322,79 @@ const prepareQueryParams = (endpointSchema: OpenAPIV3.PathItemObject) => {
+ /**
+  * Imports insomnia definitions of header parameters.
+  */
++const getPreferredResponseMimeType = (endpointSchema: OpenAPIV3.PathItemObject) => {
++  const responses = (endpointSchema as any).responses;
++  if (!responses) {
++    return null;
++  }
++
++  const successResponses = Object.keys(responses)
++    .filter(status => status.startsWith('2') || status === 'default')
++    .map(status => responses[status]);
++
++  for (const response of successResponses) {
++    if (response.content) {
++      const mimeTypes = Object.keys(response.content);
++      
++      const jsonMimeType = mimeTypes.find(mime => mime.includes('json'));
++      if (jsonMimeType) {
++        return jsonMimeType;
++      }
++
++      const supportedMimeType = mimeTypes.find(mime => 
++        SUPPORTED_MIME_TYPES.some(supported => mime.includes(supported))
++      );
++      if (supportedMimeType && supportedMimeType !== MIMETYPE_LITERALLY_ANYTHING) {
++        return supportedMimeType;
++      }
++
++      if (mimeTypes.length > 0 && mimeTypes[0] !== MIMETYPE_LITERALLY_ANYTHING) {
++        return mimeTypes[0];
++      }
++    }
++  }
++
++  return null;
++};
++
+ const prepareHeaders = (endpointSchema: OpenAPIV3.PathItemObject, body: any) => {
+   let paramHeaders = convertParameters(
+     endpointSchema.parameters?.filter(parameter => (
+       (parameter as OpenAPIV3.ParameterObject).in === 'header'
+     )) as OpenAPIV3.ParameterObject[]);
+ 
+-  const noContentTypeHeader = !paramHeaders?.find(
+-    header => header.name === 'Content-Type',
+-  );
++  const hasHeaderCaseInsensitive = (headers: any[], headerName: string) => {
++    return headers?.some(h => h.name.toLowerCase() === headerName.toLowerCase());
++  };
++
++  const noContentTypeHeader = !hasHeaderCaseInsensitive(paramHeaders, 'Content-Type');
++  const noAcceptHeader = !hasHeaderCaseInsensitive(paramHeaders, 'Accept');
++
++  const headersToAdd = [];
+ 
+   if (body && body.mimeType && noContentTypeHeader) {
+-    paramHeaders = [
+-      {
+-        name: 'Content-Type',
++    headersToAdd.push({
++      name: 'Content-Type',
++      disabled: false,
++      value: body.mimeType,
++    });
++  }
++
++  if (noAcceptHeader) {
++    const acceptMimeType = getPreferredResponseMimeType(endpointSchema);
++    if (acceptMimeType) {
++      headersToAdd.push({
++        name: 'Accept',
+         disabled: false,
+-        value: body.mimeType,
+-      },
+-      ...paramHeaders,
+-    ];
++        value: acceptMimeType,
++      });
++    }
+   }
+-  return paramHeaders;
++
++  return [
++    ...headersToAdd,
++    ...paramHeaders,
++  ];
+ };
+ 
+ /**

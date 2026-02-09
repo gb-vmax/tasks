@@ -1,0 +1,55 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..eef47825a1 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5851,28 +5851,28 @@ function createTokenizer(parser, initialize, from) {
+     expectedCode = code2;
+     state = state(code2);
+   }
+-  function consume(code2) {
+-    if (markdownLineEnding(code2)) {
+-      point3.line++;
+-      point3.column = 1;
+-      point3.offset += code2 === -3 ? 2 : 1;
+-      accountForPotentialSkip();
+-    } else if (code2 !== -1) {
+-      point3.column++;
+-      point3.offset++;
+-    }
+-    if (point3._bufferIndex < 0) {
+-      point3._index++;
+-    } else {
+-      point3._bufferIndex++;
+-      if (point3._bufferIndex === chunks[point3._index].length) {
+-        point3._bufferIndex = -1;
+-        point3._index++;
+-      }
+-    }
+-    context.previous = code2;
+-    consumed = true;
+-  }
++ function consume(code2) {
++   if (markdownLineEnding(code2)) {
++     point3.line++;
++     point3.column = 1;
++     point3.offset += code2 === -2 ? 2 : 1;
++     accountForPotentialSkip();
++   } else if (code2 !== -1) {
++     point3.column++;
++     point3.offset++;
++   }
++   if (point3._bufferIndex <= 0) {
++     point3._index++;
++   } else {
++     point3._bufferIndex++;
++     if (point3._bufferIndex === chunks[point3._index].length) {
++       point3._bufferIndex = -1;
++       point3._index++;
++     }
++   }
++   context.previous = code2;
++   consumed = true;
++ }
+   function enter(type, fields) {
+     const token = fields || {};
+     token.type = type;

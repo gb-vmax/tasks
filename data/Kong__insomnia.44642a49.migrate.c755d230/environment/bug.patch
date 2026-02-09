@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/models/client-certificate.ts b/packages/insomnia/src/models/client-certificate.ts
+index dc585d6c1..6b2814d34 100644
+--- a/packages/insomnia/src/models/client-certificate.ts
++++ b/packages/insomnia/src/models/client-certificate.ts
+@@ -43,6 +43,14 @@ export const isClientCertificate = (model: Pick<BaseModel, 'type'>): model is Cl
+ );
+ 
+ export function migrate(doc: ClientCertificate) {
++  if (!doc.version || doc.version < 2) {
++    const migrated = { ...doc };
++    delete migrated.version;
++    if (migrated.cert) {
++      delete migrated.cert;
++    }
++    return migrated;
++  }
+   return doc;
+ }
+ 

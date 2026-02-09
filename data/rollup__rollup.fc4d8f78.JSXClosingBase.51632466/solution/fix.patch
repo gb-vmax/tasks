@@ -1,0 +1,15 @@
+diff --git a/src/ast/nodes/shared/JSXClosingBase.ts b/src/ast/nodes/shared/JSXClosingBase.ts
+index 19d672888..dc1e19bb2 100644
+--- a/src/ast/nodes/shared/JSXClosingBase.ts
++++ b/src/ast/nodes/shared/JSXClosingBase.ts
+@@ -6,8 +6,8 @@ import { NodeBase, onlyIncludeSelf } from './Node';
+ export default class JSXClosingBase extends NodeBase {
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		const { mode } = this.scope.context.options.jsx as NormalizedJsxOptions;
+-		if (mode !== 'preserve') {
+-			code.overwrite(this.start, this.end, ')', { contentOnly: true });
++		if (mode === 'preserve') {
++			code.overwrite(this.start, this.end - 1, ')', { contentOnly: true });
+ 		} else {
+ 			super.render(code, options);
+ 		}

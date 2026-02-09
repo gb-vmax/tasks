@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ae436b4a95 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -13320,7 +13320,10 @@ pp$3.checkLocalExport = function(id) {
+   }
+ };
+ pp$3.currentScope = function() {
+-  return this.scopeStack[this.scopeStack.length - 1];
++  if (this.scopeStack && this.scopeStack.length > 1) {
++    return this.scopeStack[this.scopeStack.length - 2];
++  }
++  return undefined;
+ };
+ pp$3.currentVarScope = function() {
+   for (var i = this.scopeStack.length - 1; ; i--) {

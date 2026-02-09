@@ -2,29 +2,36 @@
 
 ### Describe the bug
 
-When using the `run()` method with a callback function, the callback is never invoked. The method seems to always use the Promise path instead of properly handling the callback-based API.
+When using the `run()` method with a callback function, the callback is never invoked even though the transformation completes successfully. The promise-based usage works fine, but the callback-based API appears to be broken.
 
 ### Reproduction
 
 ```js
 const processor = remark();
 
-processor.run(tree, file, (err, resultTree, file) => {
-  // This callback is never called
-  console.log('Callback invoked');
-  console.log('Result:', resultTree);
+// This callback never gets called
+processor.run(tree, file, (err, resultTree, resultFile) => {
+  console.log('This never prints');
+  // Expected to handle the transformed tree here
+});
+```
+
+The callback should be invoked with the transformed tree after processing completes, but nothing happens. When using the promise-based API instead, everything works as expected:
+
+```js
+// This works fine
+processor.run(tree, file).then(resultTree => {
+  console.log('Promise resolved correctly');
 });
 ```
 
 ### Expected behavior
 
-When a callback function is provided as the third argument to `run()`, it should be invoked with the transformed tree. The callback-based API should work alongside the Promise-based API.
+The callback function should be invoked with `(error, tree, file)` after the transformation completes, similar to how it worked in previous versions.
 
-Currently, even when passing a valid callback function, it's not being executed and the transformation result is lost.
-
-### Additional context
-
-This appears to affect the callback-based usage pattern. The Promise-based API (when no callback is provided) seems to work fine, but the traditional callback pattern is broken.
+### System Info
+- remark version: 15.0.1
+- Node version: 18.x
 
 ---
 Repository: /testbed

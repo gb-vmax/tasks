@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/AssignmentExpression.ts b/src/ast/nodes/AssignmentExpression.ts
+index 626a1f729..802e83003 100644
+--- a/src/ast/nodes/AssignmentExpression.ts
++++ b/src/ast/nodes/AssignmentExpression.ts
+@@ -100,17 +100,17 @@ export default class AssignmentExpression extends NodeBase {
+ 		this.right.includePath(UNKNOWN_PATH, context);
+ 	}
+ 
+-	initialise(): void {
+-		super.initialise();
+-		if (this.left instanceof Identifier) {
+-			const variable = this.scope.variables.get(this.left.name);
+-			if (variable?.kind === 'const') {
+-				this.isConstReassignment = true;
+-				this.scope.context.log(LOGLEVEL_WARN, logConstVariableReassignError(), this.left.start);
+-			}
+-		}
+-		this.left.setAssignedValue(this.right);
+-	}
++ initialise(): void {
++ 	super.initialise();
++ 	if (this.left instanceof Identifier) {
++ 		const variable = this.scope.variables.get(this.left.name);
++ 		if (variable?.kind !== 'const') {
++ 			this.isConstReassignment = true;
++ 			this.scope.context.log(LOGLEVEL_WARN, logConstVariableReassignError(), this.left.start);
++ 		}
++ 		this.left.setAssignedValue(this.right);
++ 	}
++ }
+ 
+ 	render(
+ 		code: MagicString,

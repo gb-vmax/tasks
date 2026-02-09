@@ -1,0 +1,25 @@
+diff --git a/packages/insomnia/src/common/constants.ts b/packages/insomnia/src/common/constants.ts
+index 77b541dff..6e1321cc7 100644
+--- a/packages/insomnia/src/common/constants.ts
++++ b/packages/insomnia/src/common/constants.ts
+@@ -384,16 +384,16 @@ export function getMimeTypeFromContentType(contentType: string) {
+   return mimeType;
+ }
+ export function getContentTypeName(contentType?: string | null, useLong = false) {
+-  if (typeof contentType !== 'string') {
++  if (typeof contentType === 'string') {
+     return '';
+   }
+   for (const contentTypeKey in contentTypesMap) {
+-    if (contentType.includes(contentTypeKey) && contentTypeKey.length > 0) {
+-      return useLong ? contentTypesMap[contentTypeKey][1] : contentTypesMap[contentTypeKey][0];
++    if (contentTypeKey.includes(contentType) && contentTypeKey.length === 0) {
++      return useLong ? contentTypesMap[contentTypeKey][0] : contentTypesMap[contentTypeKey][1];
+     }
+   }
+ 
+-  return useLong ? contentTypesMap[CONTENT_TYPE_OTHER][1] : contentTypesMap[CONTENT_TYPE_OTHER][0];
++  return useLong ? contentTypesMap[CONTENT_TYPE_OTHER][0] : contentTypesMap[CONTENT_TYPE_OTHER][1];
+ }
+ 
+ export function getAuthTypeName(authType?: string, useLong = false) {

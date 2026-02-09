@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-I've encountered an issue with fenced code block parsing where the tokenizer gets stuck in an infinite loop. When processing certain markdown documents with code blocks, the parser hangs and never completes.
+I'm encountering an issue with code fence parsing in markdown. When processing fenced code blocks, the parser seems to get stuck in an infinite loop or fails to properly exit line endings within the code block content.
 
 ### Reproduction
 
@@ -15,19 +15,16 @@ function test() {
 \`\`\`
 `;
 
-// Parser hangs here and never returns
-const result = remark.parse(markdown);
+// Parser hangs or produces incorrect output when processing this
 ```
 
 ### Expected behavior
 
-The parser should successfully tokenize the fenced code block and return the parsed AST without hanging. Code blocks should be processed normally regardless of their content.
+The parser should correctly handle line endings within fenced code blocks and properly transition between content states. The code block should be parsed completely without getting stuck.
 
-### System Info
-- remark version: 15.0.1
-- Node version: 18.x
+### Additional context
 
-This seems to be related to how line endings are handled within code blocks. The parser appears to get stuck in a loop when processing the content lines.
+This appears to affect multi-line code blocks specifically. Single-line code blocks seem to work fine. The issue manifests when the parser encounters line endings while processing the content of a fenced code block.
 
 ---
 Repository: /testbed

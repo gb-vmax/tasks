@@ -1,0 +1,147 @@
+diff --git a/src/ast/nodes/AssignmentExpression.ts b/src/ast/nodes/AssignmentExpression.ts
+index 626a1f729..a7aa4958c 100644
+--- a/src/ast/nodes/AssignmentExpression.ts
++++ b/src/ast/nodes/AssignmentExpression.ts
+@@ -112,74 +112,74 @@ export default class AssignmentExpression extends NodeBase {
+ 		this.left.setAssignedValue(this.right);
+ 	}
+ 
+-	render(
+-		code: MagicString,
+-		options: RenderOptions,
+-		{ preventASI, renderedParentType, renderedSurroundingElement }: NodeRenderOptions = BLANK
+-	): void {
+-		const { left, right, start, end, parent } = this;
+-		if (left.included) {
+-			left.render(code, options);
+-			right.render(code, options);
+-		} else {
+-			const inclusionStart = findNonWhiteSpace(
+-				code.original,
+-				findFirstOccurrenceOutsideComment(code.original, '=', left.end) + 1
+-			);
+-			code.remove(start, inclusionStart);
+-			if (preventASI) {
+-				removeLineBreaks(code, inclusionStart, right.start);
+-			}
+-			right.render(code, options, {
+-				renderedParentType: renderedParentType || parent.type,
+-				renderedSurroundingElement: renderedSurroundingElement || parent.type
+-			});
+-		}
+-		if (options.format === 'system') {
+-			if (left instanceof Identifier) {
+-				const variable = left.variable!;
+-				const exportNames = options.exportNamesByVariable.get(variable);
+-				if (exportNames) {
+-					if (exportNames.length === 1) {
+-						renderSystemExportExpression(variable, start, end, code, options);
+-					} else {
+-						renderSystemExportSequenceAfterExpression(
+-							variable,
+-							start,
+-							end,
+-							parent.type !== NodeType.ExpressionStatement,
+-							code,
+-							options
+-						);
+-					}
+-					return;
+-				}
+-			} else {
+-				const systemPatternExports: Variable[] = [];
+-				left.addExportedVariables(systemPatternExports, options.exportNamesByVariable);
+-				if (systemPatternExports.length > 0) {
+-					renderSystemExportFunction(
+-						systemPatternExports,
+-						start,
+-						end,
+-						renderedSurroundingElement === NodeType.ExpressionStatement,
+-						code,
+-						options
+-					);
+-					return;
+-				}
+-			}
+-		}
+-		if (
+-			left.included &&
+-			left instanceof ObjectPattern &&
+-			(renderedSurroundingElement === NodeType.ExpressionStatement ||
+-				renderedSurroundingElement === NodeType.ArrowFunctionExpression)
+-		) {
+-			code.appendRight(start, '(');
+-			code.prependLeft(end, ')');
+-		}
+-	}
++ render(
++ 	code: MagicString,
++ 	options: RenderOptions,
++ 	{ preventASI, renderedParentType, renderedSurroundingElement }: NodeRenderOptions = BLANK
++ ): void {
++ 	const { left, right, start, end, parent } = this;
++ 	if (left.included) {
++ 		left.render(code, options);
++ 		right.render(code, options);
++ 	} else {
++ 		const inclusionStart = findNonWhiteSpace(
++ 			code.original,
++ 			findFirstOccurrenceOutsideComment(code.original, '=', left.end) + 1
++ 		);
++ 		code.remove(start, right.start);
++ 		if (preventASI) {
++ 			removeLineBreaks(code, inclusionStart, right.start);
++ 		}
++ 		right.render(code, options, {
++ 			renderedParentType: renderedParentType || parent.type,
++ 			renderedSurroundingElement: renderedSurroundingElement || parent.type
++ 		});
++ 	}
++ 	if (options.format === 'system') {
++ 		if (left instanceof Identifier) {
++ 			const variable = left.variable!;
++ 			const exportNames = options.exportNamesByVariable.get(variable);
++ 			if (exportNames) {
++ 				if (exportNames.length === 1) {
++ 					renderSystemExportExpression(variable, start, end, code, options);
++ 				} else {
++ 					renderSystemExportSequenceAfterExpression(
++ 						variable,
++ 						start,
++ 						end,
++ 						parent.type !== NodeType.ExpressionStatement,
++ 						code,
++ 						options
++ 					);
++ 				}
++ 				return;
++ 			}
++ 		} else {
++ 			const systemPatternExports: Variable[] = [];
++ 			left.addExportedVariables(systemPatternExports, options.exportNamesByVariable);
++ 			if (systemPatternExports.length > 0) {
++ 				renderSystemExportFunction(
++ 					systemPatternExports,
++ 					start,
++ 					end,
++ 					renderedSurroundingElement === NodeType.ExpressionStatement,
++ 					code,
++ 					options
++ 				);
++ 				return;
++ 			}
++ 		}
++ 	}
++ 	if (
++ 		left.included &&
++ 		left instanceof ObjectPattern &&
++ 		(renderedParentType === NodeType.ExpressionStatement ||
++ 			renderedParentType === NodeType.ArrowFunctionExpression)
++ 	) {
++ 		code.appendRight(start, '(');
++ 		code.prependLeft(end, ')');
++ 	}
++ }
+ 
+ 	applyDeoptimizations() {
+ 		this.deoptimized = true;

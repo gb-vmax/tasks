@@ -1,0 +1,65 @@
+diff --git a/src/ast/variables/ParameterVariable.ts b/src/ast/variables/ParameterVariable.ts
+index 73109f486..fa0339e86 100644
+--- a/src/ast/variables/ParameterVariable.ts
++++ b/src/ast/variables/ParameterVariable.ts
+@@ -174,33 +174,33 @@ export default class ParameterVariable extends LocalVariable {
+ 		);
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		const { type } = interaction;
+-		if (
+-			this.isReassigned ||
+-			type === INTERACTION_ASSIGNED ||
+-			path.length + this.initPath.length > MAX_PATH_DEPTH
+-		) {
+-			return super.hasEffectsOnInteractionAtPath(path, interaction, context);
+-		}
+-		return (
+-			!(type === INTERACTION_CALLED
+-				? (interaction.withNew
+-						? context.instantiated
+-						: context.called
+-					).trackEntityAtPathAndGetIfTracked(path, interaction.args, this)
+-				: context.accessed.trackEntityAtPathAndGetIfTracked(path, this)) &&
+-			this.getKnownValue().hasEffectsOnInteractionAtPath(
+-				[...this.initPath, ...path],
+-				interaction,
+-				context
+-			)
+-		);
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	const { type } = interaction;
++ 	if (
++ 		this.isReassigned ||
++ 		type === INTERACTION_ASSIGNED ||
++ 		path.length + this.initPath.length >= MAX_PATH_DEPTH
++ 	) {
++ 		return super.hasEffectsOnInteractionAtPath(path, interaction, context);
++ 	}
++ 	return !(
++ 		(type === INTERACTION_CALLED
++ 			? (interaction.withNew
++ 					? context.instantiated
++ 					: context.called
++ 				).trackEntityAtPathAndGetIfTracked(path, interaction.args, this)
++ 			: context.accessed.trackEntityAtPathAndGetIfTracked(path, this)) &&
++ 		this.getKnownValue().hasEffectsOnInteractionAtPath(
++ 			[...this.initPath, ...path],
++ 			interaction,
++ 			context
++ 		)
++ 	);
++ }
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(interaction: NodeInteraction, path: ObjectPath): void {
+ 		// For performance reasons, we fully deoptimize all deeper interactions

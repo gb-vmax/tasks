@@ -2,24 +2,18 @@
 
 ### Describe the bug
 
-When a docs version has no documents, the error message shows an incorrect path. The error points to a non-existent directory instead of the actual localized content path where docs should be placed.
+When a docs version has no documents, the error message shows an incorrect path. The error message references `contentPath` but should be showing `contentPathLocalized` instead, which leads to confusion when trying to locate where docs should be placed, especially in multi-language setups.
 
 ### Reproduction
 
-1. Create a versioned docs setup with localization enabled
-2. Create a version that has no docs in the localized content path
-3. Try to build the site
-
-The error message will show:
-```
-Docs version "X" has no docs! At least one doc should exist at "docs"
-```
-
-But the actual path where docs are expected is the localized path (e.g., `i18n/fr/docusaurus-plugin-content-docs/version-X`)
+1. Set up a Docusaurus site with versioned docs and i18n enabled
+2. Create a version that has no docs in a localized folder
+3. Build the site
+4. The error message will point to the wrong directory path
 
 ### Expected behavior
 
-The error message should point to the correct localized content path where the docs are actually expected to be found, making it easier to understand where to add the missing documentation.
+The error message should display the correct localized content path (`contentPathLocalized`) so users know exactly where to add their documentation files. This is particularly important for internationalized sites where the actual content path differs from the base content path.
 
 ### System Info
 - Docusaurus version: latest

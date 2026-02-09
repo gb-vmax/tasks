@@ -2,27 +2,27 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with slug generation in the docs plugin. When I specify a slug in the frontmatter that starts with a forward slash (`/`), it's being processed incorrectly and the leading slash is being removed.
+I'm encountering an issue with slug generation for docs when using front matter slugs that start with a forward slash. It seems like the slug handling logic is inverted - slugs starting with `/` are being processed incorrectly and having characters removed from them.
 
 ### Reproduction
 
-Create a markdown file with the following frontmatter:
+Create a doc file with a front matter slug that starts with `/`:
 
 ```md
 ---
 slug: /my-custom-slug
 ---
 
-# My Document
+# My Doc
 ```
 
-The resulting URL is `/my-custom-slug` without the leading slash being properly handled. It seems like the slug processing logic is now stripping the first character from absolute slugs.
+When this doc is processed, the slug gets mangled. It appears that absolute slugs (those starting with `/`) are not being handled as absolute paths anymore.
 
 ### Expected behavior
 
-When I use `slug: /my-custom-slug` in the frontmatter, it should be treated as an absolute path and used as-is. The leading slash should be preserved and the slug should resolve to the exact path I specified.
+When I specify a slug starting with `/` in the front matter, it should be treated as an absolute slug path and used as-is. The leading slash should be preserved and the slug should not have any characters stripped from it.
 
-Previously this was working correctly - absolute slugs (starting with `/`) were used directly without modification.
+Currently it seems like the logic is backwards - slugs WITH a leading slash are being modified when they shouldn't be.
 
 ### System Info
 - Docusaurus version: latest

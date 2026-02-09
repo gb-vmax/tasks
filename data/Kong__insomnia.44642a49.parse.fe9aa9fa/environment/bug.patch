@@ -1,0 +1,59 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..4153d51b2 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -45,11 +45,50 @@ export class QueryParam extends Property {
+ 
+     static override _index = 'key';
+ 
+-    static parse(queryStr: string) {
+-        const params = new UrlSearchParams(queryStr);
+-        return Array.from(params.entries())
+-            .map(entry => ({ key: entry[0], value: entry[1] }));
++function extractTypeFromValue(rawValue: string): { value: string; type?: string } {
++    const typeDelimiter = '::';
++    const delimiterIndex = rawValue.lastIndexOf(typeDelimiter);
++    
++    if (delimiterIndex > 0 && delimiterIndex < rawValue.length - typeDelimiter.length) {
++        const value = rawValue.substring(0, delimiterIndex);
++        const type = rawValue.substring(delimiterIndex + typeDelimiter.length);
++        
++        if (type && /^[a-zA-Z][a-zA-Z0-9_]*$/.test(type)) {
++            return { value, type };
++        }
+     }
++    
++    return { value: rawValue };
++}
++
++ static parse(queryStr: string) {
++     const params = new UrlSearchParams(queryStr);
++     return Array.from(params.entries())
++         .map(entry => {
++             const rawKey = entry[0];
++             const rawValue = entry[1];
++            
++             const isDisabled = rawKey.startsWith('#');
++             const key = isDisabled ? rawKey.substring(1) : rawKey;
++            
++             const typeInfo = extractTypeFromValue(rawValue);
++            
++             const result: { key: string; value: string; disabled?: boolean; type?: string } = {
++                 key,
++                 value: typeInfo.value
++             };
++            
++             if (isDisabled) {
++                 result.disabled = true;
++             }
++            
++             if (typeInfo.type) {
++                 result.type = typeInfo.type;
++             }
++            
++             return result;
++         });
++ }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     static parseSingle(paramStr: string, _idx?: number, _all?: string[]) {

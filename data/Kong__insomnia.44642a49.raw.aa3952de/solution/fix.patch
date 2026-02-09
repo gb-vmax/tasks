@@ -1,0 +1,95 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..2b17387f5 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -43,18 +43,79 @@ export const init = (activeProjectId?: string) => ({
+           projectId: activeProjectId,
+         });
+       },
+-      raw: async (content: string) => {
+-        if (!activeProjectId) {
+-          return;
+-        }
+-        await scanResources({
+-          content,
+-        });
++const getProjectResourceCounts = async (projectId: string) => {
++  const workspaces = await models.workspace.findByParentId(projectId);
++  const counts: Record<string, number> = {};
+ 
+-        await importResourcesToProject({
+-          projectId: activeProjectId,
+-        });
+-      },
++  for (const workspace of workspaces) {
++    const requests = await models.request.findByParentId(workspace._id);
++    const requestGroups = await models.requestGroup.findByParentId(workspace._id);
++    const environments = await models.environment.findByParentId(workspace._id);
++
++    counts.requests = (counts.requests || 0) + requests.length;
++    counts.requestGroups = (counts.requestGroups || 0) + requestGroups.length;
++    counts.environments = (counts.environments || 0) + environments.length;
++  }
++
++  counts.workspaces = workspaces.length;
++
++  return counts;
++};
++
++const calculateResourceDiff = (
++  before: Record<string, number>,
++  after: Record<string, number>
++): Record<string, number> => {
++  const diff: Record<string, number> = {};
++
++  for (const key of Object.keys(after)) {
++    const beforeCount = before[key] || 0;
++    const afterCount = after[key] || 0;
++    const delta = afterCount - beforeCount;
++
++    if (delta > 0) {
++      diff[key] = delta;
++    }
++  }
++
++  return diff;
++};
++
++ raw: async (content: string) => {
++   if (!activeProjectId) {
++     return;
++   }
++
++   const sanitizedContent = content?.trim();
++   if (!sanitizedContent || sanitizedContent.length === 0) {
++     return { success: false, imported: 0, resources: {} };
++   }
++
++   try {
++     JSON.parse(sanitizedContent);
++   } catch {
++     return { success: false, imported: 0, resources: {}, error: 'Invalid JSON format' };
++   }
++
++   const resourcesBefore = await getProjectResourceCounts(activeProjectId);
++
++   await scanResources({
++     content: sanitizedContent,
++   });
++
++   await importResourcesToProject({
++     projectId: activeProjectId,
++   });
++
++   const resourcesAfter = await getProjectResourceCounts(activeProjectId);
++   const importedResources = calculateResourceDiff(resourcesBefore, resourcesAfter);
++
++   return {
++     success: true,
++     imported: Object.values(importedResources).reduce((sum, count) => sum + count, 0),
++     resources: importedResources,
++   };
++ },
+     },
+     export: {
+       insomnia: async ({

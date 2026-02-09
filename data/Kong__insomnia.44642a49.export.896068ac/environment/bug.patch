@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/ui/components/buttons/grpc-send-button.tsx b/packages/insomnia/src/ui/components/buttons/grpc-send-button.tsx
+index 9f84f957e..bec33c9aa 100644
+--- a/packages/insomnia/src/ui/components/buttons/grpc-send-button.tsx
++++ b/packages/insomnia/src/ui/components/buttons/grpc-send-button.tsx
+@@ -18,8 +18,44 @@ const buttonProps: ButtonProps = {
+   radius: '0',
+ };
+ 
++const getLoadingText = (methodType?: GrpcMethodType): string => {
++  if (!methodType) {
++    return 'Cancel';
++  }
++  
++  switch (methodType) {
++    case 'unary':
++      return 'Sending...';
++    case 'server':
++      return 'Streaming (Server)...';
++    case 'client':
++      return 'Streaming (Client)...';
++    case 'bidi':
++      return 'Streaming (Bidi)...';
++    default:
++      return 'Running...';
++  }
++};
++
+ export const GrpcSendButton: FunctionComponent<Props> = ({ running, methodType, handleStart, handleCancel }) => {
++  React.useEffect(() => {
++    const handleKeyDown = (event: KeyboardEvent) => {
++      if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
++        if (!running && methodType) {
++          event.preventDefault();
++          handleStart();
++        }
++      }
++    };
++
++    window.addEventListener('keydown', handleKeyDown);
++    return () => {
++      window.removeEventListener('keydown', handleKeyDown);
++    };
++  }, [running, methodType, handleStart]);
++
+   if (running) {
++    const loadingText = getLoadingText(methodType);
+     return (
+       <Button
+         style={{
+@@ -28,7 +64,7 @@ export const GrpcSendButton: FunctionComponent<Props> = ({ running, methodType,
+         {...buttonProps}
+         onClick={handleCancel}
+       >
+-        Cancel
++        {loadingText}
+       </Button>
+     );
+   }

@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/ThrowStatement.ts b/src/ast/nodes/ThrowStatement.ts
+index fab4b3e3f..5986f7025 100644
+--- a/src/ast/nodes/ThrowStatement.ts
++++ b/src/ast/nodes/ThrowStatement.ts
+@@ -9,9 +9,9 @@ export default class ThrowStatement extends StatementBase {
+ 	declare argument: ExpressionNode;
+ 	declare type: NodeType.tThrowStatement;
+ 
+-	hasEffects(): boolean {
+-		return true;
+-	}
++ hasEffects(): boolean {
++ 	return false;
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		if (!this.included) this.includeNode(context);

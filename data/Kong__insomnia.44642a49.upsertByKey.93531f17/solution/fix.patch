@@ -1,0 +1,68 @@
+diff --git a/packages/insomnia/src/models/plugin-data.ts b/packages/insomnia/src/models/plugin-data.ts
+index 4c7bdb368..c2c3f81c9 100644
+--- a/packages/insomnia/src/models/plugin-data.ts
++++ b/packages/insomnia/src/models/plugin-data.ts
+@@ -43,17 +43,57 @@ export async function update(doc: PluginData, patch: Partial<PluginData>) {
+   return db.docUpdate(doc, patch);
+ }
+ 
++function parseValueWithHistory(value: string): { current: string; history: Array<{ value: string; timestamp: number }> } {
++  try {
++    const parsed = JSON.parse(value);
++    if (parsed && typeof parsed === 'object' && 'current' in parsed && 'history' in parsed) {
++      return {
++        current: parsed.current,
++        history: Array.isArray(parsed.history) ? parsed.history : [],
++      };
++    }
++  } catch {
++  }
++  
++  return {
++    current: value,
++    history: [],
++  };
++}
++
+ export async function upsertByKey(plugin: string, key: string, value: string) {
+   const doc = await getByKey(plugin, key);
+-  return doc
+-    ? update(doc, {
+-      value,
+-    })
+-    : create({
++  
++  if (doc) {
++    const structuredValue = parseValueWithHistory(doc.value);
++    const newHistory = [
++      {
++        value: structuredValue.current,
++        timestamp: Date.now(),
++      },
++      ...structuredValue.history,
++    ].slice(0, 5);
++    
++    const newStructuredValue = {
++      current: value,
++      history: newHistory,
++    };
++    
++    return update(doc, {
++      value: JSON.stringify(newStructuredValue),
++    });
++  } else {
++    const initialStructuredValue = {
++      current: value,
++      history: [],
++    };
++    
++    return create({
+       plugin,
+       key,
+-      value,
++      value: JSON.stringify(initialStructuredValue),
+     });
++  }
+ }
+ 
+ export async function removeByKey(plugin: string, key: string) {

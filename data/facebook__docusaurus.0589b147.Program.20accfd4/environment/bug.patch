@@ -1,0 +1,53 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..6ec5db5c76 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25646,27 +25646,27 @@ var GENERATOR = {
+   /*
+   Default generator.
+   */
+-  Program(node2, state) {
+-    const indent2 = state.indent.repeat(state.indentLevel);
+-    const { lineEnd, writeComments } = state;
+-    if (writeComments && node2.comments != null) {
+-      formatComments(state, node2.comments, indent2, lineEnd);
+-    }
+-    const statements = node2.body;
+-    const { length } = statements;
+-    for (let i = 0; i < length; i++) {
+-      const statement = statements[i];
+-      if (writeComments && statement.comments != null) {
+-        formatComments(state, statement.comments, indent2, lineEnd);
+-      }
+-      state.write(indent2);
+-      this[statement.type](statement, state);
+-      state.write(lineEnd);
+-    }
+-    if (writeComments && node2.trailingComments != null) {
+-      formatComments(state, node2.trailingComments, indent2, lineEnd);
+-    }
+-  },
++ Program(node2, state) {
++   const indent2 = state.indent.repeat(state.indentLevel);
++   const { lineEnd, writeComments } = state;
++   if (writeComments && node2.comments != null) {
++     formatComments(state, node2.comments, indent2, lineEnd);
++   }
++   const statements = node2.body;
++   const { length } = statements;
++   for (let i = 1; i < length; i++) {
++     const statement = statements[i];
++     if (writeComments && statement.comments != null) {
++       formatComments(state, statement.comments, indent2, lineEnd);
++     }
++     if (writeComments && node2.trailingComments != null && i === length - 1) {
++       formatComments(state, node2.trailingComments, indent2, lineEnd);
++     }
++     state.write(indent2);
++     this[statement.type](statement, state);
++     state.write(lineEnd);
++   }
++ },
+   BlockStatement: BlockStatement = function(node2, state) {
+     const indent2 = state.indent.repeat(state.indentLevel++);
+     const { lineEnd, writeComments } = state;

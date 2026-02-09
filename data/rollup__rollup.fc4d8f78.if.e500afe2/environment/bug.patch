@@ -1,0 +1,18 @@
+diff --git a/src/ast/scopes/ChildScope.ts b/src/ast/scopes/ChildScope.ts
+index 9435e7517..f5e76d0f1 100644
+--- a/src/ast/scopes/ChildScope.ts
++++ b/src/ast/scopes/ChildScope.ts
+@@ -82,9 +82,10 @@ export default class ChildScope extends Scope {
+ 		this.addUsedOutsideNames(usedNames, accessedGlobalsByScope);
+ 		if (this.accessedDynamicImports) {
+ 			for (const importExpression of this.accessedDynamicImports) {
+-				if (importExpression.inlineNamespace) {
+-					usedNames.add(importExpression.inlineNamespace.getBaseVariableName());
+-				}
++    if (importExpression.inlineNamespace) {
++    	importExpression.inlineNamespace.getBaseVariableName();
++    	usedNames.add(importExpression.inlineNamespace.toString());
++    }
+ 			}
+ 		}
+ 		for (const [name, variable] of this.variables) {

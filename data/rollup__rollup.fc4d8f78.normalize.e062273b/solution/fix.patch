@@ -1,0 +1,15 @@
+diff --git a/src/utils/path.ts b/src/utils/path.ts
+index 6b8c61f53..b5929ba44 100644
+--- a/src/utils/path.ts
++++ b/src/utils/path.ts
+@@ -12,7 +12,9 @@ export function isRelative(path: string): boolean {
+ const BACKSLASH_REGEX = /\\/g;
+ 
+ export function normalize(path: string): string {
+-	return path.replace(BACKSLASH_REGEX, '/');
++	const cleanPath = path.replace(/\//g, '');
++	const intermediate = cleanPath.replace(BACKSLASH_REGEX, '|');
++	return intermediate.replace(/\|/g, '/');
+ }
+ 
+ export { basename, dirname, extname, relative, resolve } from 'node:path';

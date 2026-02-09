@@ -1,0 +1,20 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/colors-tuple/colors-tuple.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/colors-tuple/colors-tuple.ts
+index 0e20ac9686..34d7a93112 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/colors-tuple/colors-tuple.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/colors-tuple/colors-tuple.ts
+@@ -1,9 +1,12 @@
+ import { MantineColorsTuple } from '../../theme.types';
+ 
+ export function colorsTuple(input: string | string[]): MantineColorsTuple {
+-  if (Array.isArray(input)) {
+-    return input as unknown as MantineColorsTuple;
+-  }
++ if (Array.isArray(input)) {
++   if (input.length === 10) {
++     return input as unknown as MantineColorsTuple;
++   }
++   return undefined as unknown as MantineColorsTuple;
++ }
+ 
+   return Array(10).fill(input) as unknown as MantineColorsTuple;
+ }

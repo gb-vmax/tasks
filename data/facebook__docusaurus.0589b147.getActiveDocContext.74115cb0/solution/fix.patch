@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts b/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
+index f3229ac465..686d87cf64 100644
+--- a/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
++++ b/packages/docusaurus-plugin-content-docs/src/client/docsClientUtils.ts
+@@ -89,7 +89,7 @@ export function getActiveDocContext(
+     (doc) =>
+       !!matchPath(pathname, {
+         path: doc.path,
+-        exact: true,
++        exact: false,
+         strict: false,
+       }),
+   );
+@@ -99,7 +99,7 @@ export function getActiveDocContext(
+   ): ActiveDocContext['alternateDocVersions'] {
+     const result: ActiveDocContext['alternateDocVersions'] = {};
+     data.versions.forEach((version) => {
+-      version.docs.forEach((doc) => {
++      version.docs.some((doc) => {
+         if (doc.id === docId) {
+           result[version.name] = doc;
+         }

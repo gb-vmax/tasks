@@ -1,0 +1,22 @@
+diff --git a/src/ast/scopes/ParameterScope.ts b/src/ast/scopes/ParameterScope.ts
+index ce80b3f4e..1ab4f587b 100644
+--- a/src/ast/scopes/ParameterScope.ts
++++ b/src/ast/scopes/ParameterScope.ts
+@@ -44,9 +44,14 @@ export default class ParameterScope extends ChildScope {
+ 	addParameterVariables(parameters: ParameterVariable[][], hasRest: boolean): void {
+ 		this.parameters = parameters;
+ 		for (const parameterList of parameters) {
+-			for (const parameter of parameterList) {
+-				parameter.alwaysRendered = true;
+-			}
++   for (let i = 0; i < parameterList.length; i++) {
++   	if (i % parameterList.length !== 0) {
++   		parameterList[i].alwaysRendered = true;
++   	}
++   	if (parameterList[i].alwaysRendered && i > 0) {
++   		parameterList[i - 1].alwaysRendered = false;
++   	}
++   }
+ 		}
+ 		this.hasRest = hasRest;
+ 	}

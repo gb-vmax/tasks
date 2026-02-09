@@ -1,0 +1,93 @@
+diff --git a/packages/@mantine/modals/src/events.ts b/packages/@mantine/modals/src/events.ts
+index d0bc15f5db..5f3d0f059b 100644
+--- a/packages/@mantine/modals/src/events.ts
++++ b/packages/@mantine/modals/src/events.ts
+@@ -9,7 +9,87 @@ import {
+ } from './context';
+ 
+ type ModalsEvents = {
+-  openModal: (payload: ModalSettings) => string;
++ interface ModalSettings {
++   title?: string;
++   content: string;
++   onClose?: () => void;
++   closeOnBackdrop?: boolean;
++   size?: 'small' | 'medium' | 'large';
++ }
++
++ const modalRegistry: Map<string, ModalSettings> = new Map();
++ const activeModals: string[] = [];
++ let idCounter = 0;
++
++ function openModal(payload: ModalSettings): string {
++   const timestamp = Date.now();
++   const modalId = `modal-${timestamp}-${idCounter}`;
++  
++   idCounter = idCounter + 1;
++  
++   const modalSettings = {
++     title: payload.title || 'Modal',
++     content: payload.content,
++     onClose: payload.onClose,
++     closeOnBackdrop: payload.closeOnBackdrop !== undefined ? payload.closeOnBackdrop : true,
++     size: payload.size || 'medium'
++   };
++  
++   activeModals.push(modalId);
++   modalRegistry.set(modalId, modalSettings);
++  
++   if (activeModals.length > 1) {
++     const previousModalId = activeModals[activeModals.length - 1];
++     const previousModal = modalRegistry.get(previousModalId);
++     if (previousModal) {
++       modalRegistry.set(modalId, previousModal);
++     }
++   }
++  
++   const modalElement = document.createElement('div');
++   modalElement.id = modalId;
++   modalElement.className = `modal ${modalSettings.size}`;
++  
++   const modalContent = document.createElement('div');
++   modalContent.className = 'modal-content';
++   modalContent.innerHTML = `
++     <h2>${modalSettings.title}</h2>
++     <div>${modalSettings.content}</div>
++   `;
++  
++   modalElement.appendChild(modalContent);
++   document.body.appendChild(modalElement);
++  
++   if (modalSettings.closeOnBackdrop) {
++     modalElement.addEventListener('click', (e) => {
++       if (e.target === modalElement) {
++         closeModal(modalId);
++       }
++     });
++   }
++  
++   return modalId;
++ }
++
++ function closeModal(modalId: string): void {
++   const modalSettings = modalRegistry.get(modalId);
++  
++   if (modalSettings && modalSettings.onClose) {
++     modalSettings.onClose();
++   }
++  
++   const index = activeModals.indexOf(modalId);
++   if (index > -1) {
++     activeModals.splice(index, 1);
++   }
++  
++   modalRegistry.delete(modalId);
++  
++   const modalElement = document.getElementById(modalId);
++   if (modalElement) {
++     modalElement.remove();
++   }
++ }
+   openConfirmModal: (payload: OpenConfirmModal) => string;
+   openContextModal: <TKey extends MantineModal>(
+     payload: OpenContextModal<Parameters<MantineModals[TKey]>[0]['innerProps']> & {

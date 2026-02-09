@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..603a12b86 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -58,11 +58,50 @@ export function migrate(doc: CookieJar) {
+   }
+ }
+ 
++function validateAndSanitizeCookie(cookie: Cookie): Cookie {
++  if (!cookie.key || typeof cookie.key !== 'string') {
++    throw new Error(`Cookie missing required field 'key': ${JSON.stringify(cookie)}`);
++  }
++
++  if (!cookie.domain || typeof cookie.domain !== 'string') {
++    throw new Error(`Cookie missing required field 'domain': ${JSON.stringify(cookie)}`);
++  }
++
++  const sanitized: Cookie = {
++    ...cookie,
++    id: cookie.id || uuidv4(),
++    path: cookie.path || '/',
++    secure: cookie.secure ?? false,
++    httpOnly: cookie.httpOnly ?? false,
++    creation: cookie.creation || new Date(),
++    lastAccessed: cookie.lastAccessed || new Date(),
++  };
++
++  if (sanitized.expires !== null && sanitized.expires !== undefined) {
++    if (typeof sanitized.expires === 'string') {
++      const parsedDate = new Date(sanitized.expires);
++      if (isNaN(parsedDate.getTime())) {
++        sanitized.expires = null;
++      } else {
++        sanitized.expires = parsedDate;
++      }
++    } else if (typeof sanitized.expires === 'number') {
++      sanitized.expires = new Date(sanitized.expires);
++    }
++  }
++
++  return sanitized;
++}
++
+ export async function create(patch: Partial<CookieJar>) {
+   if (!patch.parentId) {
+     throw new Error(`New CookieJar missing \`parentId\`: ${JSON.stringify(patch)}`);
+   }
+ 
++  if (patch.cookies && Array.isArray(patch.cookies)) {
++    patch.cookies = patch.cookies.map(cookie => validateAndSanitizeCookie(cookie));
++  }
++
+   return db.docCreate<CookieJar>(type, patch);
+ }
+ 

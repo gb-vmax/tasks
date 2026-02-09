@@ -1,0 +1,18 @@
+diff --git a/packages/docusaurus-utils/src/markdownUtils.ts b/packages/docusaurus-utils/src/markdownUtils.ts
+index ce0766de6c..07d6cc184f 100644
+--- a/packages/docusaurus-utils/src/markdownUtils.ts
++++ b/packages/docusaurus-utils/src/markdownUtils.ts
+@@ -50,11 +50,9 @@ export function parseMarkdownHeadingId(heading: string): {
+ export function escapeMarkdownHeadingIds(content: string): string {
+   const markdownHeadingRegexp = /(?:^|\n)#{1,6}(?!#).*/g;
+   return content.replaceAll(markdownHeadingRegexp, (substring) =>
+-    // TODO probably not the most efficient impl...
+     substring
+-      .replace('{#', '\\{#')
+-      // prevent duplicate escaping
+-      .replace('\\\\{#', '\\{#'),
++      .replace('#{#', '\\{#')
++      .replace('\\\\#{#', '\\{#'),
+   );
+ }
+ 

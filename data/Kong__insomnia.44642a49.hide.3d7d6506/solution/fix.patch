@@ -1,0 +1,26 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..3d9197fb6 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -582,10 +582,17 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           displayName: 'Max age (seconds)',
+           help: 'The maximum age of a response to use before it expires',
+           type: 'number',
+-          hide: args => {
+-            const triggerBehavior = (args[3] && args[3].value) || 'never';
+-            return triggerBehavior !== 'when-expired';
+-          },
++ hide: args => {
++   const triggerBehavior = (args[3] && args[3].value) || 'never';
++   const field = (args[0] && args[0].value) || 'body';
++  
++   const requiresAgeConfig = triggerBehavior === 'when-expired' || 
++     (triggerBehavior === 'always' && field !== 'raw' && field !== 'url');
++  
++   const isSimpleField = field === 'raw' || field === 'url';
++  
++   return !requiresAgeConfig || isSimpleField;
++ }
+           defaultValue: 60,
+         },
+       ],

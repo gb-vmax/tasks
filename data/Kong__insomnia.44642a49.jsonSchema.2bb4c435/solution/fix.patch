@@ -1,0 +1,64 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..adfdeffbb 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -248,7 +248,58 @@ export class Response extends Property {
+                 header: (expected: string) => haveHeader(expected, true),
+                 body: (expected: string) => haveBody(expected, true),
+                 jsonBody: (expected: object) => haveJsonBody(expected, true),
+-                jsonSchema: (expected: object) => haveJsonSchema(expected, true),
++const formatValidationErrors = (errors: any[] | null | undefined): string => {
++    if (!errors || errors.length === 0) {
++        return 'Unknown validation error';
++    }
++    
++    return errors.map(err => {
++        const field = err.instancePath || err.dataPath || '(root)';
++        const message = err.message || 'validation failed';
++        const keyword = err.keyword ? `[${err.keyword}]` : '';
++        const params = err.params ? JSON.stringify(err.params) : '';
++        
++        let errorDetail = `Field: ${field} ${keyword} ${message}`;
++        if (params && params !== '{}') {
++            errorDetail += ` - Details: ${params}`;
++        }
++        
++        return errorDetail;
++    }).join('\n  ');
++};
++
++const haveJsonSchema = (expected: object, checkEquality: boolean, options?: { allErrors?: boolean; verbose?: boolean }) => {
++    const ajvOptions: any = {
++        allErrors: options?.allErrors !== false,
++        verbose: options?.verbose || false,
++    };
++    
++    const ajv = new Ajv(ajvOptions);
++
++    try {
++        const jsonBody = JSON.parse(this.body);
++        const validate = ajv.compile(expected);
++        const schemaMatched = validate(jsonBody);
++        
++        if ((schemaMatched && checkEquality) || (!schemaMatched && !checkEquality)) {
++            return;
++        }
++        
++        if (!schemaMatched && checkEquality) {
++            const errorDetails = formatValidationErrors(validate.errors);
++            throw Error(`Response's schema validation failed:\n  ${errorDetails}`);
++        }
++        
++    } catch (e) {
++        if (e instanceof Error && e.message.includes("schema validation failed")) {
++            throw e;
++        }
++        throw Error(`Failed to verify response body schema, response could not be a valid json: "${e}"`);
++    }
++    throw Error("Response's schema is not equal to the expected value");
++};
++
++ jsonSchema: (expected: object, options?: { allErrors?: boolean; verbose?: boolean }) => haveJsonSchema(expected, true, options),
+             },
+             not: {
+                 have: {

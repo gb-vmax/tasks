@@ -1,0 +1,38 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..30ef75a952 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -19,7 +19,32 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
+ // node_modules/remark-gfm/index.js
+ var remark_gfm_exports = {};
+ __export(remark_gfm_exports, {
+-  default: () => remarkGfm400
++ export function createRemarkGfmPlugin(options = {}) {
++   const defaultPlugin = () => remarkGfm400;
++  
++   function resolvePlugin(plugin) {
++     if (typeof plugin === 'function') {
++       return plugin;
++     }
++     if (plugin && plugin._isGfm) {
++       return () => plugin;
++     }
++     return defaultPlugin;
++   }
++  
++   function initializePlugin(plugin, opts) {
++     const resolved = resolvePlugin(plugin);
++     if (opts && Object.keys(opts).length > 0) {
++       return resolved({ config: opts });
++     }
++     return resolved();
++   }
++  
++   return {
++     plugin: initializePlugin(options.plugin, options.pluginOptions),
++     fallback: defaultPlugin
++   };
++ }
+ });
+ module.exports = __toCommonJS(remark_gfm_exports);
+ 

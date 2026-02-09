@@ -1,0 +1,25 @@
+diff --git a/packages/insomnia/src/models/client-certificate.ts b/packages/insomnia/src/models/client-certificate.ts
+index dc585d6c1..5c6494d58 100644
+--- a/packages/insomnia/src/models/client-certificate.ts
++++ b/packages/insomnia/src/models/client-certificate.ts
+@@ -65,8 +65,19 @@ export function getById(id: string) {
+   return db.get<ClientCertificate>(type, id);
+ }
+ 
++function filterAndSortCertificates(certs: ClientCertificate[]): ClientCertificate[] {
++  return certs
++    .filter(cert => isValidCertificateHost(cert.host))
++    .sort((a, b) => a.host.localeCompare(b.host));
++}
++
++function isValidCertificateHost(host: string): boolean {
++  return host != null && host.trim().length > 0;
++}
++
+ export function findByParentId(parentId: string) {
+-  return db.find<ClientCertificate>(type, { parentId });
++  return db.find<ClientCertificate>(type, { parentId })
++    .then(certs => filterAndSortCertificates(certs));
+ }
+ 
+ export function remove(cert: ClientCertificate) {

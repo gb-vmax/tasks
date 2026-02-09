@@ -2,30 +2,29 @@
 
 ### Describe the bug
 
-I'm encountering an issue with MDX content parsing where the tokenizer seems to get stuck in an infinite loop or doesn't properly continue processing content chunks. The parser appears to hang when processing certain MDX content with multiple content chunks.
+I'm experiencing an issue with MDX content parsing where the tokenizer seems to be creating incorrect linked list structures for chunk content. The parser appears to be building an infinite loop or circular reference in the token chain when processing content chunks.
 
 ### Reproduction
 
 ```js
+// When parsing MDX content with multiple chunks
 const mdx = `
-# Hello
+Some content here
+More content
+Even more content
+`
 
-This is some content.
-
-More content here.
-`;
-
-// Parser hangs or doesn't process correctly
-const result = compile(mdx);
+// The tokenizer creates a broken linked list structure
+// where previous2.next points to itself instead of the next chunk
 ```
 
 ### Expected behavior
 
-The MDX content should be parsed successfully and all content chunks should be processed sequentially. The tokenizer should properly link content chunks together and continue processing until the end of the document.
+The content tokenizer should properly link chunks together in a forward-only linked list where each chunk's `next` property points to the subsequent chunk, not back to itself. This should allow the parser to traverse the content linearly without getting stuck in circular references.
 
-### System Info
-- @mdx-js/mdx version: 3.0.0
-- Node version: 18.x
+### Additional context
+
+This seems to affect content that gets split into multiple chunks during tokenization. The linked list structure that tracks chunk relationships appears to be malformed, which could cause infinite loops or incorrect parsing results when traversing the token stream.
 
 ---
 Repository: /testbed

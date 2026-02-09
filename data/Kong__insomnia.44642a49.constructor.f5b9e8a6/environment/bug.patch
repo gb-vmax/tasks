@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..000c7c010 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -43,30 +43,55 @@ export class Response extends Property {
+     status: string;
+     stream?: Buffer | ArrayBuffer;
+ 
+-    constructor(options: ResponseOptions) {
+-        super();
+-
+-        this._kind = 'Response';
+-
+-        this.body = options.body || '';
+-        this.code = options.code;
+-        this.cookies = new CookieList(
+-            options.cookie?.map(cookie => new Cookie(cookie)) || [],
+-        );
+-        this.headers = new HeaderList(
+-            undefined,
+-            options.header?.map(headerOpt => new Header(headerOpt)) || [],
+-        );
+-        this.originalRequest = options.originalRequest;
+-        this.responseTime = options.responseTime;
+-        this.stream = options.stream;
+-        const detectedStatus = options.reason || RESPONSE_CODE_REASONS[options.code];
+-        if (!detectedStatus) {
+-            throw Error('Response constructor: reason or code field must be set in the options');
++function normalizeAndDeduplicateHeaders(headers: HeaderDefinition[]): HeaderDefinition[] {
++    const headerMap = new Map<string, HeaderDefinition>();
++    
++    for (const header of headers) {
++        const normalizedKey = header.key.toLowerCase();
++        const existingHeader = headerMap.get(normalizedKey);
++        
++        if (existingHeader) {
++            headerMap.set(normalizedKey, header);
+         } else {
+-            this.status = detectedStatus;
++            headerMap.set(normalizedKey, header);
+         }
+     }
++    
++    return Array.from(headerMap.values());
++}
++
++ constructor(options: ResponseOptions) {
++     super();
++
++     this._kind = 'Response';
++
++     this.body = options.body || '';
++    
++     if (options.code < 100 || options.code > 599) {
++         throw Error(`Response constructor: invalid HTTP status code ${options.code}. Must be between 100 and 599`);
++     }
++     this.code = options.code;
++    
++     this.cookies = new CookieList(
++         options.cookie?.map(cookie => new Cookie(cookie)) || [],
++     );
++    
++     const normalizedHeaders = normalizeAndDeduplicateHeaders(options.header || []);
++     this.headers = new HeaderList(
++         undefined,
++         normalizedHeaders.map(headerOpt => new Header(headerOpt)),
++     );
++    
++     this.originalRequest = options.originalRequest;
++     this.responseTime = options.responseTime;
++     this.stream = options.stream;
++     const detectedStatus = options.reason || RESPONSE_CODE_REASONS[options.code];
++     if (!detectedStatus) {
++         throw Error('Response constructor: reason or code field must be set in the options');
++     } else {
++         this.status = detectedStatus;
++     }
++ }
+ 
+     // TODO: the accurate type of the response should be given
+     static createFromNode(

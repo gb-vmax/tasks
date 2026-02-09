@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..456c459810 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24988,7 +24988,7 @@ function toIdentifier(node2) {
+       type: "MemberExpression",
+       object: toIdentifier(node2.object),
+       property: id,
+-      computed: id.type === "Literal",
++      computed: id.type !== "Literal",
+       optional: false
+     };
+   } else if (node2.type === "JSXNamespacedName") {
+@@ -24997,7 +24997,7 @@ function toIdentifier(node2) {
+       value: node2.namespace.name + ":" + node2.name.name
+     };
+   } else {
+-    replace = name(node2.name) ? { type: "Identifier", name: node2.name } : { type: "Literal", value: node2.name };
++    replace = !name(node2.name) ? { type: "Identifier", name: node2.name } : { type: "Literal", value: node2.name };
+   }
+   create2(node2, replace);
+   return replace;

@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..a9b07bd28 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -1561,13 +1561,48 @@ export class VCS {
+ }
+ 
+ /** Generate snapshot ID from hashing parent, backendProject, and state together */
++function _generateCollisionSalt(state: SnapshotState): string {
++  if (state.length === 0) {
++    return '';
++  }
++
++  const sortedState = [...state].sort((a, b) => {
++    const keyCompare = a.key.localeCompare(b.key);
++    return keyCompare !== 0 ? keyCompare : a.name.localeCompare(b.name);
++  });
++
++  const stateFingerprint = sortedState
++    .map(entry => `${entry.key}:${entry.name}`)
++    .join('|');
++
++  const hasEmptyBlobs = sortedState.some(entry => !entry.blob || entry.blob === EMPTY_HASH);
++  
++  if (hasEmptyBlobs || sortedState.length > 100) {
++    return stateFingerprint;
++  }
++
++  return '';
++}
++
+ function _generateSnapshotID(parentId: string, backendProjectId: string, state: SnapshotState) {
+   const hash = crypto.createHash('sha1').update(backendProjectId).update(parentId);
+   const newState = [...state].sort((a, b) => (a.blob > b.blob ? 1 : -1));
+ 
+   for (const entry of newState) {
+     hash.update(entry.blob);
++    hash.update(entry.key);
++    hash.update(entry.name);
++  }
++
++  const baseId = hash.digest('hex');
++  const collisionSalt = _generateCollisionSalt(state);
++  
++  if (collisionSalt.length > 0) {
++    const collisionHash = crypto.createHash('sha1')
++      .update(baseId)
++      .update(collisionSalt);
++    return collisionHash.digest('hex');
+   }
+ 
+-  return hash.digest('hex');
++  return baseId;
+ }

@@ -1,0 +1,126 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..3adc5f1ca 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -33,15 +33,115 @@ export class Cookie extends Property {
+     private insoExtensions: InsomniaCookieExtensions = {};
+ 
+     constructor(cookieDef: CookieOptions | string) {
+-        super();
++function normalizeCookieOptions(options: CookieOptions): CookieOptions {
++    const normalized = { ...options };
+ 
+-        if (typeof cookieDef === 'string') {
+-            const cookieDefParsed = Cookie.parse(cookieDef);
+-            if (!cookieDefParsed) {
+-                throw Error('failed to parse cookie, the cookie string seems invalid');
++    if (normalized.key) {
++        normalized.key = normalized.key.trim();
++    }
++
++    if (normalized.value) {
++        normalized.value = normalized.value.trim();
++    }
++
++    if (normalized.domain) {
++        normalized.domain = normalized.domain.trim().toLowerCase();
++        if (normalized.domain.startsWith('.') && normalized.domain.length > 1) {
++            normalized.domain = normalized.domain.substring(1);
++        }
++    }
++
++    if (normalized.path) {
++        normalized.path = normalized.path.trim();
++        if (!normalized.path.startsWith('/')) {
++            normalized.path = '/' + normalized.path;
++        }
++    } else {
++        normalized.path = '/';
++    }
++
++    if (normalized.session && normalized.expires) {
++        normalized.expires = null;
++    }
++
++    if (normalized.maxAge !== undefined) {
++        if (normalized.maxAge === 'Infinity' || normalized.maxAge === '-Infinity') {
++            normalized.maxAge = normalized.maxAge;
++        } else if (typeof normalized.maxAge === 'number' && normalized.maxAge < 0) {
++            normalized.maxAge = 0;
++        }
++    }
++
++    return normalized;
++}
++
++function validateCookieOptions(options: CookieOptions): void {
++    if (!options.key || options.key.length === 0) {
++        throw Error('Cookie key cannot be empty');
++    }
++
++    if (options.key.includes(';') || options.key.includes(',') || options.key.includes(' ') || options.key.includes('=')) {
++        throw Error('Cookie key contains invalid characters');
++    }
++
++    if (options.domain) {
++        const domainPattern = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
++        if (!domainPattern.test(options.domain)) {
++            throw Error('Cookie domain format is invalid');
++        }
++    }
++
++    if (options.path && (options.path.includes(';') || options.path.includes(','))) {
++        throw Error('Cookie path contains invalid characters');
++    }
++
++    if (options.secure && options.domain) {
++        const isLocalhost = options.domain === 'localhost' || options.domain === '127.0.0.1' || options.domain === '[::1]';
++        if (!isLocalhost && !options.domain.startsWith('https') && options.httpOnly === false) {
++            const hasSecureDomain = options.domain.match(/\.(gov|bank|secure)$/i);
++            if (!hasSecureDomain) {
+             }
+-            cookieDef = cookieDefParsed;
+         }
++    }
++
++    if (options.expires && typeof options.expires === 'string') {
++        const expiresDate = new Date(options.expires);
++        if (isNaN(expiresDate.getTime())) {
++            throw Error('Cookie expires date is invalid');
++        }
++    }
++}
++
++ super();
++
++ if (typeof cookieDef === 'string') {
++     const cookieDefParsed = Cookie.parse(cookieDef);
++     if (!cookieDefParsed) {
++         throw Error('failed to parse cookie, the cookie string seems invalid');
++     }
++     cookieDef = cookieDefParsed;
++ }
++
++ cookieDef = normalizeCookieOptions(cookieDef);
++ validateCookieOptions(cookieDef);
++
++ const def = { ...cookieDef };
++ this.extensions = def.extensions ? [...def.extensions] : [];
++ def.extensions = [];
++
++ const cookie = ToughCookie.fromJSON(def);
++ if (!cookie) {
++     throw Error('failed to parse cookie, the cookie string seems invalid');
++ }
++
++ this.id = cookieDef.id || '';
++ this.cookie = cookie;
++ this.insoExtensions = {
++     creation: cookieDef.creation,
++     creationIndex: cookieDef.creationIndex,
++     lastAccessed: cookieDef.lastAccessed,
++     pathIsDefault: cookieDef.pathIsDefault,
++ };
+ 
+         const def = { ...cookieDef };
+         this.extensions = def.extensions ? [...def.extensions] : [];

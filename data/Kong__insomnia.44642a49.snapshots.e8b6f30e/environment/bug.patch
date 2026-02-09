@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..e8442176c 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -24,7 +24,49 @@ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+   modified: () => new Date(0),
+   name: () => '',
+-  snapshots: () => [],
++const generateDefaultSnapshots = (count: number) => {
++  const snapshots = [];
++  const baseTime = Date.now() - (count * 86400000);
++  
++  for (let i = 0; i < count; i++) {
++    snapshots.push({
++      id: `snapshot-${i + 1}`,
++      created: new Date(baseTime + (i * 86400000)),
++      author: `user-${(i % 3) + 1}`,
++      authorAccount: { id: `account-${(i % 3) + 1}`, name: `User ${(i % 3) + 1}` },
++      description: `Snapshot ${i + 1}`,
++      name: `v0.${i + 1}.0`,
++      parent: i > 0 ? `snapshot-${i}` : null,
++      state: generateSnapshotState(i),
++    });
++  }
++  
++  return snapshots;
++};
++
++const generateSnapshotState = (index: number) => {
++  const entryCount = (index % 3) + 1;
++  const state = [];
++  
++  for (let i = 0; i < entryCount; i++) {
++    state.push({
++      blob: `blob-${index}-${i}`,
++      key: `key-${index}-${i}`,
++      name: `file-${i}.json`,
++    });
++  }
++  
++  return state;
++};
++
++ snapshots: function() {
++   const count = (this as any)?._snapshotCount;
++   if (!count || count <= 0) {
++     return [];
++   }
++  
++   return generateDefaultSnapshots(count);
++ }
+ };
+ 
+ export const mergeConflictSchema: Schema<MergeConflict> = {

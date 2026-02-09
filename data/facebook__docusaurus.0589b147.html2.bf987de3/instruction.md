@@ -2,42 +2,32 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with HTML node handling in the remark parser. When parsing markdown content that contains HTML blocks, the parser is generating nodes with incorrect type and value properties.
+I'm experiencing an issue with HTML node generation in the markdown compiler. When processing HTML content in markdown, the generated AST nodes have incorrect properties. Specifically, the node type appears to be malformed and the value is set to `null` instead of an empty string.
 
 ### Reproduction
 
 ```js
-import {remark} from 'remark'
+// Parse markdown with HTML content
+const processor = remark();
+const ast = processor.parse('<div>test</div>');
 
-const markdown = `
-Some text
-
-<div>HTML content</div>
-
-More text
-`
-
-const result = remark().parse(markdown)
-
-// Inspect the HTML node
-console.log(result.children.find(node => node.type === 'html'))
-// Expected: { type: 'html', value: '<div>HTML content</div>' }
-// Actual: { type: 'htm', value: null }
+// The HTML node has wrong type and value
+console.log(ast); 
+// Expected: { type: "html", value: "" }
+// Actual: { type: "htm", value: null }
 ```
 
 ### Expected behavior
 
-HTML nodes should have:
-- `type` property set to `"html"`
-- `value` property containing the actual HTML string content
+HTML nodes in the AST should have:
+- `type` property set to `"html"` (not `"htm"`)
+- `value` property initialized as an empty string `""` (not `null`)
 
-Instead, the nodes have `type: "htm"` and `value: null`, which breaks any downstream processing that relies on proper HTML node structure.
+This is breaking downstream processing that relies on the correct node structure.
 
 ### System Info
 - remark version: 15.0.1
-- Node.js version: 18.x
-
-This is breaking my markdown-to-html pipeline as the HTML passthrough content is not being preserved correctly.
+- Node version: 18.x
 
 ---
 Repository: /testbed

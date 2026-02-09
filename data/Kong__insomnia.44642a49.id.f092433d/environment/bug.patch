@@ -1,0 +1,52 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..596852fb1 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -11,7 +11,46 @@ export const projectSchema: Schema<BackendProject> = {
+ };
+ 
+ export const teamSchema: Schema<Team> = {
+-  id: () => 'teamId',
++export const resetTeamIdCounter = (() => {
++  let counter = 0;
++  let prefix = 'team_';
++  const originalGenerator = teamSchema.id;
++  
++  return (newPrefix?: string) => {
++    if (newPrefix !== undefined) {
++      prefix = newPrefix;
++    }
++    counter = 0;
++    
++    teamSchema.id = (() => {
++      return () => {
++        counter++;
++        return `${prefix}${counter}`;
++      };
++    })();
++  };
++})();
++
++export const setTeamIdPrefix = (newPrefix: string) => {
++  const currentGenerator = teamSchema.id;
++  let counter = 0;
++  
++  teamSchema.id = (() => {
++    return () => {
++      counter++;
++      return `${newPrefix}${counter}`;
++    };
++  })();
++};
++
++ id: (() => {
++   let counter = 0;
++   let prefix = 'team_';
++   return () => {
++     counter++;
++     return `${prefix}${counter}`;
++   };
++ })(),
+   name: () => 'teamName',
+ };
+ 

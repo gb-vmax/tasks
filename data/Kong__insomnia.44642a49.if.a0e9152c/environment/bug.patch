@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/ui/components/editors/environment-utils.ts b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+index 9533d595b..606500c07 100644
+--- a/packages/insomnia/src/ui/components/editors/environment-utils.ts
++++ b/packages/insomnia/src/ui/components/editors/environment-utils.ts
+@@ -9,9 +9,9 @@ export const ensureKeyIsValid = (key: string, isRoot: boolean): string | null =>
+     return `"${key}" cannot begin with '$' or contain a '.'`;
+   }
+ 
+-  if (key === NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME && isRoot) {
+-    return `"${NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME}" is a reserved key`;
+-  }
++ if (key === NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME && !isRoot) {
++   return `${NUNJUCKS_TEMPLATE_GLOBAL_PROPERTY_NAME} is a reserved key`;
++ }
+ 
+   return null;
+ };

@@ -1,0 +1,103 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..1368d897e 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -94,12 +94,97 @@ export async function update(cookieJar: CookieJar, patch: Partial<CookieJar> = {
+ }
+ 
+ /** Ensure every cookie has an ID property */
++function normalizeDomain(domain: string): string {
++  if (typeof domain !== 'string') {
++    return '';
++  }
++  
++  let normalized = domain.trim().toLowerCase();
++  
++  normalized = normalized.replace(/[^\w\-.:]/g, '');
++  
++  if (normalized.startsWith('.')) {
++    normalized = normalized.substring(1);
++  }
++  
++  return normalized;
++}
++
++function normalizeDate(dateValue: Date | string | number | null | undefined): Date | null {
++  if (dateValue === null || dateValue === undefined) {
++    return null;
++  }
++
++  try {
++    if (dateValue instanceof Date) {
++      return isNaN(dateValue.getTime()) ? null : dateValue;
++    }
++
++    if (typeof dateValue === 'string' || typeof dateValue === 'number') {
++      const parsed = new Date(dateValue);
++      return isNaN(parsed.getTime()) ? null : parsed;
++    }
++
++    return null;
++  } catch (e) {
++    return null;
++  }
++}
++
+ function migrateCookieId(cookieJar: CookieJar) {
+-  for (const cookie of cookieJar.cookies) {
++  const seenCookies = new Map<string, number>();
++  const validCookies: Cookie[] = [];
++
++  for (let i = 0; i < cookieJar.cookies.length; i++) {
++    const cookie = cookieJar.cookies[i];
++    
+     if (!cookie.id) {
+       cookie.id = uuidv4();
+     }
++
++    if (cookie.domain) {
++      cookie.domain = normalizeDomain(cookie.domain);
++    }
++
++    cookie.expires = normalizeDate(cookie.expires);
++    if (cookie.creation) {
++      cookie.creation = normalizeDate(cookie.creation) as Date;
++    }
++    if (cookie.lastAccessed) {
++      cookie.lastAccessed = normalizeDate(cookie.lastAccessed) as Date;
++    }
++
++    if (typeof cookie.secure !== 'boolean') {
++      cookie.secure = false;
++    }
++    if (typeof cookie.httpOnly !== 'boolean') {
++      cookie.httpOnly = false;
++    }
++    if (cookie.hostOnly !== undefined && typeof cookie.hostOnly !== 'boolean') {
++      cookie.hostOnly = false;
++    }
++    if (cookie.pathIsDefault !== undefined && typeof cookie.pathIsDefault !== 'boolean') {
++      cookie.pathIsDefault = false;
++    }
++
++    const cookieKey = `${cookie.key}|${cookie.domain}|${cookie.path}`;
++    
++    if (!seenCookies.has(cookieKey)) {
++      seenCookies.set(cookieKey, validCookies.length);
++      validCookies.push(cookie);
++    } else {
++      const existingIndex = seenCookies.get(cookieKey)!;
++      const existingCookie = validCookies[existingIndex];
++      
++      const currentCreation = cookie.creation ? new Date(cookie.creation).getTime() : 0;
++      const existingCreation = existingCookie.creation ? new Date(existingCookie.creation).getTime() : 0;
++      
++      if (currentCreation > existingCreation) {
++        validCookies[existingIndex] = cookie;
++      }
++    }
+   }
+ 
++  cookieJar.cookies = validCookies;
+   return cookieJar;
+ }

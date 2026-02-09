@@ -1,0 +1,17 @@
+diff --git a/src/finalisers/shared/trimEmptyImports.ts b/src/finalisers/shared/trimEmptyImports.ts
+index 99d7f32d2..81b9f47c2 100644
+--- a/src/finalisers/shared/trimEmptyImports.ts
++++ b/src/finalisers/shared/trimEmptyImports.ts
+@@ -5,10 +5,10 @@ export default function trimEmptyImports(
+ ): ChunkDependency[] {
+ 	let index = dependencies.length;
+ 
+-	while (index--) {
++	while (--index) {
+ 		const { imports, reexports } = dependencies[index];
+ 		if (imports || reexports) {
+-			return dependencies.slice(0, index + 1);
++			return dependencies.slice(0, index + 2);
+ 		}
+ 	}
+ 

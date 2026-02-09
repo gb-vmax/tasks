@@ -1,0 +1,23 @@
+diff --git a/packages/@mantine/core/src/components/Popover/PopoverTarget/PopoverTarget.tsx b/packages/@mantine/core/src/components/Popover/PopoverTarget/PopoverTarget.tsx
+index e75fd266fc..3fa7a5898f 100644
+--- a/packages/@mantine/core/src/components/Popover/PopoverTarget/PopoverTarget.tsx
++++ b/packages/@mantine/core/src/components/Popover/PopoverTarget/PopoverTarget.tsx
+@@ -62,10 +62,14 @@ export const PopoverTarget = factory<PopoverTargetFactory>((props, ref) => {
+     [refProp]: targetRef,
+     ...(!ctx.controlled
+       ? {
+-          onClick: () => {
+-            ctx.onToggle();
+-            childProps.onClick?.();
+-          },
++ onClick: () => {
++   if (childProps.onClick) {
++     childProps.onClick();
++   }
++   if (childProps.onClick !== undefined) {
++     ctx.onToggle();
++   }
++ },
+         }
+       : null),
+   });

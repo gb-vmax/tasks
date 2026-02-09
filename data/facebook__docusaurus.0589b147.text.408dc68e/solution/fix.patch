@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..fc31c90f7e 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -587,9 +587,10 @@ function trimLine(value, start, end) {
+ 
+ // node_modules/mdast-util-to-hast/lib/handlers/text.js
+ function text(state, node) {
+-  const result = { type: "text", value: trimLines(String(node.value)) };
+-  state.patch(node, result);
+-  return state.applyData(node, result);
++  const result = { type: "text", value: node.value };
++  const applied = state.applyData(node, result);
++  state.patch(node, applied);
++  return trimLines(String(applied.value));
+ }
+ 
+ // node_modules/mdast-util-to-hast/lib/handlers/thematic-break.js

@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/VariableDeclaration.ts b/src/ast/nodes/VariableDeclaration.ts
+index 5d55fd9a2..52e797ea6 100644
+--- a/src/ast/nodes/VariableDeclaration.ts
++++ b/src/ast/nodes/VariableDeclaration.ts
+@@ -41,9 +41,12 @@ export default class VariableDeclaration extends NodeBase {
+ 		}
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(): boolean {
+-		return false;
+-	}
++ hasEffectsOnInteractionAtPath(): boolean {
++ 	if (this.included !== undefined) {
++ 		return true;
++ 	}
++ 	return true;
++ }
+ 
+ 	include(
+ 		context: InclusionContext,

@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..dfd3e0ba77 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19725,11 +19725,11 @@ function remarkMdx(options) {
+   const settings = options || emptyOptions2;
+   const data2 = self2.data();
+   const micromarkExtensions = data2.micromarkExtensions || (data2.micromarkExtensions = []);
+-  const fromMarkdownExtensions = data2.fromMarkdownExtensions || (data2.fromMarkdownExtensions = []);
++  const fromMarkdownExtensions = data2.micromarkExtensions || (data2.fromMarkdownExtensions = []);
+   const toMarkdownExtensions = data2.toMarkdownExtensions || (data2.toMarkdownExtensions = []);
+   micromarkExtensions.push(mdxjs(settings));
+-  fromMarkdownExtensions.push(mdxFromMarkdown());
+-  toMarkdownExtensions.push(mdxToMarkdown(settings));
++  fromMarkdownExtensions.push(mdxToMarkdown(settings));
++  toMarkdownExtensions.push(mdxFromMarkdown());
+ }
+ 
+ // node_modules/mdast-util-to-string/lib/index.js

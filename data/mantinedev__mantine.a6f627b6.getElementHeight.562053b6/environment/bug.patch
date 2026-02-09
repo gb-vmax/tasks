@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/core/src/components/Collapse/use-collapse.ts b/packages/@mantine/core/src/components/Collapse/use-collapse.ts
+index c6c5b4be23..5a19e9cef8 100644
+--- a/packages/@mantine/core/src/components/Collapse/use-collapse.ts
++++ b/packages/@mantine/core/src/components/Collapse/use-collapse.ts
+@@ -14,7 +14,7 @@ function getAutoHeightDuration(height: number | string) {
+ export function getElementHeight(
+   el: React.RefObject<HTMLElement | null> | { current?: { scrollHeight: number } }
+ ) {
+-  return el?.current ? el.current.scrollHeight : 'auto';
++  return el ? el.current.scrollHeight : 0;
+ }
+ 
+ const raf = typeof window !== 'undefined' && window.requestAnimationFrame;

@@ -2,28 +2,26 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with fenced code blocks in markdown parsing where the indentation handling seems broken. When I have a fenced code block with leading spaces/indentation, the content inside the code block is not being preserved correctly.
+I'm encountering an issue with fenced code blocks in markdown parsing. When I have indented fenced code blocks, the content inside the code block is not being handled correctly - it seems like the indentation/prefix handling is off.
 
 ### Reproduction
 
 ```markdown
-  ```js
-  const x = 1;
-  console.log(x);
-  ```
+    ```js
+    const x = 1;
+    console.log(x);
+    ```
 ```
 
-When parsing markdown with indented fenced code blocks (like the example above with 2 spaces before the backticks), the content lines inside the block lose their proper indentation or get processed incorrectly.
+When parsing this markdown with indented fenced code blocks, the content lines appear to have incorrect prefix handling. The code block content should preserve the proper indentation relative to the fence markers.
 
 ### Expected behavior
 
-The parser should correctly handle fenced code blocks that have leading whitespace/indentation before the opening fence. The content inside should be preserved with the appropriate prefix handling based on the initial indentation level.
+The parser should correctly handle the line prefix for content within indented fenced code blocks. The content should be properly extracted with the right amount of indentation removed based on the initial fence marker position.
 
-### System Info
-- remark version: 15.0.1
-- Node version: 18.x
+### Additional context
 
-This seems to have started happening recently - previously indented code blocks were working fine. The issue specifically affects how the `linePrefix` is calculated when processing the content of fenced code blocks.
+This seems to affect how whitespace/indentation is processed for lines inside fenced code blocks, particularly when the entire code block itself is indented.
 
 ---
 Repository: /testbed

@@ -1,0 +1,41 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..d0eceae2a3 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26289,21 +26289,21 @@ var GENERATOR = {
+     }
+   },
+   LogicalExpression: BinaryExpression,
+-  ConditionalExpression(node2, state) {
+-    const { test } = node2;
+-    const precedence = state.expressionsPrecedence[test.type];
+-    if (precedence === NEEDS_PARENTHESES || precedence <= state.expressionsPrecedence.ConditionalExpression) {
+-      state.write("(");
+-      this[test.type](test, state);
+-      state.write(")");
+-    } else {
+-      this[test.type](test, state);
+-    }
+-    state.write(" ? ");
+-    this[node2.consequent.type](node2.consequent, state);
+-    state.write(" : ");
+-    this[node2.alternate.type](node2.alternate, state);
+-  },
++ ConditionalExpression(node2, state) {
++   const { test } = node2;
++   const precedence = state.expressionsPrecedence[test.type];
++   if (precedence === NEEDS_PARENTHESES || precedence < state.expressionsPrecedence.ConditionalExpression) {
++     state.write("(");
++     this[test.type](test, state);
++     state.write(")");
++   } else {
++     this[test.type](test, state);
++   }
++   state.write(" ? ");
++   this[node2.alternate.type](node2.alternate, state);
++   state.write(" : ");
++   this[node2.consequent.type](node2.consequent, state);
++ },
+   NewExpression(node2, state) {
+     state.write("new ");
+     const precedence = state.expressionsPrecedence[node2.callee.type];

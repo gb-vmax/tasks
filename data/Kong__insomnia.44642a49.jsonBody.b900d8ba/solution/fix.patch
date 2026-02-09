@@ -1,0 +1,59 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..d47bb64a1 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -255,7 +255,53 @@ export class Response extends Property {
+                     status: (expected: number | string) => haveStatus(expected, false),
+                     header: (expected: string) => haveHeader(expected, false),
+                     body: (expected: string) => haveBody(expected, false),
+-                    jsonBody: (expected: object) => haveJsonBody(expected, false),
++const matchesPartialObject = (actual: any, expected: any): boolean => {
++    if (expected === null || expected === undefined) {
++        return actual === expected;
++    }
++    
++    if (typeof expected !== 'object' || typeof actual !== 'object') {
++        return deepEqual(actual, expected, { strict: true });
++    }
++    
++    if (Array.isArray(expected)) {
++        if (!Array.isArray(actual) || actual.length < expected.length) {
++            return false;
++        }
++        return expected.every((expectedItem, index) => 
++            matchesPartialObject(actual[index], expectedItem)
++        );
++    }
++    
++    for (const key in expected) {
++        if (expected.hasOwnProperty(key)) {
++            if (!(key in actual)) {
++                return false;
++            }
++            if (!matchesPartialObject(actual[key], expected[key])) {
++                return false;
++            }
++        }
++    }
++    
++    return true;
++};
++
++const getValueByPath = (obj: any, path: string): any => {
++    const keys = path.split('.');
++    let current = obj;
++    
++    for (const key of keys) {
++        if (current === null || current === undefined || typeof current !== 'object') {
++            return undefined;
++        }
++        current = current[key];
++    }
++    
++    return current;
++};
++
++ jsonBody: (expected: object | { value: object; partial?: boolean } | { path: string; value: any }) => haveJsonBody(expected, false),
+                     jsonSchema: (expected: object) => haveJsonSchema(expected, false),
+                 },
+             },

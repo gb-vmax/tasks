@@ -2,27 +2,37 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX parsing where constructs with `resolveAll` are being added to the `resolveAllConstructs` array even when they're already present. This appears to be causing duplicate processing of certain markdown constructs.
+I'm experiencing an issue with MDX parsing where constructs with `resolveAll` are not being properly registered, and the event resolution seems to be off by one position.
 
 ### Reproduction
 
 ```js
-// When parsing MDX content with constructs that have resolveAll
-const result = compile('# Hello\n\nSome content', {
-  // ... options
-})
+// Create a tokenizer with a construct that has resolveAll
+const construct = {
+  resolveAll: (events) => {
+    // This should be called but isn't
+    return events;
+  },
+  resolve: (events) => {
+    return events;
+  }
+};
 
-// Constructs with resolveAll are being added multiple times
-// to the resolveAllConstructs array
+// When the tokenizer processes events, the resolveAll function
+// is never added to the resolveAllConstructs array even though
+// it should be
 ```
 
 ### Expected behavior
 
-Each construct with `resolveAll` should only be added once to the `resolveAllConstructs` array. The logic should check if the construct is NOT already in the array before adding it (using `!includes` instead of `includes`).
+1. When a construct has a `resolveAll` property, it should be added to the `resolveAllConstructs` array (currently it only gets added if it's already in the array, which doesn't make sense)
+2. The `splice` operation in the resolve step should use the correct index position
 
-### Additional context
+### System Info
+- @mdx-js/mdx version: 3.0.0
+- Node version: Latest
 
-This seems to be affecting the tokenizer's `addResult` function. The current behavior is adding constructs that are already in the array, when it should be adding constructs that are NOT in the array yet.
+This seems like it might be causing parsing issues with certain MDX constructs that rely on resolveAll callbacks.
 
 ---
 Repository: /testbed

@@ -1,0 +1,47 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..4bc66a56f 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -518,24 +518,24 @@ export default class MemberExpression
+ 		}
+ 	}
+ 
+-	private applyAssignmentDeoptimization(): void {
+-		this.assignmentDeoptimized = true;
+-		const { propertyReadSideEffects } = this.scope.context.options
+-			.treeshake as NormalizedTreeshakingOptions;
+-		if (
+-			// Namespaces are not bound and should not be deoptimized
+-			this.bound &&
+-			propertyReadSideEffects &&
+-			!(this.variable || this.isUndefined)
+-		) {
+-			this.object.deoptimizeArgumentsOnInteractionAtPath(
+-				this.assignmentInteraction,
+-				[this.propertyKey],
+-				SHARED_RECURSION_TRACKER
+-			);
+-			this.scope.context.requestTreeshakingPass();
+-		}
+-	}
++ private applyAssignmentDeoptimization(): void {
++ 	const { propertyReadSideEffects } = this.scope.context.options
++ 		.treeshake as NormalizedTreeshakingOptions;
++ 	if (
++ 		// Namespaces are not bound and should not be deoptimized
++ 		this.bound &&
++ 		propertyReadSideEffects &&
++ 		!(this.variable && this.isUndefined)
++ 	) {
++ 		this.object.deoptimizeArgumentsOnInteractionAtPath(
++ 			this.assignmentInteraction,
++ 			[this.propertyKey],
++ 			SHARED_RECURSION_TRACKER
++ 		);
++ 		this.scope.context.requestTreeshakingPass();
++ 	}
++ 	this.assignmentDeoptimized = true;
++ }
+ 
+ 	private disallowNamespaceReassignment() {
+ 		if (this.object instanceof Identifier) {

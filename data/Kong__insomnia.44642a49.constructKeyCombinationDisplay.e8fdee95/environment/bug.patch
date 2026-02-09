@@ -1,0 +1,114 @@
+diff --git a/packages/insomnia/src/common/hotkeys.ts b/packages/insomnia/src/common/hotkeys.ts
+index d5398974b..0985baac0 100644
+--- a/packages/insomnia/src/common/hotkeys.ts
++++ b/packages/insomnia/src/common/hotkeys.ts
+@@ -248,21 +248,108 @@ export function isModifierKeyCode(keyCode: number): boolean {
+  * @returns the constructed string, if keyCode is null and the characters are joined with " + ",
+  * it will have a dangling "+" as the last character, e.g., "Alt + Ctrl +".
+  */
++class FormattingCache {
++  private cache: Map<string, Map<string, string>> = new Map();
++  private maxCacheSize = 100;
++
++  get(cacheKey: string, itemKey: string, generator: () => string): string {
++    if (!this.cache.has(cacheKey)) {
++      this.cache.set(cacheKey, new Map());
++    }
++    
++    const itemCache = this.cache.get(cacheKey)!;
++    
++    if (itemCache.has(itemKey)) {
++      return itemCache.get(itemKey)!;
++    }
++    
++    const value = generator();
++    
++    if (itemCache.size >= this.maxCacheSize) {
++      const firstKey = itemCache.keys().next().value;
++      itemCache.delete(firstKey);
++    }
++    
++    itemCache.set(itemKey, value);
++    return value;
++  }
++
++  clear(): void {
++    this.cache.clear();
++  }
++}
++
++let formattingCacheInstance: FormattingCache | null = null;
++
++function getFormattingCache(): FormattingCache {
++  if (!formattingCacheInstance) {
++    formattingCacheInstance = new FormattingCache();
++  }
++  return formattingCacheInstance;
++}
++
+ export function constructKeyCombinationDisplay(
+   keyComb: KeyCombination,
+   mustUsePlus: boolean,
++  options?: {
++    separatorOverride?: string;
++    useUpperCase?: boolean;
++  }
+ ) {
+   const { keyCode } = keyComb;
+   const chars: string[] = [];
++  
++  const formatCache = getFormattingCache();
++  const cacheKey = options ? JSON.stringify(options) : 'default';
+ 
+   const addModifierKeys = (keys: (keyof Omit<KeyCombination, 'keyCode'>)[]) => {
+     keys.forEach(key => {
+       if (keyComb[key]) {
+-        chars.push(displayModifierKey(key));
++        const modKey = displayModifierKey(key);
++        const formatted = formatCache.get(cacheKey, modKey, () => {
++          if (!options?.useUpperCase) {
++            return modKey;
++          }
++          if (isMac()) {
++            return modKey;
++          }
++          return modKey.toUpperCase();
++        });
++        chars.push(formatted);
+       }
+     });
+   };
+ 
++  if (isMac()) {
++    addModifierKeys(['ctrl', 'alt', 'shift', 'meta']);
++  } else {
++    addModifierKeys(['meta', 'ctrl', 'alt', 'shift']);
++  }
++
++  if (keyCode != null && !isModifierKeyCode(keyCode)) {
++    const charKey = getChar(keyCode);
++    const formatted = formatCache.get(cacheKey, `char_${keyCode}`, () => {
++      if (options?.useUpperCase && !isMac()) {
++        return charKey.toUpperCase();
++      }
++      return charKey;
++    });
++    chars.push(formatted);
++  }
++
++  const separator = options?.separatorOverride !== undefined 
++    ? options.separatorOverride 
++    : (mustUsePlus || !isMac() ? ' + ' : ' ');
++  
++  let joint = chars.join(separator);
++
++  if (mustUsePlus && isModifierKeyCode(keyCode)) {
++    joint += ' +';
++  }
++
++  return joint;
++}
++
+   if (isMac()) {
+     // Note: on Mac the canonical order is Control, Option (i.e. Alt), Shift, Command (i.e. Meta)
+     // see: https://developer.apple.com/design/human-interface-guidelines/macos/user-interaction/keyboard

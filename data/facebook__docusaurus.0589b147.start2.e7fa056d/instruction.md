@@ -2,31 +2,30 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX parsing where certain character codes are not being handled correctly. When processing content with specific characters, the parser seems to skip or mishandle constructs that should be triggered.
+I'm experiencing an issue with MDX parsing where certain character codes aren't being handled correctly. It seems like the tokenizer is not properly processing constructs when specific code points are encountered.
 
 ### Reproduction
 
 ```js
-// Example MDX content that triggers the issue
+// When parsing MDX content with special characters
 const mdxContent = `
 # Heading
-
-Some text with special characters or null codes
+Some text with special characters
 `;
 
-// Parse the content
-const result = compile(mdxContent);
+// The parser fails to correctly tokenize certain constructs
+// Constructs mapped to specific character codes are being skipped
 ```
-
-The parser doesn't properly match constructs when it encounters certain character codes. It appears that the logic for checking character mappings is not working as expected, causing some valid MDX syntax to be ignored or parsed incorrectly.
 
 ### Expected behavior
 
-The parser should correctly identify and process all valid constructs based on the character code mappings, including handling null character scenarios properly.
+The tokenizer should correctly identify and process all constructs based on their character codes. Both character-specific constructs and null-fallback constructs should be evaluated properly.
 
-### System Info
-- @mdx-js/mdx version: 3.0.0
-- Node version: 18.x
+### Additional context
+
+This appears to affect how the parser handles the construct map lookup. When a specific character code is present, the corresponding construct should be retrieved and processed, but it seems like the logic for combining character-specific and fallback constructs might not be working as intended.
+
+The issue manifests when parsing certain MDX documents where expected syntax elements are not being recognized or processed correctly by the tokenizer.
 
 ---
 Repository: /testbed

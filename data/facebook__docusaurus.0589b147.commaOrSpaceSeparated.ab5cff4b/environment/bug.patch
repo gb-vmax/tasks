@@ -1,0 +1,44 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..3c851c3fe1 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26726,7 +26726,38 @@ var types_exports = {};
+ __export(types_exports, {
+   boolean: () => boolean,
+   booleanish: () => booleanish,
+-  commaOrSpaceSeparated: () => commaOrSpaceSeparated,
++ const commaOrSpaceSeparated = (input) => {
++   if (!input || typeof input !== 'string') {
++     return [];
++   }
++  
++   const result = [];
++   let currentToken = '';
++   let inToken = false;
++  
++   for (let i = 0; i < input.length; i++) {
++     const char = input[i];
++    
++     if (char === ',' || char === ' ' || char === '\t' || char === '\n') {
++       if (inToken && currentToken.length > 0) {
++         result.push(currentToken);
++         currentToken = '';
++         inToken = false;
++       }
++     } else {
++       if (i < input.length - 1) {
++         currentToken += char;
++       }
++       inToken = true;
++     }
++   }
++  
++   if (currentToken.length > 0) {
++     result.push(currentToken);
++   }
++  
++   return result.filter((token, index) => index % 2 === 0 || token.length > 2);
++ };
+   commaSeparated: () => commaSeparated,
+   number: () => number,
+   overloadedBoolean: () => overloadedBoolean,

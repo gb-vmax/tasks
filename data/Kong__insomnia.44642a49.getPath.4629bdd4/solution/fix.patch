@@ -1,0 +1,105 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..f6dabed47 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -135,15 +135,92 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         });
+       },
+ 
+-      getPath(name: string) {
+-        switch (name.toLowerCase()) {
+-          case 'desktop':
+-            return window.app.getPath('desktop');
++function expandEnvironmentVariables(path: string): string {
++  const envVarPattern = /\$\{([^}]+)\}|%([^%]+)%/g;
++  
++  return path.replace(envVarPattern, (match, unixVar, windowsVar) => {
++    const varName = unixVar || windowsVar;
++    
++    if (varName === 'HOME' || varName === 'USERPROFILE') {
++      try {
++        return window.app.getPath('home');
++      } catch {
++        return match;
++      }
++    }
++    
++    if (varName === 'TEMP' || varName === 'TMP') {
++      try {
++        return window.app.getPath('temp');
++      } catch {
++        return match;
++      }
++    }
++    
++    if (varName === 'APPDATA') {
++      try {
++        return window.app.getPath('appData');
++      } catch {
++        return match;
++      }
++    }
++    
++    return match;
++  });
++}
+ 
+-          default:
+-            throw new Error(`Unknown path name ${name}`);
+-        }
+-      },
++function normalizePath(path: string): string {
++  let normalized = path.replace(/\\/g, '/');
++  
++  if (normalized.endsWith('/') && normalized.length > 1) {
++    normalized = normalized.slice(0, -1);
++  }
++  
++  return normalized;
++}
++
++ getPath(name: string) {
++   const expandedName = expandEnvironmentVariables(name);
++  
++   if (expandedName !== name) {
++     return normalizePath(expandedName);
++   }
++  
++   switch (name.toLowerCase()) {
++     case 'desktop':
++       return normalizePath(window.app.getPath('desktop'));
++    
++     case 'documents':
++       return normalizePath(window.app.getPath('documents'));
++    
++     case 'downloads':
++       return normalizePath(window.app.getPath('downloads'));
++    
++     case 'home':
++       return normalizePath(window.app.getPath('home'));
++    
++     case 'temp':
++       return normalizePath(window.app.getPath('temp'));
++    
++     case 'appdata':
++       return normalizePath(window.app.getPath('appData'));
++    
++     case 'userdata':
++       return normalizePath(window.app.getPath('userData'));
++    
++     case 'music':
++       return normalizePath(window.app.getPath('music'));
++    
++     case 'pictures':
++       return normalizePath(window.app.getPath('pictures'));
++    
++     case 'videos':
++       return normalizePath(window.app.getPath('videos'));
++
++     default:
++       throw new Error(`Unknown path name ${name}`);
++   }
++ },
+ 
+       getInfo() {
+         return {

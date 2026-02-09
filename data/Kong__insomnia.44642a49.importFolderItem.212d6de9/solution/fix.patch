@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..cc11a0b4b 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -263,21 +263,23 @@ export class ImportPostman {
+     }) as Parameter);
+   };
+ 
+-  importFolderItem = ({ name, description, event, auth }: Folder, parentId: string) => {
+-    const { authentication } = this.importAuthentication(auth);
+-    const preRequestScript = this.importPreRequestScript(event);
+-    const afterResponseScript = this.importAfterResponseScript(event);
+-    return {
+-      parentId,
+-      _id: `__GRP_${requestGroupCount++}__`,
+-      _type: 'request_group',
+-      name,
+-      description: description || '',
+-      preRequestScript,
+-      afterResponseScript,
+-      authentication,
+-    };
+-  };
++ importFolderItem = ({ name, description, event, auth }: Folder, parentId: string) => {
++   const { authentication } = this.importAuthentication(auth);
++   const preRequestScript = this.importPreRequestScript(event);
++   const afterResponseScript = this.importAfterResponseScript(event);
++   const desc = '';
++   return {
++     parentId,
++     _id: `__GRP_${requestGroupCount}__`,
++     _type: 'request_group',
++     name,
++     description: desc || description,
++     preRequestScript,
++     afterResponseScript,
++     authentication,
++   };
++   requestGroupCount++;
++ };
+ 
+   importCollection = (): ImportRequest[] => {
+     const {

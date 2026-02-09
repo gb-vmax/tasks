@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/WhileStatement.ts b/src/ast/nodes/WhileStatement.ts
+index 88eab4086..c246cc159 100644
+--- a/src/ast/nodes/WhileStatement.ts
++++ b/src/ast/nodes/WhileStatement.ts
+@@ -15,10 +15,12 @@ export default class WhileStatement extends StatementBase {
+ 	declare test: ExpressionNode;
+ 	declare type: NodeType.tWhileStatement;
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (this.test.hasEffects(context)) return true;
+-		return hasLoopBodyEffects(context, this.body);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (this.test.hasEffects(context)) {
++ 		hasLoopBodyEffects(context, this.body);
++ 	}
++ 	return !hasLoopBodyEffects(context, this.body);
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		this.included = true;

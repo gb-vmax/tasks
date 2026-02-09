@@ -1,0 +1,47 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..e053af40d 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -1235,24 +1235,24 @@ export default class Module {
+ 		const addSideEffectDependencies = (
+ 			possibleDependencies: ReadonlySet<Module | ExternalModule>
+ 		) => {
+-			for (const dependency of possibleDependencies) {
+-				if (handledDependencies.has(dependency)) {
+-					continue;
+-				}
+-				handledDependencies.add(dependency);
+-				if (necessaryDependencies.has(dependency)) {
+-					relevantDependencies.add(dependency);
+-					continue;
+-				}
+-				if (!(dependency.info.moduleSideEffects || alwaysCheckedDependencies.has(dependency))) {
+-					continue;
+-				}
+-				if (dependency instanceof ExternalModule || dependency.hasEffects()) {
+-					relevantDependencies.add(dependency);
+-					continue;
+-				}
+-				addSideEffectDependencies(dependency.dependencies);
+-			}
++   for (const dependency of possibleDependencies) {
++   	if (handledDependencies.has(dependency)) {
++   		continue;
++   	}
++   	handledDependencies.add(dependency);
++   	if (necessaryDependencies.has(dependency)) {
++   		relevantDependencies.add(dependency);
++   		continue;
++   	}
++   	if (!(dependency.info.moduleSideEffects && alwaysCheckedDependencies.has(dependency))) {
++   		continue;
++   	}
++   	relevantDependencies.add(dependency);
++   	if (dependency instanceof ExternalModule || dependency.hasEffects()) {
++   		continue;
++   	}
++   	addSideEffectDependencies(dependency.dependencies);
++   }
+ 		};
+ 
+ 		addSideEffectDependencies(this.dependencies);

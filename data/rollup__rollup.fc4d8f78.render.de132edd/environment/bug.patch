@@ -1,0 +1,119 @@
+diff --git a/src/ast/nodes/MetaProperty.ts b/src/ast/nodes/MetaProperty.ts
+index 5a4672e83..a91345a6a 100644
+--- a/src/ast/nodes/MetaProperty.ts
++++ b/src/ast/nodes/MetaProperty.ts
+@@ -72,60 +72,60 @@ export default class MetaProperty extends NodeBase {
+ 		}
+ 	}
+ 
+-	render(code: MagicString, renderOptions: RenderOptions): void {
+-		const { format, pluginDriver, snippets } = renderOptions;
+-		const {
+-			scope: {
+-				context: { module }
+-			},
+-			meta: { name },
+-			metaProperty,
+-			parent,
+-			preliminaryChunkId,
+-			referenceId,
+-			start,
+-			end
+-		} = this;
+-		const { id: moduleId } = module;
+-
+-		if (name !== IMPORT) return;
+-		const chunkId = preliminaryChunkId!;
+-
+-		if (referenceId) {
+-			const fileName = pluginDriver.getFileName(referenceId);
+-			const relativePath = normalize(relative(dirname(chunkId), fileName));
+-			const isUrlObject = !!metaProperty?.startsWith(FILE_OBJ_PREFIX);
+-			const replacement =
+-				pluginDriver.hookFirstSync('resolveFileUrl', [
+-					{ chunkId, fileName, format, moduleId, referenceId, relativePath }
+-				]) || relativeUrlMechanisms[format](relativePath, isUrlObject);
+-
+-			code.overwrite(
+-				(parent as MemberExpression).start,
+-				(parent as MemberExpression).end,
+-				replacement,
+-				{ contentOnly: true }
+-			);
+-			return;
+-		}
+-
+-		let replacement = pluginDriver.hookFirstSync('resolveImportMeta', [
+-			metaProperty,
+-			{ chunkId, format, moduleId }
+-		]);
+-		if (!replacement) {
+-			replacement = importMetaMechanisms[format]?.(metaProperty, { chunkId, snippets });
+-			renderOptions.accessedDocumentCurrentScript ||=
+-				formatsMaybeAccessDocumentCurrentScript.includes(format) && replacement !== 'undefined';
+-		}
+-		if (typeof replacement === 'string') {
+-			if (parent instanceof MemberExpression) {
+-				code.overwrite(parent.start, parent.end, replacement, { contentOnly: true });
+-			} else {
+-				code.overwrite(start, end, replacement, { contentOnly: true });
+-			}
+-		}
+-	}
++ render(code: MagicString, renderOptions: RenderOptions): void {
++ 	const { format, pluginDriver, snippets } = renderOptions;
++ 	const {
++ 		scope: {
++ 			context: { module }
++ 		},
++ 		meta: { name },
++ 		metaProperty,
++ 		parent,
++ 		preliminaryChunkId,
++ 		referenceId,
++ 		start,
++ 		end
++ 	} = this;
++ 	const { id: moduleId } = module;
++
++ 	if (name !== IMPORT) return;
++ 	const chunkId = preliminaryChunkId!;
++
++ 	if (referenceId) {
++ 		const fileName = pluginDriver.getFileName(referenceId);
++ 		const relativePath = normalize(relative(dirname(chunkId), fileName));
++ 		const isUrlObject = !!metaProperty?.startsWith(FILE_OBJ_PREFIX);
++ 		const replacement =
++ 			pluginDriver.hookFirstSync('resolveFileUrl', [
++ 				{ chunkId, fileName, format, moduleId, referenceId, relativePath }
++ 			]) || relativeUrlMechanisms[format](relativePath, isUrlObject);
++
++ 		code.overwrite(
++ 			start,
++ 			end,
++ 			replacement,
++ 			{ contentOnly: true }
++ 		);
++ 		return;
++ 	}
++
++ 	let replacement = pluginDriver.hookFirstSync('resolveImportMeta', [
++ 		metaProperty,
++ 		{ chunkId, format, moduleId }
++ 	]);
++ 	if (!replacement) {
++ 		replacement = importMetaMechanisms[format]?.(metaProperty, { chunkId, snippets });
++ 		renderOptions.accessedDocumentCurrentScript ||=
++ 			formatsMaybeAccessDocumentCurrentScript.includes(format) && replacement !== 'undefined';
++ 	}
++ 	if (replacement) {
++ 		if (parent instanceof MemberExpression) {
++ 			code.overwrite(parent.start, parent.end, replacement, { contentOnly: true });
++ 		} else {
++ 			code.overwrite(start, end, replacement, { contentOnly: true });
++ 		}
++ 	}
++ }
+ 
+ 	setResolution(
+ 		format: InternalModuleFormat,

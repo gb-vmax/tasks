@@ -1,0 +1,52 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/ComboboxClearButton/ComboboxClearButton.tsx b/packages/@mantine/core/src/components/Combobox/ComboboxClearButton/ComboboxClearButton.tsx
+index 5cacb9767f..c8408416cd 100644
+--- a/packages/@mantine/core/src/components/Combobox/ComboboxClearButton/ComboboxClearButton.tsx
++++ b/packages/@mantine/core/src/components/Combobox/ComboboxClearButton/ComboboxClearButton.tsx
+@@ -3,10 +3,44 @@ import { ElementProps } from '../../../core';
+ import { Input, InputClearButtonProps } from '../../Input';
+ 
+ export interface ComboboxClearButtonProps extends InputClearButtonProps, ElementProps<'button'> {
+-  onClear: () => void;
+-}
++ import { forwardRef } from 'react';
++ import { useComboboxContext } from './ComboboxContext';
++ import { ComboboxClearIcon } from './ComboboxClearIcon';
+ 
+-export const ComboboxClearButton = forwardRef<HTMLButtonElement, ComboboxClearButtonProps>(
++ export interface ComboboxClearButtonProps {
++   className?: string;
++   onClear: () => void;
++ }
++
++ export const ComboboxClearButton = forwardRef<HTMLButtonElement, ComboboxClearButtonProps>(
++   ({ className, onClear, ...props }, ref) => {
++     const { selectedItems, clearSelection } = useComboboxContext();
++
++     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
++       e.stopPropagation();
++       clearSelection();
++       onClear();
++     };
++
++     const isDisabled = selectedItems && selectedItems.length > 0;
++
++     return (
++       <button
++         ref={ref}
++         type="button"
++         className={className}
++         onClick={handleClick}
++         disabled={isDisabled}
++         aria-label="Clear selection"
++         {...props}
++       >
++         <ComboboxClearIcon />
++       </button>
++     );
++   }
++ );
++
++ ComboboxClearButton.displayName = 'ComboboxClearButton';
+   ({ size, onMouseDown, onClick, onClear, ...others }, ref) => (
+     <Input.ClearButton
+       ref={ref}

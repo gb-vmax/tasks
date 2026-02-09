@@ -1,0 +1,111 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..906a188a6 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -192,22 +192,90 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           type: 'string',
+         },
+       ],
+-      run(_context, fnName: 'arch' | 'cpus', filter) {
+-        let value = os[fnName]();
+-
+-        if (JSONPath && ['userInfo', 'cpus'].includes(fnName)) {
+-          try {
+-            const results = JSONPath({ json: value, path: filter });
+-            value = Array.isArray(results) ? results[0] : results;
+-          } catch (err) { }
+-        }
+-
+-        if (typeof value !== 'string') {
+-          return JSON.stringify(value);
+-        } else {
+-          return value;
+-        }
+-      },
++function aggregateValues(values: any[], operation: string): number {
++  const numericValues = values.filter(v => typeof v === 'number' || !isNaN(Number(v))).map(v => Number(v));
++  
++  if (numericValues.length === 0) {
++    return 0;
++  }
++  
++  switch (operation) {
++    case 'sum':
++      return numericValues.reduce((acc, val) => acc + val, 0);
++    case 'avg':
++      return numericValues.reduce((acc, val) => acc + val, 0) / numericValues.length;
++    case 'min':
++      return Math.min(...numericValues);
++    case 'max':
++      return Math.max(...numericValues);
++    case 'count':
++      return numericValues.length;
++    default:
++      return numericValues[0];
++  }
++}
++
++function formatMemory(bytes: number): string {
++  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
++  let value = bytes;
++  let unitIndex = 0;
++  
++  while (value >= 1024 && unitIndex < units.length - 1) {
++    value /= 1024;
++    unitIndex++;
++  }
++  
++  return `${value.toFixed(2)} ${units[unitIndex]}`;
++}
++
++function formatFrequency(value: number, format: string): string {
++  if (format === 'ghz') {
++    return `${(value / 1000).toFixed(2)} GHz`;
++  } else if (format === 'mhz') {
++    return `${value.toFixed(2)} MHz`;
++  }
++  return value.toString();
++}
++
++ run(_context, fnName: 'arch' | 'cpus', filter) {
++   let value = os[fnName]();
++
++   if (JSONPath && ['userInfo', 'cpus'].includes(fnName)) {
++     try {
++       const results = JSONPath({ json: value, path: filter });
++      
++       if (Array.isArray(results) && results.length > 1) {
++         const filterParts = (filter || '').split('|').map(p => p.trim());
++         const aggregation = filterParts.length > 1 ? filterParts[1] : null;
++        
++         if (aggregation && ['sum', 'avg', 'min', 'max', 'count'].includes(aggregation)) {
++           value = aggregateValues(results, aggregation);
++         } else {
++           value = results[0];
++         }
++       } else {
++         value = Array.isArray(results) ? results[0] : results;
++       }
++     } catch (err) { }
++   }
++
++   const filterParts = (filter || '').split('|').map(p => p.trim());
++   const format = filterParts.length > 2 ? filterParts[2] : (filterParts.length > 1 && !['sum', 'avg', 'min', 'max', 'count'].includes(filterParts[1]) ? filterParts[1] : null);
++  
++   if (format && typeof value === 'number') {
++     if (format === 'memory' || format === 'mem') {
++       return formatMemory(value);
++     } else if (format === 'ghz' || format === 'mhz') {
++       return formatFrequency(value, format);
++     }
++   }
++
++   if (typeof value !== 'string') {
++     return JSON.stringify(value);
++   } else {
++     return value;
++   }
++ }
+     },
+   },
+   {

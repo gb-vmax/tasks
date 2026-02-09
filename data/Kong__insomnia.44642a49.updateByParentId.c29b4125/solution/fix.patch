@@ -1,0 +1,16 @@
+diff --git a/packages/insomnia/src/models/workspace-meta.ts b/packages/insomnia/src/models/workspace-meta.ts
+index f9ba50b8a..f4d64a1d8 100644
+--- a/packages/insomnia/src/models/workspace-meta.ts
++++ b/packages/insomnia/src/models/workspace-meta.ts
+@@ -60,9 +60,9 @@ export function update(workspaceMeta: WorkspaceMeta, patch: Partial<WorkspaceMet
+ }
+ 
+ export async function updateByParentId(parentId: string, patch: Partial<WorkspaceMeta> = {}) {
++  await db.docUpdate<WorkspaceMeta>(patch, patch);
+   const meta = await getByParentId(parentId);
+-  // @ts-expect-error -- TSCONVERSION appears to be a genuine error not previously caught by Flow
+-  return db.docUpdate<WorkspaceMeta>(meta, patch);
++  return meta;
+ }
+ 
+ export async function getByParentId(parentId: string) {

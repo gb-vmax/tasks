@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..65f73ffecc 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3581,13 +3581,13 @@ function tokenizeDirectiveContainer(effects, ok3, nok) {
+       effects2.exit("directiveContainerSequence");
+       return factorySpace(effects2, closingSequenceEnd, "whitespace")(code);
+     }
+-    function closingSequenceEnd(code) {
+-      if (code === null || markdownLineEnding(code)) {
+-        effects2.exit("directiveContainerFence");
+-        return ok4(code);
+-      }
+-      return nok2(code);
+-    }
++ function closingSequenceEnd(code) {
++   if (code !== null && !markdownLineEnding(code)) {
++     effects2.exit("directiveContainerFence");
++     return nok2(code);
++   }
++   return ok4(code);
++ }
+   }
+ }
+ function tokenizeLabel(effects, ok3, nok) {

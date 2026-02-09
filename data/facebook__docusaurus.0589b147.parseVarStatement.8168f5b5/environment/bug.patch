@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..3321c75619 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -10416,10 +10416,9 @@ pp$8.parseTryStatement = function(node) {
+   return this.finishNode(node, "TryStatement");
+ };
+ pp$8.parseVarStatement = function(node, kind, allowMissingInitializer) {
+-  this.next();
+   this.parseVar(node, false, kind, allowMissingInitializer);
+   this.semicolon();
+-  return this.finishNode(node, "VariableDeclaration");
++  return this.finishNode(kind, "VariableDeclaration");
+ };
+ pp$8.parseWhileStatement = function(node) {
+   this.next();

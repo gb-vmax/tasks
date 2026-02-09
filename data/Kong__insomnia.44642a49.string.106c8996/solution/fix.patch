@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..d714f714f 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -588,7 +588,49 @@ const convertParameters = (parameters: OpenAPIV3.ParameterObject[] = []) => {
+ // @ts-expect-error -- ran out of time during TypeScript conversion to handle this particular recursion
+ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+   const typeExamples = {
+-    string: () => 'string',
++const generateStringByFormat = (format?: string): string => {
++  const formatExamples: Record<string, string> = {
++    uri: 'https://example.com/path',
++    hostname: 'example.com',
++    ipv4: '192.168.1.1',
++    ipv6: '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
++    uuid: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
++  };
++  
++  return formatExamples[format || ''] || 'string';
++};
++
++const adjustStringLength = (value: string, minLength?: number, maxLength?: number): string => {
++  let result = value;
++  
++  if (minLength !== undefined && result.length < minLength) {
++    const padding = 'a'.repeat(minLength - result.length);
++    result = result + padding;
++  }
++  
++  if (maxLength !== undefined && result.length > maxLength) {
++    result = result.substring(0, maxLength);
++  }
++  
++  return result;
++};
++
++ string: (schema?: OpenAPIV3.SchemaObject) => {
++   if (schema && typeof schema === 'object') {
++     const format = schema.format;
++     const minLength = schema.minLength;
++     const maxLength = schema.maxLength;
++    
++     let baseValue = generateStringByFormat(format);
++    
++     if (minLength !== undefined || maxLength !== undefined) {
++       baseValue = adjustStringLength(baseValue, minLength, maxLength);
++     }
++    
++     return baseValue;
++   }
++   return 'string';
++ },
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',

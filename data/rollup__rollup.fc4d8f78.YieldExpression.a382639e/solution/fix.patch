@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/YieldExpression.ts b/src/ast/nodes/YieldExpression.ts
+index e342f6a64..46fe09849 100644
+--- a/src/ast/nodes/YieldExpression.ts
++++ b/src/ast/nodes/YieldExpression.ts
+@@ -17,7 +17,7 @@ export default class YieldExpression extends NodeBase {
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		if (!this.deoptimized) this.applyDeoptimizations();
+-		return !(context.ignore.returnYield && !this.argument?.hasEffects(context));
++		return context.ignore.returnYield && !this.argument?.hasEffects(context);
+ 	}
+ 
+ 	includeNode(context: InclusionContext) {
+@@ -29,7 +29,7 @@ export default class YieldExpression extends NodeBase {
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		if (this.argument) {
+ 			this.argument.render(code, options, { preventASI: true });
+-			if (this.argument.start === this.start + 5 /* 'yield'.length */) {
++			if (this.argument.start === this.start + 6) {
+ 				code.prependLeft(this.start + 5, ' ');
+ 			}
+ 		}

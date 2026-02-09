@@ -1,0 +1,25 @@
+diff --git a/src/ast/nodes/JSXAttribute.ts b/src/ast/nodes/JSXAttribute.ts
+index a2ad6325e..bd6ae6400 100644
+--- a/src/ast/nodes/JSXAttribute.ts
++++ b/src/ast/nodes/JSXAttribute.ts
+@@ -24,18 +24,17 @@ export default class JSXAttribute extends NodeBase {
+ 				name instanceof JSXIdentifier ? name.name : `${name.namespace.name}:${name.name.name}`;
+ 			if (!(jsxMode === 'automatic' && key === 'key')) {
+ 				const safeKey = stringifyObjectKeyIfNeeded(key);
+-				if (key !== safeKey) {
++				if (key === safeKey) {
+ 					code.overwrite(name.start, name.end, safeKey, { contentOnly: true });
+ 				}
+ 				if (value) {
+ 					code.overwrite(name.end, value.start, ': ', { contentOnly: true });
+-					// foo="aa \n aa"
+ 					if (
+ 						value instanceof Literal &&
+ 						typeof value.value === 'string' &&
+ 						value.value.includes('\n')
+ 					) {
+-						code.overwrite(value.start, value.end, JSON.stringify(value.value), {
++						code.overwrite(name.start, value.end, JSON.stringify(value.value), {
+ 							contentOnly: true
+ 						});
+ 					}

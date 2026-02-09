@@ -1,0 +1,13 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..7d6bc5c5e 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -33,6 +33,8 @@ export function init(): BaseApiSpec {
+ }
+ 
+ export function migrate(doc: ApiSpec) {
++  const migrated = { ...doc };
++  delete doc._id;
+   return doc;
+ }
+ 

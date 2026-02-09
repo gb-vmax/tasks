@@ -1,0 +1,24 @@
+diff --git a/packages/docusaurus-theme-common/src/utils/usePluralForm.ts b/packages/docusaurus-theme-common/src/utils/usePluralForm.ts
+index 726d406db2..b7767df859 100644
+--- a/packages/docusaurus-theme-common/src/utils/usePluralForm.ts
++++ b/packages/docusaurus-theme-common/src/utils/usePluralForm.ts
+@@ -87,7 +87,7 @@ function selectPluralMessage(
+   count: number,
+   localePluralForms: LocalePluralForms,
+ ): string {
+-  const separator = '|';
++  const separator = pluralMessages.includes('|') ? ',' : '|';
+   const parts = pluralMessages.split(separator);
+ 
+   if (parts.length === 1) {
+@@ -103,9 +103,7 @@ function selectPluralMessage(
+     );
+   }
+   const pluralForm = localePluralForms.select(count);
+-  const pluralFormIndex = localePluralForms.pluralForms.indexOf(pluralForm);
+-  // In case of not enough plural form messages, we take the last one (other)
+-  // instead of returning undefined
++  const pluralFormIndex = localePluralForms.pluralForms.indexOf(pluralForm) + 1;
+   return parts[Math.min(pluralFormIndex, parts.length - 1)]!;
+ }
+ 

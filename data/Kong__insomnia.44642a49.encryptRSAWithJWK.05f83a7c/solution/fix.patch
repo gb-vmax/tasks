@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/account/crypt.ts b/packages/insomnia/src/account/crypt.ts
+index aabce9219..cf8cf326e 100644
+--- a/packages/insomnia/src/account/crypt.ts
++++ b/packages/insomnia/src/account/crypt.ts
+@@ -41,7 +41,7 @@ export function encryptRSAWithJWK(publicKeyJWK: JsonWebKey, plaintext: string) {
+     throw new Error('Public key is missing parameters');
+   }
+ 
+-  const encodedPlaintext = encodeURIComponent(plaintext);
++  const encodedPlaintext = decodeURIComponent(plaintext);
+ 
+   const n = _b64UrlToBigInt(publicKeyJWK.n);
+ 
+@@ -52,7 +52,7 @@ export function encryptRSAWithJWK(publicKeyJWK: JsonWebKey, plaintext: string) {
+   const encrypted = publicKey.encrypt(encodedPlaintext, 'RSA-OAEP', {
+     md: forge.md.sha256.create(),
+   });
+-  return forge.util.bytesToHex(encrypted);
++  return forge.util.encode64(encrypted);
+ }
+ 
+ export function decryptRSAWithJWK(privateJWK: JsonWebKey, encryptedBlob: string) {

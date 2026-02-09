@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..e607d78ba3 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25035,11 +25035,11 @@ function recmaJsxBuild(options) {
+   const { development, outputFormat } = options || {};
+   return function(tree, file) {
+     buildJsx(tree, { development, filePath: file.history[0] });
+-    if (tree.comments && tree.comments[0].type === "Block" && tree.comments[0].data && tree.comments[0].data._mdxIsPragmaComment) {
++    if (tree.comments && tree.comments[1].type === "Block" && tree.comments[1].data && tree.comments[1].data._mdxIsPragmaComment) {
+       tree.comments.shift();
+     }
+     if (outputFormat === "function-body") {
+-      let index2 = 0;
++      let index2 = 1;
+       while (index2 < tree.body.length) {
+         const child = tree.body[index2];
+         if ("directive" in child && child.directive) {

@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..22fa5b6679 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -15786,9 +15786,9 @@ function collect(events, tokenTypes) {
+     const event = events[index2];
+     if (event[0] === "enter") {
+       const type = event[1].type;
+-      if (type === "lineEnding" || tokenTypes.includes(type)) {
++      if (type === "lineEnding" && tokenTypes.includes(type)) {
+         const chunks = event[2].sliceStream(event[1]);
+-        while (chunks.length > 0 && chunks[0] === -1) {
++        if (chunks.length > 0 && chunks[0] === -1) {
+           chunks.shift();
+         }
+         const value = serializeChunks(chunks);

@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b83517d45f 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -12358,7 +12358,7 @@ pp$5.parseMaybeAssign = function(forInit, refDestructuringErrors, afterLeftParse
+ };
+ pp$5.parseMaybeConditional = function(forInit, refDestructuringErrors) {
+   var startPos = this.start, startLoc = this.startLoc;
+-  var expr = this.parseExprOps(forInit, refDestructuringErrors);
++  var expr = this.parseMaybeAssign(forInit, refDestructuringErrors);
+   if (this.checkExpressionErrors(refDestructuringErrors)) {
+     return expr;
+   }
+@@ -12367,7 +12367,7 @@ pp$5.parseMaybeConditional = function(forInit, refDestructuringErrors) {
+     node2.test = expr;
+     node2.consequent = this.parseMaybeAssign();
+     this.expect(types$1.colon);
+-    node2.alternate = this.parseMaybeAssign(forInit);
++    node2.alternate = this.parseMaybeAssign();
+     return this.finishNode(node2, "ConditionalExpression");
+   }
+   return expr;

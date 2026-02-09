@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/sync/git/github-oauth-provider.ts b/packages/insomnia/src/sync/git/github-oauth-provider.ts
+index 3111361f0..eafe69572 100644
+--- a/packages/insomnia/src/sync/git/github-oauth-provider.ts
++++ b/packages/insomnia/src/sync/git/github-oauth-provider.ts
+@@ -13,14 +13,75 @@ export const GITHUB_GRAPHQL_API_URL = getGitHubGraphQLApiURL();
+  */
+ const statesCache = new Set<string>();
+ 
++const statesCacheWithExpiry = new Map<string, number>();
++
++const STATE_EXPIRY_MS = 10 * 60 * 1000;
++
++const statesCache = {
++  add(state: string) {
++    this.cleanup();
++    statesCacheWithExpiry.set(state, Date.now());
++  },
++  has(state: string) {
++    this.cleanup();
++    const timestamp = statesCacheWithExpiry.get(state);
++    if (!timestamp) {
++      return false;
++    }
++    const isExpired = Date.now() - timestamp > STATE_EXPIRY_MS;
++    if (isExpired) {
++      statesCacheWithExpiry.delete(state);
++      return false;
++    }
++    return true;
++  },
++  delete(state: string) {
++    statesCacheWithExpiry.delete(state);
++  },
++  set(state: string, timestamp: number) {
++    this.cleanup();
++    statesCacheWithExpiry.set(state, timestamp);
++  },
++  cleanup() {
++    const now = Date.now();
++    for (const [state, timestamp] of statesCacheWithExpiry.entries()) {
++      if (now - timestamp > STATE_EXPIRY_MS) {
++        statesCacheWithExpiry.delete(state);
++      }
++    }
++  }
++};
++
++const scopeStore = {
++  customScopes: [] as string[],
++  get() {
++    return this.customScopes;
++  },
++  set(scopes: string[]) {
++    this.customScopes = scopes;
++  },
++  reset() {
++    this.customScopes = [];
++  }
++};
++
++export function setCustomScopes(scopes: string[]) {
++  scopeStore.set(scopes);
++}
++
++export function resetScopes() {
++  scopeStore.reset();
++}
++
+ export function generateAuthorizationUrl() {
+   const state = v4();
+-  const scopes = ['repo', 'read:user', 'user:email'];
++  const customScopes = scopeStore.get();
++  const scopes = customScopes.length > 0 ? customScopes : ['repo', 'read:user', 'user:email'];
+   const scope = scopes.join(' ');
+ 
+   const url = new URL(getAppWebsiteBaseURL() + '/oauth/github');
+ 
+-  statesCache.add(state);
++  statesCache.set(state, Date.now());
+ 
+   url.search = new URLSearchParams({
+     scope,

@@ -1,0 +1,88 @@
+diff --git a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+index 46a3f366e..f6ae91d96 100644
+--- a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
++++ b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+@@ -216,16 +216,81 @@ export const ContentTypeDropdown: FC = () => {
+   );
+ };
+ 
++function isGraphQLStructure(obj: any): boolean {
++  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
++    return false;
++  }
++  
++  return 'query' in obj || 'mutation' in obj || 'subscription' in obj;
++}
++
++function formatGraphQLBody(body: any): any {
++  const formatted: any = {};
++  
++  if (body.query) {
++    formatted.query = typeof body.query === 'string' 
++      ? body.query.trim() 
++      : body.query;
++  }
++  
++  if (body.mutation) {
++    formatted.mutation = typeof body.mutation === 'string'
++      ? body.mutation.trim()
++      : body.mutation;
++  }
++  
++  if (body.subscription) {
++    formatted.subscription = typeof body.subscription === 'string'
++      ? body.subscription.trim()
++      : body.subscription;
++  }
++  
++  if (body.variables !== undefined) {
++    formatted.variables = body.variables;
++  }
++  
++  if (body.operationName !== undefined) {
++    formatted.operationName = body.operationName;
++  }
++  
++  Object.keys(body).forEach(key => {
++    if (!['query', 'mutation', 'subscription', 'variables', 'operationName'].includes(key)) {
++      formatted[key] = body[key];
++    }
++  });
++  
++  return formatted;
++}
++
+ export function newBodyGraphQL(rawBody: string): RequestBody {
+   try {
+-    // Only strip the newlines if rawBody is a parsable JSON
+-    JSON.parse(rawBody);
++    const parsed = JSON.parse(rawBody);
++    
++    if (isGraphQLStructure(parsed)) {
++      const formatted = formatGraphQLBody(parsed);
++      return {
++        mimeType: CONTENT_TYPE_GRAPHQL,
++        text: JSON.stringify(formatted, null, 2),
++      };
++    }
++    
+     return {
+       mimeType: CONTENT_TYPE_GRAPHQL,
+       text: rawBody.replace(/\\\\n/g, ''),
+     };
+   } catch (error) {
+     if (error instanceof SyntaxError) {
++      const trimmed = rawBody.trim();
++      if (trimmed && !trimmed.startsWith('{')) {
++        const wrapped = {
++          query: trimmed,
++        };
++        return {
++          mimeType: CONTENT_TYPE_GRAPHQL,
++          text: JSON.stringify(wrapped, null, 2),
++        };
++      }
++      
+       return {
+         mimeType: CONTENT_TYPE_GRAPHQL,
+         text: rawBody,

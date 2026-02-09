@@ -1,0 +1,125 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..15b21e126 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -120,38 +120,92 @@ export const database = {
+     }
+     const flushId = await database.bufferChanges();
+ 
+-    async function next<T extends BaseModel>(docToCopy: T, patch: Patch<T>) {
+-      const model = mustGetModel(docToCopy.type);
+-      const overrides = {
+-        _id: generateId(model.prefix),
+-        modified: Date.now(),
+-        created: Date.now(),
+-        type: docToCopy.type, // Ensure this is not overwritten by the patch
+-      };
+-
+-      // 1. Copy the doc
+-      const newDoc = Object.assign({}, docToCopy, patch, overrides);
+-
+-      // Don't initialize the model during insert, and simply duplicate
+-      const createdDoc = await database.insert(newDoc, false, false);
+-
+-      // 2. Get all the children
+-      for (const type of allTypes()) {
+-        // Note: We never want to duplicate a response
+-        if (!models.canDuplicate(type)) {
+-          continue;
++async function _generateDuplicateName(
++  type: string,
++  originalName: string,
++  parentId: string | undefined
++): Promise<string> {
++  const baseName = originalName.replace(/\s+\(Copy(?: \d+)?\)$/, '');
++  
++  const query: any = parentId !== undefined ? { parentId } : {};
++  const siblings = await database.find(type, query);
++  
++  const copyPattern = new RegExp(`^${_escapeRegExp(baseName)}(\\s+\\(Copy(?: (\\d+))?\\))?$`);
++  let maxCopyNumber = 0;
++  let hasExactMatch = false;
++
++  for (const sibling of siblings) {
++    if ('name' in sibling && typeof sibling.name === 'string') {
++      const match = sibling.name.match(copyPattern);
++      if (match) {
++        if (!match[1]) {
++          hasExactMatch = true;
++        } else if (match[2]) {
++          const copyNum = parseInt(match[2], 10);
++          maxCopyNumber = Math.max(maxCopyNumber, copyNum);
++        } else {
++          maxCopyNumber = Math.max(maxCopyNumber, 1);
+         }
++      }
++    }
++  }
+ 
+-        const parentId = docToCopy._id;
+-        const children = await database.find(type, { parentId });
++  if (!hasExactMatch && maxCopyNumber === 0) {
++    return `${baseName} (Copy)`;
++  } else {
++    return `${baseName} (Copy ${maxCopyNumber + 1})`;
++  }
++}
+ 
+-        for (const doc of children) {
+-          await next(doc, { parentId: createdDoc._id });
+-        }
+-      }
++function _escapeRegExp(string: string): string {
++  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
++}
+ 
+-      return createdDoc;
+-    }
++ async function next<T extends BaseModel>(docToCopy: T, patch: Patch<T>) {
++   const model = mustGetModel(docToCopy.type);
++   const overrides = {
++     _id: generateId(model.prefix),
++     modified: Date.now(),
++     created: Date.now(),
++     type: docToCopy.type,
++   };
++
++   const duplicateMetadata = {
++     _duplicateMetadata: {
++       originalId: docToCopy._id,
++       duplicatedAt: Date.now(),
++     },
++   };
++
++   let nameOverride = {};
++   if ('name' in docToCopy && typeof docToCopy.name === 'string') {
++     const generatedName = await _generateDuplicateName(
++       docToCopy.type,
++       docToCopy.name,
++       'parentId' in docToCopy ? (docToCopy as any).parentId : undefined
++     );
++     nameOverride = { name: generatedName };
++   }
++
++   const newDoc = Object.assign({}, docToCopy, patch, nameOverride, duplicateMetadata, overrides);
++
++   const createdDoc = await database.insert(newDoc, false, false);
++
++   for (const type of allTypes()) {
++     if (!models.canDuplicate(type)) {
++       continue;
++     }
++
++     const parentId = docToCopy._id;
++     const children = await database.find(type, { parentId });
++
++     for (const doc of children) {
++       await next(doc, { parentId: createdDoc._id });
++     }
++   }
++
++   return createdDoc;
++ }
+ 
+     const createdDoc = await next(originalDoc, patch);
+     await database.flushChanges(flushId);

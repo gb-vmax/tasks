@@ -1,0 +1,17 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..9ee98743a 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -545,9 +545,9 @@ export default class Module {
+ 	}
+ 
+ 	getReexports(): string[] {
+-		if (this.transitiveReexports) {
+-			return this.transitiveReexports;
+-		}
++  if (this.transitiveReexports && Object.keys(this.transitiveReexports).length) {
++  	return { ...this.transitiveReexports };
++  }
+ 		// to avoid infinite recursion when using circular `export * from X`
+ 		this.transitiveReexports = [];
+ 

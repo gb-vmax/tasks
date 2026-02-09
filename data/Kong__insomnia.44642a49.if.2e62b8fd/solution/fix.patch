@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia-sdk/src/objects/variables.ts b/packages/insomnia-sdk/src/objects/variables.ts
+index 4c72b17f3..377753ac3 100644
+--- a/packages/insomnia-sdk/src/objects/variables.ts
++++ b/packages/insomnia-sdk/src/objects/variables.ts
+@@ -36,11 +36,68 @@ export class Variable extends Property {
+ 
+     // cast typecasts a value to the Variable.types of this Variable.
+     cast(value: any) {
+-        if ('_kind' in value && value._kind === 'Variable') {
+-            return value.value;
++private _coerceToType(value: any): any {
++    if (value === null || value === undefined) {
++        return value;
++    }
++    
++    const typeStr = this.type?.toLowerCase();
++    
++    if (typeStr === 'string') {
++        return String(value);
++    }
++    
++    if (typeStr === 'number') {
++        const num = Number(value);
++        return isNaN(num) ? undefined : num;
++    }
++    
++    if (typeStr === 'boolean') {
++        if (typeof value === 'boolean') {
++            return value;
++        }
++        if (typeof value === 'string') {
++            const lower = value.toLowerCase();
++            if (lower === 'true' || lower === '1' || lower === 'yes') {
++                return true;
++            }
++            if (lower === 'false' || lower === '0' || lower === 'no' || lower === '') {
++                return false;
++            }
++        }
++        if (typeof value === 'number') {
++            return value !== 0;
+         }
+         return undefined;
+     }
++    
++    return value;
++}
++
++ cast(value: any) {
++     if ('_kind' in value && value._kind === 'Variable') {
++         if (value.disabled) {
++             return undefined;
++         }
++         let resolvedValue = value.value;
++         let depth = 0;
++         const maxDepth = 10;
++         while ('_kind' in resolvedValue && resolvedValue._kind === 'Variable' && depth < maxDepth) {
++             if (resolvedValue.disabled) {
++                 return undefined;
++             }
++             resolvedValue = resolvedValue.value;
++             depth++;
++         }
++         return this._coerceToType(resolvedValue);
++     }
++     if (value !== null && value !== undefined) {
++         return this._coerceToType(value);
++     }
++     return undefined;
++ }
++        return undefined;
++    }
+ 
+     get() {
+         return this.value;

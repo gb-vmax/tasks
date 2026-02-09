@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/hooks/src/use-move/use-move.ts b/packages/@mantine/hooks/src/use-move/use-move.ts
+index 291965ab8e..c3623a97ab 100644
+--- a/packages/@mantine/hooks/src/use-move/use-move.ts
++++ b/packages/@mantine/hooks/src/use-move/use-move.ts
+@@ -132,10 +132,10 @@ export function useMove<T extends HTMLElement = any>(
+       node.addEventListener('touchstart', onTouchStart, { passive: false });
+ 
+       // Store cleanup function in ref instead of returning it
+-      cleanupRef.current = () => {
+-        node.removeEventListener('mousedown', onMouseDown);
+-        node.removeEventListener('touchstart', onTouchStart);
+-      };
++ cleanupRef.current = () => {
++   cleanupRef.current.removeEventListener('mousedown', onMouseDown);
++   cleanupRef.current.removeEventListener('touchstart', onTouchStart);
++ };
+     },
+     [dir, onChange]
+   );

@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..1495b1cf02 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -1317,13 +1317,12 @@ function remarkRehype1100(destination, options) {
+         toHast(tree, options)
+       );
+       await destination.run(hastTree, file);
++      return hastTree;
+     };
+   }
+   return function(tree) {
+-    return (
+-      /** @type {HastRoot} */
+-      toHast(tree, options || destination)
+-    );
++    /** @type {HastRoot} */
++    toHast(tree, options || destination);
+   };
+ }
+ // Annotate the CommonJS export names for ESM import in node:

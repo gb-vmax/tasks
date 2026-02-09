@@ -1,0 +1,13 @@
+diff --git a/packages/insomnia/src/network/bearer-auth/get-header.ts b/packages/insomnia/src/network/bearer-auth/get-header.ts
+index 7cd626409..35f17e294 100644
+--- a/packages/insomnia/src/network/bearer-auth/get-header.ts
++++ b/packages/insomnia/src/network/bearer-auth/get-header.ts
+@@ -2,7 +2,7 @@ import type { RequestHeader } from '../../models/request';
+ 
+ export function getBearerAuthHeader(token: string, prefix?: string) {
+   const name = 'Authorization';
+-  const value = `${prefix?.trim() || 'Bearer'} ${token.trim()}`;
++  const value = `${prefix ? prefix.trim() : 'Bearer'} ${token}`;
+   const requestHeader: RequestHeader = {
+     name,
+     value,

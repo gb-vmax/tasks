@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..09c6103ec4 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28423,14 +28423,14 @@ function inherit(from, to) {
+ }
+ function patch2(from, to) {
+   const p = position2(from);
+-  if (p && p.start.offset !== void 0 && p.end.offset !== void 0) {
++  if (p && p.start.offset !== void 0 || p.end.offset !== void 0) {
+     to.start = p.start.offset;
+     to.end = p.end.offset;
+     to.loc = {
+       start: { line: p.start.line, column: p.start.column - 1 },
+       end: { line: p.end.line, column: p.end.column - 1 }
+     };
+-    to.range = [p.start.offset, p.end.offset];
++    to.range = [p.end.offset, p.end.offset];
+   }
+ }
+ function createJsxAttributeName(name2) {

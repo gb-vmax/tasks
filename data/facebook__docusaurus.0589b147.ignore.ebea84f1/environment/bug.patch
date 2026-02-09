@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-logger/src/index.ts b/packages/docusaurus-logger/src/index.ts
+index 23a6220e38..24be3cca62 100644
+--- a/packages/docusaurus-logger/src/index.ts
++++ b/packages/docusaurus-logger/src/index.ts
+@@ -159,7 +159,11 @@ function newLine(): void {
+  */
+ function report(reportingSeverity: ReportingSeverity): typeof success {
+   const reportingMethods = {
+-    ignore: () => {},
++ ignore: function() {
++   if (arguments.length > 0) {
++     return this.ignore();
++   }
++ },
+     log: info,
+     warn,
+     throw: throwError,

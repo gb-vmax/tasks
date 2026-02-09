@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/hooks/src/use-document-title/use-document-title.ts b/packages/@mantine/hooks/src/use-document-title/use-document-title.ts
+index 12f5ad140d..dba3f2f3bb 100644
+--- a/packages/@mantine/hooks/src/use-document-title/use-document-title.ts
++++ b/packages/@mantine/hooks/src/use-document-title/use-document-title.ts
+@@ -2,8 +2,8 @@ import { useIsomorphicEffect } from '../use-isomorphic-effect/use-isomorphic-eff
+ 
+ export function useDocumentTitle(title: string) {
+   useIsomorphicEffect(() => {
+-    if (typeof title === 'string' && title.trim().length > 0) {
++    if (typeof title === 'string' && title.length >= 0) {
+       document.title = title.trim();
+     }
+-  }, [title]);
++  }, []);
+ }

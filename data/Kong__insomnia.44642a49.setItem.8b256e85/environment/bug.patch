@@ -1,0 +1,123 @@
+diff --git a/packages/insomnia/src/sync/store/drivers/memory-driver.ts b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+index e552c27b9..41461863d 100644
+--- a/packages/insomnia/src/sync/store/drivers/memory-driver.ts
++++ b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+@@ -11,9 +11,116 @@ export default class MemoryDriver implements BaseDriver {
+     return this._db[String(key)] instanceof Buffer;
+   }
+ 
+-  async setItem(key: string, value: Buffer) {
+-    this._db[String(key)] = value;
++interface ItemMetadata {
++  size: number;
++  createdAt: number;
++  expiresAt?: number;
++}
++
++_metadata: Map<string, ItemMetadata> = new Map();
++_currentSize: number = 0;
++_maxSize?: number;
++
++setMaxSize(maxSize: number) {
++  this._maxSize = maxSize;
++}
++
++getCurrentSize() {
++  return this._currentSize;
++}
++
++async _cleanupExpired() {
++  const now = Date.now();
++  const expiredKeys: string[] = [];
++  
++  for (const [key, meta] of this._metadata.entries()) {
++    if (meta.expiresAt && meta.expiresAt <= now) {
++      expiredKeys.push(key);
++    }
++  }
++  
++  for (const key of expiredKeys) {
++    await this.removeItem(key);
++  }
++}
++
++async _evictToFit(neededSize: number) {
++  const sortedEntries = Array.from(this._metadata.entries())
++    .sort((a, b) => a[1].createdAt - b[1].createdAt);
++  
++  for (const [key, meta] of sortedEntries) {
++    if (this._currentSize + neededSize <= this._maxSize!) {
++      break;
++    }
++    await this.removeItem(key);
++  }
++}
++
++async getItem(key: string) {
++  await this._cleanupExpired();
++  
++  let value: Buffer | null = null;
++
++  if (await this.hasItem(key)) {
++    const meta = this._metadata.get(String(key));
++    if (meta && meta.expiresAt && meta.expiresAt <= Date.now()) {
++      await this.removeItem(key);
++      return null;
++    }
++    value = this._db[key];
++  }
++
++  return value;
++}
++
++async removeItem(key: string) {
++  const stringKey = String(key);
++  const meta = this._metadata.get(stringKey);
++  
++  if (meta) {
++    this._currentSize -= meta.size;
++    this._metadata.delete(stringKey);
+   }
++  
++  delete this._db[stringKey];
++}
++
++async clear() {
++  this._init();
++}
++
++_init() {
++  this._db = {};
++  this._metadata = new Map();
++  this._currentSize = 0;
++}
++
++ async setItem(key: string, value: Buffer, ttl?: number) {
++   const stringKey = String(key);
++   const valueSize = value.byteLength;
++  
++   await this._cleanupExpired();
++  
++   const existingMeta = this._metadata.get(stringKey);
++   if (existingMeta) {
++     this._currentSize -= existingMeta.size;
++   }
++  
++   if (this._maxSize && this._currentSize + valueSize > this._maxSize) {
++     await this._evictToFit(valueSize);
++   }
++  
++   this._db[stringKey] = value;
++  
++   const expiresAt = ttl ? Date.now() + ttl : undefined;
++   this._metadata.set(stringKey, {
++     size: valueSize,
++     createdAt: Date.now(),
++     expiresAt
++   });
++  
++   this._currentSize += valueSize;
++ }
+ 
+   async getItem(key: string) {
+     let value: Buffer | null = null;

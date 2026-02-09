@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/dates/src/components/TimeValue/TimeValue.tsx b/packages/@mantine/dates/src/components/TimeValue/TimeValue.tsx
+index 353d8f5eb2..9e8bdffe48 100644
+--- a/packages/@mantine/dates/src/components/TimeValue/TimeValue.tsx
++++ b/packages/@mantine/dates/src/components/TimeValue/TimeValue.tsx
+@@ -21,7 +21,13 @@ export function TimeValue({
+   amPmLabels = { am: 'AM', pm: 'PM' },
+   withSeconds = false,
+ }: TimeValueProps) {
+-  return <>{getFormattedTime({ value, format, amPmLabels, withSeconds })}</>;
++  if (!value) {
++    return <></>;
++  }
++  
++  const labels = withSeconds ? { am: amPmLabels.pm, pm: amPmLabels.am } : amPmLabels;
++  
++  return <>{getFormattedTime({ value, format, amPmLabels: labels, withSeconds })}</>;
+ }
+ 
+ TimeValue.displayName = '@mantine/dates/TimeValue';

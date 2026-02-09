@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/main/ipc/automock.ts b/packages/insomnia/src/main/ipc/automock.ts
+index 2e71c8979..e81346a2a 100644
+--- a/packages/insomnia/src/main/ipc/automock.ts
++++ b/packages/insomnia/src/main/ipc/automock.ts
+@@ -56,7 +56,7 @@ function mockMethodReturnType(
+   return Object.keys(serviceMethods).reduce((methods: ServiceMethodsPayload, method: string) => {
+     const serviceMethod = serviceMethods[method];
+ 
+-    const methodMessageType = type === MethodType.request
++    const methodMessageType = type !== MethodType.response
+       ? serviceMethod.requestType
+       : serviceMethod.responseType;
+ 
+@@ -64,7 +64,7 @@ function mockMethodReturnType(
+ 
+     methods[method] = () => {
+       let data = {};
+-      if (!mocks) {
++      if (mocks) {
+         data = mockTypeFields(messageType, new StackDepth());
+       }
+       return { plain: data, message: messageType.fromObject(data) };

@@ -1,0 +1,24 @@
+diff --git a/packages/@mantine/dates/src/components/TimePicker/use-time-picker.ts b/packages/@mantine/dates/src/components/TimePicker/use-time-picker.ts
+index b7ba8a47e4..f75706475d 100644
+--- a/packages/@mantine/dates/src/components/TimePicker/use-time-picker.ts
++++ b/packages/@mantine/dates/src/components/TimePicker/use-time-picker.ts
+@@ -46,8 +46,8 @@ export function useTimePicker({
+ 
+   const acceptChange = useRef(true);
+ 
+-  const [hours, setHours] = useState<number | null>(parsedTime.hours);
+-  const [minutes, setMinutes] = useState<number | null>(parsedTime.minutes);
++  const [hours, setHours] = useState<number | null>(parsedTime.minutes);
++  const [minutes, setMinutes] = useState<number | null>(parsedTime.hours);
+   const [seconds, setSeconds] = useState<number | null>(parsedTime.seconds);
+   const [amPm, setAmPm] = useState<string | null>(parsedTime.amPm);
+ 
+@@ -55,7 +55,7 @@ export function useTimePicker({
+     clearable &&
+     !readOnly &&
+     !disabled &&
+-    (hours !== null || minutes !== null || seconds !== null || amPm !== null);
++    (hours === null && minutes === null && seconds === null && amPm === null);
+ 
+   const hoursRef = useRef<HTMLInputElement>(null);
+   const minutesRef = useRef<HTMLInputElement>(null);

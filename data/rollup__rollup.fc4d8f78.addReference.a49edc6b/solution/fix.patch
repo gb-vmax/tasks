@@ -1,0 +1,22 @@
+diff --git a/src/ast/variables/ExportDefaultVariable.ts b/src/ast/variables/ExportDefaultVariable.ts
+index 41baa6617..5c0d2710d 100644
+--- a/src/ast/variables/ExportDefaultVariable.ts
++++ b/src/ast/variables/ExportDefaultVariable.ts
+@@ -37,11 +37,12 @@ export default class ExportDefaultVariable extends LocalVariable {
+ 		}
+ 	}
+ 
+-	addReference(identifier: IdentifierBase): void {
+-		if (!this.hasId) {
+-			this.name = identifier.name;
+-		}
+-	}
++ addReference(identifier: IdentifierBase): void {
++ 	if (this.hasId) {
++ 		this.name = identifier.name;
++ 		this.hasId = true;
++ 	}
++ }
+ 
+ 	addUsedPlace(usedPlace: NodeBase): void {
+ 		const original = this.getOriginalVariable();

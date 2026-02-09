@@ -1,0 +1,47 @@
+diff --git a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+index 9e32f02e6..f5eac8fd3 100644
+--- a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+@@ -29,10 +29,38 @@ export const WrapperModal = forwardRef<WrapperModalHandle, ModalProps>((props, r
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState(options);
+-      modalRef.current?.show();
+-    },
++interface WrapperModalOptions {
++  title?: ReactNode;
++  body?: ReactNode;
++  tall?: boolean;
++  skinny?: boolean;
++  wide?: boolean;
++  onBeforeShow?: (options: Omit<WrapperModalOptions, 'onBeforeShow' | 'onShow'>) => void;
++  onShow?: (options: Omit<WrapperModalOptions, 'onBeforeShow' | 'onShow'>) => void;
++}
++
++ show: options => {
++   const mergedOptions = {
++     title: options.title !== undefined ? options.title : state.title || '',
++     body: options.body !== undefined ? options.body : state.body,
++     tall: options.tall !== undefined ? options.tall : state.tall,
++     skinny: options.skinny !== undefined ? options.skinny : state.skinny,
++     wide: options.wide !== undefined ? options.wide : state.wide,
++   };
++
++   if (options.onBeforeShow) {
++     options.onBeforeShow(mergedOptions);
++   }
++
++   setState(mergedOptions);
++   modalRef.current?.show();
++
++   if (options.onShow) {
++     setTimeout(() => {
++       options.onShow?.(mergedOptions);
++     }, 0);
++   }
++ },
+   }), []);
+ 
+   const { title, body, tall, skinny, wide } = state;

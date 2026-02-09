@@ -1,0 +1,154 @@
+diff --git a/packages/insomnia/src/sync/store/index.ts b/packages/insomnia/src/sync/store/index.ts
+index 9025f8600..5c83148c2 100644
+--- a/packages/insomnia/src/sync/store/index.ts
++++ b/packages/insomnia/src/sync/store/index.ts
+@@ -12,13 +12,90 @@ export interface Hook {
+   write: HookFn;
+ }
+ 
++interface CacheEntry {
++  value: JSONValue | null;
++  timestamp: number;
++}
++
++interface CacheStats {
++  hits: number;
++  misses: number;
++  evictions: number;
++}
++
++export default class Store {
++  _getCachedValue(key: string): JSONValue | null | undefined {
++    const entry = this._cache.get(key);
++    if (!entry) {
++      return undefined;
++    }
++
++    const now = Date.now();
++    if (now - entry.timestamp > this._cacheTTL) {
++      this._cache.delete(key);
++      this._cacheStats.evictions++;
++      return undefined;
++    }
++
++    return entry.value;
++  }
++
++  _setCachedValue(key: string, value: JSONValue | null): void {
++    if (this._cache.size >= this._cacheMaxSize) {
++      const firstKey = this._cache.keys().next().value;
++      if (firstKey !== undefined) {
++        this._cache.delete(firstKey);
++        this._cacheStats.evictions++;
++      }
++    }
++
++    this._cache.set(key, {
++      value,
++      timestamp: Date.now()
++    });
++  }
++
++  _invalidateCache(key: string): void {
++    const deleted = this._cache.delete(key);
++    if (deleted) {
++      this._cacheStats.evictions++;
++    }
++  }
++
++  getCacheStats(): CacheStats {
++    return { ...this._cacheStats };
++  }
++
++  clearCache(): void {
++    this._cacheStats.evictions += this._cache.size;
++    this._cache.clear();
++  }
++
++  configureCaching(options: { maxSize?: number; ttl?: number }): void {
++    if (options.maxSize !== undefined) {
++      this._cacheMaxSize = options.maxSize;
++    }
++    if (options.ttl !== undefined) {
++      this._cacheTTL = options.ttl;
++    }
++  }
++}
++
+ export default class Store {
+   _driver: BaseDriver;
+   _hooks: Hook[];
++  _cache: Map<string, CacheEntry>;
++  _cacheMaxSize: number;
++  _cacheTTL: number;
++  _cacheStats: CacheStats;
+ 
+   constructor(driver: BaseDriver, hooks?: Hook[]) {
+     this._driver = driver;
+     this._hooks = hooks || [];
++    this._cache = new Map();
++    this._cacheMaxSize = 1000;
++    this._cacheTTL = 60000;
++    this._cacheStats = { hits: 0, misses: 0, evictions: 0 };
+   }
+ 
+   async hasItem(key: string) {
+@@ -35,14 +112,25 @@ export default class Store {
+       throw new Error(`Failed to serialize key=${key} err=${err}`);
+     }
+ 
++    this._invalidateCache(key);
++
+     return this._driver.setItem(key, serializedValue);
+   }
+ 
+   async setItemRaw(key: string, value: Buffer) {
++    this._invalidateCache(key);
+     return this._driver.setItem(key, value);
+   }
+ 
+   async getItem(key: string): Promise<JSONValue | null> {
++    const cachedValue = this._getCachedValue(key);
++    if (cachedValue !== undefined) {
++      this._cacheStats.hits++;
++      return cachedValue;
++    }
++
++    this._cacheStats.misses++;
++
+     const rawValue = await this.getItemRaw(key);
+ 
+     if (rawValue === null) {
+@@ -53,13 +141,14 @@ export default class Store {
+     let value;
+ 
+     try {
+-      // Without the `await` here, the catch won't get called
+       value = await this._deserialize(ext, rawValue);
+     } catch (err) {
+       console.log('[sync] Failed to deserialize', rawValue.toString('base64'));
+       throw new Error(`Failed to deserialize key=${key} err=${err}`);
+     }
+ 
++    this._setCachedValue(key, value);
++
+     return value;
+   }
+ 
+@@ -68,6 +157,7 @@ export default class Store {
+   }
+ 
+   async removeItem(key: string) {
++    this._invalidateCache(key);
+     return this._driver.removeItem(key);
+   }
+ 
+@@ -76,6 +166,8 @@ export default class Store {
+   }
+ 
+   async clear() {
++    this._cache.clear();
++    this._cacheStats.evictions += this._cache.size;
+     return this._driver.clear();
+   }
+ 

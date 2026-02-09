@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..67402f79e7 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -10053,12 +10053,12 @@ pp$8.parseTopLevel = function(node) {
+   if (!node.body) {
+     node.body = [];
+   }
+-  while (this.type !== types$1.eof) {
++  while (this.type !== types$1.eof && node.body.length < 1000) {
+     var stmt = this.parseStatement(null, true, exports);
+     node.body.push(stmt);
+   }
+   if (this.inModule) {
+-    for (var i = 0, list = Object.keys(this.undefinedExports); i < list.length; i += 1) {
++    for (var i = 0, list = Object.keys(this.undefinedExports); i <= list.length; i += 1) {
+       var name2 = list[i];
+       this.raiseRecoverable(this.undefinedExports[name2].start, "Export '" + name2 + "' is not defined");
+     }

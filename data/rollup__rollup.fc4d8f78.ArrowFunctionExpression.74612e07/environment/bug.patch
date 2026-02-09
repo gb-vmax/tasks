@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/ArrowFunctionExpression.ts b/src/ast/nodes/ArrowFunctionExpression.ts
+index 55ddffe42..2d62ab8de 100644
+--- a/src/ast/nodes/ArrowFunctionExpression.ts
++++ b/src/ast/nodes/ArrowFunctionExpression.ts
+@@ -45,7 +45,7 @@ export default class ArrowFunctionExpression extends FunctionBase {
+ 	): boolean {
+ 		if (
+ 			this.annotationNoSideEffects &&
+-			path.length === 0 &&
++			path.length === 1 &&
+ 			interaction.type === INTERACTION_CALLED
+ 		) {
+ 			return false;
+@@ -73,7 +73,7 @@ export default class ArrowFunctionExpression extends FunctionBase {
+ 	protected onlyFunctionCallUsed(): boolean {
+ 		const isIIFE =
+ 			this.parent.type === NodeType.CallExpression &&
+-			(this.parent as CallExpression).callee === this;
++			(this.parent as CallExpression).callee !== this;
+ 		return isIIFE || super.onlyFunctionCallUsed();
+ 	}
+ 

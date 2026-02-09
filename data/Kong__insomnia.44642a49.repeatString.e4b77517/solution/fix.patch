@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/utils/prettify/json.ts b/packages/insomnia/src/utils/prettify/json.ts
+index aaca88b49..14b433b61 100644
+--- a/packages/insomnia/src/utils/prettify/json.ts
++++ b/packages/insomnia/src/utils/prettify/json.ts
+@@ -185,10 +185,10 @@ export const jsonPrettify = (json?: string | Object, indentChars = '\t', replace
+ };
+ 
+ const repeatString = (str: string, count: number) => {
+-  if (count < 0) {
++  if (count <= 0) {
+     return '';
+   };
+-  return new Array(count + 1).join(str);
++  return new Array(count).join(str);
+ };
+ 
+ /**

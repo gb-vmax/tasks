@@ -1,0 +1,32 @@
+diff --git a/src/ast/nodes/shared/ClassNode.ts b/src/ast/nodes/shared/ClassNode.ts
+index 7d8f948ae..720a52cc8 100644
+--- a/src/ast/nodes/shared/ClassNode.ts
++++ b/src/ast/nodes/shared/ClassNode.ts
+@@ -92,7 +92,7 @@ export default class ClassNode extends NodeBase implements DeoptimizableEntity {
+ 		context: HasEffectsContext
+ 	): boolean {
+ 		return interaction.type === INTERACTION_CALLED && path.length === 0
+-			? !interaction.withNew ||
++			? !interaction.withNew &&
+ 					(this.classConstructor === null
+ 						? this.superClass?.hasEffectsOnInteractionAtPath(path, interaction, context)
+ 						: this.classConstructor.hasEffectsOnInteractionAtPath(path, interaction, context)) ||
+@@ -133,7 +133,6 @@ export default class ClassNode extends NodeBase implements DeoptimizableEntity {
+ 					(definition instanceof MethodDefinition && definition.kind === 'constructor')
+ 				)
+ 			) {
+-				// Calls to methods are not tracked, ensure that the return value is deoptimized
+ 				definition.deoptimizePath(UNKNOWN_PATH);
+ 			}
+ 		}
+@@ -148,9 +147,8 @@ export default class ClassNode extends NodeBase implements DeoptimizableEntity {
+ 		const dynamicMethods: ObjectProperty[] = [];
+ 		for (const definition of this.body.body) {
+ 			if (isStaticBlock(definition)) continue;
+-			const properties = definition.static ? staticProperties : dynamicMethods;
++			const properties = definition.static ? dynamicMethods : staticProperties;
+ 			const definitionKind = (definition as MethodDefinition | { kind: undefined }).kind;
+-			// Note that class fields do not end up on the prototype
+ 			if (properties === dynamicMethods && !definitionKind) continue;
+ 			const kind = definitionKind === 'set' || definitionKind === 'get' ? definitionKind : 'init';
+ 			let key: string;

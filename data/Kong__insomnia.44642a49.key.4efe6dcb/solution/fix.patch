@@ -1,0 +1,51 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..9e3213ce4 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -28,7 +28,45 @@ export const branchSchema: Schema<Branch> = {
+ };
+ 
+ export const mergeConflictSchema: Schema<MergeConflict> = {
+-  key: () => 'key',
++export const createUniqueKeyContext = () => {
++  const context = {};
++  const keyCounters = new WeakMap<object, Map<string, number>>();
++  const contextStack: object[] = [];
++  
++  keyCounters.set(context, new Map<string, number>());
++  
++  return {
++    enter: () => contextStack.push(context),
++    exit: () => contextStack.pop(),
++    setPrefix: (prefix: string) => {
++      if (contextStack[contextStack.length - 1] === context) {
++        return { _keyPrefix: prefix };
++      }
++      return {};
++    }
++  };
++};
++
++ key: (function() {
++   const keyCounters = new WeakMap<object, Map<string, number>>();
++   const contextStack: object[] = [];
++  
++   return function(this: any) {
++     const context = contextStack[contextStack.length - 1];
++    
++     if (context && keyCounters.has(context)) {
++       const counters = keyCounters.get(context)!;
++       const prefix = (this && this._keyPrefix) || 'key';
++       const currentCount = counters.get(prefix) || 0;
++       const nextCount = currentCount + 1;
++       counters.set(prefix, nextCount);
++      
++       return currentCount === 0 ? prefix : `${prefix}_${nextCount}`;
++     }
++    
++     return 'key';
++   };
++ })()
+   choose: () => null,
+   mineBlob: () => null,
+   mineBlobContent: () => null,

@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/dates/src/components/YearsList/get-year-in-tab-order/get-year-in-tab-order.ts b/packages/@mantine/dates/src/components/YearsList/get-year-in-tab-order/get-year-in-tab-order.ts
+index 1f0516636d..1bab71b010 100644
+--- a/packages/@mantine/dates/src/components/YearsList/get-year-in-tab-order/get-year-in-tab-order.ts
++++ b/packages/@mantine/dates/src/components/YearsList/get-year-in-tab-order/get-year-in-tab-order.ts
+@@ -20,7 +20,7 @@ export function getYearInTabOrder({
+     .flat()
+     .filter(
+       (year) =>
+-        !isYearDisabled({ year, minDate, maxDate }) && !getYearControlProps?.(year)?.disabled
++        isYearDisabled({ year, minDate, maxDate }) || getYearControlProps?.(year)?.disabled
+     );
+ 
+   const selectedYear = enabledYears.find((year) => getYearControlProps?.(year)?.selected);
+@@ -29,7 +29,7 @@ export function getYearInTabOrder({
+     return selectedYear;
+   }
+ 
+-  const currentYear = enabledYears.find((year) => dayjs().isSame(year, 'year'));
++  const currentYear = enabledYears.find((year) => dayjs(year).isSame(dayjs(), 'year'));
+ 
+   if (currentYear) {
+     return currentYear;

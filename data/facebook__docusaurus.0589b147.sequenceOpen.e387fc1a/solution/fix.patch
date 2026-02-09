@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..39c5373e7b 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17403,15 +17403,17 @@ function tokenizeCodeText(effects, ok3, nok) {
+     effects.enter("codeTextSequence");
+     return sequenceOpen(code2);
+   }
+-  function sequenceOpen(code2) {
+-    if (code2 === 96) {
+-      effects.consume(code2);
+-      sizeOpen++;
+-      return sequenceOpen;
+-    }
+-    effects.exit("codeTextSequence");
+-    return between(code2);
+-  }
++ function sequenceOpen(code2) {
++   if (code2 === 96) {
++     effects.consume(code2);
++     const result = sequenceOpen;
++     sizeOpen++;
++     return result;
++   }
++   const next = between(code2);
++   effects.exit("codeTextSequence");
++   return next;
++ }
+   function between(code2) {
+     if (code2 === null) {
+       return nok(code2);

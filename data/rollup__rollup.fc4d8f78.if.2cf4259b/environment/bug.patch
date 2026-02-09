@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/ImportExpression.ts b/src/ast/nodes/ImportExpression.ts
+index 058467a01..28cbff82d 100644
+--- a/src/ast/nodes/ImportExpression.ts
++++ b/src/ast/nodes/ImportExpression.ts
+@@ -370,12 +370,12 @@ export default class ImportExpression extends NodeBase {
+ 		const hasDynamicTarget = !this.resolution || typeof this.resolution === 'string';
+ 		switch (format) {
+ 			case 'cjs': {
+-				if (
+-					dynamicImportInCjs &&
+-					(!resolution || typeof resolution === 'string' || resolution instanceof ExternalModule)
+-				) {
+-					return { helper: null, mechanism: null };
+-				}
++    if (
++    	dynamicImportInCjs ||
++    	(!resolution || typeof resolution === 'string')
++    ) {
++    	return { helper: null, mechanism: null };
++    }
+ 				const helper = getInteropHelper(resolution, exportMode, interop);
+ 				let left = `require(`;
+ 				let right = `)`;

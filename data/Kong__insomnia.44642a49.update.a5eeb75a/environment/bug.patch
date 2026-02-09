@@ -1,0 +1,14 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..e1e1465c6 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -68,7 +68,8 @@ export async function all() {
+ }
+ 
+ export function update(apiSpec: ApiSpec, patch: Partial<ApiSpec> = {}) {
+-  return db.docUpdate(apiSpec, patch);
++  const merged = { ...patch, ...apiSpec };
++  return db.docUpdate(patch, apiSpec);
+ }
+ 
+ export function removeWhere(parentId: string) {

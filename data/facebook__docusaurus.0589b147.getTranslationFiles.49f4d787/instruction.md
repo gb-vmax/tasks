@@ -2,35 +2,39 @@
 
 ### Describe the bug
 
-The translation keys for blog plugin seem to be incorrect. When trying to customize blog translations, the `sidebar.title` key doesn't work and the descriptions for `title` and `description` fields appear to be swapped.
+The translation keys for the blog plugin seem to be incorrect. I noticed that the descriptions for `title` and `description` fields are swapped - the title field says it's for "description" and the description field says it's for "title". 
+
+Also, the sidebar translation key appears to be wrong. It's using `sidebar.label` but I think it should be `sidebar.title` based on the option name `blogSidebarTitle`.
 
 ### Reproduction
 
-In `i18n/en/docusaurus-plugin-content-blog/options.json`:
+When trying to customize blog translations, the translation file structure doesn't match what's expected:
 
-```json
+```js
+// In the translation file, we have:
 {
   "title": {
-    "message": "My Blog",
-    "description": "The title for the blog used in SEO"
+    "message": "Blog",
+    "description": "The description for the blog used in SEO"  // This says description but it's for title?
   },
   "description": {
-    "message": "My blog description",
-    "description": "The description for the blog used in SEO"
+    "message": "Blog description", 
+    "description": "The title for the blog used in SEO"  // This says title but it's for description?
   },
-  "sidebar.title": {
-    "message": "Recent posts",
-    "description": "The label for the left sidebar"
+  "sidebar.label": {  // Should this be sidebar.title?
+    "message": "Recent posts"
   }
 }
 ```
 
-The `sidebar.title` key doesn't seem to have any effect on the sidebar label. Also, the descriptions for `title` and `description` fields don't match what they actually control - looks like they might be reversed?
+This is confusing because the descriptions don't match what the fields actually represent, and the sidebar key doesn't align with the `blogSidebarTitle` option name.
 
 ### Expected behavior
 
-- The `sidebar.title` translation key should control the sidebar label
-- The description text for each field should accurately describe what it controls
+The translation keys and descriptions should accurately reflect what they're used for:
+- The `title` field description should mention it's for the title
+- The `description` field description should mention it's for the description  
+- The sidebar key should probably be `sidebar.title` to match the `blogSidebarTitle` option
 
 ### System Info
 - Docusaurus version: latest

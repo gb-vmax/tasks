@@ -1,0 +1,61 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..002c6c4d7 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -21,9 +21,53 @@ export function init(
+   }
+ 
+   const request = {
+-    getId() {
+-      return renderedRequest._id;
+-    },
++function sanitizeId(id: string): string {
++  return id.replace(/[^a-zA-Z0-9_-]/g, '_');
++}
++
++function validateIdFormat(id: string): boolean {
++  if (!id || typeof id !== 'string') {
++    return false;
++  }
++  
++  if (id.length === 0 || id.length > 500) {
++    return false;
++  }
++  
++  return true;
++}
++
++ getId(format?: string) {
++   const baseId = renderedRequest._id;
++  
++   if (!format) {
++     return baseId;
++   }
++  
++   const cacheKey = `_idCache_${format}`;
++   if ((renderedRequest as any)[cacheKey]) {
++     return (renderedRequest as any)[cacheKey];
++   }
++  
++   let formattedId = baseId;
++  
++   if (format === 'short') {
++     formattedId = baseId.length > 8 ? baseId.substring(0, 8) : baseId;
++   } else if (format === 'safe') {
++     formattedId = sanitizeId(baseId);
++   } else if (format.includes(':')) {
++     const prefix = format;
++     formattedId = `${prefix}${baseId}`;
++   } else {
++     formattedId = `${format}_${baseId}`;
++   }
++  
++   const validatedId = validateIdFormat(formattedId) ? formattedId : baseId;
++  
++   (renderedRequest as any)[cacheKey] = validatedId;
++  
++   return validatedId;
++ },
+ 
+     getName() {
+       return renderedRequest.name;

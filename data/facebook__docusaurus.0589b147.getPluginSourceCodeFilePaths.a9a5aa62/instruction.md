@@ -2,27 +2,31 @@
 
 ### Describe the bug
 
-When extracting translations from plugin source code, the paths are being resolved incorrectly. It seems like the code is using `themePath` to resolve all plugin code paths instead of using the plugin's base path. This causes translation extraction to fail or look in the wrong directories.
+Getting an error when trying to extract translations from plugin source code. The extraction process crashes when a plugin doesn't define `getPathsToWatch()` or returns `undefined`.
 
 ### Reproduction
 
-I noticed this when trying to extract translations from a custom plugin. The translation extractor can't find the source files properly.
+Create a plugin without implementing `getPathsToWatch()`:
 
-Steps to reproduce:
-1. Create a plugin with source code in its plugin directory
-2. The plugin has `getPathsToWatch()` that returns paths relative to the plugin directory
-3. Try to extract translations
-4. The paths get resolved relative to the theme path instead of the plugin path
+```js
+const myPlugin = {
+  name: 'my-custom-plugin',
+  getThemePath() {
+    return './theme';
+  }
+  // Note: getPathsToWatch() is not defined
+};
+```
 
-For example, if a plugin is located at `/project/plugins/my-plugin` and returns paths like `['src/components']`, these should resolve to `/project/plugins/my-plugin/src/components`, but instead they're being resolved relative to the theme path.
+When the translation extraction runs, it throws an error because it tries to call `.map()` on `undefined`.
 
 ### Expected behavior
 
-Plugin source code paths should be resolved relative to the plugin's base path (`plugin.path`), not relative to the theme path. The theme path should only be used for resolving the theme path itself.
+The extraction should handle plugins that don't implement `getPathsToWatch()` gracefully, falling back to an empty array or only using the theme path if available.
 
 ### Additional context
 
-This appears to affect any plugin that has both `getPathsToWatch()` and `getThemePath()` defined. The translation extraction won't work correctly for the plugin's own source files.
+This seems to have started happening recently. Previously the code had a fallback (`?? []`) that would handle this case, but it looks like that might have been removed or changed.
 
 ---
 Repository: /testbed

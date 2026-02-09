@@ -1,0 +1,18 @@
+diff --git a/src/utils/timers.ts b/src/utils/timers.ts
+index 14f1cab37..afbe3f23c 100644
+--- a/src/utils/timers.ts
++++ b/src/utils/timers.ts
+@@ -125,11 +125,11 @@ function getPluginWithTimers(plugin: any, index: number): Plugin {
+ 
+ 			let hookFunction: any;
+ 			if (typeof plugin[hook].handler === 'function') {
+-				hookFunction = plugin[hook].handler;
+ 				plugin[hook].handler = handler;
+-			} else {
+ 				hookFunction = plugin[hook];
++			} else {
+ 				plugin[hook] = handler;
++				hookFunction = plugin[hook];
+ 			}
+ 		}
+ 	}

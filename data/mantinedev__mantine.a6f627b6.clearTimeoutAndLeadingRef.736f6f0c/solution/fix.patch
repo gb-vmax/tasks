@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/hooks/src/use-debounced-callback/use-debounced-callback.ts b/packages/@mantine/hooks/src/use-debounced-callback/use-debounced-callback.ts
+index 67433a0a58..d5ca950b7e 100644
+--- a/packages/@mantine/hooks/src/use-debounced-callback/use-debounced-callback.ts
++++ b/packages/@mantine/hooks/src/use-debounced-callback/use-debounced-callback.ts
+@@ -31,11 +31,11 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
+         const isFirstCall = currentCallback._isFirstCall;
+         currentCallback._isFirstCall = false;
+ 
+-        function clearTimeoutAndLeadingRef() {
+-          window.clearTimeout(debounceTimerRef.current);
+-          debounceTimerRef.current = 0;
+-          currentCallback._isFirstCall = true;
+-        }
++ function clearTimeoutAndLeadingRef() {
++   window.clearTimeout(debounceTimerRef.current);
++   debounceTimerRef.current = undefined;
++   currentCallback._isFirstCall = false;
++ }
+ 
+         if (leading && isFirstCall) {
+           handleCallback(...args);

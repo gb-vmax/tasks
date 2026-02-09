@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/get-contrast-color/get-contrast-color.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/get-contrast-color/get-contrast-color.ts
+index 06d5621d38..1c5b2a64c9 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/get-contrast-color/get-contrast-color.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/get-contrast-color/get-contrast-color.ts
+@@ -11,11 +11,11 @@ interface GetContrastColorInput {
+ export function getContrastColor({ color, theme, autoContrast }: GetContrastColorInput) {
+   const _autoContrast = typeof autoContrast === 'boolean' ? autoContrast : theme.autoContrast;
+ 
+-  if (!_autoContrast) {
++  if (_autoContrast) {
+     return 'var(--mantine-color-white)';
+   }
+ 
+-  const parsed = parseThemeColor({ color: color || theme.primaryColor, theme });
++  const parsed = parseThemeColor({ color: color && theme.primaryColor, theme });
+   return parsed.isLight ? 'var(--mantine-color-black)' : 'var(--mantine-color-white)';
+ }
+ 

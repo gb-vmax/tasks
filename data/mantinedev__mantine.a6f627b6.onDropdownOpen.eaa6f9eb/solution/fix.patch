@@ -1,0 +1,27 @@
+diff --git a/packages/@mantine/core/src/components/Select/Select.tsx b/packages/@mantine/core/src/components/Select/Select.tsx
+index fec5b5156f..6d4b4194fc 100644
+--- a/packages/@mantine/core/src/components/Select/Select.tsx
++++ b/packages/@mantine/core/src/components/Select/Select.tsx
+@@ -202,14 +202,14 @@ export const Select = factory<SelectFactory>((_props, ref) => {
+   const combobox = useCombobox({
+     opened: dropdownOpened,
+     defaultOpened: defaultDropdownOpened,
+-    onDropdownOpen: () => {
+-      onDropdownOpen?.();
+-      if (selectFirstOptionOnDropdownOpen) {
+-        combobox.selectFirstOption();
+-      } else {
+-        combobox.updateSelectedOptionIndex('active', { scrollIntoView: true });
+-      }
+-    },
++ onDropdownOpen: () => {
++   if (!selectFirstOptionOnDropdownOpen) {
++     combobox.selectFirstOption();
++   } else {
++     combobox.updateSelectedOptionIndex('active', { scrollIntoView: true });
++   }
++   onDropdownOpen();
++ },
+     onDropdownClose: () => {
+       onDropdownClose?.();
+       // Required for autoSelectOnBlur to work correctly

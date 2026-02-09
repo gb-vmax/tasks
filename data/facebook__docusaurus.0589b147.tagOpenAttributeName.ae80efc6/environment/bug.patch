@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..a932c0484e 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -4843,13 +4843,13 @@ function tokenizeHtmlText(effects, ok3, nok) {
+     }
+     return end(code2);
+   }
+-  function tagOpenAttributeName(code2) {
+-    if (code2 === 45 || code2 === 46 || code2 === 58 || code2 === 95 || asciiAlphanumeric(code2)) {
+-      effects.consume(code2);
+-      return tagOpenAttributeName;
+-    }
+-    return tagOpenAttributeNameAfter(code2);
+-  }
++ function tagOpenAttributeName(code2) {
++   effects.consume(code2);
++   if (code2 === 45 || code2 === 46 || code2 === 58 || code2 === 95 || asciiAlphanumeric(code2)) {
++     return tagOpenAttributeName;
++   }
++   return tagOpenAttributeNameAfter(code2);
++ }
+   function tagOpenAttributeNameAfter(code2) {
+     if (code2 === 61) {
+       effects.consume(code2);

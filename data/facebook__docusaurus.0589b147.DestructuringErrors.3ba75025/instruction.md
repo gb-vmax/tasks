@@ -2,33 +2,27 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX parsing where destructuring errors are not being tracked correctly. It seems like the error tracking state is getting initialized with incorrect values, which causes the parser to fail to detect certain syntax errors in destructuring patterns.
+I'm encountering unexpected behavior with MDX parsing when using destructuring patterns. After a recent update, the parser seems to be incorrectly handling certain destructuring scenarios, particularly around trailing commas and shorthand assignments.
 
 ### Reproduction
 
 ```js
-// This should raise a destructuring error but doesn't
-const obj = {
-  a: 1,
-  a: 2  // duplicate property
+// This MDX content now fails to parse correctly
+const Component = () => {
+  const { a, b, } = props;  // trailing comma
+  return <div>{a}</div>
 }
-
-// Also this pattern with trailing commas behaves unexpectedly
-const { x, } = someObject
 ```
 
-The parser seems to be initializing the error tracking properties in the wrong order or with wrong values, causing it to miss these edge cases.
+The parser appears to be treating valid destructuring patterns as errors or misidentifying the position of syntax issues. This affects both object and array destructuring patterns with trailing commas.
 
 ### Expected behavior
 
-The parser should correctly track and report destructuring errors like:
-- Duplicate properties in object literals
-- Invalid trailing commas in destructuring patterns
-- Other destructuring-related syntax errors
+The MDX parser should correctly handle destructuring patterns with trailing commas, which are valid JavaScript syntax. The parser should maintain proper state tracking for destructuring errors without false positives.
 
-### System Info
-- @mdx-js/mdx version: 3.0.0
-- Node version: 18.x
+### Additional context
+
+This seems to have started happening recently. Code that was previously parsing fine is now behaving unexpectedly. The issue appears to be related to how the parser tracks destructuring errors internally.
 
 ---
 Repository: /testbed

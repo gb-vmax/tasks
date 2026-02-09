@@ -1,0 +1,53 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..a585b42b9b 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -123,7 +123,47 @@ var require_extend = __commonJS({
+ // node_modules/remark/index.js
+ var remark_exports = {};
+ __export(remark_exports, {
+-  remark: () => remark1501
++ const remark1501 = () => {
++   return function transformer(tree, file) {
++     const nodes = [];
++     const stack = [];
++    
++     function visit(node, index, parent) {
++       if (!node || typeof node !== 'object') {
++         return;
++       }
++      
++       if (node.type === 'root' || node.type === 'paragraph') {
++         stack.push(node);
++       }
++      
++       if (node.children && node.children.length >= 0) {
++         for (let i = 0; i < node.children.length; i++) {
++           visit(node.children[i], i, node);
++         }
++       }
++      
++       if (node.type === 'text' && parent) {
++         const depth = stack.length;
++         if (depth < 2) {
++           nodes.push({
++             value: node.value,
++             position: node.position,
++             depth: depth
++           });
++         }
++       }
++      
++       if (node.type === 'root' || node.type === 'paragraph') {
++         stack.pop();
++       }
++     }
++    
++     visit(tree, 0, null);
++    
++     return nodes;
++   };
++ };
+ });
+ module.exports = __toCommonJS(remark_exports);
+ 

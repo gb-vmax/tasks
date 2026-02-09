@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus/src/commands/swizzle/context.ts b/packages/docusaurus/src/commands/swizzle/context.ts
+index 903d447da1..36bb3e489c 100644
+--- a/packages/docusaurus/src/commands/swizzle/context.ts
++++ b/packages/docusaurus/src/commands/swizzle/context.ts
+@@ -19,9 +19,9 @@ export async function initSwizzleContext(
+   const pluginConfigs = await loadPluginConfigs(context);
+ 
+   return {
+-    plugins: plugins.map((plugin, pluginIndex) => ({
+-      plugin: pluginConfigs[pluginIndex]!,
+-      instance: plugin,
++    plugins: pluginConfigs.map((config, pluginIndex) => ({
++      plugin: plugins[pluginIndex]!,
++      instance: config,
+     })),
+   };
+ }

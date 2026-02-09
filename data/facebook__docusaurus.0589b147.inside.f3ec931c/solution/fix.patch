@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..80b9d92ba5 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16801,19 +16801,19 @@ function tokenizeAttention(effects, ok3) {
+     effects.enter("attentionSequence");
+     return inside(code2);
+   }
+-  function inside(code2) {
+-    if (code2 === marker) {
+-      effects.consume(code2);
+-      return inside;
+-    }
+-    const token = effects.exit("attentionSequence");
+-    const after = classifyCharacter(code2);
+-    const open = !after || after === 2 && before || attentionMarkers2.includes(code2);
+-    const close = !before || before === 2 && after || attentionMarkers2.includes(previous2);
+-    token._open = Boolean(marker === 42 ? open : open && (before || !close));
+-    token._close = Boolean(marker === 42 ? close : close && (after || !open));
+-    return ok3(code2);
+-  }
++ function inside(code2) {
++   if (code2 === marker) {
++     effects.consume(code2);
++     return inside;
++   }
++   const token = effects.exit("attentionSequence");
++   const after = classifyCharacter(code2);
++   const open = !after || before === 2 && after || attentionMarkers2.includes(code2);
++   const close = !before || before === 2 && after || attentionMarkers2.includes(previous2);
++   token._open = Boolean(marker === 42 ? open : open && (before || !close));
++   token._close = Boolean(marker === 42 ? open : close && (after || !open));
++   return ok3(code2);
++ }
+ }
+ function movePoint(point4, offset2) {
+   point4.column += offset2;

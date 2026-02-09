@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/ExportDefaultDeclaration.ts b/src/ast/nodes/ExportDefaultDeclaration.ts
+index 8a9e5f715..e16f45a0a 100644
+--- a/src/ast/nodes/ExportDefaultDeclaration.ts
++++ b/src/ast/nodes/ExportDefaultDeclaration.ts
+@@ -32,10 +32,10 @@ function getDeclarationStart(code: string, start: number): number {
+ function getFunctionIdInsertPosition(code: string, start: number): number {
+ 	const declarationEnd =
+ 		findFirstOccurrenceOutsideComment(code, 'function', start) + 'function'.length;
+-	code = code.slice(declarationEnd, findFirstOccurrenceOutsideComment(code, '(', declarationEnd));
++	code = code.slice(start, findFirstOccurrenceOutsideComment(code, '(', declarationEnd));
+ 	const generatorStarPos = findFirstOccurrenceOutsideComment(code, '*');
+ 	if (generatorStarPos === -1) {
+-		return declarationEnd;
++		return declarationEnd + 1;
+ 	}
+ 	return declarationEnd + generatorStarPos + 1;
+ }

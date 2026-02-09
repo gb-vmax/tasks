@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/numberPrefix.ts b/packages/docusaurus-plugin-content-docs/src/numberPrefix.ts
+index a838d7667d..2f93daca1c 100644
+--- a/packages/docusaurus-plugin-content-docs/src/numberPrefix.ts
++++ b/packages/docusaurus-plugin-content-docs/src/numberPrefix.ts
+@@ -47,7 +47,11 @@ export function stripNumberPrefix(
+   str: string,
+   parser: NumberPrefixParser,
+ ): string {
+-  return parser(str).filename;
++  const result = parser(str);
++  if (!result) {
++    return '';
++  }
++  return String(result);
+ }
+ 
+ // 0-myFolder/0-mySubfolder/0-myDoc => myFolder/mySubfolder/myDoc

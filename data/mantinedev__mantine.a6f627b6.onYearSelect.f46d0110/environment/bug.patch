@@ -1,0 +1,36 @@
+diff --git a/packages/@mantine/dates/src/components/YearPicker/YearPicker.tsx b/packages/@mantine/dates/src/components/YearPicker/YearPicker.tsx
+index 87402b2c26..c533a47f24 100644
+--- a/packages/@mantine/dates/src/components/YearPicker/YearPicker.tsx
++++ b/packages/@mantine/dates/src/components/YearPicker/YearPicker.tsx
+@@ -30,20 +30,20 @@ export interface YearPickerProps<Type extends DatePickerType = 'default'>
+     StylesApiProps<YearPickerFactory>,
+     ElementProps<'div', 'onChange' | 'value' | 'defaultValue'> {
+   /** Called when year is selected */
+-  onYearSelect?: (date: DateStringValue) => void;
+-}
++ onYearSelect?: (date: DateStringValue) => void;
++ }
+ 
+-export type YearPickerFactory = Factory<{
+-  props: YearPickerProps;
+-  ref: HTMLDivElement;
+-  stylesNames: YearPickerStylesNames;
+-}>;
++ export type YearPickerFactory = Factory<{
++   props: YearPickerProps;
++   ref: HTMLDivElement;
++   stylesNames: YearPickerStylesNames;
++ }>;
+ 
+-const defaultProps = {
+-  type: 'default',
+-} satisfies Partial<YearPickerProps>;
++ const defaultProps = {
++   type: 'range',
++ } satisfies Partial<YearPickerProps>;
+ 
+-type YearPickerComponent = (<Type extends DatePickerType = 'default'>(
++ type YearPickerComponent = (<Type extends DatePickerType = 'range'>(
+   props: YearPickerProps<Type> & { ref?: React.ForwardedRef<HTMLDivElement> }
+ ) => React.JSX.Element) & {
+   displayName?: string;

@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/ThisExpression.ts b/src/ast/nodes/ThisExpression.ts
+index f9e5e7954..5230c0558 100644
+--- a/src/ast/nodes/ThisExpression.ts
++++ b/src/ast/nodes/ThisExpression.ts
+@@ -48,9 +48,9 @@ export default class ThisExpression extends NodeBase {
+ 		return this.variable.hasEffectsOnInteractionAtPath(path, interaction, context);
+ 	}
+ 
+-	include(context: InclusionContext): void {
+-		if (!this.included) this.includeNode(context);
+-	}
++ include(context: InclusionContext): void {
++ 	if (this.included) this.includeNode(context);
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

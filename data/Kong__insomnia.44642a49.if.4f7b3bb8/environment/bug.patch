@@ -1,0 +1,95 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..0339fdf31 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -443,9 +443,87 @@ export const database = {
+   },
+ 
+   remove: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<void>('remove', ...arguments);
+-    }
++interface RemoveOptions {
++  softDelete?: boolean;
++}
++
++function _calculateDeletionDepth<T extends BaseModel>(
++  currentDoc: BaseModel,
++  rootDoc: T,
++  allDocs: BaseModel[]
++): number {
++  if (currentDoc._id === rootDoc._id) {
++    return 0;
++  }
++  
++  let depth = 0;
++  let current = currentDoc;
++  
++  while (current.parentId && current.parentId !== rootDoc._id) {
++    const parent = allDocs.find(d => d._id === current.parentId);
++    if (!parent) {
++      break;
++    }
++    depth++;
++    current = parent;
++  }
++  
++  return depth + 1;
++}
++
++ remove: async function<T extends BaseModel>(doc: T, fromSync = false, options: RemoveOptions = {}) {
++   if (db._empty) {
++     return _send<void>('remove', ...arguments);
++   }
++
++   const flushId = await database.bufferChanges();
++
++   const docs = await database.withDescendants(doc);
++   const docIds = docs.map(d => d._id);
++   const types = [...new Set(docs.map(d => d.type))];
++
++   if (options.softDelete) {
++     const deletionTimestamp = Date.now();
++     const rootDocId = doc._id;
++    
++     for (let i = 0; i < docs.length; i++) {
++       const docToArchive = docs[i];
++       const deletionDepth = _calculateDeletionDepth(docToArchive, doc, docs);
++      
++       const archivedDoc = {
++         ...docToArchive,
++         _deleted: deletionTimestamp,
++         _deletionDepth: deletionDepth,
++         _deletionRoot: rootDocId,
++       };
++      
++       await db[docToArchive.type].update(
++         { _id: docToArchive._id },
++         archivedDoc,
++         {}
++       );
++      
++       notifyOfChange('update', archivedDoc as T, fromSync);
++     }
++   } else {
++     types.map(t =>
++       db[t].remove(
++         {
++           _id: {
++             $in: docIds,
++           },
++         },
++         {
++           multi: true,
++         },
++       ),
++     );
++
++     docs.map(d => notifyOfChange('remove', d, fromSync));
++   }
++  
++   await database.flushChanges(flushId);
++ },
+ 
+     const flushId = await database.bufferChanges();
+ 

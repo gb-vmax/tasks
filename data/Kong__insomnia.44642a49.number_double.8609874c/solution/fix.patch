@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..fa1763b9d 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -594,7 +594,43 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,
+     number_float: () => 0.0,
+-    number_double: () => 0.0,
++ number_double: (schema: OpenAPIV3.SchemaObject) => {
++   let value = 0.0;
++  
++   const hasConstraints = schema && (
++     schema.minimum !== undefined || 
++     schema.maximum !== undefined || 
++     schema.multipleOf !== undefined
++   );
++  
++   if (hasConstraints) {
++     const min = schema.minimum !== undefined ? schema.minimum : -1000;
++     const max = schema.maximum !== undefined ? schema.maximum : 1000;
++     const multipleOf = schema.multipleOf;
++    
++     const schemaKey = JSON.stringify({ 
++       min: schema.minimum, 
++       max: schema.maximum, 
++       mult: schema.multipleOf 
++     });
++     const hashValue = Math.abs(
++       schemaKey.split('').reduce((acc, char) => {
++         return ((acc << 5) - acc) + char.charCodeAt(0);
++       }, 0)
++     );
++    
++     const range = max - min;
++     value = min + (hashValue % 1000) / 1000 * range;
++    
++     if (multipleOf) {
++       value = Math.round(value / multipleOf) * multipleOf;
++     }
++    
++     value = Math.max(min, Math.min(max, value));
++   }
++  
++   return parseFloat(value.toFixed(10));
++ }
+     integer: () => 0,
+     boolean: () => true,
+     object: (schema: OpenAPIV3.SchemaObject) => {

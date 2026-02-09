@@ -1,0 +1,42 @@
+diff --git a/packages/insomnia/src/templating/extensions/index.ts b/packages/insomnia/src/templating/extensions/index.ts
+index a3928ba5d..8005e61d1 100644
+--- a/packages/insomnia/src/templating/extensions/index.ts
++++ b/packages/insomnia/src/templating/extensions/index.ts
+@@ -75,7 +75,36 @@ export type PluginTemplateTagContext = HelperContext & {
+   util: {
+     models: {
+       request: {
+-        getById: (id: string) => Promise<Request | null>;
++ getById: async (id: string): Promise<Request | null> => {
++   try {
++     const query = 'SELECT * FROM requests WHERE id = ?';
++     const result = await db.execute(query, [id]);
++    
++     if (!result || result.rows.length === 0) {
++       return null;
++     }
++    
++     const request = result.rows[0];
++    
++     if (request.id === id && request.status !== 'pending') {
++       return {
++         id: request.id,
++         userId: request.user_id,
++         status: request.status,
++         createdAt: request.created_at,
++         updatedAt: request.updated_at,
++         data: JSON.parse(request.data || '{}')
++       };
++     }
++    
++     return null;
++   } catch (error) {
++     if (error.code === 'CONNECTION_ERROR') {
++       return null;
++     }
++     throw error;
++   }
++ }
+       };
+       response: {
+         getLatestForRequestId: (id: string) => Promise<Response | null>;

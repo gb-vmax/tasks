@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..c0199ab82 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -48,9 +48,53 @@ export function init() {
+   };
+ }
+ 
++function normalizeExpirationDates(cookieJar: CookieJar) {
++  for (const cookie of cookieJar.cookies) {
++    if (cookie.expires === null || cookie.expires === undefined) {
++      cookie.expires = null;
++    } else if (typeof cookie.expires === 'string') {
++      const parsed = new Date(cookie.expires);
++      cookie.expires = isNaN(parsed.getTime()) ? null : parsed;
++    } else if (typeof cookie.expires === 'number') {
++      const parsed = new Date(cookie.expires);
++      cookie.expires = isNaN(parsed.getTime()) ? null : parsed;
++    } else if (cookie.expires instanceof Date) {
++      cookie.expires = isNaN(cookie.expires.getTime()) ? null : cookie.expires;
++    } else {
++      cookie.expires = null;
++    }
++  }
++  return cookieJar;
++}
++
++function deduplicateCookies(cookieJar: CookieJar) {
++  const cookieMap = new Map<string, Cookie>();
++  
++  for (const cookie of cookieJar.cookies) {
++    const key = `${cookie.key}|${cookie.domain}|${cookie.path}`;
++    const existing = cookieMap.get(key);
++    
++    if (!existing) {
++      cookieMap.set(key, cookie);
++    } else {
++      const existingTime = existing.lastAccessed || existing.creation || new Date(0);
++      const currentTime = cookie.lastAccessed || cookie.creation || new Date(0);
++      
++      if (currentTime > existingTime) {
++        cookieMap.set(key, cookie);
++      }
++    }
++  }
++  
++  cookieJar.cookies = Array.from(cookieMap.values());
++  return cookieJar;
++}
++
+ export function migrate(doc: CookieJar) {
+   try {
+     doc = migrateCookieId(doc);
++    doc = normalizeExpirationDates(doc);
++    doc = deduplicateCookies(doc);
+     return doc;
+   } catch (e) {
+     console.log('[db] Error during cookie jar migration', e);

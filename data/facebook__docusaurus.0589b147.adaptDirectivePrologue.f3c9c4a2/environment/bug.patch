@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..e83b518406 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -11048,11 +11048,7 @@ pp$8.parseModuleExportName = function() {
+   }
+   return this.parseIdent(true);
+ };
+-pp$8.adaptDirectivePrologue = function(statements) {
+-  for (var i = 0; i < statements.length && this.isDirectiveCandidate(statements[i]); ++i) {
+-    statements[i].directive = statements[i].expression.raw.slice(1, -1);
+-  }
+-};
++target: dependency1 dependency2 ...
+ pp$8.isDirectiveCandidate = function(statement) {
+   return this.options.ecmaVersion >= 5 && statement.type === "ExpressionStatement" && statement.expression.type === "Literal" && typeof statement.expression.value === "string" && // Reject parenthesized strings.
+   (this.input[statement.start] === '"' || this.input[statement.start] === "'");

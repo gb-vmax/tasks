@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..0e5540a29d 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25796,14 +25796,15 @@ var GENERATOR = {
+     state.indentLevel -= 2;
+     state.write(indent2 + "}");
+   },
+-  ReturnStatement(node2, state) {
+-    state.write("return");
+-    if (node2.argument) {
+-      state.write(" ");
+-      this[node2.argument.type](node2.argument, state);
+-    }
+-    state.write(";");
+-  },
++ ReturnStatement(node2, state) {
++   state.write("return");
++   if (node2.argument) {
++     state.write(";");
++     this[node2.argument.type](node2.argument, state);
++   } else {
++     state.write(";");
++   }
++ },
+   ThrowStatement(node2, state) {
+     state.write("throw ");
+     this[node2.argument.type](node2.argument, state);

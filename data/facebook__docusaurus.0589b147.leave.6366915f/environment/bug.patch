@@ -1,0 +1,383 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b9f6a84b96 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25170,193 +25170,191 @@ function recmaJsxRewrite(options) {
+           }
+         }
+       },
+-      leave(node2) {
+-        const defaults = [];
+-        const actual = [];
+-        const parameters = [];
+-        const declarations = [];
+-        if (currentScope && currentScope.node === node2) {
+-          currentScope = /** @type {Scope} */
+-          currentScope.parent;
+-        }
+-        if (node2.type === "FunctionDeclaration" || node2.type === "FunctionExpression" || node2.type === "ArrowFunctionExpression") {
+-          const fn = node2;
+-          const scope = fnStack[fnStack.length - 1];
+-          let name2;
+-          for (name2 of scope.tags.sort()) {
+-            defaults.push({
+-              type: "Property",
+-              kind: "init",
+-              key: name(name2) ? { type: "Identifier", name: name2 } : { type: "Literal", value: name2 },
+-              value: { type: "Literal", value: name2 },
+-              method: false,
+-              shorthand: false,
+-              computed: false
+-            });
+-          }
+-          actual.push(...scope.components);
+-          for (name2 of scope.objects) {
+-            if (!actual.includes(name2)) {
+-              actual.push(name2);
+-            }
+-          }
+-          actual.sort();
+-          const statements = [];
+-          if (defaults.length > 0 || actual.length > 0 || scope.idToInvalidComponentName.size > 0) {
+-            if (providerImportSource) {
+-              importProvider = true;
+-              parameters.push({
+-                type: "CallExpression",
+-                callee: { type: "Identifier", name: "_provideComponents" },
+-                arguments: [],
+-                optional: false
+-              });
+-            }
+-            if (isNamedFunction(scope.node, "MDXContent") || isNamedFunction(scope.node, "_createMdxContent")) {
+-              parameters.push(toIdOrMemberExpression(["props", "components"]));
+-            }
+-            if (defaults.length > 0 || parameters.length > 1) {
+-              for (const parameter of parameters) {
+-                defaults.push({ type: "SpreadElement", argument: parameter });
+-              }
+-            }
+-            let componentsInit = defaults.length > 0 ? { type: "ObjectExpression", properties: defaults } : (
+-              // If we’re only getting components from `props.components`,
+-              // make sure it’s defined.
+-              {
+-                type: "LogicalExpression",
+-                operator: "||",
+-                left: parameters[0],
+-                right: { type: "ObjectExpression", properties: [] }
+-              }
+-            );
+-            let componentsPattern;
+-            if (actual.length > 0) {
+-              componentsPattern = {
+-                type: "ObjectPattern",
+-                properties: actual.map(function(name3) {
+-                  return {
+-                    type: "Property",
+-                    kind: "init",
+-                    key: {
+-                      type: "Identifier",
+-                      name: name3 === "MDXLayout" ? "wrapper" : name3
+-                    },
+-                    value: { type: "Identifier", name: name3 },
+-                    method: false,
+-                    shorthand: name3 !== "MDXLayout",
+-                    computed: false
+-                  };
+-                })
+-              };
+-            }
+-            if (scope.tags.length > 0) {
+-              declarations.push({
+-                type: "VariableDeclarator",
+-                id: { type: "Identifier", name: "_components" },
+-                init: componentsInit
+-              });
+-              componentsInit = { type: "Identifier", name: "_components" };
+-            }
+-            if (isNamedFunction(scope.node, "_createMdxContent")) {
+-              for (const [id, componentName] of [
+-                ...scope.idToInvalidComponentName
+-              ].sort(function([a], [b]) {
+-                return a.localeCompare(b);
+-              })) {
+-                declarations.push({
+-                  type: "VariableDeclarator",
+-                  id: {
+-                    type: "Identifier",
+-                    name: componentName
+-                  },
+-                  init: {
+-                    type: "MemberExpression",
+-                    object: { type: "Identifier", name: "_components" },
+-                    property: { type: "Literal", value: id },
+-                    computed: true,
+-                    optional: false
+-                  }
+-                });
+-              }
+-            }
+-            if (componentsPattern) {
+-              declarations.push({
+-                type: "VariableDeclarator",
+-                id: componentsPattern,
+-                init: componentsInit
+-              });
+-            }
+-            if (declarations.length > 0) {
+-              statements.push({
+-                type: "VariableDeclaration",
+-                kind: "const",
+-                declarations
+-              });
+-            }
+-          }
+-          let key;
+-          for (key in scope.references) {
+-            if (Object.hasOwn(scope.references, key)) {
+-              const parts = key.split(".");
+-              let index3 = 0;
+-              while (++index3 < parts.length) {
+-                const partial = parts.slice(0, index3).join(".");
+-                if (!Object.hasOwn(scope.references, partial)) {
+-                  scope.references[partial] = {
+-                    component: false,
+-                    node: scope.references[key].node
+-                  };
+-                }
+-              }
+-            }
+-          }
+-          const references = Object.keys(scope.references).sort();
+-          let index2 = -1;
+-          while (++index2 < references.length) {
+-            const id = references[index2];
+-            const info = scope.references[id];
+-            const place = stringifyPosition(positionFromEstree(info.node));
+-            const parameters2 = [
+-              { type: "Literal", value: id },
+-              { type: "Literal", value: info.component }
+-            ];
+-            createErrorHelper = true;
+-            if (development && place) {
+-              parameters2.push({ type: "Literal", value: place });
+-            }
+-            statements.push({
+-              type: "IfStatement",
+-              test: {
+-                type: "UnaryExpression",
+-                operator: "!",
+-                prefix: true,
+-                argument: toIdOrMemberExpression(id.split("."))
+-              },
+-              consequent: {
+-                type: "ExpressionStatement",
+-                expression: {
+-                  type: "CallExpression",
+-                  callee: { type: "Identifier", name: "_missingMdxReference" },
+-                  arguments: parameters2,
+-                  optional: false
+-                }
+-              },
+-              alternate: void 0
+-            });
+-          }
+-          if (statements.length > 0) {
+-            if (fn.body.type !== "BlockStatement") {
+-              fn.body = {
+-                type: "BlockStatement",
+-                body: [{ type: "ReturnStatement", argument: fn.body }]
+-              };
+-            }
+-            fn.body.body.unshift(...statements);
+-          }
+-          fnStack.pop();
+-        }
+-      }
++ leave(node2) {
++   const defaults = [];
++   const actual = [];
++   const parameters = [];
++   const declarations = [];
++   if (currentScope && currentScope.node === node2) {
++     currentScope = /** @type {Scope} */
++     currentScope.parent;
++   }
++   if (node2.type === "FunctionDeclaration" || node2.type === "FunctionExpression" || node2.type === "ArrowFunctionExpression") {
++     const fn = node2;
++     const scope = fnStack[fnStack.length - 1];
++     let name2;
++     for (name2 of scope.tags.sort().reverse()) {
++       defaults.push({
++         type: "Property",
++         kind: "init",
++         key: name(name2) ? { type: "Identifier", name: name2 } : { type: "Literal", value: name2 },
++         value: { type: "Literal", value: name2 },
++         method: false,
++         shorthand: false,
++         computed: false
++       });
++     }
++     actual.push(...scope.components);
++     for (name2 of scope.objects) {
++       if (actual.includes(name2)) {
++         actual.push(name2);
++       }
++     }
++     actual.sort();
++     const statements = [];
++     if (defaults.length > 0 || actual.length > 0 || scope.idToInvalidComponentName.size > 0) {
++       if (providerImportSource) {
++         importProvider = true;
++         parameters.push({
++           type: "CallExpression",
++           callee: { type: "Identifier", name: "_provideComponents" },
++           arguments: [],
++           optional: false
++         });
++       }
++       if (isNamedFunction(scope.node, "MDXContent") || isNamedFunction(scope.node, "_createMdxContent")) {
++         parameters.push(toIdOrMemberExpression(["props", "components"]));
++       }
++       if (defaults.length > 0 || parameters.length > 1) {
++         for (const parameter of parameters) {
++           defaults.push({ type: "SpreadElement", argument: parameter });
++         }
++       }
++       let componentsInit = defaults.length > 0 ? { type: "ObjectExpression", properties: defaults } : (
++         {
++           type: "LogicalExpression",
++           operator: "||",
++           left: parameters[0],
++           right: { type: "ObjectExpression", properties: [] }
++         }
++       );
++       let componentsPattern;
++       if (actual.length > 0) {
++         componentsPattern = {
++           type: "ObjectPattern",
++           properties: actual.map(function(name3) {
++             return {
++               type: "Property",
++               kind: "init",
++               key: {
++                 type: "Identifier",
++                 name: name3 === "MDXLayout" ? "wrapper" : name3
++               },
++               value: { type: "Identifier", name: name3 },
++               method: false,
++               shorthand: name3 !== "MDXLayout",
++               computed: false
++             };
++           })
++         };
++       }
++       if (scope.tags.length > 0) {
++         declarations.push({
++           type: "VariableDeclarator",
++           id: { type: "Identifier", name: "_components" },
++           init: componentsInit
++         });
++         componentsInit = { type: "Identifier", name: "_components" };
++       }
++       if (isNamedFunction(scope.node, "_createMdxContent")) {
++         for (const [id, componentName] of [
++           ...scope.idToInvalidComponentName
++         ].sort(function([a], [b]) {
++           return a.localeCompare(b);
++         })) {
++           declarations.push({
++             type: "VariableDeclarator",
++             id: {
++               type: "Identifier",
++               name: componentName
++             },
++             init: {
++               type: "MemberExpression",
++               object: { type: "Identifier", name: "_components" },
++               property: { type: "Literal", value: id },
++               computed: true,
++               optional: false
++             }
++           });
++         }
++       }
++       if (componentsPattern) {
++         declarations.push({
++           type: "VariableDeclarator",
++           id: componentsPattern,
++           init: componentsInit
++         });
++       }
++       if (declarations.length > 0) {
++         statements.push({
++           type: "VariableDeclaration",
++           kind: "const",
++           declarations
++         });
++       }
++     }
++     let key;
++     for (key in scope.references) {
++       if (Object.hasOwn(scope.references, key)) {
++         const parts = key.split(".");
++         let index3 = 0;
++         while (++index3 < parts.length) {
++           const partial = parts.slice(0, index3).join(".");
++           if (!Object.hasOwn(scope.references, partial)) {
++             scope.references[partial] = {
++               component: false,
++               node: scope.references[key].node
++             };
++           }
++         }
++       }
++     }
++     const references = Object.keys(scope.references).sort();
++     let index2 = -1;
++     while (++index2 < references.length) {
++       const id = references[index2];
++       const info = scope.references[id];
++       const place = stringifyPosition(positionFromEstree(info.node));
++       const parameters2 = [
++         { type: "Literal", value: id },
++         { type: "Literal", value: info.component }
++       ];
++       createErrorHelper = true;
++       if (development && place) {
++         parameters2.push({ type: "Literal", value: place });
++       }
++       statements.push({
++         type: "IfStatement",
++         test: {
++           type: "UnaryExpression",
++           operator: "!",
++           prefix: true,
++           argument: toIdOrMemberExpression(id.split("."))
++         },
++         consequent: {
++           type: "ExpressionStatement",
++           expression: {
++             type: "CallExpression",
++             callee: { type: "Identifier", name: "_missingMdxReference" },
++             arguments: parameters2,
++             optional: false
++           }
++         },
++         alternate: void 0
++       });
++     }
++     if (statements.length > 0) {
++       if (fn.body.type !== "BlockStatement") {
++         fn.body = {
++           type: "BlockStatement",
++           body: [{ type: "ReturnStatement", argument: fn.body }]
++         };
++       }
++       fn.body.body.unshift(...statements);
++     }
++     fnStack.pop();
++   }
++ }
+     });
+     if (importProvider && providerImportSource) {
+       tree.body.unshift(

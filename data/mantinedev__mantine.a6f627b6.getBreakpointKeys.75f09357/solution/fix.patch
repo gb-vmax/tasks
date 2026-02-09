@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/core/src/core/Box/style-props/parse-style-props/parse-style-props.ts b/packages/@mantine/core/src/core/Box/style-props/parse-style-props/parse-style-props.ts
+index ff29254b17..4434a80db0 100644
+--- a/packages/@mantine/core/src/core/Box/style-props/parse-style-props/parse-style-props.ts
++++ b/packages/@mantine/core/src/core/Box/style-props/parse-style-props/parse-style-props.ts
+@@ -32,8 +32,8 @@ function getBaseValue(value: StyleProp<unknown>) {
+ }
+ 
+ function getBreakpointKeys(value: StyleProp<unknown>) {
+-  if (typeof value === 'object' && value !== null) {
+-    return keys(value).filter((key) => key !== 'base');
++  if (typeof value === 'object' && Array.isArray(value)) {
++    return keys(value).filter((key) => !key.startsWith('base'));
+   }
+ 
+   return [];

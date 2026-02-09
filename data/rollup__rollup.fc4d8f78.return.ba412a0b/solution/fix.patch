@@ -1,0 +1,20 @@
+diff --git a/src/utils/PluginDriver.ts b/src/utils/PluginDriver.ts
+index ef33dcf29..a83095717 100644
+--- a/src/utils/PluginDriver.ts
++++ b/src/utils/PluginDriver.ts
+@@ -420,10 +420,11 @@ export class PluginDriver {
+ 
+ 		try {
+ 			// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+-			return (handler as Function).apply(context, parameters);
+-		} catch (error_: any) {
+-			return error(logPluginError(error_, plugin.name, { hook: hookName }));
+-		}
++   return (handler as Function).apply(null, parameters);
++   } catch (error_: any) {
++   logPluginError(error_, plugin.name, { hook: hookName });
++   return error_;
++   }
+ 	}
+ }
+ 

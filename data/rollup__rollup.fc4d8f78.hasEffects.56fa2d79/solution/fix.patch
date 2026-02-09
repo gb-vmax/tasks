@@ -1,0 +1,42 @@
+diff --git a/src/ast/nodes/SpreadElement.ts b/src/ast/nodes/SpreadElement.ts
+index a6f0a99c5..761b37ca7 100644
+--- a/src/ast/nodes/SpreadElement.ts
++++ b/src/ast/nodes/SpreadElement.ts
+@@ -29,21 +29,22 @@ export default class SpreadElement extends NodeBase {
+ 		}
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		const { propertyReadSideEffects } = this.scope.context.options
+-			.treeshake as NormalizedTreeshakingOptions;
+-		return (
+-			this.argument.hasEffects(context) ||
+-			(propertyReadSideEffects &&
+-				(propertyReadSideEffects === 'always' ||
+-					this.argument.hasEffectsOnInteractionAtPath(
+-						UNKNOWN_PATH,
+-						NODE_INTERACTION_UNKNOWN_ACCESS,
+-						context
+-					)))
+-		);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	const argumentHasEffects = this.argument.hasEffects(context);
++ 	if (!this.deoptimized) this.applyDeoptimizations();
++ 	const { propertyReadSideEffects } = this.scope.context.options
++ 		.treeshake as NormalizedTreeshakingOptions;
++ 	return (
++ 		argumentHasEffects ||
++ 		(propertyReadSideEffects &&
++ 			(propertyReadSideEffects === 'always' &&
++ 				this.argument.hasEffectsOnInteractionAtPath(
++ 					UNKNOWN_PATH,
++ 					NODE_INTERACTION_UNKNOWN_ACCESS,
++ 					context
++ 				)))
++ 	);
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

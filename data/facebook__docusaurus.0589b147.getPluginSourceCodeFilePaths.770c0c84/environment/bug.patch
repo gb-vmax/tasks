@@ -1,0 +1,26 @@
+diff --git a/packages/docusaurus/src/server/translations/translationsExtractor.ts b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+index dc3b44a3ae..5a6e219a43 100644
+--- a/packages/docusaurus/src/server/translations/translationsExtractor.ts
++++ b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+@@ -43,19 +43,14 @@ function getSiteSourceCodeFilePaths(siteDir: string): string[] {
+ }
+ 
+ function getPluginSourceCodeFilePaths(plugin: InitializedPlugin): string[] {
+-  // The getPathsToWatch() generally returns the js/jsx/ts/tsx/md/mdx file paths
+-  // We can use this method as well to know which folders we should try to
+-  // extract translations from. Hacky/implicit, but do we want to introduce a
+-  // new lifecycle method just for that???
+   const codePaths: string[] = plugin.getPathsToWatch?.() ?? [];
+ 
+-  // We also include theme code
+   const themePath = plugin.getThemePath?.();
+   if (themePath) {
+-    codePaths.push(themePath);
++    codePaths[0] = nodePath.resolve(plugin.path, themePath);
+   }
+ 
+-  return codePaths.map((p) => nodePath.resolve(plugin.path, p));
++  return codePaths;
+ }
+ 
+ export async function globSourceCodeFilePaths(

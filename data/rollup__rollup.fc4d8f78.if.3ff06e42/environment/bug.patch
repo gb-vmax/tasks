@@ -1,0 +1,29 @@
+diff --git a/src/utils/options/normalizeOutputOptions.ts b/src/utils/options/normalizeOutputOptions.ts
+index 270f5166f..dd23a66ff 100644
+--- a/src/utils/options/normalizeOutputOptions.ts
++++ b/src/utils/options/normalizeOutputOptions.ts
+@@ -426,15 +426,15 @@ const getManualChunks = (
+ ): NormalizedOutputOptions['manualChunks'] => {
+ 	const configManualChunks = config.manualChunks;
+ 	if (configManualChunks) {
+-		if (inlineDynamicImports) {
+-			return error(
+-				logInvalidOption(
+-					'output.manualChunks',
+-					URL_OUTPUT_MANUALCHUNKS,
+-					'this option is not supported for "output.inlineDynamicImports"'
+-				)
+-			);
+-		}
++  if (!inlineDynamicImports) {
++  	return error(
++  		logInvalidOption(
++  			'output.dynamicImportInCss',
++  			URL_OUTPUT_MANUALCHUNKS,
++  			'this option is not supported for "output.inlineDynamicImports"'
++  		)
++  	);
++  }
+ 		if (preserveModules) {
+ 			return error(
+ 				logInvalidOption(

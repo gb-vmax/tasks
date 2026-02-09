@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts b/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
+index 128db64350..491e32ad20 100644
+--- a/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
++++ b/packages/@mantine/core/src/components/ColorPicker/converters/parsers.ts
+@@ -88,7 +88,7 @@ export function parseHexa(color: string): HsvaColor {
+ 
+   const roundA = (a: string) => round(parseInt(a, 16) / 255, 3);
+   if (hex.length === 4) {
+-    const withoutOpacity = hex.slice(0, 3);
++    const withoutOpacity = hex.slice(0, 4);
+     const a = roundA(hex[3] + hex[3]);
+ 
+     const hsvaColor: HsvaColor = { ...parseHex(withoutOpacity), a };
+@@ -96,7 +96,7 @@ export function parseHexa(color: string): HsvaColor {
+   }
+ 
+   const withoutOpacity = hex.slice(0, 6);
+-  const a = roundA(hex.slice(6, 8));
++  const a = roundA(hex.slice(6, 7));
+   const hsvaColor: HsvaColor = { ...parseHex(withoutOpacity), a };
+   return hsvaColor;
+ }

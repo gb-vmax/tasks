@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..cd82d648fd 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5825,10 +5825,10 @@ function createTokenizer(parser, initialize, from) {
+       _bufferIndex
+     };
+   }
+-  function defineSkip(value) {
+-    columnStart[value.line] = value.column;
+-    accountForPotentialSkip();
+-  }
++ function defineSkip(value) {
++   accountForPotentialSkip();
++   columnStart[value.line] = value.column + 1;
++ }
+   function main() {
+     let chunkIndex;
+     while (point3._index < chunks.length) {

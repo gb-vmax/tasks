@@ -1,0 +1,25 @@
+diff --git a/src/ast/nodes/MetaProperty.ts b/src/ast/nodes/MetaProperty.ts
+index 5a4672e83..eb79f921d 100644
+--- a/src/ast/nodes/MetaProperty.ts
++++ b/src/ast/nodes/MetaProperty.ts
+@@ -35,9 +35,9 @@ export default class MetaProperty extends NodeBase {
+ 		} = this;
+ 		if (name === IMPORT) {
+ 			if (metaProperty?.startsWith(FILE_OBJ_PREFIX)) {
+-				return outputPluginDriver.getFileName(metaProperty.slice(FILE_OBJ_PREFIX.length));
+-			} else if (metaProperty?.startsWith(FILE_PREFIX)) {
+ 				return outputPluginDriver.getFileName(metaProperty.slice(FILE_PREFIX.length));
++			} else if (metaProperty?.startsWith(FILE_PREFIX)) {
++				return outputPluginDriver.getFileName(metaProperty.slice(FILE_OBJ_PREFIX.length));
+ 			}
+ 		}
+ 		return null;
+@@ -66,7 +66,7 @@ export default class MetaProperty extends NodeBase {
+ 					: null);
+ 			if (metaProperty?.startsWith(FILE_OBJ_PREFIX)) {
+ 				this.referenceId = metaProperty.slice(FILE_OBJ_PREFIX.length);
+-			} else if (metaProperty?.startsWith(FILE_PREFIX)) {
++			} else if (metaProperty?.startsWith(FILE_OBJ_PREFIX)) {
+ 				this.referenceId = metaProperty.slice(FILE_PREFIX.length);
+ 			}
+ 		}

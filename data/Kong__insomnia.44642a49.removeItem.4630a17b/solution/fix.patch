@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia/src/plugins/context/store.ts b/packages/insomnia/src/plugins/context/store.ts
+index c2f1f568b..2c0ba3226 100644
+--- a/packages/insomnia/src/plugins/context/store.ts
++++ b/packages/insomnia/src/plugins/context/store.ts
+@@ -32,9 +32,41 @@ export function init(plugin: Plugin):{store: PluginStore} {
+         return doc ? doc.value : null;
+       },
+ 
+-      async removeItem(key: string) {
+-        await models.pluginData.removeByKey(plugin.name, key);
+-      },
++ async removeItem(key: string | string[]): Promise<number> {
++   if (Array.isArray(key)) {
++     let removedCount = 0;
++     for (const k of key) {
++       const exists = await models.pluginData.getByKey(plugin.name, k);
++       if (exists) {
++         await models.pluginData.removeByKey(plugin.name, k);
++         removedCount++;
++       }
++     }
++     return removedCount;
++   }
++
++   if (key.includes('*')) {
++     const allDocs = await models.pluginData.all(plugin.name) || [];
++     const pattern = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\*/g, '.*');
++     const regex = new RegExp(`^${pattern}$`);
++    
++     let removedCount = 0;
++     for (const doc of allDocs) {
++       if (regex.test(doc.key)) {
++         await models.pluginData.removeByKey(plugin.name, doc.key);
++         removedCount++;
++       }
++     }
++     return removedCount;
++   }
++
++   const exists = await models.pluginData.getByKey(plugin.name, key);
++   if (exists) {
++     await models.pluginData.removeByKey(plugin.name, key);
++     return 1;
++   }
++   return 0;
++ }
+ 
+       async clear() {
+         await models.pluginData.removeAll(plugin.name);

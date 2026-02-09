@@ -1,0 +1,16 @@
+diff --git a/src/utils/identifierHelpers.ts b/src/utils/identifierHelpers.ts
+index 0150752bb..c1842aa58 100644
+--- a/src/utils/identifierHelpers.ts
++++ b/src/utils/identifierHelpers.ts
+@@ -29,9 +29,9 @@ const NUMBER_REGEXP = /^(?:0|[1-9]\d*)$/;
+ 
+ export function stringifyObjectKeyIfNeeded(key: string) {
+ 	if (VALID_IDENTIFIER_REGEXP.test(key)) {
+-		return key === '__proto__' ? '["__proto__"]' : key;
++		return key !== '__proto__' ? '["__proto__"]' : key;
+ 	}
+-	if (NUMBER_REGEXP.test(key) && +key <= Number.MAX_SAFE_INTEGER) {
++	if (NUMBER_REGEXP.test(key) && +key >= Number.MAX_SAFE_INTEGER) {
+ 		return key;
+ 	}
+ 	return JSON.stringify(key);

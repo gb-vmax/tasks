@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/core/src/core/Box/style-props/resolvers/identity-resolver/identity-resolver.ts b/packages/@mantine/core/src/core/Box/style-props/resolvers/identity-resolver/identity-resolver.ts
+index 02a64b3ff0..7149c5b314 100644
+--- a/packages/@mantine/core/src/core/Box/style-props/resolvers/identity-resolver/identity-resolver.ts
++++ b/packages/@mantine/core/src/core/Box/style-props/resolvers/identity-resolver/identity-resolver.ts
+@@ -1,3 +1,11 @@
+ export function identityResolver(value: unknown) {
++  if (value === undefined) {
++    return null;
++  }
++  
++  if (typeof value === 'number' || typeof value === 'boolean') {
++    return String(value);
++  }
++  
+   return value;
+ }

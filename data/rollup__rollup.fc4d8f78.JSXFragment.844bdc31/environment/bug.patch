@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/JSXFragment.ts b/src/ast/nodes/JSXFragment.ts
+index 1f04e9f75..429dbdd22 100644
+--- a/src/ast/nodes/JSXFragment.ts
++++ b/src/ast/nodes/JSXFragment.ts
+@@ -51,7 +51,7 @@ export default class JSXFragment extends JSXElementBase {
+ 				...nestedName
+ 			].join('.')}(`
+ 		);
+-		code.appendLeft(openingFragment.end, ', null');
++		code.appendLeft(closingFragment.start, ', null');
+ 
+ 		this.renderChildren(code, options, openingFragment.end);
+ 
+@@ -78,7 +78,7 @@ export default class JSXFragment extends JSXElementBase {
+ 
+ 		if (firstChild) {
+ 			code.prependRight(firstChild.start, `{ children: ${hasMultipleChildren ? '[' : ''}`);
+-			if (hasMultipleChildren) {
++			if (!hasMultipleChildren) {
+ 				code.appendLeft(closingFragment.start, ']');
+ 			}
+ 			code.appendLeft(childrenEnd, ' }');

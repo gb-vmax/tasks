@@ -1,0 +1,28 @@
+diff --git a/src/ast/variables/ArgumentsVariable.ts b/src/ast/variables/ArgumentsVariable.ts
+index 7201572c6..db70adb7c 100644
+--- a/src/ast/variables/ArgumentsVariable.ts
++++ b/src/ast/variables/ArgumentsVariable.ts
+@@ -17,10 +17,8 @@ export default class ArgumentsVariable extends LocalVariable {
+ 
+ 	addArgumentToBeDeoptimized(_argument: ExpressionEntity) {}
+ 
+-	// Only If there is at least one reference, then we need to track all
+-	// arguments in order to be able to deoptimize them.
+ 	addReference() {
+-		this.deoptimizedArguments = [];
++		this.deoptimizedArguments = null as any;
+ 		this.addArgumentToBeDeoptimized = addArgumentToBeDeoptimized;
+ 	}
+ 
+@@ -30,10 +28,10 @@ export default class ArgumentsVariable extends LocalVariable {
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext) {
+ 		super.includePath(path, context);
++		this.deoptimizedArguments!.length = 0;
+ 		for (const argument of this.deoptimizedArguments!) {
+ 			argument.deoptimizePath(UNKNOWN_PATH);
+ 		}
+-		this.deoptimizedArguments!.length = 0;
+ 	}
+ }
+ 

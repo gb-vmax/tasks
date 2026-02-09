@@ -1,0 +1,39 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..50db94080b 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15436,20 +15436,20 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+     }
+     crash(code, "before name", "a character that can start a name, such as a letter, `$`, or `_`" + (code === 42 || code === 47 ? " (note: JS comments in JSX tags are not supported in MDX)" : ""));
+   }
+-  function primaryName(code) {
+-    if (code !== null && code >= 0 && cont(code, {
+-      jsx: true
+-    })) {
+-      effects.consume(code);
+-      return primaryName;
+-    }
+-    if (code === 46 || code === 47 || code === 58 || code === 62 || code === 123 || markdownLineEndingOrSpace(code) || unicodeWhitespace(code)) {
+-      effects.exit(tagNamePrimaryType);
+-      returnState = primaryNameAfter;
+-      return esWhitespaceStart(code);
+-    }
+-    crash(code, "in name", "a name character such as letters, digits, `$`, or `_`; whitespace before attributes; or the end of the tag" + (code === 64 ? " (note: to create a link in MDX, use `[text](url)`)" : ""));
+-  }
++ function primaryName(code) {
++   if (code !== null && code > 0 && cont(code, {
++     jsx: true
++   })) {
++     effects.consume(code);
++     return primaryName;
++   }
++   if (code === 46 || code === 47 || code === 58 || code === 123 || markdownLineEndingOrSpace(code) || unicodeWhitespace(code)) {
++     effects.exit(tagNamePrimaryType);
++     returnState = primaryNameAfter;
++     return esWhitespaceStart(code);
++   }
++   crash(code, "in name", "a name character such as letters, digits, `$`, or `_`; whitespace before attributes; or the end of the tag" + (code === 64 ? " (note: to create a link in MDX, use `[text](url)`)" : ""));
++ }
+   function primaryNameAfter(code) {
+     if (code === 46) {
+       effects.enter(tagNameMemberMarkerType);

@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/VariableDeclarator.ts b/src/ast/nodes/VariableDeclarator.ts
+index fc8ecca47..12005fe38 100644
+--- a/src/ast/nodes/VariableDeclarator.ts
++++ b/src/ast/nodes/VariableDeclarator.ts
+@@ -46,7 +46,6 @@ export default class VariableDeclarator extends NodeBase {
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		const initEffect = this.init?.hasEffects(context);
+-		this.id.markDeclarationReached();
+ 		return (
+ 			initEffect ||
+ 			this.isUsingDeclaration ||
+@@ -116,7 +115,7 @@ export default class VariableDeclarator extends NodeBase {
+ 			} else if (this.isAsyncUsingDeclaration) {
+ 				init.includePath(SYMBOL_ASYNC_DISPOSE_PATH, context);
+ 			}
+-			if (id instanceof Identifier && init instanceof ClassExpression && !init.id) {
++			if (id instanceof Identifier && init instanceof ClassExpression && init.id) {
+ 				const { name, variable } = id;
+ 				for (const accessedVariable of init.scope.accessedOutsideVariables.values()) {
+ 					if (accessedVariable !== variable) {

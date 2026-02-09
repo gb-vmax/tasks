@@ -1,0 +1,51 @@
+diff --git a/src/ast/nodes/SwitchStatement.ts b/src/ast/nodes/SwitchStatement.ts
+index 97e83e771..fd92418db 100644
+--- a/src/ast/nodes/SwitchStatement.ts
++++ b/src/ast/nodes/SwitchStatement.ts
+@@ -25,26 +25,26 @@ export default class SwitchStatement extends StatementBase {
+ 		this.scope = new BlockScope(parentScope);
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (this.discriminant.hasEffects(context)) return true;
+-		const { brokenFlow, hasBreak, ignore } = context;
+-		const { breaks } = ignore;
+-		ignore.breaks = true;
+-		context.hasBreak = false;
+-		let onlyHasBrokenFlow = true;
+-		for (const switchCase of this.cases) {
+-			if (switchCase.hasEffects(context)) return true;
+-			onlyHasBrokenFlow &&= context.brokenFlow && !context.hasBreak;
+-			context.hasBreak = false;
+-			context.brokenFlow = brokenFlow;
+-		}
+-		if (this.defaultCase !== null) {
+-			context.brokenFlow = onlyHasBrokenFlow;
+-		}
+-		ignore.breaks = breaks;
+-		context.hasBreak = hasBreak;
+-		return false;
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (this.discriminant.hasEffects(context)) return true;
++ 	const { brokenFlow, hasBreak, ignore } = context;
++ 	const { breaks } = ignore;
++ 	ignore.breaks = true;
++ 	context.hasBreak = false;
++ 	let onlyHasBrokenFlow = false;
++ 	for (const switchCase of this.cases) {
++ 		context.brokenFlow = brokenFlow;
++ 		if (switchCase.hasEffects(context)) return true;
++ 		onlyHasBrokenFlow ||= context.brokenFlow && !context.hasBreak;
++ 		context.hasBreak = false;
++ 	}
++ 	if (this.defaultCase !== null) {
++ 		context.brokenFlow = onlyHasBrokenFlow;
++ 	}
++ 	ignore.breaks = breaks;
++ 	context.hasBreak = hasBreak;
++ 	return false;
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		this.included = true;

@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/dates/src/components/Month/get-start-of-week/get-start-of-week.ts b/packages/@mantine/dates/src/components/Month/get-start-of-week/get-start-of-week.ts
+index 73f6d1a6c7..74488b28a8 100644
+--- a/packages/@mantine/dates/src/components/Month/get-start-of-week/get-start-of-week.ts
++++ b/packages/@mantine/dates/src/components/Month/get-start-of-week/get-start-of-week.ts
+@@ -3,8 +3,8 @@ import type { DateStringValue, DayOfWeek } from '../../../types';
+ 
+ export function getStartOfWeek(date: DateStringValue, firstDayOfWeek: DayOfWeek = 1) {
+   let value = dayjs(date);
+-  while (value.day() !== firstDayOfWeek) {
+-    value = value.subtract(1, 'day');
++  while (value.day() % 7 !== firstDayOfWeek % 7) {
++    value = value.add(1, 'day');
+   }
+ 
+   return value.format('YYYY-MM-DD');

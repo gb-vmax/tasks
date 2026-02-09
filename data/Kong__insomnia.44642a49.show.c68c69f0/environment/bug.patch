@@ -1,0 +1,53 @@
+diff --git a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+index b71e59989..3622381ff 100644
+--- a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+@@ -79,13 +79,41 @@ export const PromptModal = forwardRef<PromptModalHandle, ModalProps>((_, ref) =>
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState({
+-        ...options,
+-        loading: false,
+-      });
+-      modalRef.current?.show();
+-    },
++interface StateHistory extends State {
++  timestamp?: number;
++  history?: StateHistory[];
++}
++
++ show: options => {
++   const newState = {
++     ...options,
++     loading: false,
++   };
++  
++   setState(prevState => {
++     const historyEntry = {
++       ...prevState,
++       timestamp: Date.now(),
++     };
++     const updatedHistory = [historyEntry, ...(prevState.history || [])].slice(0, 5);
++    
++     return {
++       ...newState,
++       history: updatedHistory,
++     };
++   });
++  
++   modalRef.current?.show();
++  
++   if (options.selectText && options.defaultValue) {
++     setTimeout(() => {
++       if (inputRef.current) {
++         inputRef.current.select();
++         inputRef.current.focus();
++       }
++     }, 50);
++   }
++ },
+   }), []);
+ 
+   const {

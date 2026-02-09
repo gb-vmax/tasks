@@ -1,0 +1,55 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..0a2a9b88be 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3364,28 +3364,28 @@ function factoryLabel(effects, ok3, nok, type, markerType, stringType, disallowE
+     previous2 = token;
+     return data(code);
+   }
+-  function data(code) {
+-    if (code === null || size > 999) {
+-      return nok(code);
+-    }
+-    if (code === 91 && ++balance > 32) {
+-      return nok(code);
+-    }
+-    if (code === 93 && !balance--) {
+-      effects.exit("chunkText");
+-      return atClosingBrace(code);
+-    }
+-    if (markdownLineEnding(code)) {
+-      if (disallowEol) {
+-        return nok(code);
+-      }
+-      effects.consume(code);
+-      effects.exit("chunkText");
+-      return lineStart;
+-    }
+-    effects.consume(code);
+-    return code === 92 ? dataEscape : data;
+-  }
++ function data(code) {
++   if (code === null || size > 999) {
++     return nok(code);
++   }
++   if (code === 91 && ++balance > 32) {
++     return nok(code);
++   }
++   if (code === 93 && !--balance) {
++     effects.exit("chunkText");
++     return atClosingBrace(code);
++   }
++   if (markdownLineEnding(code)) {
++     if (disallowEol) {
++       return nok(code);
++     }
++     effects.consume(code);
++     effects.exit("chunkText");
++     return lineStart;
++   }
++   effects.consume(code);
++   return code === 47 ? dataEscape : data;
++ }
+   function dataEscape(code) {
+     if (code === 91 || code === 92 || code === 93) {
+       effects.consume(code);

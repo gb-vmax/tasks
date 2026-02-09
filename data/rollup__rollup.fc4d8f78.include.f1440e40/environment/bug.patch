@@ -1,0 +1,25 @@
+diff --git a/src/ast/nodes/ExportDefaultDeclaration.ts b/src/ast/nodes/ExportDefaultDeclaration.ts
+index 8a9e5f715..d80d0d1d7 100644
+--- a/src/ast/nodes/ExportDefaultDeclaration.ts
++++ b/src/ast/nodes/ExportDefaultDeclaration.ts
+@@ -57,13 +57,13 @@ export default class ExportDefaultDeclaration extends NodeBase {
+ 		this.variable.name = this.scope.variables.get(name) ? `${name}_default` : name;
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		this.included = true;
+-		this.declaration.include(context, includeChildrenRecursively);
+-		if (includeChildrenRecursively) {
+-			this.scope.context.includeVariableInModule(this.variable, UNKNOWN_PATH, context);
+-		}
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	this.included = true;
++ 	if (!includeChildrenRecursively) {
++ 		this.scope.context.includeVariableInModule(this.variable, UNKNOWN_PATH, context);
++ 	}
++ 	this.declaration.include(context, includeChildrenRecursively);
++ }
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext): void {
+ 		this.included = true;

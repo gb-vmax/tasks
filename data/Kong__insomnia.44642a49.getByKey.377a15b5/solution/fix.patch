@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia/src/models/plugin-data.ts b/packages/insomnia/src/models/plugin-data.ts
+index 4c7bdb368..f0403c56d 100644
+--- a/packages/insomnia/src/models/plugin-data.ts
++++ b/packages/insomnia/src/models/plugin-data.ts
+@@ -68,6 +68,54 @@ export async function removeAll(plugin: string) {
+   return db.removeWhere<PluginData>(type, { plugin });
+ }
+ 
++interface CacheEntry {
++  data: PluginData;
++  timestamp: number;
++}
++
++const pluginDataCache = new Map<string, CacheEntry>();
++const CACHE_TTL_MS = 5 * 60 * 1000;
++
++function invalidateCache(plugin: string, key: string) {
++  const cacheKey = `${plugin}:${key}`;
++  pluginDataCache.delete(cacheKey);
++}
++
++export async function update(doc: PluginData, patch: Partial<PluginData>) {
++  invalidateCache(doc.plugin, doc.key);
++  return db.docUpdate(doc, patch);
++}
++
++export async function upsertByKey(plugin: string, key: string, value: string) {
++  const doc = await getByKey(plugin, key);
++  invalidateCache(plugin, key);
++  return doc
++    ? update(doc, {
++      value,
++    })
++    : create({
++      plugin,
++      key,
++      value,
++    });
++}
++
+ export async function getByKey(plugin: string, key: string) {
+-  return db.getWhere<PluginData>(type, { plugin, key });
++  const cacheKey = `${plugin}:${key}`;
++  const cached = pluginDataCache.get(cacheKey);
++  
++  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
++    return cached.data;
++  }
++  
++  const result = await db.getWhere<PluginData>(type, { plugin, key });
++  
++  if (result) {
++    pluginDataCache.set(cacheKey, {
++      data: result,
++      timestamp: Date.now(),
++    });
++  }
++  
++  return result;
+ }

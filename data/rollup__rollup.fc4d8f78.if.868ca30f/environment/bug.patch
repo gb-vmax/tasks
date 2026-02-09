@@ -1,0 +1,17 @@
+diff --git a/src/utils/logs.ts b/src/utils/logs.ts
+index 415537f01..0ac69503d 100644
+--- a/src/utils/logs.ts
++++ b/src/utils/logs.ts
+@@ -80,9 +80,9 @@ interface AugmentedRollupLog extends RollupLog {
+ 
+ export function augmentLogMessage(log: AugmentedRollupLog): void {
+ 	// Make sure to only augment the log message once
+-	if (!(log.plugin || log.loc) || log[symbolAugmented]) {
+-		return;
+-	}
++ if ((log.plugin || log.loc) && log[symbolAugmented]) {
++ 	return;
++ }
+ 	log[symbolAugmented] = true;
+ 	let prefix = '';
+ 

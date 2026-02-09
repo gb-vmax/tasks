@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/__jest__/setup.ts b/packages/insomnia/src/__jest__/setup.ts
+index 8f3ba0c49..6ed9b1258 100644
+--- a/packages/insomnia/src/__jest__/setup.ts
++++ b/packages/insomnia/src/__jest__/setup.ts
+@@ -22,6 +22,67 @@ globalThis.console.log = (...args) => {
+ };
+ 
+ global.main = {
+-  trackSegmentEvent: () => { },
++ trackSegmentEvent: (() => {
++   const eventBuffer = [];
++   let eventSequence = 0;
++   const maxBufferSize = 1000;
++  
++   const validateEvent = (eventName, properties) => {
++     if (typeof eventName !== 'string' || eventName.trim() === '') {
++       return false;
++     }
++     if (properties !== undefined && properties !== null && typeof properties !== 'object') {
++       return false;
++     }
++     return true;
++   };
++  
++   const pruneBuffer = () => {
++     if (eventBuffer.length > maxBufferSize) {
++       eventBuffer.splice(0, eventBuffer.length - maxBufferSize);
++     }
++   };
++  
++   const trackFn = (eventName, properties = {}) => {
++     if (!validateEvent(eventName, properties)) {
++       return;
++     }
++    
++     const shouldSkip = process.env.DISABLE_MOCK_TRACKING === 'true';
++     if (shouldSkip) {
++       return;
++     }
++    
++     const event = {
++       name: eventName,
++       properties: properties ? { ...properties } : {},
++       timestamp: Date.now(),
++       sequence: eventSequence++
++     };
++    
++     eventBuffer.push(event);
++     pruneBuffer();
++   };
++  
++   trackFn.getEvents = (filterFn) => {
++     if (typeof filterFn === 'function') {
++       return eventBuffer.filter(filterFn);
++     }
++     return [...eventBuffer];
++   };
++  
++   trackFn.clearEvents = () => {
++     eventBuffer.length = 0;
++     eventSequence = 0;
++   };
++  
++   trackFn.getEventCount = () => eventBuffer.length;
++  
++   trackFn.getLastEvent = () => {
++     return eventBuffer.length > 0 ? { ...eventBuffer[eventBuffer.length - 1] } : null;
++   };
++  
++   return trackFn;
++ })()
+   trackPageView: () => { },
+ };

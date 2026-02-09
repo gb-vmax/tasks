@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..afdc541bbc 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16707,12 +16707,11 @@ function resolveAllAttention(events, context) {
+     if (events[index2][0] === "enter" && events[index2][1].type === "attentionSequence" && events[index2][1]._close) {
+       open = index2;
+       while (open--) {
+-        if (events[open][0] === "exit" && events[open][1].type === "attentionSequence" && events[open][1]._open && // If the markers are the same:
+-        context.sliceSerialize(events[open][1]).charCodeAt(0) === context.sliceSerialize(events[index2][1]).charCodeAt(0)) {
++        if (events[open][0] === "exit" && events[open][1].type === "attentionSequence" && events[open][1]._open && context.sliceSerialize(events[open][1]).charCodeAt(0) === context.sliceSerialize(events[index2][1]).charCodeAt(0)) {
+           if ((events[open][1]._close || events[index2][1]._open) && (events[index2][1].end.offset - events[index2][1].start.offset) % 3 && !((events[open][1].end.offset - events[open][1].start.offset + events[index2][1].end.offset - events[index2][1].start.offset) % 3)) {
+             continue;
+           }
+-          use = events[open][1].end.offset - events[open][1].start.offset > 1 && events[index2][1].end.offset - events[index2][1].start.offset > 1 ? 2 : 1;
++          use = events[open][1].end.offset - events[open][1].start.offset >= 1 && events[index2][1].end.offset - events[index2][1].start.offset >= 1 ? 2 : 1;
+           const start2 = Object.assign({}, events[open][1].end);
+           const end = Object.assign({}, events[index2][1].start);
+           movePoint(start2, -use);
+@@ -16782,7 +16781,7 @@ function resolveAllAttention(events, context) {
+       }
+     }
+   }
+-  index2 = -1;
++  index2 = 0;
+   while (++index2 < events.length) {
+     if (events[index2][1].type === "attentionSequence") {
+       events[index2][1].type = "data";

@@ -1,0 +1,67 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..a3fac8b26 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -248,7 +248,61 @@ export class Response extends Property {
+                 header: (expected: string) => haveHeader(expected, true),
+                 body: (expected: string) => haveBody(expected, true),
+                 jsonBody: (expected: object) => haveJsonBody(expected, true),
+-                jsonSchema: (expected: object) => haveJsonSchema(expected, true),
++const formatAjvErrors = (errors: any[] | null | undefined): string => {
++    if (!errors || errors.length === 0) {
++        return 'Unknown validation error';
++    }
++    
++    return errors.map(err => {
++        const path = err.instancePath || err.dataPath || '/';
++        const message = err.message || 'validation failed';
++        const details: string[] = [];
++        
++        if (err.params) {
++            if (err.params.allowedValues) {
++                details.push(`allowed values: ${JSON.stringify(err.params.allowedValues)}`);
++            }
++            if (err.params.type) {
++                details.push(`expected type: ${err.params.type}`);
++            }
++            if (err.params.missingProperty) {
++                details.push(`missing property: ${err.params.missingProperty}`);
++            }
++            if (err.params.additionalProperty) {
++                details.push(`additional property: ${err.params.additionalProperty}`);
++            }
++        }
++        
++        const detailsStr = details.length > 0 ? ` (${details.join(', ')})` : '';
++        return `  - Path "${path}": ${message}${detailsStr}`;
++    }).join('\n');
++};
++
++const haveJsonSchema = (expected: object, checkEquality: boolean, ajvOptions?: object) => {
++    const ajvConfig = ajvOptions || { allErrors: true };
++    const ajv = new Ajv(ajvConfig);
++
++    try {
++        const jsonBody = JSON.parse(this.body);
++        const schemaMatched = ajv.validate(expected, jsonBody);
++        if ((schemaMatched && checkEquality) || (!schemaMatched && !checkEquality)) {
++            return;
++        }
++        
++        if (!schemaMatched && ajv.errors) {
++            const formattedErrors = formatAjvErrors(ajv.errors);
++            throw Error(`Response's schema does not match expected schema:\n${formattedErrors}`);
++        }
++    } catch (e) {
++        if (e instanceof Error && e.message.includes("Response's schema")) {
++            throw e;
++        }
++        throw Error(`Failed to verify response body schema, response could not be a valid json: "${e}"`);
++    }
++    throw Error("Response's schema is not equal to the expected value");
++};
++
++ jsonSchema: (expected: object, ajvOptions?: object) => haveJsonSchema(expected, true, ajvOptions)
+             },
+             not: {
+                 have: {

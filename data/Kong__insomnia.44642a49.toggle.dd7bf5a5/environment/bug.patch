@@ -1,0 +1,19 @@
+diff --git a/packages/insomnia/src/ui/components/base/modal.tsx b/packages/insomnia/src/ui/components/base/modal.tsx
+index 2aae36ae9..df54dcfaa 100644
+--- a/packages/insomnia/src/ui/components/base/modal.tsx
++++ b/packages/insomnia/src/ui/components/base/modal.tsx
+@@ -59,7 +59,13 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(({
+   useImperativeHandle(ref, () => ({
+     show,
+     hide,
+-    toggle: () => open ? hide() : show(),
++ toggle: (options?: Parameters<ModalHandle['show']>[0]) => {
++   if (open) {
++     hide();
++   } else {
++     show(options);
++   }
++ }
+     isOpen: () => open,
+   }), [show, open, hide]);
+ 

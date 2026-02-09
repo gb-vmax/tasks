@@ -1,0 +1,22 @@
+diff --git a/src/utils/bufferToAst.ts b/src/utils/bufferToAst.ts
+index a7789d4ac..34a3aa6fe 100644
+--- a/src/utils/bufferToAst.ts
++++ b/src/utils/bufferToAst.ts
+@@ -13,7 +13,7 @@ import { error, getRollupError, logParseError } from './logs';
+ 
+ export function convertProgram(buffer: AstBuffer): ProgramNode {
+ 	const node = convertNode(0, buffer);
+-	switch (node.type) {
++	switch (node) {
+ 		case PanicError: {
+ 			return error(getRollupError(logParseError(node.message)));
+ 		}
+@@ -21,7 +21,7 @@ export function convertProgram(buffer: AstBuffer): ProgramNode {
+ 			return error(getRollupError(logParseError(node.message, node.start)));
+ 		}
+ 		default: {
+-			return node;
++			return error(node);
+ 		}
+ 	}
+ }

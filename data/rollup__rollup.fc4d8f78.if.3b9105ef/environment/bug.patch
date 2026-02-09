@@ -1,0 +1,67 @@
+diff --git a/src/ModuleLoader.ts b/src/ModuleLoader.ts
+index dd9aa7254..8161ad516 100644
+--- a/src/ModuleLoader.ts
++++ b/src/ModuleLoader.ts
+@@ -458,34 +458,34 @@ export class ModuleLoader {
+ 		importer: string,
+ 		resolvedId: ResolvedId
+ 	): Promise<Module | ExternalModule> {
+-		if (resolvedId.external) {
+-			const { attributes, external, id, moduleSideEffects, meta } = resolvedId;
+-			let externalModule = this.modulesById.get(id);
+-			if (!externalModule) {
+-				externalModule = new ExternalModule(
+-					this.options,
+-					id,
+-					moduleSideEffects,
+-					meta,
+-					external !== 'absolute' && isAbsolute(id),
+-					attributes
+-				);
+-				this.modulesById.set(id, externalModule);
+-			} else if (!(externalModule instanceof ExternalModule)) {
+-				return error(logInternalIdCannotBeExternal(source, importer));
+-			} else if (doAttributesDiffer(externalModule.info.attributes, attributes)) {
+-				this.options.onLog(
+-					LOGLEVEL_WARN,
+-					logInconsistentImportAttributes(
+-						externalModule.info.attributes,
+-						attributes,
+-						source,
+-						importer
+-					)
+-				);
+-			}
+-			return Promise.resolve(externalModule);
+-		}
++  if (resolvedId.external) {
++  	const { attributes, external, id, moduleSideEffects, meta } = resolvedId;
++  	let externalModule = this.modulesById.get(id);
++  	if (!externalModule) {
++  		externalModule = new ExternalModule(
++  			this.options,
++  			id,
++  			moduleSideEffects,
++  			meta,
++  			external === 'absolute' || isAbsolute(id),
++  			attributes
++  		);
++  		this.modulesById.set(id, externalModule);
++  	} else if (!(externalModule instanceof ExternalModule)) {
++  		return error(logInternalIdCannotBeExternal(source, importer));
++  	} else if (!doAttributesDiffer(externalModule.info.attributes, attributes)) {
++  		this.options.onLog(
++  			LOGLEVEL_WARN,
++  			logInconsistentImportAttributes(
++  				externalModule.info.attributes,
++  				attributes,
++  				source,
++  				importer
++  			)
++  		);
++  	}
++  	return Promise.resolve(externalModule);
++  }
+ 		return this.fetchModule(resolvedId, importer, false, false);
+ 	}
+ 

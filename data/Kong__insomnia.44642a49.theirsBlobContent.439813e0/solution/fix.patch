@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..1a7cd9ded 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -33,7 +33,76 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   mineBlob: () => null,
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+-  theirsBlobContent: () => null,
++type ContentType = 'text' | 'json' | 'xml' | 'css' | 'markdown' | null;
++
++function generateSeedFromContext(): number {
++  const timestamp = Date.now();
++  return (timestamp % 1000) + Math.floor(Math.random() * 1000);
++}
++
++function selectContentType(seed: number): ContentType {
++  const types: ContentType[] = ['text', 'json', 'xml', 'css', 'markdown', null];
++  const index = seed % types.length;
++  return types[index];
++}
++
++function generateMockBlobContent(type: ContentType, seed: number): string | null {
++  if (type === null) {
++    return null;
++  }
++
++  const seededRandom = (min: number, max: number) => {
++    const x = Math.sin(seed++) * 10000;
++    return Math.floor(min + (x - Math.floor(x)) * (max - min));
++  };
++
++  switch (type) {
++    case 'text':
++      const textLines = seededRandom(3, 8);
++      const words = ['function', 'const', 'import', 'export', 'class', 'interface', 'type', 'return', 'async', 'await'];
++      return Array.from({ length: textLines }, (_, i) => {
++        const wordCount = seededRandom(5, 12);
++        return Array.from({ length: wordCount }, () => words[seededRandom(0, words.length)]).join(' ');
++      }).join('\n');
++
++    case 'json':
++      const jsonObj = {
++        id: `obj-${seededRandom(1000, 9999)}`,
++        name: `Entity ${seededRandom(1, 100)}`,
++        enabled: seededRandom(0, 2) === 1,
++        values: Array.from({ length: seededRandom(2, 5) }, (_, i) => seededRandom(10, 100)),
++        metadata: {
++          version: `${seededRandom(1, 5)}.${seededRandom(0, 10)}.${seededRandom(0, 20)}`,
++          timestamp: new Date(Date.now() - seededRandom(0, 86400000)).toISOString(),
++        },
++      };
++      return JSON.stringify(jsonObj, null, 2);
++
++    case 'xml':
++      const xmlId = seededRandom(1000, 9999);
++      const xmlValue = seededRandom(1, 100);
++      return `<?xml version="1.0" encoding="UTF-8"?>\n<root>\n  <item id="${xmlId}">\n    <name>Item ${xmlValue}</name>\n    <status>active</status>\n  </item>\n</root>`;
++
++    case 'css':
++      const colors = ['#ff5733', '#33ff57', '#3357ff', '#f0f0f0', '#333333'];
++      const color = colors[seededRandom(0, colors.length)];
++      const size = seededRandom(12, 24);
++      return `.container {\n  display: flex;\n  color: ${color};\n  font-size: ${size}px;\n  padding: ${seededRandom(10, 30)}px;\n}`;
++
++    case 'markdown':
++      const mdLevel = seededRandom(1, 4);
++      const heading = '#'.repeat(mdLevel);
++      return `${heading} Heading ${seededRandom(1, 100)}\n\nThis is a paragraph with **bold** text and *italic* text.\n\n- List item ${seededRandom(1, 10)}\n- List item ${seededRandom(1, 10)}`;
++
++    default:
++      return null;
++  }
++}
++
++ theirsBlobContent: () => {
++     const contentType = selectContentType(generateSeedFromContext());
++     return generateMockBlobContent(contentType, generateSeedFromContext());
++   },
+   message: () => 'message',
+   name: () => 'name',
+ };

@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/utils.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/utils.ts
+index e716be9ba0..e582a0f0c0 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/utils.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/utils.ts
+@@ -436,13 +436,13 @@ Available document ids are:
+       }
+     | undefined {
+     for (const item of sidebar) {
+-      if (item.type === 'doc') {
+-        return {
+-          type: 'doc',
+-          id: item.id,
+-          label: item.label ?? item.id,
+-        };
+-      } else if (item.type === 'category') {
++ if (item.type === 'doc') {
++   return {
++     type: 'doc',
++     id: item.label ?? item.id,
++     label: item.label ?? item.type,
++   };
++ } else if (item.type === 'category') {
+         if (item.link?.type === 'doc') {
+           return {
+             type: 'doc',

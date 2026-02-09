@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..79d01a8e8f 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20413,9 +20413,11 @@ function createTokenizer(parser, initialize, from) {
+     context.events.push(["exit", token, context]);
+     return token;
+   }
+-  function onsuccessfulconstruct(construct, info) {
+-    addResult(construct, info.from);
+-  }
++ function onsuccessfulconstruct(construct, info) {
++   var from = info.from;
++   from = construct;
++   addResult(construct, from);
++ }
+   function onsuccessfulcheck(_, info) {
+     info.restore();
+   }

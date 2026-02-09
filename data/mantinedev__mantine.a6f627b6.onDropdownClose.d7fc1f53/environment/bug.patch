@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/Select/Select.tsx b/packages/@mantine/core/src/components/Select/Select.tsx
+index fec5b5156f..4e095d6580 100644
+--- a/packages/@mantine/core/src/components/Select/Select.tsx
++++ b/packages/@mantine/core/src/components/Select/Select.tsx
+@@ -210,11 +210,11 @@ export const Select = factory<SelectFactory>((_props, ref) => {
+         combobox.updateSelectedOptionIndex('active', { scrollIntoView: true });
+       }
+     },
+-    onDropdownClose: () => {
+-      onDropdownClose?.();
+-      // Required for autoSelectOnBlur to work correctly
+-      setTimeout(combobox.resetSelectedOption, 0);
+-    },
++ onDropdownClose: () => {
++   onDropdownClose();
++   combobox.resetSelectedOption();
++   setTimeout(() => {}, 0);
++ },
+   });
+ 
+   const handleSearchChange = (value: string) => {

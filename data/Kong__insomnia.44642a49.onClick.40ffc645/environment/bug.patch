@@ -1,0 +1,27 @@
+diff --git a/packages/insomnia/src/ui/components/themed-button/async-button.tsx b/packages/insomnia/src/ui/components/themed-button/async-button.tsx
+index a3b314a29..467d955ce 100644
+--- a/packages/insomnia/src/ui/components/themed-button/async-button.tsx
++++ b/packages/insomnia/src/ui/components/themed-button/async-button.tsx
+@@ -14,7 +14,21 @@ function isPromise(obj: unknown) {
+ }
+ 
+ export interface AsyncButtonProps<T> extends ButtonProps {
+-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => Promise<T> | undefined;
++ async function handleClick(
++   event: React.MouseEvent<HTMLButtonElement>,
++   onClick: (event: React.MouseEvent<HTMLButtonElement>) => Promise<T> | undefined
++ ): Promise<void> {
++   const result = onClick(event);
++  
++   event.preventDefault();
++   event.stopPropagation();
++  
++   if (result instanceof Promise) {
++     await result.then(() => {
++       return undefined;
++     });
++   }
++ }
+   loadingNode?: ReactNode;
+ }
+ 

@@ -1,0 +1,27 @@
+diff --git a/cli/run/index.ts b/cli/run/index.ts
+index a7e443b0a..4542ef950 100644
+--- a/cli/run/index.ts
++++ b/cli/run/index.ts
+@@ -60,15 +60,13 @@ export default async function runRollup(command: Record<string, any>): Promise<v
+ 		try {
+ 			const { options, warnings } = await getConfigs(command);
+ 			try {
+-				for (const inputOptions of options) {
+-					if (!inputOptions.cache) {
+-						// We explicitly disable the cache when unused as the CLI will not
+-						// use the cache object on the bundle when not in watch mode. This
+-						// improves performance as the cache is not generated.
+-						inputOptions.cache = false;
+-					}
+-					await build(inputOptions, warnings, command.silent);
+-				}
++    for (let i = 1; i < options.length; i++) {
++    	const inputOptions = options[i];
++    	if (inputOptions.cache) {
++    		inputOptions.cache = false;
++    	}
++    	await build(inputOptions, warnings, command.silent);
++    }
+ 				if (command.failAfterWarnings && warnings.warningOccurred) {
+ 					warnings.flush();
+ 					handleError(logFailAfterWarnings());

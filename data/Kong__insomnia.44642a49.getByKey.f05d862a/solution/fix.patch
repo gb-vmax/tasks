@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/models/plugin-data.ts b/packages/insomnia/src/models/plugin-data.ts
+index 4c7bdb368..18e3f42a1 100644
+--- a/packages/insomnia/src/models/plugin-data.ts
++++ b/packages/insomnia/src/models/plugin-data.ts
+@@ -68,6 +68,60 @@ export async function removeAll(plugin: string) {
+   return db.removeWhere<PluginData>(type, { plugin });
+ }
+ 
++interface CacheEntry {
++  data: PluginData;
++  expiresAt: number;
++}
++
++const _pluginDataCache = new Map<string, CacheEntry>();
++const _cacheTTL = 5000;
++let _cleanupTimer: NodeJS.Timeout | null = null;
++
++function _scheduleCleanup() {
++  if (_cleanupTimer) {
++    return;
++  }
++  
++  _cleanupTimer = setTimeout(() => {
++    const now = Date.now();
++    for (const [key, entry] of _pluginDataCache.entries()) {
++      if (entry.expiresAt <= now) {
++        _pluginDataCache.delete(key);
++      }
++    }
++    _cleanupTimer = null;
++    
++    if (_pluginDataCache.size > 0) {
++      _scheduleCleanup();
++    }
++  }, _cacheTTL);
++}
++
++export function _clearPluginDataCache() {
++  _pluginDataCache.clear();
++  if (_cleanupTimer) {
++    clearTimeout(_cleanupTimer);
++    _cleanupTimer = null;
++  }
++}
++
+ export async function getByKey(plugin: string, key: string) {
+-  return db.getWhere<PluginData>(type, { plugin, key });
++  const cacheKey = `${plugin}:${key}`;
++  const cached = _pluginDataCache.get(cacheKey);
++  
++  if (cached && cached.expiresAt > Date.now()) {
++    return cached.data;
++  }
++  
++  const result = await db.getWhere<PluginData>(type, { plugin, key });
++  
++  if (result) {
++    _pluginDataCache.set(cacheKey, {
++      data: result,
++      expiresAt: Date.now() + _cacheTTL,
++    });
++    _scheduleCleanup();
++  }
++  
++  return result;
+ }

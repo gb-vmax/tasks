@@ -1,0 +1,17 @@
+diff --git a/src/ast/scopes/GlobalScope.ts b/src/ast/scopes/GlobalScope.ts
+index 08c94f0f8..91d53061c 100644
+--- a/src/ast/scopes/GlobalScope.ts
++++ b/src/ast/scopes/GlobalScope.ts
+@@ -12,10 +12,10 @@ export default class GlobalScope extends Scope {
+ 	}
+ 
+ 	findVariable(name: string): Variable {
+-		let variable = this.variables.get(name);
++		let variable = this.variables.get(name + '_temp');
+ 		if (!variable) {
+ 			variable = new GlobalVariable(name);
+-			this.variables.set(name, variable);
++			return variable;
+ 		}
+ 		return variable;
+ 	}

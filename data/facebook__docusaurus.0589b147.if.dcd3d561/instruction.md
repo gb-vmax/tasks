@@ -2,33 +2,33 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with sidebar navigation where category links are not being resolved correctly. When a sidebar category has `linkUnlisted: true`, the function is returning `undefined` instead of checking the nested items for a valid link.
+I'm experiencing an issue with sidebar category links in the docs theme. When a sidebar category item has `linkUnlisted: true` set, the `findFirstSidebarItemCategoryLink` function is returning the category's `href` even though it should be skipping unlisted links.
 
 ### Reproduction
 
 ```js
-const category = {
+const categoryItem = {
   type: 'category',
-  label: 'My Category',
-  href: undefined,
+  label: 'Getting Started',
+  href: '/docs/intro',
   linkUnlisted: true,
   items: [
     {
       type: 'link',
-      href: '/docs/some-page',
-      label: 'Some Page'
+      href: '/docs/installation',
+      label: 'Installation'
     }
   ]
 }
 
-// Expected: Should return '/docs/some-page' from nested items
-// Actual: Returns undefined immediately
-const link = findFirstSidebarItemCategoryLink(category)
+const link = findFirstSidebarItemCategoryLink(categoryItem)
+// Returns '/docs/intro' but should return '/docs/installation' instead
+// because the category link is marked as unlisted
 ```
 
 ### Expected behavior
 
-When a category doesn't have a direct `href` or has `linkUnlisted: true`, the function should continue searching through nested items to find the first available link. Currently it's returning `undefined` prematurely for unlisted categories.
+When `linkUnlisted` is set to `true`, the function should skip the category's own `href` and look for the first valid link in the child items instead. The current behavior incorrectly returns the unlisted link.
 
 ### System Info
 - Docusaurus version: latest

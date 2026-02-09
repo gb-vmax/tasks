@@ -1,0 +1,89 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..d28dc55aa 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -57,15 +57,75 @@ export const init = (activeProjectId?: string) => ({
+       },
+     },
+     export: {
+-      insomnia: async ({
+-        workspace,
+-        includePrivate,
+-        format,
+-      }: InsomniaExport = {}) => exportWorkspacesData(
+-        workspace ? [workspace] : await getWorkspaces(activeProjectId),
+-        Boolean(includePrivate),
+-        format || 'json',
+-      ),
++const filterWorkspacesByPattern = (workspaces: Workspace[], pattern: string): Workspace[] => {
++  const regexPattern = pattern
++    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
++    .replace(/\*/g, '.*')
++    .replace(/\?/g, '.');
++  
++  const regex = new RegExp(`^${regexPattern}$`, 'i');
++  
++  return workspaces.filter(ws => regex.test(ws.name));
++};
++
++const filterExportedResources = (
++  exportedData: string,
++  resourceTypes: string[],
++  format: 'json' | 'yaml'
++): string => {
++  if (format === 'yaml') {
++    return exportedData;
++  }
++  
++  try {
++    const data = JSON.parse(exportedData);
++    
++    if (data.resources && Array.isArray(data.resources)) {
++      data.resources = data.resources.filter((resource: any) => {
++        if (!resource._type) return true;
++        return resourceTypes.includes(resource._type);
++      });
++    }
++    
++    return JSON.stringify(data, null, 2);
++  } catch {
++    return exportedData;
++  }
++};
++
++interface InsomniaExport {
++  workspace?: Workspace;
++  includePrivate?: boolean;
++  format?: 'json' | 'yaml';
++  workspacePattern?: string;
++  resourceTypes?: string[];
++}
++
++ insomnia: async ({
++   workspace,
++   includePrivate,
++   format,
++   workspacePattern,
++   resourceTypes,
++ }: InsomniaExport = {}) => {
++   let workspaces = workspace ? [workspace] : await getWorkspaces(activeProjectId);
++  
++   if (workspacePattern && !workspace) {
++     workspaces = filterWorkspacesByPattern(workspaces, workspacePattern);
++   }
++  
++   const exportedData = await exportWorkspacesData(
++     workspaces,
++     Boolean(includePrivate),
++     format || 'json',
++   );
++  
++   if (resourceTypes && resourceTypes.length > 0) {
++     return filterExportedResources(exportedData, resourceTypes, format || 'json');
++   }
++  
++   return exportedData;
++ }
+ 
+       har: async ({
+         workspace,

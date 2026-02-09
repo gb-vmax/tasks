@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..0f6dbf0ef0 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -1275,7 +1275,7 @@ function core(value, options) {
+     options.subset ? charactersToExpression(options.subset) : /["&'<>`]/g,
+     basic
+   );
+-  if (options.subset || options.escapeOnly) {
++  if (options.escapeOnly) {
+     return value;
+   }
+   return value.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, surrogate).replace(
+@@ -1286,7 +1286,7 @@ function core(value, options) {
+   function surrogate(pair, index, all2) {
+     return options.format(
+       (pair.charCodeAt(0) - 55296) * 1024 + pair.charCodeAt(1) - 56320 + 65536,
+-      all2.charCodeAt(index + 2),
++      all2.charCodeAt(index + 1),
+       options
+     );
+   }

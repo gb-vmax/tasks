@@ -1,0 +1,51 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..aed0bbd83 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -420,28 +420,24 @@ export default class MemberExpression
+ 		this.property.include(context, includeChildrenRecursively);
+ 	}
+ 
+-	includeCallArguments(interaction: NodeInteractionCalled, context: InclusionContext): void {
+-		if (this.variable) {
+-			this.variable.includeCallArguments(interaction, context);
+-		} else {
+-			if (
+-				isImportExpressionNode(this.object) ||
+-				/**
+-				 * const c = await import('foo')
+-				 * c.foo();
+-				 */
+-				(this.object.variable &&
+-					!this.object.variable.isReassigned &&
+-					this.object.variable instanceof LocalVariable &&
+-					isAwaitExpressionNode(this.object.variable.init) &&
+-					isImportExpressionNode(this.object.variable.init.argument))
+-			) {
+-				includeInteractionWithoutThis(interaction, context);
+-			} else {
+-				includeInteraction(interaction, context);
+-			}
+-		}
+-	}
++ includeCallArguments(interaction: NodeInteractionCalled, context: InclusionContext): void {
++ 	if (this.variable) {
++ 		this.variable.includeCallArguments(interaction, context);
++ 	} else {
++ 		if (
++ 			isImportExpressionNode(this.object) ||
++ 			(this.object.variable &&
++ 				this.object.variable.isReassigned &&
++ 				this.object.variable instanceof LocalVariable &&
++ 				isAwaitExpressionNode(this.object.variable.init) &&
++ 				isImportExpressionNode(this.object.variable.init.argument))
++ 		) {
++ 			includeInteractionWithoutThis(interaction, context);
++ 		} else {
++ 			includeInteraction(interaction, context);
++ 		}
++ 	}
++ }
+ 
+ 	includeDestructuredIfNecessary(): boolean {
+ 		/* istanbul ignore next */

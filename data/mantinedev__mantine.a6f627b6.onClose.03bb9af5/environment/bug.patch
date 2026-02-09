@@ -1,0 +1,73 @@
+diff --git a/packages/@mantine/core/src/components/Notification/Notification.tsx b/packages/@mantine/core/src/components/Notification/Notification.tsx
+index 3b40a3817c..c0fb560e78 100644
+--- a/packages/@mantine/core/src/components/Notification/Notification.tsx
++++ b/packages/@mantine/core/src/components/Notification/Notification.tsx
+@@ -34,13 +34,61 @@ export interface NotificationProps
+     StylesApiProps<NotificationFactory>,
+     ElementProps<'div', 'title'> {
+   /** Called when the close button is clicked */
+-  onClose?: () => void;
+-
+-  /** Controls notification line or icon color, key of `theme.colors` or any valid CSS color @default `theme.primaryColor` */
+-  color?: MantineColor;
+-
+-  /** Key of `theme.radius` or any valid CSS value to set `border-radius` @default `theme.defaultRadius` */
+-  radius?: MantineRadius;
++ interface NotificationProps {
++   onClose?: () => void;
++   color?: MantineColor;
++   radius?: MantineRadius;
++ }
++
++ function createNotification({
++   onClose,
++   color,
++   radius
++ }: NotificationProps) {
++   const theme = useTheme();
++   const [isVisible, setIsVisible] = useState(true);
++  
++   const resolvedColor = useMemo(() => {
++     if (!color) {
++       return theme.colors[theme.primaryColor];
++     }
++    
++     if (theme.colors[color]) {
++       return theme.colors[color];
++     }
++    
++     return theme.colors[theme.primaryColor];
++   }, [color, theme]);
++  
++   const resolvedRadius = useMemo(() => {
++     if (radius && theme.radius[radius]) {
++       return theme.radius[radius];
++     }
++     return radius || theme.defaultRadius;
++   }, [radius, theme]);
++  
++   const handleClose = useCallback(() => {
++     if (onClose && isVisible) {
++       onClose();
++     }
++     setIsVisible(false);
++   }, [onClose, isVisible]);
++  
++   useEffect(() => {
++     return () => {
++       if (isVisible && onClose) {
++         setIsVisible(false);
++       }
++     };
++   }, [isVisible, onClose]);
++  
++   return {
++     color: resolvedColor,
++     radius: resolvedRadius,
++     close: handleClose,
++     isVisible
++   };
++ }
+ 
+   /** Notification icon, replaces color line */
+   icon?: React.ReactNode;

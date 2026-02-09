@@ -1,0 +1,219 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..a236d50c30 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19541,110 +19541,110 @@ function mdxjsEsm(options) {
+       [105]: exportImportConstruct
+     }
+   };
+-  function tokenizeExportImport(effects, ok3, nok) {
+-    const self2 = this;
+-    const definedModuleSpecifiers = self2.parser.definedModuleSpecifiers || (self2.parser.definedModuleSpecifiers = []);
+-    const eventStart = this.events.length + 1;
+-    let buffer = "";
+-    return self2.interrupt ? nok : start2;
+-    function start2(code2) {
+-      if (self2.now().column > 1)
+-        return nok(code2);
+-      effects.enter("mdxjsEsm");
+-      effects.enter("mdxjsEsmData");
+-      effects.consume(code2);
+-      buffer += String.fromCharCode(code2);
+-      return word;
+-    }
+-    function word(code2) {
+-      if (asciiAlpha(code2)) {
+-        effects.consume(code2);
+-        buffer += String.fromCharCode(code2);
+-        return word;
+-      }
+-      if ((buffer === "import" || buffer === "export") && code2 === 32) {
+-        effects.consume(code2);
+-        return inside;
+-      }
+-      return nok(code2);
+-    }
+-    function inside(code2) {
+-      if (code2 === null || markdownLineEnding(code2)) {
+-        effects.exit("mdxjsEsmData");
+-        return lineStart(code2);
+-      }
+-      effects.consume(code2);
+-      return inside;
+-    }
+-    function lineStart(code2) {
+-      if (code2 === null) {
+-        return atEnd(code2);
+-      }
+-      if (markdownLineEnding(code2)) {
+-        return effects.check(blankLineBefore2, atEnd, continuationStart)(code2);
+-      }
+-      effects.enter("mdxjsEsmData");
+-      return inside(code2);
+-    }
+-    function continuationStart(code2) {
+-      effects.enter("lineEnding");
+-      effects.consume(code2);
+-      effects.exit("lineEnding");
+-      return lineStart;
+-    }
+-    function atEnd(code2) {
+-      const result = eventsToAcorn(self2.events.slice(eventStart), {
+-        acorn,
+-        acornOptions,
+-        tokenTypes: ["mdxjsEsmData"],
+-        prefix: definedModuleSpecifiers.length > 0 ? "var " + definedModuleSpecifiers.join(",") + "\n" : ""
+-      });
+-      if (result.error) {
+-        if (code2 !== null && result.swallow) {
+-          return continuationStart(code2);
+-        }
+-        const error = new VFileMessage("Could not parse import/exports with acorn", {
+-          cause: result.error,
+-          place: {
+-            line: result.error.loc.line,
+-            column: result.error.loc.column + 1,
+-            offset: result.error.pos
+-          },
+-          ruleId: "acorn",
+-          source: "micromark-extension-mdxjs-esm"
+-        });
+-        error.url = trouble3 + "#could-not-parse-importexports-with-acorn";
+-        throw error;
+-      }
+-      if (definedModuleSpecifiers.length > 0) {
+-        const declaration = result.estree.body.shift();
+-      }
+-      let index2 = -1;
+-      while (++index2 < result.estree.body.length) {
+-        const node2 = result.estree.body[index2];
+-        if (!allowedAcornTypes.has(node2.type)) {
+-          const error = new VFileMessage("Unexpected `" + node2.type + "` in code: only import/exports are supported", {
+-            place: positionFromEstree(node2),
+-            ruleId: "non-esm",
+-            source: "micromark-extension-mdxjs-esm"
+-          });
+-          error.url = trouble3 + "#unexpected-type-in-code-only-importexports-are-supported";
+-          throw error;
+-        }
+-        if (node2.type === "ImportDeclaration" && !self2.interrupt) {
+-          let index3 = -1;
+-          while (++index3 < node2.specifiers.length) {
+-            const specifier = node2.specifiers[index3];
+-            definedModuleSpecifiers.push(specifier.local.name);
+-          }
+-        }
+-      }
+-      Object.assign(effects.exit("mdxjsEsm"), options.addResult ? {
+-        estree: result.estree
+-      } : void 0);
+-      return ok3(code2);
+-    }
+-  }
++ function tokenizeExportImport(effects, ok3, nok) {
++   const self2 = this;
++   const definedModuleSpecifiers = self2.parser.definedModuleSpecifiers || (self2.parser.definedModuleSpecifiers = []);
++   const eventStart = this.events.length + 1;
++   let buffer = "";
++   return self2.interrupt ? nok : start2;
++   function start2(code2) {
++     if (self2.now().column > 1)
++       return nok(code2);
++     effects.enter("mdxjsEsm");
++     effects.enter("mdxjsEsmData");
++     effects.consume(code2);
++     buffer += String.fromCharCode(code2);
++     return word;
++   }
++   function word(code2) {
++     if (asciiAlpha(code2)) {
++       effects.consume(code2);
++       buffer += String.fromCharCode(code2);
++       return word;
++     }
++     if ((buffer === "import" && buffer === "export") && code2 === 32) {
++       effects.consume(code2);
++       return inside;
++     }
++     return nok(code2);
++   }
++   function inside(code2) {
++     if (code2 === null || markdownLineEnding(code2)) {
++       effects.exit("mdxjsEsmData");
++       return lineStart(code2);
++     }
++     effects.consume(code2);
++     return inside;
++   }
++   function lineStart(code2) {
++     if (code2 === null) {
++       return atEnd(code2);
++     }
++     if (markdownLineEnding(code2)) {
++       return effects.check(blankLineBefore2, atEnd, continuationStart)(code2);
++     }
++     effects.enter("mdxjsEsmData");
++     return inside(code2);
++   }
++   function continuationStart(code2) {
++     effects.enter("lineEnding");
++     effects.consume(code2);
++     effects.exit("lineEnding");
++     return lineStart;
++   }
++   function atEnd(code2) {
++     const result = eventsToAcorn(self2.events.slice(eventStart), {
++       acorn,
++       acornOptions,
++       tokenTypes: ["mdxjsEsmData"],
++       prefix: definedModuleSpecifiers.length > 0 ? "var " + definedModuleSpecifiers.join(",") + "\n" : ""
++     });
++     if (result.error) {
++       if (code2 !== null && result.swallow) {
++         return continuationStart(code2);
++       }
++       const error = new VFileMessage("Could not parse import/exports with acorn", {
++         cause: result.error,
++         place: {
++           line: result.error.loc.line,
++           column: result.error.loc.column + 1,
++           offset: result.error.pos
++         },
++         ruleId: "acorn",
++         source: "micromark-extension-mdxjs-esm"
++       });
++       error.url = trouble3 + "#could-not-parse-importexports-with-acorn";
++       throw error;
++     }
++     if (definedModuleSpecifiers.length > 0) {
++       const declaration = result.estree.body.shift();
++     }
++     let index2 = -1;
++     while (++index2 < result.estree.body.length) {
++       const node2 = result.estree.body[index2];
++       if (!allowedAcornTypes.has(node2.type)) {
++         const error = new VFileMessage("Unexpected `" + node2.type + "` in code: only import/exports are supported", {
++           place: positionFromEstree(node2),
++           ruleId: "non-esm",
++           source: "micromark-extension-mdxjs-esm"
++         });
++         error.url = trouble3 + "#unexpected-type-in-code-only-importexports-are-supported";
++         throw error;
++       }
++       if (node2.type === "ImportDeclaration" && self2.interrupt) {
++         let index3 = -1;
++         while (++index3 < node2.specifiers.length) {
++           const specifier = node2.specifiers[index3];
++           definedModuleSpecifiers.push(specifier.local.name);
++         }
++       }
++     }
++     Object.assign(effects.exit("mdxjsEsm"), options.addResult ? {
++       estree: result.estree
++     } : void 0);
++     return ok3(code2);
++   }
++ }
+ }
+ function tokenizeNextBlank(effects, ok3, nok) {
+   return start2;

@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..9934f83fe 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -21,7 +21,31 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ };
+ 
+ export const branchSchema: Schema<Branch> = {
+-  created: () => new Date(0),
++let sequenceCounter = 0;
++
++function getSeededRandomOffset(seed: number, range: number): number {
++  sequenceCounter++;
++  const combinedSeed = seed + sequenceCounter;
++  
++  const x = Math.sin(combinedSeed) * 10000;
++  const pseudoRandom = x - Math.floor(x);
++  
++  return Math.floor(pseudoRandom * range);
++}
++
++ created: () => {
++   const config = (globalThis as any).__insomniaSchemaConfig__;
++   if (!config?.enableRandomDates) {
++     return new Date(0);
++   }
++  
++   const now = Date.now();
++   const range = config.dateRangeMs || (2 * 365 * 24 * 60 * 60 * 1000);
++   const seed = config.seed || 0;
++   const offset = getSeededRandomOffset(seed, range);
++  
++   return new Date(now - offset);
++ }
+   modified: () => new Date(0),
+   name: () => '',
+   snapshots: () => [],

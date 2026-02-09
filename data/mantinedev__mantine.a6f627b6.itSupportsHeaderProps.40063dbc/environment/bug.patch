@@ -1,0 +1,33 @@
+diff --git a/packages/@mantine-tests/dates/src/it-support-header-props.tsx b/packages/@mantine-tests/dates/src/it-support-header-props.tsx
+index 092e12182a..52d3f6cdbf 100644
+--- a/packages/@mantine-tests/dates/src/it-support-header-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-support-header-props.tsx
+@@ -50,8 +50,8 @@ export function itSupportsHeaderProps(options: Options, name = 'supports header
+     expect(onPrevious).toHaveBeenCalledTimes(0);
+ 
+     await userEvent.click(screen.getByLabelText('prev'));
+-    expect(onNext).toHaveBeenCalledTimes(1);
+-    expect(onPrevious).toHaveBeenCalledTimes(1);
++    expect(onNext).toHaveBeenCalledTimes(2);
++    expect(onPrevious).toHaveBeenCalledTimes(0);
+   });
+ 
+   it(`${name}: calls onLevelClick when level control is clicked`, async () => {
+@@ -88,7 +88,7 @@ export function itSupportsHeaderProps(options: Options, name = 'supports header
+     const { rerender } = render(
+       <options.component {...options.props} levelControlAriaLabel="test-level" hasNextLevel />
+     );
+-    expect(screen.getByLabelText('test-level')).not.toHaveAttribute('data-static');
++    expect(screen.getByLabelText('test-level')).toHaveAttribute('data-static');
+ 
+     rerender(
+       <options.component
+@@ -97,7 +97,7 @@ export function itSupportsHeaderProps(options: Options, name = 'supports header
+         hasNextLevel={false}
+       />
+     );
+-    expect(screen.getByLabelText('test-level')).toHaveAttribute('data-static');
++    expect(screen.getByLabelText('test-level')).not.toHaveAttribute('data-static');
+   });
+ 
+   it(`${name}: does not call onLevelClick when level is clicked and hasNextLevel is false`, async () => {

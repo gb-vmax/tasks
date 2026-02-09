@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..eb1cae934 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -187,22 +187,46 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+       // ~~~~~~~~~~~~~~~~~~ //
+       // Deprecated Methods //
+       // ~~~~~~~~~~~~~~~~~~ //
+-      showGenericModalDialog(
+-        title,
+-        options = {},
+-      ) {
+-        console.warn(
+-          'app.showGenericModalDialog() is deprecated. Use app.dialog() instead.'
+-        );
+-        // Create DOM node so we can adapt to the new dialog() method
+-        const body = document.createElement('div');
+-
+-        if (options.html) {
+-          body.innerHTML = options.html;
+-        }
++function sanitizeHtmlForModal(html: string): string {
++  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
++  
++  sanitized = sanitized.replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '');
++  sanitized = sanitized.replace(/\son\w+\s*=\s*[^\s>]*/gi, '');
++  
++  return sanitized;
++}
+ 
+-        return this.dialog(title, body);
+-      },
++ showGenericModalDialog(
++   title,
++   options = {},
++ ) {
++   console.warn(
++     'app.showGenericModalDialog() is deprecated. Use app.dialog() instead.'
++   );
++   const body = document.createElement('div');
++
++   if (options.html) {
++     const sanitizedHtml = sanitizeHtmlForModal(options.html);
++     body.innerHTML = sanitizedHtml;
++   }
++
++   const dialogOptions: DialogOptions = {};
++  
++   if (options.tall !== undefined) {
++     dialogOptions.tall = options.tall;
++   }
++   if (options.skinny !== undefined) {
++     dialogOptions.skinny = options.skinny;
++   }
++   if (options.wide !== undefined) {
++     dialogOptions.wide = options.wide;
++   }
++   if (options.onHide !== undefined) {
++     dialogOptions.onHide = options.onHide;
++   }
++
++   return this.dialog(title, body, dialogOptions);
++ },
+     },
+     __private: {
+       // Provide modules that can be used in the renderer process

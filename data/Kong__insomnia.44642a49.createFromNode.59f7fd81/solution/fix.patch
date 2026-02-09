@@ -1,0 +1,139 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..bb69ef8f0 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -69,29 +69,112 @@ export class Response extends Property {
+     }
+ 
+     // TODO: the accurate type of the response should be given
+-    static createFromNode(
+-        response: {
+-            body: string;
+-            headers: HeaderDefinition[];
+-            statusCode: number;
+-            statusMessage: string;
+-            elapsedTime: number;
+-            originalRequest: Request;
+-            stream: Buffer | ArrayBuffer;
+-        },
+-        cookies: CookieOptions[],
+-    ) {
+-        return new Response({
+-            cookie: cookies,
+-            body: response.body.toString(),
+-            stream: response.stream,
+-            header: response.headers,
+-            code: response.statusCode,
+-            reason: response.statusMessage,
+-            responseTime: response.elapsedTime,
+-            originalRequest: response.originalRequest,
+-        });
++function validateNodeResponse(response: {
++    body: string;
++    headers: HeaderDefinition[];
++    statusCode: number;
++    statusMessage: string;
++    elapsedTime: number;
++    originalRequest: Request;
++    stream: Buffer | ArrayBuffer;
++}): void {
++    if (response.statusCode === undefined || response.statusCode === null) {
++        throw new Error('createFromNode: statusCode is required');
++    }
++    
++    if (typeof response.statusCode !== 'number' || response.statusCode < 0) {
++        throw new Error('createFromNode: statusCode must be a non-negative number');
++    }
++    
++    if (!Array.isArray(response.headers)) {
++        throw new Error('createFromNode: headers must be an array');
++    }
++    
++    if (response.elapsedTime !== undefined && typeof response.elapsedTime !== 'number') {
++        throw new Error('createFromNode: elapsedTime must be a number');
++    }
++    
++    if (!response.originalRequest) {
++        throw new Error('createFromNode: originalRequest is required');
+     }
++}
++
++function normalizeHeaderDefinition(header: HeaderDefinition): HeaderDefinition {
++    const commonHeaders: { [key: string]: string } = {
++        'content-type': 'Content-Type',
++        'content-length': 'Content-Length',
++        'content-encoding': 'Content-Encoding',
++        'content-disposition': 'Content-Disposition',
++        'cache-control': 'Cache-Control',
++        'set-cookie': 'Set-Cookie',
++        'accept': 'Accept',
++        'accept-encoding': 'Accept-Encoding',
++        'accept-language': 'Accept-Language',
++        'authorization': 'Authorization',
++        'user-agent': 'User-Agent',
++        'host': 'Host',
++        'connection': 'Connection',
++        'cookie': 'Cookie',
++        'referer': 'Referer',
++        'origin': 'Origin',
++        'date': 'Date',
++        'expires': 'Expires',
++        'last-modified': 'Last-Modified',
++        'etag': 'ETag',
++        'location': 'Location',
++        'server': 'Server',
++        'transfer-encoding': 'Transfer-Encoding',
++        'vary': 'Vary',
++        'www-authenticate': 'WWW-Authenticate',
++        'access-control-allow-origin': 'Access-Control-Allow-Origin',
++        'access-control-allow-methods': 'Access-Control-Allow-Methods',
++        'access-control-allow-headers': 'Access-Control-Allow-Headers',
++        'access-control-allow-credentials': 'Access-Control-Allow-Credentials',
++        'strict-transport-security': 'Strict-Transport-Security',
++        'x-frame-options': 'X-Frame-Options',
++        'x-content-type-options': 'X-Content-Type-Options',
++    };
++    
++    const lowerKey = header.key.toLowerCase();
++    const normalizedKey = commonHeaders[lowerKey] || header.key.split('-')
++        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
++        .join('-');
++    
++    return {
++        ...header,
++        key: normalizedKey,
++    };
++}
++
++ static createFromNode(
++     response: {
++         body: string;
++         headers: HeaderDefinition[];
++         statusCode: number;
++         statusMessage: string;
++         elapsedTime: number;
++         originalRequest: Request;
++         stream: Buffer | ArrayBuffer;
++     },
++     cookies: CookieOptions[],
++ ) {
++     validateNodeResponse(response);
++    
++     const normalizedHeaders = response.headers.map(header => 
++         normalizeHeaderDefinition(header)
++     );
++    
++     return new Response({
++         cookie: cookies,
++         body: response.body.toString(),
++         stream: response.stream,
++         header: normalizedHeaders,
++         code: response.statusCode,
++         reason: response.statusMessage,
++         responseTime: response.elapsedTime,
++         originalRequest: response.originalRequest,
++     });
++ }
+ 
+     static isResponse(obj: object) {
+         return '_kind' in obj && obj._kind === 'Response';

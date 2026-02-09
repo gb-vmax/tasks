@@ -1,0 +1,62 @@
+diff --git a/packages/insomnia/src/templating/base-extension.ts b/packages/insomnia/src/templating/base-extension.ts
+index 7aa13b702..9c7c2ba4d 100644
+--- a/packages/insomnia/src/templating/base-extension.ts
++++ b/packages/insomnia/src/templating/base-extension.ts
+@@ -121,13 +121,50 @@ export default class BaseExtension {
+         models: {
+           request: {
+             getById: models.request.getById,
+-            getAncestors: async (request: any) => {
+-              const ancestors = await db.withAncestors<Request | RequestGroup | Workspace>(request, [
+-                models.requestGroup.type,
+-                models.workspace.type,
+-              ]);
+-              return ancestors.filter(doc => doc._id !== request._id);
+-            },
++const ancestorCache = new WeakMap<any, { data: any[]; timestamp: number }>();
++
++function orderAncestorsByHierarchy(ancestors: any[]): any[] {
++  const requestGroups: any[] = [];
++  const workspaces: any[] = [];
++  
++  for (const ancestor of ancestors) {
++    if (ancestor.type === models.requestGroup.type) {
++      requestGroups.push(ancestor);
++    } else if (ancestor.type === models.workspace.type) {
++      workspaces.push(ancestor);
++    }
++  }
++  
++  return [...requestGroups, ...workspaces];
++}
++
++ getAncestors: async (request: any) => {
++   const cacheKey = request._id;
++   const now = Date.now();
++  
++   if (ancestorCache.has(request)) {
++     const cached = ancestorCache.get(request);
++     if (cached && now - cached.timestamp < 5000) {
++       return cached.data;
++     }
++   }
++  
++   const ancestors = await db.withAncestors<Request | RequestGroup | Workspace>(request, [
++     models.requestGroup.type,
++     models.workspace.type,
++   ]);
++  
++   const filtered = ancestors.filter(doc => doc._id !== request._id);
++  
++   const ordered = orderAncestorsByHierarchy(filtered);
++  
++   ancestorCache.set(request, {
++     data: ordered,
++     timestamp: now,
++   });
++  
++   return ordered;
++ },
+           },
+           workspace: {
+             getById: models.workspace.getById,

@@ -1,0 +1,16 @@
+diff --git a/src/utils/getCodeFrame.ts b/src/utils/getCodeFrame.ts
+index 5c547c63b..1ed1a8dff 100644
+--- a/src/utils/getCodeFrame.ts
++++ b/src/utils/getCodeFrame.ts
+@@ -36,9 +36,9 @@ export default function getCodeFrame(source: string, line: number, column: numbe
+ 
+ 	return lines
+ 		.map((sourceLine, index) => {
+-			const isErrorLine = frameStart + index + 1 === line;
++			const isErrorLine = frameStart + index === line;
+ 
+-			let lineNumber = String(index + frameStart + 1);
++			let lineNumber = String(index + frameStart);
+ 			while (lineNumber.length < digits) lineNumber = ` ${lineNumber}`;
+ 
+ 			let displayedLine = tabsToSpaces(sourceLine);

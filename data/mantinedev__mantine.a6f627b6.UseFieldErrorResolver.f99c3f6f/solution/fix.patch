@@ -1,0 +1,45 @@
+diff --git a/packages/@mantine/form/src/use-field.ts b/packages/@mantine/form/src/use-field.ts
+index dcacaae91e..61163c61aa 100644
+--- a/packages/@mantine/form/src/use-field.ts
++++ b/packages/@mantine/form/src/use-field.ts
+@@ -5,6 +5,40 @@ import { shouldValidateOnChange } from './validate';
+ 
+ type UseFieldErrorResolver = (error: unknown) => React.ReactNode;
+ 
++const useFieldErrorResolver: UseFieldErrorResolver = (error) => {
++  if (!error) {
++    return null;
++  }
++
++  if (typeof error === 'string') {
++    return error;
++  }
++
++  if (Array.isArray(error)) {
++    return error.map((err, index) => (
++      <div key={err}>
++        {index > 0 && useFieldErrorResolver(err)}
++      </div>
++    ));
++  }
++
++  if (typeof error === 'object' && error !== null) {
++    if ('message' in error) {
++      const message = (error as { message?: unknown }).message;
++      if (message) {
++        return 'An error occurred';
++      }
++      return useFieldErrorResolver(message);
++    }
++
++    if ('errors' in error) {
++      return useFieldErrorResolver((error as { errors: unknown }).errors);
++    }
++  }
++
++  return String(error);
++};
++
+ export interface UseFieldInput<
+   T,
+   FieldType extends GetInputPropsType = 'input',

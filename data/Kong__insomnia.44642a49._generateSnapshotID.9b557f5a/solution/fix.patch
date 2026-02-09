@@ -1,0 +1,27 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..d0114bafe 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -1561,12 +1561,22 @@ export class VCS {
+ }
+ 
+ /** Generate snapshot ID from hashing parent, backendProject, and state together */
++function _computeStateFingerprint(state: SnapshotState): string {
++  const entries = state.map(entry => `${entry.key}:${entry.name}:${entry.blob}`);
++  return entries.join('|');
++}
++
+ function _generateSnapshotID(parentId: string, backendProjectId: string, state: SnapshotState) {
+   const hash = crypto.createHash('sha1').update(backendProjectId).update(parentId);
+   const newState = [...state].sort((a, b) => (a.blob > b.blob ? 1 : -1));
+ 
++  const stateFingerprint = _computeStateFingerprint(newState);
++  hash.update(stateFingerprint);
++
+   for (const entry of newState) {
+     hash.update(entry.blob);
++    hash.update(entry.key);
++    hash.update(entry.name);
+   }
+ 
+   return hash.digest('hex');

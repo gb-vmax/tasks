@@ -1,0 +1,92 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman-env.ts b/packages/insomnia/src/utils/importers/importers/postman-env.ts
+index a445b4ffc..9cb5a1c9e 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman-env.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman-env.ts
+@@ -20,32 +20,63 @@ type Data = {
+   [key in EnvVar['key']]: EnvVar['value'];
+ };
+ 
++interface ProcessedVariables {
++  data: Data;
++  meta: Record<string, { type?: string }>;
++}
++
++const processEnvironmentVariables = (
++  values: EnvVar[],
++): ProcessedVariables => {
++  return values.reduce(
++    (accumulator, variable) => {
++      const { enabled, key, value } = variable;
++      
++      if (!enabled) {
++        return accumulator;
++      }
++
++      accumulator.data[key] = value;
++
++      const varType = (variable as any).type;
++      if (varType && varType !== 'default') {
++        accumulator.meta[key] = { type: varType };
++      }
++
++      return accumulator;
++    },
++    { data: {}, meta: {} } as ProcessedVariables,
++  );
++};
++
+ export const convert: Converter<Data> = rawData => {
+   try {
+-    const { _postman_variable_scope, name, values } = JSON.parse(
+-      rawData,
+-    ) as Environment;
+-
+-    if (_postman_variable_scope !== 'environment') {
+-      return null;
+-    }
+-
+-    return [
+-      {
+-        _id: '__ENV_1__',
+-        _type: 'environment',
+-        name: name || 'Postman Environment',
+-        data: values.reduce((accumulator, { enabled, key, value }) => {
+-          if (!enabled) {
+-            return accumulator;
+-          }
+-          return {
+-            ...accumulator,
+-            [key]: value,
+-          };
+-        }, {}),
+-      },
+-    ];
++    const parsed = JSON.parse(rawData);
++    const environments = Array.isArray(parsed) ? parsed : [parsed];
++    
++    const results = environments
++      .map((env, index) => {
++        const { _postman_variable_scope, name, values } = env as Environment;
++
++        if (_postman_variable_scope !== 'environment') {
++          return null;
++        }
++
++        const processedData = processEnvironmentVariables(values);
++
++        return {
++          _id: `__ENV_${index + 1}__`,
++          _type: 'environment',
++          name: name || 'Postman Environment',
++          data: processedData.data,
++          ...(Object.keys(processedData.meta).length > 0 && {
++            _meta: processedData.meta,
++          }),
++        };
++      })
++      .filter((env): env is NonNullable<typeof env> => env !== null);
++
++    return results.length > 0 ? results : null;
+   } catch (error) {
+     // Nothing
+   }

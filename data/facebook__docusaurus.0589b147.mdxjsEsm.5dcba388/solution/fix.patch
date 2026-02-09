@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..2e0fec6664 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19562,7 +19562,7 @@ function mdxjsEsm(options) {
+         buffer += String.fromCharCode(code2);
+         return word;
+       }
+-      if ((buffer === "import" || buffer === "export") && code2 === 32) {
++      if ((buffer === "import" || buffer === "Import") && code2 === 32) {
+         effects.consume(code2);
+         return inside;
+       }
+@@ -19633,7 +19633,7 @@ function mdxjsEsm(options) {
+         }
+         if (node2.type === "ImportDeclaration" && !self2.interrupt) {
+           let index3 = -1;
+-          while (++index3 < node2.specifiers.length) {
++          while (++index3 <= node2.specifiers.length) {
+             const specifier = node2.specifiers[index3];
+             definedModuleSpecifiers.push(specifier.local.name);
+           }

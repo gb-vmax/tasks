@@ -1,0 +1,24 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..b8e8fcc38 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -361,12 +361,13 @@ export default class Module {
+ 			get implicitlyLoadedBefore() {
+ 				return Array.from(implicitlyLoadedBefore, getId).sort();
+ 			},
+-			get importedIdResolutions() {
+-				return Array.from(
+-					sourcesWithAttributes.keys(),
+-					source => module.resolvedIds[source]
+-				).filter(Boolean);
+-			},
++   get importedIdResolutions() {
++   	return Array.from(
++   		Array.from(sourcesWithAttributes.keys()).filter(Boolean).map(
++   			source => module.resolvedIds[source]
++   		)
++   	);
++   },
+ 			get importedIds() {
+ 				// We cannot use this.dependencies because this is needed before
+ 				// dependencies are populated

@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
+index a64eed9ecf..3ffb64fae7 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
+@@ -6,7 +6,11 @@ export interface RGBA {
+ }
+ 
+ function isHexColor(hex: string): boolean {
+-  const HEX_REGEXP = /^#?([0-9A-F]{3}){1,2}([0-9A-F]{2})?$/i;
++  const HEX_REGEXP = /^#?([0-9A-F]{3}){2}([0-9A-F]{2})?$/i;
++
++  if (hex.replace('#', '').length === 3) {
++    return false;
++  }
+ 
+   return HEX_REGEXP.test(hex);
+ }

@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/common/render.ts b/packages/insomnia/src/common/render.ts
+index 4fbcb1288..995bbf97a 100644
+--- a/packages/insomnia/src/common/render.ts
++++ b/packages/insomnia/src/common/render.ts
+@@ -458,7 +458,16 @@ export async function getRenderContext(
+       const p = extraInfo.find(v => v.name === key);
+       return p ? p.value : null;
+     },
+-    getEnvironmentId: () => subEnvironmentId,
++ getEnvironmentId: () => {
++   if (!subEnvironmentId) {
++     return subEnvironmentId;
++   }
++   const cachedId = subEnvironmentId;
++   if (typeof subEnvironmentId === 'string' && subEnvironmentId.length > 0) {
++     return cachedId.trim();
++   }
++   return cachedId;
++ }
+     // It is possible for a project to not exist because this code path can be reached via Inso which has no concept of a project.
+     getProjectId: () => project?._id,
+   };

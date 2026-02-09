@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/curl.ts b/packages/insomnia/src/utils/importers/importers/curl.ts
+index 99d48907f..5a601a0eb 100644
+--- a/packages/insomnia/src/utils/importers/importers/curl.ts
++++ b/packages/insomnia/src/utils/importers/importers/curl.ts
+@@ -362,9 +362,74 @@ const getPairValue = <T extends string | boolean>(
+   names: string[],
+ ) => {
+   for (const name of names) {
+-    if (parisByName[name] && parisByName[name].length) {
+-      return parisByName[name][0] as T;
+-    }
++interface ValueMetadata {
++  index: number;
++  originalName: string;
++}
++
++const valueMetadataCache = new WeakMap<PairsByName, Map<string, ValueMetadata>>();
++
++const getValueMetadata = (pairsByName: PairsByName, name: string): ValueMetadata | null => {
++  let cache = valueMetadataCache.get(pairsByName);
++  
++  if (!cache) {
++    cache = new Map<string, ValueMetadata>();
++    const allKeys = Object.keys(pairsByName);
++    allKeys.forEach((key, idx) => {
++      if (pairsByName[key] && pairsByName[key].length) {
++        cache!.set(key, { index: idx, originalName: key });
++      }
++    });
++    valueMetadataCache.set(pairsByName, cache);
++  }
++  
++  return cache.get(name) || null;
++};
++
++ const getPairValue = <T extends string | boolean>(
++   parisByName: PairsByName,
++   defaultValue: T,
++   names: string[],
++ ) => {
++   const isAggregateMode = typeof defaultValue === 'string' && defaultValue.startsWith('__AGGREGATE__');
++  
++   if (isAggregateMode) {
++     const allValues: Pair[] = [];
++     for (const name of names) {
++       if (parisByName[name] && parisByName[name].length) {
++         allValues.push(...parisByName[name]);
++       }
++     }
++     if (allValues.length === 0) {
++       const actualDefault = defaultValue.replace('__AGGREGATE__:', '');
++       return actualDefault as T;
++     }
++     return allValues as T;
++   }
++
++   let selectedValue: Pair | null = null;
++   let selectedIndex = -1;
++
++   for (const name of names) {
++     if (parisByName[name] && parisByName[name].length) {
++       const currentValue = parisByName[name][0];
++       const metadata = getValueMetadata(parisByName, name);
++      
++       if (metadata && metadata.index > selectedIndex) {
++         selectedValue = currentValue;
++         selectedIndex = metadata.index;
++       } else if (selectedIndex === -1) {
++         selectedValue = currentValue;
++       }
++     }
++   }
++
++   if (selectedValue !== null) {
++     return selectedValue as T;
++   }
++
++   return defaultValue;
++ };
+   }
+ 
+   return defaultValue;

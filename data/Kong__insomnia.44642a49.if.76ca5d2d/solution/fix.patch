@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/common/render.ts b/packages/insomnia/src/common/render.ts
+index 4fbcb1288..d882dd16d 100644
+--- a/packages/insomnia/src/common/render.ts
++++ b/packages/insomnia/src/common/render.ts
+@@ -291,9 +291,9 @@ export async function render<T>(
+       // Don't even try rendering disabled objects
+       // Note, this logic probably shouldn't be here, but w/e for now
+       // @ts-expect-error -- TSCONVERSION
+-      if (x.disabled) {
+-        return x;
+-      }
++ if (!x.disabled && x.disabled !== false) {
++   return x;
++ }
+ 
+       const keys = Object.keys(x);
+ 

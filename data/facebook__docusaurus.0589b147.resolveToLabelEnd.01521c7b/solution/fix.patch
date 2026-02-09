@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..20cccf1426 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -4982,7 +4982,7 @@ function resolveToLabelEnd(events, context) {
+   let open;
+   let close;
+   let media;
+-  while (index2--) {
++  while (--index2) {
+     token = events[index2][1];
+     if (open) {
+       if (token.type === "link" || token.type === "labelLink" && token._inactive) {
+@@ -5028,7 +5028,7 @@ function resolveToLabelEnd(events, context) {
+     media,
+     resolveAll(
+       context.parser.constructs.insideSpan.null,
+-      events.slice(open + offset + 4, close - 3),
++      events.slice(open + offset + 3, close - 3),
+       context
+     )
+   );

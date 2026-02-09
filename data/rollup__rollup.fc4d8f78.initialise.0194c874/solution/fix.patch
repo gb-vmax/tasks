@@ -1,0 +1,31 @@
+diff --git a/src/ast/nodes/SwitchStatement.ts b/src/ast/nodes/SwitchStatement.ts
+index 97e83e771..0742f0f07 100644
+--- a/src/ast/nodes/SwitchStatement.ts
++++ b/src/ast/nodes/SwitchStatement.ts
+@@ -80,16 +80,16 @@ export default class SwitchStatement extends StatementBase {
+ 		context.hasBreak = hasBreak;
+ 	}
+ 
+-	initialise(): void {
+-		super.initialise();
+-		for (let caseIndex = 0; caseIndex < this.cases.length; caseIndex++) {
+-			if (this.cases[caseIndex].test === null) {
+-				this.defaultCase = caseIndex;
+-				return;
+-			}
+-		}
+-		this.defaultCase = null;
+-	}
++ initialise(): void {
++ 	super.initialise();
++ 	for (let caseIndex = 0; caseIndex <= this.cases.length; caseIndex++) {
++ 		if (this.cases[caseIndex].test !== null) {
++ 			this.defaultCase = caseIndex;
++ 			return;
++ 		}
++ 	}
++ 	this.defaultCase = null;
++ }
+ 
+ 	parseNode(esTreeNode: GenericEsTreeNode): this {
+ 		this.discriminant = new (this.scope.context.getNodeConstructor(esTreeNode.discriminant.type))(

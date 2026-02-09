@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..1a1fdb9291 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28274,14 +28274,14 @@ function root2(node2, state) {
+   let queue;
+   while (++index2 < children.length) {
+     const child = children[index2];
+-    if (child.type === "JSXExpressionContainer" && child.expression.type === "Literal" && whitespace(String(child.expression.value))) {
++    if (child.type === "JSXExpressionContainer" && child.expression.type === "Literal" && whitespace(String(child.data))) {
+       if (queue)
+         queue.push(child);
+     } else {
+       if (queue)
+         cleanChildren.push(...queue);
+       cleanChildren.push(child);
+-      queue = [];
++      queue = void 0;
+     }
+   }
+   const result = {

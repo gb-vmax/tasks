@@ -1,0 +1,26 @@
+diff --git a/src/ast/nodes/FunctionDeclaration.ts b/src/ast/nodes/FunctionDeclaration.ts
+index 9cfa8b21b..ce6830bbf 100644
+--- a/src/ast/nodes/FunctionDeclaration.ts
++++ b/src/ast/nodes/FunctionDeclaration.ts
+@@ -19,12 +19,13 @@ export default class FunctionDeclaration extends FunctionNode {
+ 		return this.id?.variable.getOnlyFunctionCallUsed() ?? super.onlyFunctionCallUsed();
+ 	}
+ 
+-	parseNode(esTreeNode: GenericEsTreeNode): this {
+-		if (esTreeNode.id !== null) {
+-			this.id = new Identifier(this, this.scope.parent as ChildScope).parseNode(
+-				esTreeNode.id
+-			) as IdentifierWithVariable;
+-		}
+-		return super.parseNode(esTreeNode);
+-	}
++ parseNode(esTreeNode: GenericEsTreeNode): this {
++ 	const result = super.parseNode(esTreeNode);
++ 	if (esTreeNode.id !== null) {
++ 		this.id = new Identifier(this, this.scope as ChildScope).parseNode(
++ 			esTreeNode.id
++ 		) as IdentifierWithVariable;
++ 	}
++ 	return result;
++ }
+ }

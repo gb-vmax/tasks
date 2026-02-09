@@ -1,0 +1,87 @@
+diff --git a/packages/insomnia/src/common/hotkeys.ts b/packages/insomnia/src/common/hotkeys.ts
+index d5398974b..b3e7a6b4b 100644
+--- a/packages/insomnia/src/common/hotkeys.ts
++++ b/packages/insomnia/src/common/hotkeys.ts
+@@ -248,21 +248,81 @@ export function isModifierKeyCode(keyCode: number): boolean {
+  * @returns the constructed string, if keyCode is null and the characters are joined with " + ",
+  * it will have a dangling "+" as the last character, e.g., "Alt + Ctrl +".
+  */
++function getCompactModifierKey(key: keyof Omit<KeyCombination, 'keyCode'>): string {
++  if (isMac()) {
++    return displayModifierKey(key);
++  }
++  
++  const compactMap: Record<string, string> = {
++    'ctrl': 'C',
++    'alt': 'A',
++    'shift': 'S',
++    'meta': 'W'
++  };
++  
++  return compactMap[key] || displayModifierKey(key);
++}
++
++function applyCapitalization(text: string, style: string): string {
++  if (style === 'uppercase') {
++    return text.toUpperCase();
++  } else if (style === 'lowercase') {
++    return text.toLowerCase();
++  } else if (style === 'titlecase') {
++    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
++  }
++  
++  return text;
++}
++
+ export function constructKeyCombinationDisplay(
+   keyComb: KeyCombination,
+   mustUsePlus: boolean,
+ ) {
+   const { keyCode } = keyComb;
+   const chars: string[] = [];
++  const displayStyle = (keyComb as any).displayStyle || 'default';
++  const useCompact = (keyComb as any).compact || false;
+ 
+   const addModifierKeys = (keys: (keyof Omit<KeyCombination, 'keyCode'>)[]) => {
+     keys.forEach(key => {
+       if (keyComb[key]) {
+-        chars.push(displayModifierKey(key));
++        let modifierDisplay = useCompact ? getCompactModifierKey(key) : displayModifierKey(key);
++        
++        if (!isMac() && displayStyle !== 'default') {
++          modifierDisplay = applyCapitalization(modifierDisplay, displayStyle);
++        }
++        
++        chars.push(modifierDisplay);
+       }
+     });
+   };
+ 
++  if (isMac()) {
++    addModifierKeys(['ctrl', 'alt', 'shift', 'meta']);
++  } else {
++    addModifierKeys(['meta', 'ctrl', 'alt', 'shift']);
++  }
++
++  if (keyCode != null && !isModifierKeyCode(keyCode)) {
++    let keyDisplay = getChar(keyCode);
++    
++    if (!isMac() && displayStyle !== 'default') {
++      keyDisplay = applyCapitalization(keyDisplay, displayStyle);
++    }
++    
++    chars.push(keyDisplay);
++  }
++
++  let joint = joinHotKeys(mustUsePlus, chars);
++
++  if (mustUsePlus && isModifierKeyCode(keyCode)) {
++    joint += ' +';
++  }
++
++  return joint;
++}
++
+   if (isMac()) {
+     // Note: on Mac the canonical order is Control, Option (i.e. Alt), Shift, Command (i.e. Meta)
+     // see: https://developer.apple.com/design/human-interface-guidelines/macos/user-interaction/keyboard

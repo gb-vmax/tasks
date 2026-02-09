@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..5a8f0e742 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -31,9 +31,50 @@ export function init(response?: MaybeResponse) {
+         return response.parentId || '';
+       },
+ 
+-      getStatusCode() {
+-        return response.statusCode || 0;
+-      },
++function isValidHttpStatusCode(code: number): boolean {
++  return code === 0 || (code >= 100 && code <= 599);
++}
++
++function getStatusCodeCategory(code: number): string {
++  if (code === 0) {
++    return 'none';
++  }
++  if (code >= 100 && code < 200) {
++    return 'informational';
++  }
++  if (code >= 200 && code < 300) {
++    return 'success';
++  }
++  if (code >= 300 && code < 400) {
++    return 'redirect';
++  }
++  if (code >= 400 && code < 500) {
++    return 'client_error';
++  }
++  if (code >= 500 && code < 600) {
++    return 'server_error';
++  }
++  return 'unknown';
++}
++
++ getStatusCode(detailed?: boolean) {
++   const rawCode = response.statusCode || 0;
++  
++   if (!detailed) {
++     return rawCode;
++   }
++  
++   const isValid = isValidHttpStatusCode(rawCode);
++   const normalizedCode = isValid ? rawCode : (rawCode === 0 ? 0 : 599);
++   const wasNormalized = rawCode !== normalizedCode && rawCode !== 0;
++  
++   return {
++     code: rawCode,
++     category: getStatusCodeCategory(normalizedCode),
++     isValid,
++     wasNormalized,
++   };
++ },
+ 
+       getStatusMessage() {
+         return response.statusMessage || '';

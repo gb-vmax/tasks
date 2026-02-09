@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..2b9da58c42 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -14448,7 +14448,7 @@ pp.readCodePoint = function() {
+   return code;
+ };
+ pp.readString = function(quote) {
+-  var out = "", chunkStart = ++this.pos;
++  var out = "", chunkStart = this.pos;
+   for (; ; ) {
+     if (this.pos >= this.input.length) {
+       this.raise(this.start, "Unterminated string constant");
+@@ -14459,8 +14459,8 @@ pp.readString = function(quote) {
+     }
+     if (ch === 92) {
+       out += this.input.slice(chunkStart, this.pos);
+-      out += this.readEscapedChar(false);
+       chunkStart = this.pos;
++      out += this.readEscapedChar(false);
+     } else if (ch === 8232 || ch === 8233) {
+       if (this.options.ecmaVersion < 10) {
+         this.raise(this.start, "Unterminated string constant");

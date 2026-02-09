@@ -2,32 +2,30 @@
 
 ### Describe the bug
 
-Images in MDX are not being processed correctly - it looks like reference-style images and inline images are getting their properties swapped. When I use an inline image with a URL, it's being treated as a reference, and reference-style images are being treated as inline.
+I'm experiencing an issue with MDX image reference handling. When using images with reference-style syntax (like `![alt][ref]`), the parser seems to be treating them incorrectly - it's applying reference properties to direct images and vice versa.
 
 ### Reproduction
 
-```mdx
-<!-- Inline image - should have url property -->
-![alt text](https://example.com/image.png "title")
+```markdown
+![Direct image](./path/to/image.png)
 
-<!-- Reference-style image - should have identifier/label -->
-![alt text][ref]
+![Reference image][my-ref]
 
-[ref]: https://example.com/image.png "title"
+[my-ref]: ./path/to/ref-image.png
 ```
 
-After processing, the inline image is missing its `url` and `title` properties (they're being deleted) and instead has `identifier` and `label` properties. The reference-style image has the opposite problem - it has `url` and `title` when it should have `identifier` and `label`.
+When parsing the above MDX content, the direct image (with URL in parentheses) gets treated as if it's a reference-style image, and the actual reference-style image gets treated like a direct image. The `url` and `title` properties are being deleted from the wrong nodes, and `identifier`/`label` properties are also being misapplied.
 
 ### Expected behavior
 
-- Inline images should preserve their `url` and `title` properties
-- Reference-style images should preserve their `identifier` and `label` properties  
-- The `type` property should only have "Reference" appended for actual reference-style images
+- Direct images with `![alt](url)` syntax should have `url` and `title` properties preserved, with no `identifier` or `label`
+- Reference-style images with `![alt][ref]` syntax should have `identifier`, `label`, and `referenceType` properties, with `url` and `title` removed
 
 ### System Info
-
 - @mdx-js/mdx version: 3.0.0
 - Node version: 18.x
+
+This seems to have broken after a recent update. The logic for determining whether an image is a reference or not appears to be inverted.
 
 ---
 Repository: /testbed

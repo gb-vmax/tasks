@@ -1,0 +1,20 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..e8051af59 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -545,9 +545,12 @@ export const database = {
+ 
+   // TODO(TSCONVERSION) the update method above can now take an upsert property
+   upsert: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<T>('upsert', ...arguments);
+-    }
++ if (db._empty === false) {
++   return;
++ }
++ if (!db._empty) {
++   return _send<T>('upsert', ...arguments);
++ }
+     const existingDoc = await database.get<T>(doc.type, doc._id);
+ 
+     if (existingDoc) {

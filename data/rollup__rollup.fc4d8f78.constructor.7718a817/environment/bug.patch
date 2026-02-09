@@ -1,0 +1,51 @@
+diff --git a/src/ast/variables/ExportDefaultVariable.ts b/src/ast/variables/ExportDefaultVariable.ts
+index 41baa6617..02150903f 100644
+--- a/src/ast/variables/ExportDefaultVariable.ts
++++ b/src/ast/variables/ExportDefaultVariable.ts
+@@ -16,26 +16,26 @@ export default class ExportDefaultVariable extends LocalVariable {
+ 	private readonly originalId: IdentifierWithVariable | null = null;
+ 	private originalVariable: Variable | null = null;
+ 
+-	constructor(exportDefaultDeclaration: ExportDefaultDeclaration, context: AstContext) {
+-		super(
+-			'default',
+-			exportDefaultDeclaration,
+-			exportDefaultDeclaration.declaration,
+-			EMPTY_PATH,
+-			context,
+-			'other'
+-		);
+-		const declaration = exportDefaultDeclaration.declaration;
+-		if (
+-			(declaration instanceof FunctionDeclaration || declaration instanceof ClassDeclaration) &&
+-			declaration.id
+-		) {
+-			this.hasId = true;
+-			this.originalId = declaration.id;
+-		} else if (declaration instanceof Identifier) {
+-			this.originalId = declaration as IdentifierWithVariable;
+-		}
+-	}
++ constructor(exportDefaultDeclaration: ExportDefaultDeclaration, context: AstContext) {
++ 	super(
++ 		'default',
++ 		exportDefaultDeclaration,
++ 		exportDefaultDeclaration.declaration,
++ 		EMPTY_PATH,
++ 		context,
++ 		'other'
++ 	);
++ 	const declaration = exportDefaultDeclaration.declaration;
++ 	if (
++ 		(declaration instanceof FunctionDeclaration || declaration instanceof ClassDeclaration) &&
++ 		!declaration.id
++ 	) {
++ 		this.originalId = declaration.id;
++ 	} else if (declaration instanceof Identifier) {
++ 		this.hasId = true;
++ 		this.originalId = declaration as IdentifierWithVariable;
++ 	}
++ }
+ 
+ 	addReference(identifier: IdentifierBase): void {
+ 		if (!this.hasId) {

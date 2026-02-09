@@ -2,32 +2,34 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with markdown parsing where whitespace handling seems to be inverted. When processing markdown content, spaces and whitespace characters are being treated incorrectly, causing the parser to fail or produce unexpected output.
+I'm encountering an issue with markdown parsing where whitespace handling seems to be completely broken. Text that should be parsed with proper spacing is now being processed incorrectly, causing the parser to fail or produce unexpected output.
 
 ### Reproduction
 
 ```js
-const markdown = `
-# Title
+const remark = require('remark');
 
-Some text with spaces
+const markdown = `
+This is a test paragraph.
+
+Another paragraph here.
 `;
 
-// Parser fails to correctly handle the whitespace
-const result = parse(markdown);
+const result = remark().parse(markdown);
+console.log(result);
 ```
 
-When parsing markdown with normal spaces and line breaks, the parser doesn't process them correctly. It seems like the whitespace detection logic is backwards - non-space characters are being treated as spaces and actual spaces are being rejected.
+When parsing markdown content with spaces and line breaks, the parser no longer handles whitespace correctly. It seems like the logic for detecting and processing spaces has been inverted somehow.
 
 ### Expected behavior
 
-The parser should correctly identify and handle whitespace characters (spaces, tabs, newlines) and process the markdown content normally. Regular text with spaces should parse without issues.
+The markdown parser should correctly identify and handle whitespace characters (spaces, tabs, newlines) and process them according to the markdown spec. Spaces should be consumed and processed as space tokens, not skipped entirely.
 
 ### System Info
 - remark version: 15.0.1
 - Node version: Latest
 
-This is blocking our markdown rendering functionality. Any help would be appreciated!
+This appears to have started happening recently and is breaking markdown parsing for any content with standard spacing. Any help would be appreciated!
 
 ---
 Repository: /testbed

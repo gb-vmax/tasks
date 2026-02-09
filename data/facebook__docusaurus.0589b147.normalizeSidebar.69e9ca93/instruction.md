@@ -2,29 +2,42 @@
 
 ### Describe the bug
 
-I'm getting an error when trying to use valid sidebar configurations in my Docusaurus site. The plugin is throwing an "Invalid sidebar items collection" error for configurations that should be perfectly valid according to the documentation.
+After a recent update, the sidebar configuration validation is throwing errors for valid sidebar configurations. When I try to use a standard array-based sidebar or the categories shorthand syntax, I'm getting an "Invalid sidebar items collection" error even though the configuration format is correct according to the documentation.
 
 ### Reproduction
 
 ```js
-// sidebars.js
+// This used to work but now throws an error
 module.exports = {
-  docs: [
+  sidebar: [
     {
       type: 'category',
       label: 'Getting Started',
-      items: ['intro', 'installation'],
-    },
-    'api-reference',
-  ],
-};
+      items: ['intro', 'installation']
+    }
+  ]
+}
 ```
 
-When I run the build, I get an error message saying the sidebar items collection is invalid, even though this is a standard array-based sidebar configuration.
+Or with categories shorthand:
+
+```js
+module.exports = {
+  sidebar: {
+    'Getting Started': ['intro', 'installation'],
+    'Advanced': ['config', 'deployment']
+  }
+}
+```
+
+Both configurations now fail with:
+```
+Invalid sidebar items collection
+```
 
 ### Expected behavior
 
-The sidebar configuration should be accepted and processed normally. Array-based sidebar configurations are documented as valid and have worked in previous versions.
+Valid sidebar configurations (arrays and category shorthand objects) should be accepted without throwing validation errors. The sidebar should load normally as it did in previous versions.
 
 ### System Info
 - Docusaurus version: latest

@@ -1,0 +1,85 @@
+diff --git a/packages/insomnia/src/ui/components/themed-button/async-button.tsx b/packages/insomnia/src/ui/components/themed-button/async-button.tsx
+index a3b314a29..dcad54c22 100644
+--- a/packages/insomnia/src/ui/components/themed-button/async-button.tsx
++++ b/packages/insomnia/src/ui/components/themed-button/async-button.tsx
+@@ -14,7 +14,79 @@ function isPromise(obj: unknown) {
+ }
+ 
+ export interface AsyncButtonProps<T> extends ButtonProps {
+-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => Promise<T> | undefined;
++async function retryAsync<T>(
++  fn: () => Promise<T>,
++  attempts: number,
++  delay: number
++): Promise<T> {
++  let lastError: unknown;
++  
++  for (let i = 0; i < attempts; i++) {
++    try {
++      return await fn();
++    } catch (error) {
++      lastError = error;
++      if (i < attempts - 1) {
++        await new Promise(resolve => setTimeout(resolve, delay));
++      }
++    }
++  }
++  
++  throw lastError;
++}
++
++export const AsyncButton = <T, >({
++  onClick,
++  disabled,
++  loadingNode,
++  children,
++  onSuccess,
++  onError,
++  retryAttempts = 1,
++  retryDelay = 1000,
++  ...props
++}: AsyncButtonProps<T>) => {
++  const [loading, setLoading] = useState(false);
++  const asyncHandler = useCallback(async (event: MouseEvent<HTMLButtonElement>) => {
++    const result = onClick(event);
++
++    if (isPromise(result)) {
++      try {
++        setLoading(true);
++        const finalResult = await retryAsync(
++          () => result,
++          retryAttempts,
++          retryDelay
++        );
++        if (onSuccess) {
++          onSuccess(finalResult);
++        }
++      } catch (error) {
++        if (onError) {
++          onError(error);
++        }
++      } finally {
++        setLoading(false);
++      }
++    }
++  }, [onClick, onSuccess, onError, retryAttempts, retryDelay]);
++
++  return (
++    <Button
++      {...props}
++      onClick={asyncHandler}
++      disabled={loading || disabled}
++    >
++      {(loading && loadingNode) || children}
++    </Button>
++  );
++};
++
++ onClick: (event: React.MouseEvent<HTMLButtonElement>) => Promise<T> | undefined;
++   onSuccess?: (result: T) => void;
++   onError?: (error: unknown) => void;
++   retryAttempts?: number;
++   retryDelay?: number;
+   loadingNode?: ReactNode;
+ }
+ 

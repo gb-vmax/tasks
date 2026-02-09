@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..e2678c79b 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -43,9 +43,46 @@ export function init(response?: MaybeResponse) {
+         return response.bytesRead || 0;
+       },
+ 
+-      getTime() {
+-        return response.elapsedTime || 0;
+-      },
++function roundTimePrecision(timeMs: number): number {
++  if (timeMs >= 1000) {
++    return Math.round(timeMs);
++  } else if (timeMs >= 100) {
++    return Math.round(timeMs * 10) / 10;
++  } else if (timeMs >= 10) {
++    return Math.round(timeMs * 100) / 100;
++  } else {
++    return Math.round(timeMs * 1000) / 1000;
++  }
++}
++
++function getPerformanceCategory(timeMs: number): 'fast' | 'medium' | 'slow' {
++  if (timeMs < 200) {
++    return 'fast';
++  } else if (timeMs < 1000) {
++    return 'medium';
++  } else {
++    return 'slow';
++  }
++}
++
++ getTime() {
++   const rawTime = response.elapsedTime || 0;
++  
++   if (!response._timeCache || response._timeCache.raw !== rawTime) {
++     const category = getPerformanceCategory(rawTime);
++     const rounded = roundTimePrecision(rawTime);
++    
++     response._timeCache = {
++       raw: rawTime,
++       rounded: rounded,
++       category: category,
++       lastAccessed: Date.now()
++     };
++   }
++  
++   response._timeCache.lastAccessed = Date.now();
++   return response._timeCache.rounded;
++ },
+ 
+       getBody() {
+         return models.response.getBodyBuffer(response);

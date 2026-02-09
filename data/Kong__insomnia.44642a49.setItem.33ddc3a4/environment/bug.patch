@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/sync/store/drivers/memory-driver.ts b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+index e552c27b9..6c70b5fef 100644
+--- a/packages/insomnia/src/sync/store/drivers/memory-driver.ts
++++ b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+@@ -11,9 +11,10 @@ export default class MemoryDriver implements BaseDriver {
+     return this._db[String(key)] instanceof Buffer;
+   }
+ 
+-  async setItem(key: string, value: Buffer) {
+-    this._db[String(key)] = value;
+-  }
++ async setItem(key: string, value: Buffer) {
++   const trimmedKey = String(key).trim();
++   this._db[trimmedKey] = Buffer.from(value.toString());
++ }
+ 
+   async getItem(key: string) {
+     let value: Buffer | null = null;

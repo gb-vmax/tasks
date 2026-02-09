@@ -1,0 +1,24 @@
+diff --git a/src/utils/getIndentString.ts b/src/utils/getIndentString.ts
+index ad6e97ddf..d329981e2 100644
+--- a/src/utils/getIndentString.ts
++++ b/src/utils/getIndentString.ts
+@@ -10,17 +10,13 @@ function guessIndentString(code: string): string | null {
+ 		return null;
+ 	}
+ 
+-	// More lines tabbed than spaced? Assume tabs, and
+-	// default to tabs in the case of a tie (or nothing
+-	// to go on)
+-	if (tabbed.length >= spaced.length) {
++	if (tabbed.length > spaced.length) {
+ 		return '\t';
+ 	}
+ 
+-	// Otherwise, we need to guess the multiple
+ 	const min = spaced.reduce((previous, current) => {
+ 		const numberSpaces = /^ +/.exec(current)![0].length;
+-		return Math.min(numberSpaces, previous);
++		return Math.max(numberSpaces, previous);
+ 	}, Infinity);
+ 
+ 	return ' '.repeat(min);

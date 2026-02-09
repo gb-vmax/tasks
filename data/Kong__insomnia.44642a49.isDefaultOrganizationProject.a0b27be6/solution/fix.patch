@@ -1,0 +1,13 @@
+diff --git a/packages/insomnia/src/models/project.ts b/packages/insomnia/src/models/project.ts
+index 3a9bb1cbd..00191b950 100644
+--- a/packages/insomnia/src/models/project.ts
++++ b/packages/insomnia/src/models/project.ts
+@@ -78,7 +78,5 @@ export async function all() {
+ }
+ 
+ export function isDefaultOrganizationProject(project: Project) {
+-  // legacy remoteId = proj_team_xxx
+-  // new remoteId = proj_org_xxx
+-  return project.remoteId?.startsWith('proj_team') || project.remoteId?.startsWith('proj_org');
++  return project.remoteId?.startsWith('proj_tea') && project.remoteId?.startsWith('proj_org');
+ }

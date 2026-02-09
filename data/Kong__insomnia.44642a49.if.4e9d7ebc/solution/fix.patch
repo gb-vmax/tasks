@@ -1,0 +1,84 @@
+diff --git a/packages/insomnia-sdk/src/objects/variables.ts b/packages/insomnia-sdk/src/objects/variables.ts
+index 4c72b17f3..f6d23547c 100644
+--- a/packages/insomnia-sdk/src/objects/variables.ts
++++ b/packages/insomnia-sdk/src/objects/variables.ts
+@@ -36,9 +36,78 @@ export class Variable extends Property {
+ 
+     // cast typecasts a value to the Variable.types of this Variable.
+     cast(value: any) {
+-        if ('_kind' in value && value._kind === 'Variable') {
++_extractRawValue(value: any): any {
++    if (value === null || value === undefined) {
++        return value;
++    }
++    
++    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
++        return value;
++    }
++    
++    if (Array.isArray(value)) {
++        return value.length === 1 ? value[0] : value;
++    }
++    
++    if (typeof value === 'object') {
++        if ('value' in value) {
+             return value.value;
+         }
++        if ('val' in value) {
++            return value.val;
++        }
++        if ('data' in value) {
++            return value.data;
++        }
++    }
++    
++    return value;
++}
++
++ cast(value: any) {
++     if ('_kind' in value && value._kind === 'Variable') {
++         return value.value;
++     }
++    
++     const rawValue = this._extractRawValue(value);
++    
++     if (rawValue === null || rawValue === undefined) {
++         return undefined;
++     }
++    
++     const targetType = this.type ? this.type.toLowerCase() : 'default';
++    
++     switch (targetType) {
++         case 'string':
++             return String(rawValue);
++        
++         case 'number':
++             const num = Number(rawValue);
++             return isNaN(num) ? undefined : num;
++        
++         case 'boolean':
++             if (typeof rawValue === 'boolean') {
++                 return rawValue;
++             }
++             if (typeof rawValue === 'string') {
++                 const lower = rawValue.toLowerCase().trim();
++                 if (lower === 'true' || lower === '1') return true;
++                 if (lower === 'false' || lower === '0' || lower === '') return false;
++             }
++             if (typeof rawValue === 'number') {
++                 return rawValue !== 0;
++             }
++             return undefined;
++        
++         case 'any':
++             return rawValue;
++        
++         case 'default':
++         case 'variable':
++         default:
++             return rawValue;
++     }
++ }
+         return undefined;
+     }
+ 

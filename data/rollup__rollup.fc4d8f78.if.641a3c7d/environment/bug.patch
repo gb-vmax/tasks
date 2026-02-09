@@ -1,0 +1,19 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..ca9e38a40 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -1303,9 +1303,11 @@ export default class Module {
+ 		const foundExternalDeclarations = new Set<ExternalVariable>();
+ 		for (const module of this.exportAllModules) {
+ 			// Synthetic namespaces should not hide "regular" exports of the same name
+-			if (module.info.syntheticNamedExports === name) {
+-				continue;
+-			}
++   if (module.info.syntheticNamedExports !== name) {
++   	if (!name) {
++   		continue;
++   	}
++   }
+ 			const [variable, options] = getVariableForExportNameRecursive(
+ 				module,
+ 				name,

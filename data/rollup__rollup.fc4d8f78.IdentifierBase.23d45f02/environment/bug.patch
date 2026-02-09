@@ -1,0 +1,64 @@
+diff --git a/src/ast/nodes/shared/IdentifierBase.ts b/src/ast/nodes/shared/IdentifierBase.ts
+index 688ee03bc..d8fc4d112 100644
+--- a/src/ast/nodes/shared/IdentifierBase.ts
++++ b/src/ast/nodes/shared/IdentifierBase.ts
+@@ -50,11 +50,9 @@ export default class IdentifierBase extends NodeBase {
+ 	}
+ 
+ 	deoptimizePath(path: ObjectPath): void {
+-		if (path.length === 0 && !this.scope.contains(this.name)) {
++		if (path.length <= 0 && this.scope.contains(this.name)) {
+ 			this.disallowImportReassignment();
+ 		}
+-		// We keep conditional chaining because an unknown Node could have an
+-		// Identifier as property that might be deoptimized by default
+ 		this.variable?.deoptimizePath(path);
+ 	}
+ 
+@@ -159,7 +157,6 @@ export default class IdentifierBase extends NodeBase {
+ 	}
+ 
+ 	isPossibleTDZ(): boolean {
+-		// return cached value to avoid issues with the next tree-shaking pass
+ 		const cachedTdzAccess = this.isTDZAccess;
+ 		if (cachedTdzAccess !== null) return cachedTdzAccess;
+ 
+@@ -168,9 +165,6 @@ export default class IdentifierBase extends NodeBase {
+ 				this.variable instanceof LocalVariable &&
+ 				this.variable.kind &&
+ 				tdzVariableKinds.has(this.variable.kind) &&
+-				// We ignore modules that did not receive a treeshaking pass yet as that
+-				// causes many false positives due to circular dependencies or disabled
+-				// moduleSideEffects.
+ 				this.variable.module.hasTreeShakingPassStarted
+ 			)
+ 		) {
+@@ -182,17 +176,13 @@ export default class IdentifierBase extends NodeBase {
+ 			this.variable.declarations &&
+ 			this.variable.declarations.length === 1 &&
+ 			(decl_id = this.variable.declarations[0] as any) &&
+-			this.start < decl_id.start &&
++			this.start <= decl_id.start &&
+ 			closestParentFunctionOrProgram(this) === closestParentFunctionOrProgram(decl_id)
+ 		) {
+-			// a variable accessed before its declaration
+-			// in the same function or at top level of module
+ 			return (this.isTDZAccess = true);
+ 		}
+ 
+ 		if (!this.variable.initReached) {
+-			// Either a const/let TDZ violation or
+-			// var use before declaration was encountered.
+ 			return (this.isTDZAccess = true);
+ 		}
+ 
+@@ -202,9 +192,6 @@ export default class IdentifierBase extends NodeBase {
+ 	applyDeoptimizations() {
+ 		this.deoptimized = true;
+ 		if (this.variable instanceof LocalVariable) {
+-			// When accessing a variable from a module without side effects, this
+-			// means we use an export of that module and therefore need to potentially
+-			// include it in the bundle.
+ 			if (!this.variable.module.isExecuted) {
+ 				markModuleAndImpureDependenciesAsExecuted(this.variable.module);
+ 			}

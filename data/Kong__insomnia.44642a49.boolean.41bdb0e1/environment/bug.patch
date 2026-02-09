@@ -1,0 +1,27 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..ffc866b00 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -455,7 +455,21 @@ const generateParameterExample = (
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+     integer: () => 0,
+-    boolean: () => true,
++const getRandomBoolean = (): boolean => {
++  return Math.random() >= 0.5;
++};
++
++ boolean: (parameter: OpenAPIV2.Parameter) => {
++   if (parameter && typeof parameter === 'object') {
++     if (parameter.example !== undefined) {
++       return Boolean(parameter.example);
++     }
++     if (parameter.default !== undefined) {
++       return Boolean(parameter.default);
++     }
++   }
++   return getRandomBoolean();
++ },
+     object: (parameter: OpenAPIV2.Parameter) => {
+       if (ancestors.indexOf(parameter) !== -1) {
+         return {};

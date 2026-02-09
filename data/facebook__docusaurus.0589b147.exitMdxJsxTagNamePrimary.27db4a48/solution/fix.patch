@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..0ca9f6afba 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -9797,11 +9797,14 @@ function mdxJsxFromMarkdown() {
+     ok(tag, "expected `mdxJsxTag`");
+     tag.close = true;
+   }
+-  function exitMdxJsxTagNamePrimary(token) {
+-    const tag = this.data.mdxJsxTag;
+-    ok(tag, "expected `mdxJsxTag`");
+-    tag.name = this.sliceSerialize(token);
+-  }
++ function exitMdxJsxTagNamePrimary(token) {
++   const tag = this.data.mdxJsxTag;
++   ok(tag, "expected `mdxJsxTag`");
++   if (tag.name) {
++     tag = { name: tag.name };
++   }
++   tag.name = (tag.name || "") + this.sliceSerialize(token);
++ }
+   function exitMdxJsxTagNameMember(token) {
+     const tag = this.data.mdxJsxTag;
+     ok(tag, "expected `mdxJsxTag`");

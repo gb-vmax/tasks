@@ -1,0 +1,85 @@
+diff --git a/packages/insomnia/src/common/api-specs.ts b/packages/insomnia/src/common/api-specs.ts
+index 5471c04b1..d96a7dea7 100644
+--- a/packages/insomnia/src/common/api-specs.ts
++++ b/packages/insomnia/src/common/api-specs.ts
+@@ -56,13 +56,74 @@ export function resolveComponentSchemaRefs(
+     }
+ 
+     if (Array.isArray(obj)) {
+-      return obj.map(resolveRefs);
+-    }
++ export function resolveComponentSchemaRefs(
++   spec: ParsedApiSpec,
++   methodInfo: Record<string, any>,
++ ) {
++   const components = spec.contents?.components;
++   if (!components) {
++     return;
++   }
+ 
+-    if (obj.$ref) {
+-      const ref = obj.$ref.replace('#/components/schemas/', '');
+-      return resolveRefs(schemas[ref]);
+-    }
++   const visited = new WeakSet();
++
++   const resolveRefs = (obj: Record<string, any>): Record<string, any> => {
++     if (typeof obj !== 'object' || obj === null) {
++       return obj;
++     }
++
++     if (visited.has(obj)) {
++       return obj;
++     }
++
++     if (Array.isArray(obj)) {
++       return obj.map(resolveRefs);
++     }
++
++     if (obj.$ref) {
++       const refPath = obj.$ref;
++       let resolved = null;
++
++       if (refPath.startsWith('#/components/schemas/')) {
++         const ref = refPath.replace('#/components/schemas/', '');
++         resolved = components.schemas?.[ref];
++       } else if (refPath.startsWith('#/components/parameters/')) {
++         const ref = refPath.replace('#/components/parameters/', '');
++         resolved = components.parameters?.[ref];
++       } else if (refPath.startsWith('#/components/responses/')) {
++         const ref = refPath.replace('#/components/responses/', '');
++         resolved = components.responses?.[ref];
++       } else if (refPath.startsWith('#/components/examples/')) {
++         const ref = refPath.replace('#/components/examples/', '');
++         resolved = components.examples?.[ref];
++       } else if (refPath.startsWith('#/components/requestBodies/')) {
++         const ref = refPath.replace('#/components/requestBodies/', '');
++         resolved = components.requestBodies?.[ref];
++       } else if (refPath.startsWith('#/components/headers/')) {
++         const ref = refPath.replace('#/components/headers/', '');
++         resolved = components.headers?.[ref];
++       }
++
++       if (resolved) {
++         return resolveRefs(resolved);
++       }
++       return obj;
++     }
++
++     visited.add(obj);
++
++     const resolved: Record<string, any> = {};
++     for (const [key, value] of Object.entries(obj)) {
++       resolved[key] = resolveRefs(value);
++     }
++
++     return resolved;
++   };
++
++   const resolved = resolveRefs(methodInfo);
++
++   return resolved;
++ }
+ 
+     const resolved: Record<string, any> = {};
+     for (const [key, value] of Object.entries(obj)) {

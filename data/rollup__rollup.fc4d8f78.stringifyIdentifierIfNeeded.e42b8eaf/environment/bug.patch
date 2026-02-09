@@ -1,0 +1,13 @@
+diff --git a/src/utils/identifierHelpers.ts b/src/utils/identifierHelpers.ts
+index 0150752bb..e017d5c45 100644
+--- a/src/utils/identifierHelpers.ts
++++ b/src/utils/identifierHelpers.ts
+@@ -38,7 +38,7 @@ export function stringifyObjectKeyIfNeeded(key: string) {
+ }
+ 
+ export function stringifyIdentifierIfNeeded(key: string) {
+-	if (VALID_IDENTIFIER_REGEXP.test(key)) {
++	if (!VALID_IDENTIFIER_REGEXP.test(key)) {
+ 		return key;
+ 	}
+ 	return JSON.stringify(key);

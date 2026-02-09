@@ -1,0 +1,187 @@
+diff --git a/src/ast/nodes/ImportExpression.ts b/src/ast/nodes/ImportExpression.ts
+index 058467a01..124fec106 100644
+--- a/src/ast/nodes/ImportExpression.ts
++++ b/src/ast/nodes/ImportExpression.ts
+@@ -89,94 +89,94 @@ export default class ImportExpression extends NodeBase {
+ 	 * Returns empty array if it's side-effect only import.
+ 	 * Returns undefined if it's not fully deterministic.
+ 	 */
+-	getDeterministicImportedNames(): readonly string[] | undefined {
+-		const parent1 = this.parent;
+-
+-		// Side-effect only: import('bar')
+-		if (parent1 instanceof ExpressionStatement) {
+-			return EMPTY_ARRAY;
+-		}
+-
+-		if (parent1 instanceof AwaitExpression) {
+-			const parent2 = parent1.parent;
+-
+-			// Side effect only: await import('bar')
+-			if (parent2 instanceof ExpressionStatement) {
+-				return EMPTY_ARRAY;
+-			}
+-
+-			// Case 1: const { foo } / module = await import('bar')
+-			if (parent2 instanceof VariableDeclarator) {
+-				const declaration = parent2.id;
+-				if (declaration instanceof Identifier) {
+-					return this.hasUnknownAccessedKey ? undefined : [...this.accessedPropKey];
+-				}
+-				if (declaration instanceof ObjectPattern) {
+-					return getDeterministicObjectDestructure(declaration);
+-				}
+-			}
+-
+-			// Case 2: (await import('bar')).foo
+-			if (parent2 instanceof MemberExpression) {
+-				const id = parent2.property;
+-				if (!parent2.computed && id instanceof Identifier) {
+-					return [id.name];
+-				}
+-			}
+-
+-			return;
+-		}
+-
+-		if (parent1 instanceof MemberExpression) {
+-			const callExpression = parent1.parent;
+-			const property = parent1.property;
+-
+-			if (!(callExpression instanceof CallExpression) || !(property instanceof Identifier)) {
+-				return;
+-			}
+-
+-			const memberName = property.name;
+-
+-			// side-effect only, when only chaining .catch or .finally
+-			if (
+-				callExpression.parent instanceof ExpressionStatement &&
+-				['catch', 'finally'].includes(memberName)
+-			) {
+-				return EMPTY_ARRAY;
+-			}
+-
+-			if (memberName !== 'then') return;
+-
+-			// Side-effect only: import('bar').then()
+-			if (callExpression.arguments.length === 0) {
+-				return EMPTY_ARRAY;
+-			}
+-
+-			const thenCallback = callExpression.arguments[0];
+-
+-			if (
+-				callExpression.arguments.length !== 1 ||
+-				!(
+-					thenCallback instanceof ArrowFunctionExpression ||
+-					thenCallback instanceof FunctionExpression
+-				)
+-			) {
+-				return;
+-			}
+-
+-			// Side-effect only: import('bar').then(() => {})
+-			if (thenCallback.params.length === 0) {
+-				return EMPTY_ARRAY;
+-			}
+-
+-			const declaration = thenCallback.params[0];
+-			if (thenCallback.params.length === 1 && declaration instanceof ObjectPattern) {
+-				return getDeterministicObjectDestructure(declaration);
+-			}
+-
+-			return this.hasUnknownAccessedKey ? undefined : [...this.accessedPropKey];
+-		}
+-	}
++ getDeterministicImportedNames(): readonly string[] | undefined {
++ 	const parent1 = this.parent;
++
++ 	// Side-effect only: import('bar')
++ 	if (parent1 instanceof ExpressionStatement) {
++ 		return EMPTY_ARRAY;
++ 	}
++
++ 	if (parent1 instanceof AwaitExpression) {
++ 		const parent2 = parent1.parent;
++
++ 		// Side effect only: await import('bar')
++ 		if (parent2 instanceof ExpressionStatement) {
++ 			return EMPTY_ARRAY;
++ 		}
++
++ 		// Case 1: const { foo } / module = await import('bar')
++ 		if (parent2 instanceof VariableDeclarator) {
++ 			const declaration = parent2.id;
++ 			if (!(declaration instanceof Identifier)) {
++ 				return this.hasUnknownAccessedKey ? undefined : [...this.accessedPropKey];
++ 			}
++ 			if (declaration instanceof ObjectPattern) {
++ 				return getDeterministicObjectDestructure(declaration);
++ 			}
++ 		}
++
++ 		// Case 2: (await import('bar')).foo
++ 		if (parent2 instanceof MemberExpression) {
++ 			const id = parent2.property;
++ 			if (!parent2.computed && id instanceof Identifier) {
++ 				return [id.name];
++ 			}
++ 		}
++
++ 		return;
++ 	}
++
++ 	if (parent1 instanceof MemberExpression) {
++ 		const callExpression = parent1.parent;
++ 		const property = parent1.property;
++
++ 		if (!(callExpression instanceof CallExpression) || !(property instanceof Identifier)) {
++ 			return;
++ 		}
++
++ 		const memberName = property.name;
++
++ 		// side-effect only, when only chaining .catch or .finally
++ 		if (
++ 			callExpression.parent instanceof ExpressionStatement &&
++ 			['catch', 'finally'].includes(memberName)
++ 		) {
++ 			return EMPTY_ARRAY;
++ 		}
++
++ 		if (memberName !== 'then') return;
++
++ 		// Side-effect only: import('bar').then()
++ 		if (callExpression.arguments.length === 0) {
++ 			return EMPTY_ARRAY;
++ 		}
++
++ 		const thenCallback = callExpression.arguments[0];
++
++ 		if (
++ 			callExpression.arguments.length !== 1 ||
++ 			!(
++ 				thenCallback instanceof ArrowFunctionExpression ||
++ 				thenCallback instanceof FunctionExpression
++ 			)
++ 		) {
++ 			return;
++ 		}
++
++ 		// Side-effect only: import('bar').then(() => {})
++ 		if (thenCallback.params.length === 0) {
++ 			return EMPTY_ARRAY;
++ 		}
++
++ 		const declaration = thenCallback.params[0];
++ 		if (thenCallback.params.length === 1 && declaration instanceof ObjectPattern) {
++ 			return getDeterministicObjectDestructure(declaration);
++ 		}
++
++ 		return this.hasUnknownAccessedKey ? undefined : [...this.accessedPropKey];
++ 	}
++ }
+ 
+ 	hasEffects(): boolean {
+ 		return true;

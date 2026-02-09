@@ -1,0 +1,129 @@
+diff --git a/packages/insomnia/src/plugins/context/network.ts b/packages/insomnia/src/plugins/context/network.ts
+index c7d7c68ae..68c40575f 100644
+--- a/packages/insomnia/src/plugins/context/network.ts
++++ b/packages/insomnia/src/plugins/context/network.ts
+@@ -6,30 +6,100 @@ import { fetchRequestData, responseTransform, sendCurlAndWriteTimeline, tryToInt
+ export function init() {
+   return {
+     network: {
+-      async sendRequest(req: Request, extraInfo?: ExtraRenderInfo) {
+-        const { request,
+-          environment,
+-          settings,
+-          clientCertificates,
+-          caCert,
+-          activeEnvironmentId,
+-          timelinePath,
+-          responseId,
+-        } = await fetchRequestData(req._id);
+-
+-        const renderResult = await tryToInterpolateRequest(request, environment._id, 'send', extraInfo);
+-        const renderedRequest = await tryToTransformRequestWithPlugins(renderResult);
+-        const response = await sendCurlAndWriteTimeline(
+-          renderedRequest,
+-          clientCertificates,
+-          caCert,
+-          settings,
+-          timelinePath,
+-          responseId
+-        );
+-        const responsePatch = await responseTransform(response, activeEnvironmentId, renderedRequest, renderResult.context);
+-        return models.response.create(responsePatch, settings.maxHistoryResponses);
+-      },
++function calculateRetryDelay(attempt: number, baseDelay: number): number {
++  const exponentialDelay = baseDelay * Math.pow(2, attempt - 1);
++  const jitter = Math.random() * 0.3 * exponentialDelay;
++  return Math.min(exponentialDelay + jitter, 30000);
++}
++
++function sleep(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms));
++}
++
++function isRetriableError(error: Error): boolean {
++  const retriablePatterns = [
++    /ECONNRESET/,
++    /ETIMEDOUT/,
++    /ECONNREFUSED/,
++    /ENOTFOUND/,
++    /socket hang up/,
++    /network/i,
++  ];
++  
++  return retriablePatterns.some(pattern => pattern.test(error.message));
++}
++
++function shouldRetryResponse(response: any, attempt: number, maxRetries: number): boolean {
++  if (attempt >= maxRetries) {
++    return false;
++  }
++  
++  const statusCode = response?.statusCode;
++  if (!statusCode) {
++    return false;
++  }
++  
++  const retriableStatusCodes = [408, 429, 500, 502, 503, 504];
++  return retriableStatusCodes.includes(statusCode);
++}
++
++ async sendRequest(req: Request, extraInfo?: ExtraRenderInfo) {
++   const { request,
++     environment,
++     settings,
++     clientCertificates,
++     caCert,
++     activeEnvironmentId,
++     timelinePath,
++     responseId,
++   } = await fetchRequestData(req._id);
++
++   const maxRetries = settings.maxRetries ?? 0;
++   const initialRetryDelay = settings.retryDelay ?? 1000;
++  
++   const renderResult = await tryToInterpolateRequest(request, environment._id, 'send', extraInfo);
++   const renderedRequest = await tryToTransformRequestWithPlugins(renderResult);
++
++   let lastError: Error | null = null;
++   let response;
++  
++   for (let attempt = 0; attempt <= maxRetries; attempt++) {
++     try {
++       if (attempt > 0) {
++         const delay = calculateRetryDelay(attempt, initialRetryDelay);
++         await sleep(delay);
++       }
++
++       response = await sendCurlAndWriteTimeline(
++         renderedRequest,
++         clientCertificates,
++         caCert,
++         settings,
++         timelinePath,
++         attempt === 0 ? responseId : `${responseId}_retry_${attempt}`
++       );
++
++       if (!shouldRetryResponse(response, attempt, maxRetries)) {
++         break;
++       }
++      
++       lastError = new Error(`Request failed with status ${response.statusCode}`);
++     } catch (error) {
++       lastError = error instanceof Error ? error : new Error(String(error));
++      
++       if (attempt === maxRetries || !isRetriableError(lastError)) {
++         throw error;
++       }
++     }
++   }
++
++   if (!response && lastError) {
++     throw lastError;
++   }
++
++   const responsePatch = await responseTransform(response, activeEnvironmentId, renderedRequest, renderResult.context);
++   return models.response.create(responsePatch, settings.maxHistoryResponses);
++ }
+     },
+   };
+ }

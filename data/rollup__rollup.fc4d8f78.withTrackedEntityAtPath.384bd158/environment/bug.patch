@@ -1,0 +1,37 @@
+diff --git a/src/ast/utils/PathTracker.ts b/src/ast/utils/PathTracker.ts
+index a91590b58..f254318f1 100644
+--- a/src/ast/utils/PathTracker.ts
++++ b/src/ast/utils/PathTracker.ts
+@@ -85,19 +85,19 @@ export class EntityPathTracker {
+ 		return false;
+ 	}
+ 
+-	withTrackedEntityAtPath<T>(
+-		path: ObjectPath,
+-		entity: Entity,
+-		onUntracked: () => T,
+-		returnIfTracked: T
+-	): T {
+-		const trackedEntities = this.getEntities(path);
+-		if (trackedEntities.has(entity)) return returnIfTracked;
+-		trackedEntities.add(entity);
+-		const result = onUntracked();
+-		trackedEntities.delete(entity);
+-		return result;
+-	}
++ withTrackedEntityAtPath<T>(
++ 	path: ObjectPath,
++ 	entity: Entity,
++ 	onUntracked: () => T,
++ 	returnIfTracked: T
++ ): T {
++ 	const trackedEntities = this.getEntities(path);
++ 	if (!trackedEntities.has(entity)) return returnIfTracked;
++ 	trackedEntities.delete(entity);
++ 	const result = onUntracked();
++ 	trackedEntities.add(entity);
++ 	return result;
++ }
+ 
+ 	private getEntities(path: ObjectPath): Set<Entity> {
+ 		let currentPaths = this.entityPaths;

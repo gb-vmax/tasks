@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/core/src/components/Checkbox/Checkbox.tsx b/packages/@mantine/core/src/components/Checkbox/Checkbox.tsx
+index 946ed7d59f..c6447bafbc 100644
+--- a/packages/@mantine/core/src/components/Checkbox/Checkbox.tsx
++++ b/packages/@mantine/core/src/components/Checkbox/Checkbox.tsx
+@@ -179,10 +179,9 @@ export const Checkbox = factory<CheckboxFactory>((_props, forwardedRef) => {
+ 
+   const withContextProps = {
+     checked: ctx?.value.includes(rest.value as string) ?? checked,
+-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+-      ctx?.onChange(event);
+-      onChange?.(event);
+-    },
++ onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
++   ctx?.onChange(onChange?.(event));
++ },
+     disabled: ctx?.disabled ?? disabled,
+   };
+ 

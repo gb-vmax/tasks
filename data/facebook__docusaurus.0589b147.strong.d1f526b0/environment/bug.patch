@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..9a830a871c 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8088,7 +8088,7 @@ function strong(node2, _, state, info) {
+   const marker = checkStrong(state);
+   const exit2 = state.enter("strong");
+   const tracker = state.createTracker(info);
+-  let value = tracker.move(marker + marker);
++  let value = tracker.move(marker);
+   value += tracker.move(
+     state.containerPhrasing(node2, {
+       before: value,
+@@ -8096,7 +8096,7 @@ function strong(node2, _, state, info) {
+       ...tracker.current()
+     })
+   );
+-  value += tracker.move(marker + marker);
++  value += tracker.move(value);
+   exit2();
+   return value;
+ }

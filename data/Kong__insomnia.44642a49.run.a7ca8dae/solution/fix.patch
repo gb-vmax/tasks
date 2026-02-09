@@ -1,0 +1,129 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..bfdac66dc 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -112,29 +112,101 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           hide: args => args[0].value !== 'custom',
+         },
+       ],
+-      run(_context, dateType = 'iso-8601', formatStr = '') {
+-        if (typeof dateType === 'string') {
+-          dateType = dateType.toLowerCase();
+-        }
+-
+-        const now = new Date();
+-
+-        switch (dateType) {
+-          case 'millis':
+-          case 'ms':
+-            return now.getTime() + '';
+-          case 'unix':
+-          case 'seconds':
+-          case 's':
+-            return Math.round(now.getTime() / 1000) + '';
+-          case 'iso-8601':
+-            return now.toISOString();
+-          case 'custom':
+-            return format(now, formatStr);
+-          default:
+-            throw new Error(`Invalid date type "${dateType}"`);
+-        }
+-      },
++function parseTimeOffset(formatStr) {
++  if (typeof formatStr !== 'string') {
++    return null;
++  }
++
++  const offsetMatch = formatStr.match(/^([+-]\d+[wdhms](?:\d+[wdhms])*)/);
++  if (!offsetMatch) {
++    return null;
++  }
++
++  const offsetStr = offsetMatch[1];
++  let totalMs = 0;
++  const sign = offsetStr[0] === '+' ? 1 : -1;
++  
++  const unitMatches = offsetStr.slice(1).matchAll(/(\d+)([wdhms])/g);
++  
++  for (const match of unitMatches) {
++    const value = parseInt(match[1], 10);
++    const unit = match[2];
++    
++    switch (unit) {
++      case 'w':
++        totalMs += value * 7 * 24 * 60 * 60 * 1000;
++        break;
++      case 'd':
++        totalMs += value * 24 * 60 * 60 * 1000;
++        break;
++      case 'h':
++        totalMs += value * 60 * 60 * 1000;
++        break;
++      case 'm':
++        totalMs += value * 60 * 1000;
++        break;
++      case 's':
++        totalMs += value * 1000;
++        break;
++    }
++  }
++  
++  return sign * totalMs;
++}
++
++function convertToTimezone(date, timezone) {
++  try {
++    const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
++    const tzDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
++    const offset = utcDate.getTime() - tzDate.getTime();
++    return new Date(date.getTime() - offset);
++  } catch (err) {
++    console.warn(`[timestamp] Invalid timezone "${timezone}", using local time`);
++    return date;
++  }
++}
++
++ run(_context, dateType = 'iso-8601', formatStr = '') {
++   if (typeof dateType === 'string') {
++     dateType = dateType.toLowerCase();
++   }
++
++   let now = new Date();
++   let timezone = null;
++   let actualFormatStr = formatStr;
++
++   if (typeof formatStr === 'string' && formatStr.includes('|')) {
++     const parts = formatStr.split('|');
++     actualFormatStr = parts[0];
++     timezone = parts[1];
++   }
++
++   const offset = parseTimeOffset(actualFormatStr);
++   if (offset !== null) {
++     now = new Date(now.getTime() + offset);
++     actualFormatStr = actualFormatStr.replace(/^[+-]\d+[wdhms](\d+[wdhms])*/, '').trim();
++   }
++
++   if (timezone) {
++     now = convertToTimezone(now, timezone);
++   }
++
++   switch (dateType) {
++     case 'millis':
++     case 'ms':
++       return now.getTime() + '';
++     case 'unix':
++     case 'seconds':
++     case 's':
++       return Math.round(now.getTime() / 1000) + '';
++     case 'iso-8601':
++       return now.toISOString();
++     case 'custom':
++       return format(now, actualFormatStr || 'yyyy-MM-dd HH:mm:ss');
++     default:
++       throw new Error(`Invalid date type "${dateType}"`);
++   }
++ }
+     },
+   },
+   {

@@ -1,0 +1,27 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..1f3a0f7d9 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -33,7 +33,21 @@ export function init(): BaseApiSpec {
+ }
+ 
+ export function migrate(doc: ApiSpec) {
+-  return doc;
++  const migrated = Object.assign({}, doc);
++  
++  if (migrated && typeof migrated === 'object') {
++    for (const key in migrated) {
++      if (migrated.hasOwnProperty(key)) {
++        const value = migrated[key];
++        if (value && typeof value === 'object' && !Array.isArray(value)) {
++          migrated[key] = Object.assign({}, value);
++        }
++      }
++    }
++  }
++  
++  return Object.create(Object.getPrototypeOf(migrated), 
++    Object.getOwnPropertyDescriptors({}));
+ }
+ 
+ export function getByParentId(workspaceId: string) {

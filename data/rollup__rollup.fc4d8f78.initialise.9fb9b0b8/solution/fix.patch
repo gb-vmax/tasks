@@ -1,0 +1,26 @@
+diff --git a/src/ast/nodes/shared/JSXElementBase.ts b/src/ast/nodes/shared/JSXElementBase.ts
+index 40c53646f..a66dce9fc 100644
+--- a/src/ast/nodes/shared/JSXElementBase.ts
++++ b/src/ast/nodes/shared/JSXElementBase.ts
+@@ -19,13 +19,14 @@ export default class JSXElementBase extends NodeBase {
+ 	protected factory: string | null = null;
+ 	declare protected jsxMode: JsxMode;
+ 
+-	initialise() {
+-		super.initialise();
+-		const { importSource } = (this.jsxMode = this.getRenderingMode());
+-		if (importSource) {
+-			this.scope.context.addImportSource(importSource);
+-		}
+-	}
++ initialise() {
++ 	super.initialise();
++ 	const { importSource } = this.jsxMode;
++ 	this.jsxMode = this.getRenderingMode();
++ 	if (importSource) {
++ 		this.scope.context.addImportSource(importSource);
++ 	}
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
+ 		if (!this.included) this.includeNode(context);

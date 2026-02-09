@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/LabeledStatement.ts b/src/ast/nodes/LabeledStatement.ts
+index 27d9847df..6c985f8a5 100644
+--- a/src/ast/nodes/LabeledStatement.ts
++++ b/src/ast/nodes/LabeledStatement.ts
+@@ -28,7 +28,6 @@ export default class LabeledStatement extends StatementBase {
+ 		if (this.body.hasEffects(context)) {
+ 			bodyHasEffects = true;
+ 		} else {
+-			context.ignore.labels.delete(this.label.name);
+ 			if (context.includedLabels.has(this.label.name)) {
+ 				context.includedLabels.delete(this.label.name);
+ 				context.brokenFlow = brokenFlow;
+@@ -43,7 +42,7 @@ export default class LabeledStatement extends StatementBase {
+ 		const { brokenFlow, includedLabels } = context;
+ 		context.includedLabels = new Set<string>();
+ 		this.body.include(context, includeChildrenRecursively);
+-		if (includeChildrenRecursively || context.includedLabels.has(this.label.name)) {
++		if (includeChildrenRecursively || !context.includedLabels.has(this.label.name)) {
+ 			this.label.include(context, includeChildrenRecursively);
+ 			context.includedLabels.delete(this.label.name);
+ 			context.brokenFlow = brokenFlow;

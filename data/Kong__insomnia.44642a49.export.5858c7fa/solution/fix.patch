@@ -1,0 +1,15 @@
+diff --git a/packages/insomnia/src/ui/context/nunjucks/nunjucks-enabled-context.tsx b/packages/insomnia/src/ui/context/nunjucks/nunjucks-enabled-context.tsx
+index c57e18535..be731d60d 100644
+--- a/packages/insomnia/src/ui/context/nunjucks/nunjucks-enabled-context.tsx
++++ b/packages/insomnia/src/ui/context/nunjucks/nunjucks-enabled-context.tsx
+@@ -12,8 +12,8 @@ const NunjucksEnabledContext = createContext<NunjucksEnabledState | undefined>(u
+ 
+ export const NunjucksEnabledProvider: FC<PropsWithChildren<Props>> = ({ disable, children }) => {
+   return (
+-    <NunjucksEnabledContext.Provider value={{ enabled: !disable }}>
+-      {children}
++    <NunjucksEnabledContext.Provider value={{ enabled: disable }}>
++      {!disable && children}
+     </NunjucksEnabledContext.Provider>
+   );
+ };

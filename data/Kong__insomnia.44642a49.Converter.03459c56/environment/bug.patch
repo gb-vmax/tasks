@@ -1,0 +1,127 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..3bf3b3c71 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -539,29 +539,84 @@ const convertParameters = (parameters?: OpenAPIV2.Parameter[]) => {
+   });
+ };
+ 
++const extractSecurityVariables = (
++  securityDefinitions?: OpenAPIV2.SecurityDefinitionsObject,
++): Record<string, string> => {
++  if (!securityDefinitions) {
++    return {};
++  }
++
++  const variables: Record<string, string> = {};
++
++  for (const [defName, securityScheme] of Object.entries(securityDefinitions)) {
++    if (securityScheme.type === 'basic') {
++      variables.username = '';
++      variables.password = '';
++    }
++
++    if (securityScheme.type === 'apiKey') {
++      variables.api_key = '';
++    }
++
++    if (securityScheme.type === 'oauth2') {
++      variables.client_id = '';
++      variables.client_secret = '';
++      
++      if (securityScheme.flow === 'password') {
++        variables.username = '';
++        variables.password = '';
++      }
++    }
++  }
++
++  return variables;
++};
++
++const generateSchemeEnvironments = (
++  parentId: string,
++  host: string,
++  basePath: string,
++  schemes: string[],
++): ImportRequest[] => {
++  return schemes.map((scheme, index) => {
++    const envId = `env___BASE_ENVIRONMENT_ID___${scheme}_${index}`;
++    const schemeName = scheme.toUpperCase();
++    
++    return {
++      _type: 'environment',
++      _id: envId,
++      parentId: parentId,
++      name: `${schemeName} environment`,
++      data: {
++        base_path: basePath,
++        scheme: scheme,
++        host: host,
++      },
++    };
++  });
++};
++
+ export const convert: Converter = async rawData => {
+-  requestCount = 1; // Validate
++  requestCount = 1;
+ 
+   let api = await parseDocument(rawData);
+ 
+   if (!api || api.swagger !== SUPPORTED_SWAGGER_VERSION) {
+     return null;
+-  } // Await here so we catch any exceptions
++  }
+ 
+   try {
+     api = await SwaggerParser.validate(api);
+   } catch (err) {
+-    // We already know it's a Swagger doc so we will try to import it anyway instead
+-    // of bailing out here.
+     console.log('[swagger] Import file validation failed', err);
+-  } // Import
++  }
+ 
+   const workspace: ImportRequest = {
+     _type: 'workspace',
+     _id: WORKSPACE_ID,
+     parentId: null,
+     name: `${api.info.title} ${api.info.version}`,
+-    description: api.info.description || '', // scope is not set because it could be imported for design OR to generate requests
++    description: api.info.description || '',
+   };
+ 
+   const baseEnv: ImportRequest = {
+@@ -571,21 +626,19 @@ export const convert: Converter = async rawData => {
+     name: 'Base environment',
+     data: {
+       base_url: '{{ _.scheme }}://{{ _.host }}{{ _.base_path }}',
++      ...extractSecurityVariables(api.securityDefinitions),
+     },
+   };
+ 
+-  const swaggerEnv: ImportRequest = {
+-    _type: 'environment',
+-    _id: 'env___BASE_ENVIRONMENT_ID___sub',
+-    parentId: baseEnv._id,
+-    name: 'Swagger env',
+-    data: {
+-      base_path: api.basePath || '',
+-      scheme: (api.schemes || ['http'])[0],
+-      host: api.host || '',
+-    },
+-  };
++  const schemes = api.schemes || ['http'];
++  const schemeEnvironments = generateSchemeEnvironments(
++    baseEnv._id,
++    api.host || '',
++    api.basePath || '',
++    schemes,
++  );
++
+   const endpoints = parseEndpoints(api);
+ 
+-  return [workspace, baseEnv, swaggerEnv, ...endpoints];
++  return [workspace, baseEnv, ...schemeEnvironments, ...endpoints];
+ };

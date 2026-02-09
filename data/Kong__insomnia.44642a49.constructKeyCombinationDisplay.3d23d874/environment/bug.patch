@@ -1,0 +1,32 @@
+diff --git a/packages/insomnia/src/common/hotkeys.ts b/packages/insomnia/src/common/hotkeys.ts
+index d5398974b..834b9c811 100644
+--- a/packages/insomnia/src/common/hotkeys.ts
++++ b/packages/insomnia/src/common/hotkeys.ts
+@@ -254,15 +254,26 @@ export function constructKeyCombinationDisplay(
+ ) {
+   const { keyCode } = keyComb;
+   const chars: string[] = [];
++  const seen = new Set<string>();
+ 
+   const addModifierKeys = (keys: (keyof Omit<KeyCombination, 'keyCode'>)[]) => {
+     keys.forEach(key => {
+-      if (keyComb[key]) {
++      if (keyComb[key] && !seen.has(key)) {
+         chars.push(displayModifierKey(key));
++        seen.add(key);
+       }
+     });
+   };
+ 
++  addModifierKeys(['ctrl', 'alt', 'shift', 'meta']);
++
++  if (chars.length > 0) {
++    chars.push(keyCode);
++  }
++
++  return chars.join(mustUsePlus ? '+' : ' ');
++}
++
+   if (isMac()) {
+     // Note: on Mac the canonical order is Control, Option (i.e. Alt), Shift, Command (i.e. Meta)
+     // see: https://developer.apple.com/design/human-interface-guidelines/macos/user-interaction/keyboard

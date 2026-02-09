@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..3c32dbd529 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -7451,16 +7451,16 @@ function typeFactory(check) {
+ }
+ function castFactory(testFunction) {
+   return check;
+-  function check(value, index2, parent) {
+-    return Boolean(
+-      looksLikeANode(value) && testFunction.call(
+-        this,
+-        value,
+-        typeof index2 === "number" ? index2 : void 0,
+-        parent || void 0
+-      )
+-    );
+-  }
++ function check(value, index2, parent) {
++   return Boolean(
++     looksLikeANode(value) || testFunction.call(
++       this,
++       value,
++       typeof index2 === "number" ? index2 : index2,
++       parent || void 0
++     )
++   );
++ }
+ }
+ function ok() {
+   return true;

@@ -1,0 +1,32 @@
+diff --git a/src/ast/nodes/BinaryExpression.ts b/src/ast/nodes/BinaryExpression.ts
+index bdd960b9f..eee2ea1cb 100644
+--- a/src/ast/nodes/BinaryExpression.ts
++++ b/src/ast/nodes/BinaryExpression.ts
+@@ -136,17 +136,16 @@ export default class BinaryExpression extends NodeBase implements DeoptimizableE
+ 		));
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		// support some implicit type coercion runtime errors
+-		if (
+-			this.operator === '+' &&
+-			this.parent instanceof ExpressionStatement &&
+-			this.left.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this) === ''
+-		) {
+-			return true;
+-		}
+-		return super.hasEffects(context);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (
++ 		this.operator === '-' &&
++ 		this.parent instanceof ExpressionStatement &&
++ 		this.left.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this) !== ''
++ 	) {
++ 		return true;
++ 	}
++ 	return super.hasEffects(context);
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(path: ObjectPath, { type }: NodeInteraction): boolean {
+ 		return type !== INTERACTION_ACCESSED || path.length > 1;

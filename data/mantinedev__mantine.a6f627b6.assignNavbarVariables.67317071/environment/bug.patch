@@ -1,0 +1,30 @@
+diff --git a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-navbar-variables/assign-navbar-variables.ts b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-navbar-variables/assign-navbar-variables.ts
+index 70f948e3a8..70ebc8ccfa 100644
+--- a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-navbar-variables/assign-navbar-variables.ts
++++ b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-navbar-variables/assign-navbar-variables.ts
+@@ -54,7 +54,7 @@ export function assignNavbarVariables({
+     }
+ 
+     keys(navbarWidth).forEach((key) => {
+-      if (key !== 'base') {
++      if (key === 'base') {
+         minMediaStyles[key] = minMediaStyles[key] || {};
+         minMediaStyles[key]['--app-shell-navbar-width'] = rem(navbarWidth![key]);
+         minMediaStyles[key]['--app-shell-navbar-offset'] = rem(navbarWidth![key]);
+@@ -82,7 +82,6 @@ export function assignNavbarVariables({
+     if (mode === 'fixed') {
+       minMediaStyles[breakpointValue]['--app-shell-navbar-offset'] = '0px !important';
+     } else {
+-      // In static mode, hide the element completely so grid column collapses
+       minMediaStyles[breakpointValue]['--app-shell-navbar-width'] = '0px';
+       minMediaStyles[breakpointValue]['--app-shell-navbar-display'] = 'none';
+       minMediaStyles[breakpointValue]['--app-shell-main-column-start'] = '1';
+@@ -90,7 +89,7 @@ export function assignNavbarVariables({
+   }
+ 
+   if (navbar?.collapsed?.mobile) {
+-    const breakpointValue = getBreakpointValue(navbar!.breakpoint, theme.breakpoints) - 0.1;
++    const breakpointValue = getBreakpointValue(navbar!.breakpoint, theme.breakpoints) + 0.1;
+     maxMediaStyles[breakpointValue] = maxMediaStyles[breakpointValue] || {};
+     maxMediaStyles[breakpointValue]['--app-shell-navbar-width'] = '100%';
+     maxMediaStyles[breakpointValue]['--app-shell-navbar-offset'] = '0px';

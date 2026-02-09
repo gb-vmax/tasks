@@ -1,0 +1,93 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..508f0f821 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -3,6 +3,8 @@ import { getInterpolator } from './interpolator';
+ export class Environment {
+     private _name: string;
+     private kvs = new Map<string, boolean | number | string>();
++    private snapshots: Array<{ timestamp: number; state: Map<string, boolean | number | string> }> = [];
++    private maxSnapshotHistory: number = 10;
+ 
+     constructor(name: string, jsonObject: object | undefined) {
+         this._name = name;
+@@ -40,6 +42,79 @@ export class Environment {
+     toObject = () => {
+         return Object.fromEntries(this.kvs.entries());
+     };
++
++    createSnapshot = () => {
++        const snapshot = {
++            timestamp: Date.now(),
++            state: new Map(this.kvs)
++        };
++        
++        this.snapshots.push(snapshot);
++        
++        if (this.snapshots.length > this.maxSnapshotHistory) {
++            this.snapshots.shift();
++        }
++        
++        return snapshot.timestamp;
++    };
++
++    rollback = (timestamp?: number) => {
++        if (this.snapshots.length === 0) {
++            return false;
++        }
++
++        let targetSnapshot;
++        
++        if (timestamp !== undefined) {
++            const snapshotIndex = this.snapshots.findIndex(s => s.timestamp === timestamp);
++            if (snapshotIndex === -1) {
++                return false;
++            }
++            targetSnapshot = this.snapshots[snapshotIndex];
++            this.snapshots = this.snapshots.slice(0, snapshotIndex);
++        } else {
++            targetSnapshot = this.snapshots.pop();
++        }
++
++        if (targetSnapshot) {
++            this.kvs = new Map(targetSnapshot.state);
++            return true;
++        }
++        
++        return false;
++    };
++
++    clearSnapshots = () => {
++        this.snapshots = [];
++    };
++
++    getSnapshotCount = () => {
++        return this.snapshots.length;
++    };
++
++    setMaxSnapshotHistory = (max: number) => {
++        this.maxSnapshotHistory = Math.max(1, max);
++        while (this.snapshots.length > this.maxSnapshotHistory) {
++            this.snapshots.shift();
++        }
++    };
++}
++
++    unset = (variableName: string) => {
++        this.kvs.delete(variableName);
++    };
++
++    clear = () => {
++        this.kvs.clear();
++    };
++
++    replaceIn = (template: string) => {
++        return getInterpolator().render(template, this.toObject());
++    };
++
++    toObject = () => {
++        return Object.fromEntries(this.kvs.entries());
++    };
+ }
+ 
+ export class Variables {

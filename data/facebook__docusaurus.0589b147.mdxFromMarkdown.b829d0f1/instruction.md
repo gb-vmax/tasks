@@ -1,23 +1,30 @@
 # Bug Report
 
 ### Describe the bug
-MDX JSX syntax is not being parsed correctly. When using JSX components in MDX files, they're being treated as regular text instead of being recognized as JSX elements.
+
+After a recent update, JSX elements in MDX files are no longer being parsed correctly. The JSX syntax is being treated as plain text instead of being converted to proper JSX components.
 
 ### Reproduction
-```mdx
-import { MyComponent } from './components'
 
+Create an MDX file with JSX components:
+
+```mdx
 # Hello World
 
-<MyComponent prop="value">
-  Some content here
-</MyComponent>
+<CustomComponent prop="value">
+  Content here
+</CustomComponent>
+
+<div className="wrapper">
+  <p>Some text</p>
+</div>
 ```
 
-The JSX component `<MyComponent>` is not being parsed as a JSX element. Instead, it appears to be treated as plain text or markdown content.
+When processing this MDX file, the JSX elements are not being recognized and remain as raw text in the output instead of being transformed into proper component calls.
 
 ### Expected behavior
-JSX components should be properly recognized and parsed in MDX files. The `<MyComponent>` should be handled as a JSX element with its props and children correctly processed.
+
+JSX elements should be properly parsed and transformed. The `<CustomComponent>` and `<div>` tags should be converted to their JSX equivalents in the compiled output.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0

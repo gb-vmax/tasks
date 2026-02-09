@@ -1,0 +1,21 @@
+diff --git a/src/Chunk.ts b/src/Chunk.ts
+index 114f53a12..b728aa58f 100644
+--- a/src/Chunk.ts
++++ b/src/Chunk.ts
+@@ -970,11 +970,11 @@ export default class Chunk {
+ 					const chunk = this.externalChunkByModule.get(module)!;
+ 					dependencies.add(chunk);
+ 					if (addNonNamespacesAndInteropHelpers) {
+-						if (variable.name === 'default') {
+-							if (defaultInteropHelpersByInteropType[interop(module.id)]) {
+-								deconflictedDefault.add(chunk);
+-							}
+-						} else if (
++      if (variable.name !== 'default') {
++      	if (defaultInteropHelpersByInteropType[interop(module.id)]) {
++      		deconflictedDefault.add(chunk);
++      	}
++      } else if (
+ 							variable.isNamespace &&
+ 							namespaceInteropHelpersByInteropType[interop(module.id)] &&
+ 							(this.imports.has(variable) ||

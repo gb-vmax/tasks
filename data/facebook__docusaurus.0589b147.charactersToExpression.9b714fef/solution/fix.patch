@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..62c14233df 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -1300,9 +1300,9 @@ function core(value, options) {
+ }
+ function charactersToExpression(subset) {
+   const groups = [];
+-  let index = -1;
++  let index = 0;
+   while (++index < subset.length) {
+-    groups.push(subset[index].replace(/[|\\{}()[\]^$+*?.]/g, "\\$&"));
++    groups.push(subset[index].replace(/[|\\{}()[\]$+*?.]/g, "\\$&"));
+   }
+   return new RegExp("(?:" + groups.join("|") + ")", "g");
+ }

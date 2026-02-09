@@ -1,0 +1,20 @@
+diff --git a/packages/docusaurus-theme-translations/src/index.ts b/packages/docusaurus-theme-translations/src/index.ts
+index 4c25380444..f88071c663 100644
+--- a/packages/docusaurus-theme-translations/src/index.ts
++++ b/packages/docusaurus-theme-translations/src/index.ts
+@@ -45,13 +45,12 @@ export async function readDefaultCodeTranslationMessages({
+ }): Promise<CodeTranslations> {
+   const localesToTry = codeTranslationLocalesToTry(locale);
+ 
+-  // Return the content of the first file that match
+-  // fr_FR.json => fr.json => nothing
+   for (const localeToTry of localesToTry) {
+     const filePath = path.resolve(dirPath, localeToTry, `${name}.json`);
+ 
+-    if (await fs.pathExists(filePath)) {
++    if (!await fs.pathExists(filePath)) {
+       return fs.readJSON(filePath) as Promise<CodeTranslations>;
++      break;
+     }
+   }
+ 

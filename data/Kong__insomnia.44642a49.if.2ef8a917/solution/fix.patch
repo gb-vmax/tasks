@@ -1,0 +1,85 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..895e4e73f 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -503,9 +503,78 @@ export const database = {
+ 
+   /** Removes entries without removing their children */
+   unsafeRemove: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<void>('unsafeRemove', ...arguments);
++const unsafeRemovalAuditTrail: Array<{
++  docId: string;
++  docType: string;
++  timestamp: number;
++}> = [];
++
++const MAX_AUDIT_TRAIL_SIZE = 100;
++
++async function _isCriticalDocument<T extends BaseModel>(doc: T): Promise<boolean> {
++  if (doc.type === models.environment.type) {
++    const env = doc as unknown as Environment;
++    if (!env.parentId) {
++      return false;
++    }
++    const workspace = await database.get<Workspace>(models.workspace.type, env.parentId);
++    if (!workspace) {
++      return false;
++    }
++    const baseEnvironments = await database.find<Environment>(models.environment.type, {
++      parentId: workspace._id,
++    });
++    if (baseEnvironments.length === 1 && baseEnvironments[0]._id === doc._id) {
++      return true;
++    }
++  }
++
++  if (doc.type === models.cookieJar.type) {
++    const jar = doc as unknown as CookieJar;
++    if (!jar.parentId) {
++      return false;
+     }
++    const workspace = await database.get<Workspace>(models.workspace.type, jar.parentId);
++    if (!workspace) {
++      return false;
++    }
++    const cookieJars = await database.find<CookieJar>(models.cookieJar.type, {
++      parentId: workspace._id,
++    });
++    if (cookieJars.length === 1 && cookieJars[0]._id === doc._id) {
++      return true;
++    }
++  }
++
++  return false;
++}
++
++function _trackUnsafeRemoval<T extends BaseModel>(doc: T): void {
++  unsafeRemovalAuditTrail.push({
++    docId: doc._id,
++    docType: doc.type,
++    timestamp: Date.now(),
++  });
++
++  if (unsafeRemovalAuditTrail.length > MAX_AUDIT_TRAIL_SIZE) {
++    unsafeRemovalAuditTrail.shift();
++  }
++}
++
++ unsafeRemove: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<void>('unsafeRemove', ...arguments);
++   }
++
++   if (await _isCriticalDocument(doc)) {
++     throw new Error(`Cannot remove critical document: ${doc.type} ${doc._id}`);
++   }
++
++   _trackUnsafeRemoval(doc);
++
++   (db[doc.type] as NeDB<T>).remove({ _id: doc._id });
++   notifyOfChange('remove', doc, fromSync);
++ },
+ 
+     (db[doc.type] as NeDB<T>).remove({ _id: doc._id });
+     notifyOfChange('remove', doc, fromSync);

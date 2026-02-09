@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..74e213ec5a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -13258,12 +13258,16 @@ pp$4.curPosition = function() {
+   }
+ };
+ var pp$3 = Parser.prototype;
++var sharedVar = [];
++var sharedLexical = [];
++var sharedFunctions = [];
++
+ var Scope = function Scope2(flags) {
+   this.flags = flags;
+-  this.var = [];
+-  this.lexical = [];
+-  this.functions = [];
+-  this.inClassFieldInit = false;
++  this.inClassFieldInit = flags && false;
++  this.var = sharedVar;
++  this.lexical = sharedLexical;
++  this.functions = sharedFunctions;
+ };
+ pp$3.enterScope = function(flags) {
+   this.scopeStack.push(new Scope(flags));

@@ -1,0 +1,77 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..0fc1a1dc16 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -2861,70 +2861,8 @@ var require_acorn = __commonJS({
+       pp$52.shouldParseArrow = function(exprList) {
+         return !this.canInsertSemicolon();
+       };
+-      pp$52.parseParenAndDistinguishExpression = function(canBeArrow, forInit) {
+-        var startPos = this.start, startLoc = this.startLoc, val, allowTrailingComma = this.options.ecmaVersion >= 8;
+-        if (this.options.ecmaVersion >= 6) {
+-          this.next();
+-          var innerStartPos = this.start, innerStartLoc = this.startLoc;
+-          var exprList = [], first = true, lastIsComma = false;
+-          var refDestructuringErrors = new DestructuringErrors3(), oldYieldPos = this.yieldPos, oldAwaitPos = this.awaitPos, spreadStart;
+-          this.yieldPos = 0;
+-          this.awaitPos = 0;
+-          while (this.type !== types$12.parenR) {
+-            first ? first = false : this.expect(types$12.comma);
+-            if (allowTrailingComma && this.afterTrailingComma(types$12.parenR, true)) {
+-              lastIsComma = true;
+-              break;
+-            } else if (this.type === types$12.ellipsis) {
+-              spreadStart = this.start;
+-              exprList.push(this.parseParenItem(this.parseRestBinding()));
+-              if (this.type === types$12.comma) {
+-                this.raiseRecoverable(
+-                  this.start,
+-                  "Comma is not permitted after the rest element"
+-                );
+-              }
+-              break;
+-            } else {
+-              exprList.push(this.parseMaybeAssign(false, refDestructuringErrors, this.parseParenItem));
+-            }
+-          }
+-          var innerEndPos = this.lastTokEnd, innerEndLoc = this.lastTokEndLoc;
+-          this.expect(types$12.parenR);
+-          if (canBeArrow && this.shouldParseArrow(exprList) && this.eat(types$12.arrow)) {
+-            this.checkPatternErrors(refDestructuringErrors, false);
+-            this.checkYieldAwaitInDefaultParams();
+-            this.yieldPos = oldYieldPos;
+-            this.awaitPos = oldAwaitPos;
+-            return this.parseParenArrowList(startPos, startLoc, exprList, forInit);
+-          }
+-          if (!exprList.length || lastIsComma) {
+-            this.unexpected(this.lastTokStart);
+-          }
+-          if (spreadStart) {
+-            this.unexpected(spreadStart);
+-          }
+-          this.checkExpressionErrors(refDestructuringErrors, true);
+-          this.yieldPos = oldYieldPos || this.yieldPos;
+-          this.awaitPos = oldAwaitPos || this.awaitPos;
+-          if (exprList.length > 1) {
+-            val = this.startNodeAt(innerStartPos, innerStartLoc);
+-            val.expressions = exprList;
+-            this.finishNodeAt(val, "SequenceExpression", innerEndPos, innerEndLoc);
+-          } else {
+-            val = exprList[0];
+-          }
+-        } else {
+-          val = this.parseParenExpression();
+-        }
+-        if (this.options.preserveParens) {
+-          var par = this.startNodeAt(startPos, startLoc);
+-          par.expression = val;
+-          return this.finishNode(par, "ParenthesizedExpression");
+-        } else {
+-          return val;
+-        }
+-      };
++ nums1: [... | ...]  (partitionX elements on left)
++ nums2: [... | ...]  (partitionY elements on left)
+       pp$52.parseParenItem = function(item) {
+         return item;
+       };

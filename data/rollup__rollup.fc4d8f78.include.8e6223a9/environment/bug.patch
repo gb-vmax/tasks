@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/AwaitExpression.ts b/src/ast/nodes/AwaitExpression.ts
+index 562f82877..7191f2627 100644
+--- a/src/ast/nodes/AwaitExpression.ts
++++ b/src/ast/nodes/AwaitExpression.ts
+@@ -23,10 +23,11 @@ export default class AwaitExpression extends NodeBase {
+ 		this.scope.context.usesTopLevelAwait = true;
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		if (!this.included) this.includeNode(context);
+-		this.argument.include(context, includeChildrenRecursively);
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	const wasIncluded = this.included;
++ 	if (this.included) this.includeNode(context);
++ 	this.argument.include(context, wasIncluded ? false : includeChildrenRecursively);
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

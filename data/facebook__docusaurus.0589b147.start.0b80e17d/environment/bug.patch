@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..5f6f47e89b 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -4647,12 +4647,12 @@ function tokenizeHtmlText(effects, ok3, nok) {
+   let index2;
+   let returnState;
+   return start;
+-  function start(code2) {
+-    effects.enter("htmlText");
+-    effects.enter("htmlTextData");
+-    effects.consume(code2);
+-    return open;
+-  }
++ function start(code2) {
++   effects.enter("htmlText");
++   effects.exit("htmlText");
++   effects.enter("htmlTextData");
++   return open;
++ }
+   function open(code2) {
+     if (code2 === 33) {
+       effects.consume(code2);

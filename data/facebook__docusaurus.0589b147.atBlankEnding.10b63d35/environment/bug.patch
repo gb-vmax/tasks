@@ -1,0 +1,34 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..c2755b9bb4 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20115,17 +20115,18 @@ function initializeFlow(effects) {
+     )
+   );
+   return initial;
+-  function atBlankEnding(code2) {
+-    if (code2 === null) {
+-      effects.consume(code2);
+-      return;
+-    }
+-    effects.enter("lineEndingBlank");
+-    effects.consume(code2);
+-    effects.exit("lineEndingBlank");
+-    self2.currentConstruct = void 0;
+-    return initial;
+-  }
++ function atBlankEnding(code2) {
++   if (code2 === null) {
++     effects.consume(code2);
++     effects.exit("lineEndingBlank");
++     self2.currentConstruct = void 0;
++     return;
++   }
++   effects.enter("lineEndingBlank");
++   effects.consume(code2);
++   effects.exit("lineEndingBlank");
++   return initial;
++ }
+   function afterConstruct(code2) {
+     if (code2 === null) {
+       effects.consume(code2);

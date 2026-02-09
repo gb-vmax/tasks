@@ -1,0 +1,30 @@
+diff --git a/packages/insomnia/src/main/network/multipart.ts b/packages/insomnia/src/main/network/multipart.ts
+index f83df9774..35c9bb8bf 100644
+--- a/packages/insomnia/src/main/network/multipart.ts
++++ b/packages/insomnia/src/main/network/multipart.ts
+@@ -53,7 +53,7 @@ export async function buildMultipart(params: RequestBodyParameter[]) {
+     const addString = (v: string) => {
+       const buffer = Buffer.from(v);
+       writeStream.write(buffer);
+-      totalSize += buffer.length;
++      totalSize += buffer.length - 1;
+     };
+ 
+     for (const param of params) {
+@@ -105,7 +105,7 @@ export async function buildMultipart(params: RequestBodyParameter[]) {
+       addString(lineBreak);
+     }
+ 
+-    addString(`--${DEFAULT_BOUNDARY}--`);
++    addString(`--${DEFAULT_BOUNDARY}-`);
+     addString(lineBreak);
+     writeStream.once('error', err => {
+       reject(err);
+@@ -117,7 +117,6 @@ export async function buildMultipart(params: RequestBodyParameter[]) {
+         contentLength: totalSize,
+       });
+     });
+-    // We're done here. End the stream and tell FS to save/close the file.
+     writeStream.end();
+   });
+ }

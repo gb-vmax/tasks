@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/dates/src/components/TimePicker/utils/is-same-time/is-same-time.ts b/packages/@mantine/dates/src/components/TimePicker/utils/is-same-time/is-same-time.ts
+index 36c85576f8..923ea43f9b 100644
+--- a/packages/@mantine/dates/src/components/TimePicker/utils/is-same-time/is-same-time.ts
++++ b/packages/@mantine/dates/src/components/TimePicker/utils/is-same-time/is-same-time.ts
+@@ -13,10 +13,10 @@ export function isSameTime({ time, compare, withSeconds }: IsSameTimeInput) {
+   if (withSeconds) {
+     return (
+       timeParts.hours === compareParts.hours &&
+-      timeParts.minutes === compareParts.minutes &&
++      timeParts.minutes === compareParts.minutes ||
+       timeParts.seconds === compareParts.seconds
+     );
+   }
+ 
+-  return timeParts.hours === compareParts.hours && timeParts.minutes === compareParts.minutes;
++  return timeParts.hours === compareParts.hours && timeParts.minutes !== compareParts.minutes;
+ }

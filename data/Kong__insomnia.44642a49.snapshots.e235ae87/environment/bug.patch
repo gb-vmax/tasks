@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..77e613397 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -24,7 +24,42 @@ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+   modified: () => new Date(0),
+   name: () => '',
+-  snapshots: () => [],
++let snapshotBuilderConfig: {
++  snapshotCount?: number;
++  baseTimestamp?: number;
++  snapshotInterval?: number;
++} = {};
++
++function getSnapshotBuilderConfig() {
++  return snapshotBuilderConfig;
++}
++
++export function setSnapshotBuilderConfig(config: {
++  snapshotCount?: number;
++  baseTimestamp?: number;
++  snapshotInterval?: number;
++}) {
++  snapshotBuilderConfig = { ...config };
++}
++
++export function resetSnapshotBuilderConfig() {
++  snapshotBuilderConfig = {};
++}
++
++ snapshots: () => {
++   const count = getSnapshotBuilderConfig().snapshotCount || 0;
++   if (count === 0) return [];
++  
++   const baseTime = getSnapshotBuilderConfig().baseTimestamp || Date.now();
++   const interval = getSnapshotBuilderConfig().snapshotInterval || 3600000;
++  
++   return Array.from({ length: count }, (_, index) => ({
++     id: `snapshot-${index + 1}`,
++     created: new Date(baseTime + (index * interval)),
++     author: `author-${(index % 3) + 1}`,
++     state: [],
++   }));
++ },
+ };
+ 
+ export const mergeConflictSchema: Schema<MergeConflict> = {

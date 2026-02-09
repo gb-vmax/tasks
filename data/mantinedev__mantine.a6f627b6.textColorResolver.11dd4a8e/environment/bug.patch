@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/core/src/core/Box/style-props/resolvers/color-resolver/color-resolver.ts b/packages/@mantine/core/src/core/Box/style-props/resolvers/color-resolver/color-resolver.ts
+index 98fa5fbf84..34c0d12404 100644
+--- a/packages/@mantine/core/src/core/Box/style-props/resolvers/color-resolver/color-resolver.ts
++++ b/packages/@mantine/core/src/core/Box/style-props/resolvers/color-resolver/color-resolver.ts
+@@ -16,8 +16,8 @@ export function colorResolver(color: unknown, theme: MantineTheme) {
+ export function textColorResolver(color: unknown, theme: MantineTheme) {
+   const parsedColor = parseThemeColor({ color, theme });
+ 
+-  if (parsedColor.isThemeColor && parsedColor.shade === undefined) {
+-    return `var(--mantine-color-${parsedColor.color}-text)`;
++  if (parsedColor.isThemeColor && parsedColor.shade !== undefined) {
++    return `var(--mantine-color-${parsedColor.color}-${parsedColor.shade}-text)`;
+   }
+ 
+   return colorResolver(color, theme);

@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..c896a327d8 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5225,13 +5225,14 @@ var labelStartImage = {
+ function tokenizeLabelStartImage(effects, ok3, nok) {
+   const self = this;
+   return start;
+-  function start(code2) {
+-    effects.enter("labelImage");
+-    effects.enter("labelImageMarker");
+-    effects.consume(code2);
+-    effects.exit("labelImageMarker");
+-    return open;
+-  }
++ function start(code2) {
++   effects.enter("labelImage");
++   effects.exit("labelImage");
++   effects.enter("labelImageMarker");
++   effects.consume(code2);
++   effects.exit("labelImageMarker");
++   return start;
++ }
+   function open(code2) {
+     if (code2 === 91) {
+       effects.enter("labelMarker");

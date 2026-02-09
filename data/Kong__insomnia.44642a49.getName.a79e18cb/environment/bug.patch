@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..8d0317166 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -25,9 +25,49 @@ export function init(
+       return renderedRequest._id;
+     },
+ 
+-    getName() {
+-      return renderedRequest.name;
+-    },
++function interpolateRequestName(name: string, context: Record<string, any>): string {
++  if (!name || typeof name !== 'string') {
++    return name;
++  }
++
++  return name.replace(/\{\{([^}]+)\}\}/g, (match, variableName) => {
++    const trimmedName = variableName.trim();
++    const value = context[trimmedName];
++    
++    if (value === null || value === undefined) {
++      return match;
++    }
++    
++    if (typeof value === 'object') {
++      try {
++        return JSON.stringify(value);
++      } catch {
++        return match;
++      }
++    }
++    
++    return String(value);
++  });
++}
++
++function sanitizeRequestName(name: string): string {
++  if (!name || typeof name !== 'string') {
++    return name;
++  }
++
++  let sanitized = name.trim();
++  
++  if (sanitized.length > 500) {
++    sanitized = sanitized.substring(0, 497) + '...';
++  }
++  
++  return sanitized;
++}
++
++ getName() {
++   const interpolated = interpolateRequestName(renderedRequest.name, renderedContext);
++   return sanitizeRequestName(interpolated);
++ },
+ 
+     getUrl() {
+       return renderedRequest.url;

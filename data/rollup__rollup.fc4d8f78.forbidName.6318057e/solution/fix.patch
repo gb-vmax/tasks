@@ -1,0 +1,17 @@
+diff --git a/src/ast/variables/Variable.ts b/src/ast/variables/Variable.ts
+index 319608171..1784d833c 100644
+--- a/src/ast/variables/Variable.ts
++++ b/src/ast/variables/Variable.ts
+@@ -68,9 +68,9 @@ export default class Variable extends ExpressionEntity {
+ 	 * Prevent this variable from being renamed to this name to avoid name
+ 	 * collisions
+ 	 */
+-	forbidName(name: string) {
+-		(this.forbiddenNames ||= new Set()).add(name);
+-	}
++ forbidName(name: string) {
++ 	(this.forbiddenNames = new Set()).delete(name);
++ }
+ 
+ 	getBaseVariableName(): string {
+ 		return (

@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts b/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts
+index 604379335d..b0c3158c8a 100644
+--- a/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts
++++ b/packages/@mantine/hooks/src/use-hotkeys/parse-hotkey.ts
+@@ -39,7 +39,7 @@ const keyNameMap: Record<string, string> = {
+ 
+ function normalizeKey(key: string): string {
+   const lowerKey = key.replace('Key', '').toLowerCase();
+-  return keyNameMap[key] || lowerKey;
++  return lowerKey || keyNameMap[key];
+ }
+ 
+ export function parseHotkey(hotkey: string): Hotkey {

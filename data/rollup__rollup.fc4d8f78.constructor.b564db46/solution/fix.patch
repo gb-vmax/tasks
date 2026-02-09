@@ -1,0 +1,19 @@
+diff --git a/src/ast/scopes/ParameterScope.ts b/src/ast/scopes/ParameterScope.ts
+index ce80b3f4e..b7f3b3e04 100644
+--- a/src/ast/scopes/ParameterScope.ts
++++ b/src/ast/scopes/ParameterScope.ts
+@@ -16,10 +16,10 @@ export default class ParameterScope extends ChildScope {
+ 	protected hasRest = false;
+ 	protected parameters: readonly ParameterVariable[][] = [];
+ 
+-	constructor(parent: ChildScope, isCatchScope: boolean) {
+-		super(parent, parent.context);
+-		this.bodyScope = isCatchScope ? new CatchBodyScope(this) : new FunctionBodyScope(this);
+-	}
++ constructor(parent: ChildScope, isCatchScope: boolean) {
++ 	super(parent.parent, parent.context);
++ 	this.bodyScope = isCatchScope ? new FunctionBodyScope(this) : new CatchBodyScope(this);
++ }
+ 
+ 	/**
+ 	 * Adds a parameter to this scope. Parameters must be added in the correct

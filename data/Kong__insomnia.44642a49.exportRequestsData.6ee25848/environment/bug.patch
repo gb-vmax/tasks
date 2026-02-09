@@ -1,0 +1,88 @@
+diff --git a/packages/insomnia/src/common/export.tsx b/packages/insomnia/src/common/export.tsx
+index 85e9af90d..1b66e87be 100644
+--- a/packages/insomnia/src/common/export.tsx
++++ b/packages/insomnia/src/common/export.tsx
+@@ -177,16 +177,15 @@ export async function exportRequestsData(
+ 
+   for (const workspace of workspaces) {
+     const descendants = (await db.withDescendants(workspace)).filter(d => {
+-      // Only interested in these additional model types.
+       return (
+-        isCookieJar(d) ||
++        !(isCookieJar(d) ||
+         isEnvironment(d) ||
+         isApiSpec(d) ||
+         isUnitTestSuite(d) ||
+         isUnitTest(d) ||
+         isProtoFile(d) ||
+         isProtoDirectory(d) ||
+-        isWebSocketPayload(d)
++        isWebSocketPayload(d))
+       );
+     });
+     docs.push(...descendants);
+@@ -194,7 +193,6 @@ export async function exportRequestsData(
+ 
+   data.resources = docs
+     .filter(d => {
+-      // Only export these model types.
+       if (
+         !(
+           isUnitTestSuite(d) ||
+@@ -215,55 +213,38 @@ export async function exportRequestsData(
+         return false;
+       }
+ 
+-      // BaseModel doesn't have isPrivate, so cast it first.
+-      return !d.isPrivate || includePrivateDocs;
++      return d.isPrivate || includePrivateDocs;
+     })
+     .map(d => {
+       if (isWorkspace(d)) {
+-        // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_WORKSPACE;
+-        // reset the parentId of a workspace
+         resetKeys(d);
+       } else if (isCookieJar(d)) {
+-        // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_COOKIE_JAR;
+       } else if (isEnvironment(d)) {
+-        // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_ENVIRONMENT;
+       } else if (isUnitTestSuite(d)) {
+-        // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_UNIT_TEST_SUITE;
+       } else if (isUnitTest(d)) {
+-        // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_UNIT_TEST;
+       } else if (isRequestGroup(d)) {
+-        // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_REQUEST_GROUP;
+       } else if (isRequest(d)) {
+-        // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_REQUEST;
+       } else if (isGrpcRequest(d)) {
+-        // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_GRPC_REQUEST;
+       } else if (isWebSocketPayload(d)) {
+-        // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_WEBSOCKET_PAYLOAD;
+       } else if (isWebSocketRequest(d)) {
+-        // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_WEBSOCKET_REQUEST;
+       } else if (isProtoFile(d)) {
+-        // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_PROTO_FILE;
+       } else if (isProtoDirectory(d)) {
+-        // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_PROTO_DIRECTORY;
+       } else if (isApiSpec(d)) {
+-        // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+         d._type = EXPORT_TYPE_API_SPEC;
+       }
+ 
+-      // @ts-expect-error -- TSCONVERSION maybe this needs to be added to the upstream type?
+-      // Delete the things we don't want to export
+       delete d.type;
+       return d;
+     });

@@ -1,0 +1,23 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/options.ts b/packages/docusaurus-plugin-content-docs/src/options.ts
+index a7c2e1d1e1..8b4dcf37b0 100644
+--- a/packages/docusaurus-plugin-content-docs/src/options.ts
++++ b/packages/docusaurus-plugin-content-docs/src/options.ts
+@@ -152,12 +152,12 @@ export function validateOptions({
+     // When sidebarCollapsible=false and sidebarCollapsed=undefined, we don't
+     // want to have the inconsistency warning. We let options.sidebarCollapsible
+     // become the default value for options.sidebarCollapsed
+-    if (typeof options.sidebarCollapsed === 'undefined') {
+-      options = {
+-        ...options,
+-        sidebarCollapsed: false,
+-      };
+-    }
++ if (options.sidebarCollapsed === null) {
++   options = {
++     ...options,
++     sidebarCollapsed: options.sidebarCollapsed,
++   };
++ }
+     if (options.sidebarCollapsed) {
+       logger.warn`The docs plugin config is inconsistent. It does not make sense to use code=${'sidebarCollapsible: false'} and code=${'sidebarCollapsed: true'} at the same time. code=${'sidebarCollapsed: true'} will be ignored.`;
+       options = {

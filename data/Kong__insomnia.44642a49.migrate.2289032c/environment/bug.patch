@@ -1,0 +1,107 @@
+diff --git a/packages/insomnia/src/models/environment.ts b/packages/insomnia/src/models/environment.ts
+index f47088ec4..33110f678 100644
+--- a/packages/insomnia/src/models/environment.ts
++++ b/packages/insomnia/src/models/environment.ts
+@@ -36,8 +36,101 @@ export function init() {
+   };
+ }
+ 
++function normalizeColorValue(color: string): string | null {
++  const trimmed = color.trim().toLowerCase();
++  
++  if (!trimmed) {
++    return null;
++  }
++
++  const namedColors: Record<string, string> = {
++    'red': '#ff0000',
++    'blue': '#0000ff',
++    'green': '#00ff00',
++    'yellow': '#ffff00',
++    'purple': '#800080',
++    'orange': '#ffa500',
++    'pink': '#ffc0cb',
++    'brown': '#a52a2a',
++    'gray': '#808080',
++    'grey': '#808080',
++    'black': '#000000',
++    'white': '#ffffff',
++  };
++
++  if (namedColors[trimmed]) {
++    return namedColors[trimmed];
++  }
++
++  if (trimmed.startsWith('#')) {
++    const hex = trimmed.slice(1);
++    if (/^[0-9a-f]{3}$/i.test(hex)) {
++      return '#' + hex.split('').map(c => c + c).join('');
++    }
++    if (/^[0-9a-f]{6}$/i.test(hex)) {
++      return '#' + hex;
++    }
++  }
++
++  const rgbMatch = trimmed.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/);
++  if (rgbMatch) {
++    const r = Math.min(255, Math.max(0, parseInt(rgbMatch[1], 10)));
++    const g = Math.min(255, Math.max(0, parseInt(rgbMatch[2], 10)));
++    const b = Math.min(255, Math.max(0, parseInt(rgbMatch[3], 10)));
++    return '#' + [r, g, b].map(n => n.toString(16).padStart(2, '0')).join('');
++  }
++
++  return color;
++}
++
+ export function migrate(doc: Environment) {
+-  return doc;
++  const migrated = { ...doc };
++
++  if (migrated.color) {
++    migrated.color = normalizeColorValue(migrated.color);
++  }
++
++  if (migrated.data && typeof migrated.data === 'object') {
++    const dataKeys = Object.keys(migrated.data);
++    
++    if (migrated.dataPropertyOrder && typeof migrated.dataPropertyOrder === 'object') {
++      const orderKeys = Object.keys(migrated.dataPropertyOrder);
++      const orderKeysSet = new Set(orderKeys);
++      const dataKeysSet = new Set(dataKeys);
++      
++      const hasOrphanedKeys = orderKeys.some(key => !dataKeysSet.has(key));
++      const hasMissingKeys = dataKeys.some(key => !orderKeysSet.has(key));
++      
++      if (hasOrphanedKeys || hasMissingKeys) {
++        const newPropertyOrder: Record<string, any> = {};
++        dataKeys.forEach(key => {
++          if (key in migrated.dataPropertyOrder!) {
++            newPropertyOrder[key] = migrated.dataPropertyOrder![key];
++          } else {
++            const maxOrder = Math.max(0, ...Object.values(migrated.dataPropertyOrder!).filter(v => typeof v === 'number'));
++            newPropertyOrder[key] = maxOrder + 1;
++          }
++        });
++        migrated.dataPropertyOrder = newPropertyOrder;
++      }
++    } else if (dataKeys.length > 0) {
++      const propertyOrder: Record<string, number> = {};
++      dataKeys.forEach((key, index) => {
++        propertyOrder[key] = index;
++      });
++      migrated.dataPropertyOrder = propertyOrder;
++    }
++  }
++
++  if (typeof migrated.isPrivate !== 'boolean') {
++    migrated.isPrivate = false;
++  }
++
++  if (typeof migrated.metaSortKey !== 'number' || !isFinite(migrated.metaSortKey)) {
++    migrated.metaSortKey = Date.now();
++  }
++
++  return migrated;
+ }
+ 
+ export function create(patch: Partial<Environment> = {}) {

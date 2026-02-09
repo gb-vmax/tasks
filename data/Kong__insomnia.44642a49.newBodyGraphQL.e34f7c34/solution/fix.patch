@@ -1,0 +1,67 @@
+diff --git a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+index 46a3f366e..800ff0106 100644
+--- a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
++++ b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+@@ -216,13 +216,59 @@ export const ContentTypeDropdown: FC = () => {
+   );
+ };
+ 
++function normalizeGraphQLBody(parsed: any): any {
++  const normalized = { ...parsed };
++  
++  if ('variables' in normalized && typeof normalized.variables === 'string') {
++    try {
++      normalized.variables = JSON.parse(normalized.variables);
++    } catch {
++      // Keep as string if parsing fails
++    }
++  }
++  
++  if ('query' in normalized || 'variables' in normalized || 'operationName' in normalized) {
++    const result: any = {};
++    
++    if ('query' in normalized) {
++      result.query = normalized.query;
++    }
++    
++    if ('variables' in normalized) {
++      result.variables = normalized.variables;
++    }
++    
++    if ('operationName' in normalized) {
++      result.operationName = normalized.operationName;
++    }
++    
++    for (const key in normalized) {
++      if (key !== 'query' && key !== 'variables' && key !== 'operationName') {
++        result[key] = normalized[key];
++      }
++    }
++    
++    return result;
++  }
++  
++  return normalized;
++}
++
+ export function newBodyGraphQL(rawBody: string): RequestBody {
+   try {
+-    // Only strip the newlines if rawBody is a parsable JSON
+-    JSON.parse(rawBody);
++    const parsed = JSON.parse(rawBody);
++    
++    let processedBody = parsed;
++    
++    if (typeof parsed === 'object' && parsed !== null) {
++      processedBody = normalizeGraphQLBody(parsed);
++    }
++    
++    const stringified = JSON.stringify(processedBody);
++    
+     return {
+       mimeType: CONTENT_TYPE_GRAPHQL,
+-      text: rawBody.replace(/\\\\n/g, ''),
++      text: stringified.replace(/\\\\n/g, ''),
+     };
+   } catch (error) {
+     if (error instanceof SyntaxError) {

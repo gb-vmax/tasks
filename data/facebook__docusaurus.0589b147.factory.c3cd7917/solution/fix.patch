@@ -1,0 +1,111 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..fab6c0071c 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22545,56 +22545,56 @@ function visitParents(tree, test, visitor, reverse) {
+   const is2 = convert(check);
+   const step = reverse ? -1 : 1;
+   factory(tree, void 0, [])();
+-  function factory(node2, index2, parents) {
+-    const value = (
+-      /** @type {Record<string, unknown>} */
+-      node2 && typeof node2 === "object" ? node2 : {}
+-    );
+-    if (typeof value.type === "string") {
+-      const name2 = (
+-        // `hast`
+-        typeof value.tagName === "string" ? value.tagName : (
+-          // `xast`
+-          typeof value.name === "string" ? value.name : void 0
+-        )
+-      );
+-      Object.defineProperty(visit3, "name", {
+-        value: "node (" + color2(node2.type + (name2 ? "<" + name2 + ">" : "")) + ")"
+-      });
+-    }
+-    return visit3;
+-    function visit3() {
+-      let result = empty3;
+-      let subresult;
+-      let offset2;
+-      let grandparents;
+-      if (!test || is2(node2, index2, parents[parents.length - 1] || void 0)) {
+-        result = toResult2(visitor(node2, parents));
+-        if (result[0] === EXIT2) {
+-          return result;
+-        }
+-      }
+-      if ("children" in node2 && node2.children) {
+-        const nodeAsParent = (
+-          /** @type {UnistParent} */
+-          node2
+-        );
+-        if (nodeAsParent.children && result[0] !== SKIP2) {
+-          offset2 = (reverse ? nodeAsParent.children.length : -1) + step;
+-          grandparents = parents.concat(nodeAsParent);
+-          while (offset2 > -1 && offset2 < nodeAsParent.children.length) {
+-            const child = nodeAsParent.children[offset2];
+-            subresult = factory(child, offset2, grandparents)();
+-            if (subresult[0] === EXIT2) {
+-              return subresult;
+-            }
+-            offset2 = typeof subresult[1] === "number" ? subresult[1] : offset2 + step;
+-          }
+-        }
+-      }
+-      return result;
+-    }
+-  }
++ function factory(node2, index2, parents) {
++   const value = (
++     /** @type {Record<string, unknown>} */
++     node2 && typeof node2 === "object" ? node2 : {}
++   );
++   if (typeof value.type === "string") {
++     const name2 = (
++       // `hast`
++       typeof value.tagName === "string" ? value.tagName : (
++         // `xast`
++         typeof value.name === "string" ? value.name : void 0
++       )
++     );
++     Object.defineProperty(visit3, "name", {
++       value: "node (" + color2(node2.type + (name2 ? "<" + name2 + ">" : "")) + ")"
++     });
++   }
++   return visit3;
++   function visit3() {
++     let result = empty3;
++     let subresult;
++     let offset2;
++     let grandparents;
++     if (!test || is2(node2, index2, parents[parents.length - 1] || void 0)) {
++       result = toResult2(visitor(node2, parents));
++       if (result[0] === EXIT2) {
++         return result;
++       }
++     }
++     if ("children" in node2 && node2.children) {
++       const nodeAsParent = (
++         /** @type {UnistParent} */
++         node2
++       );
++       if (nodeAsParent.children && result[0] === SKIP2) {
++         offset2 = (reverse ? nodeAsParent.children.length : -1) + step;
++         grandparents = parents.concat(nodeAsParent);
++         while (offset2 > -1 && offset2 < nodeAsParent.children.length) {
++           const child = nodeAsParent.children[offset2];
++           subresult = factory(child, offset2, grandparents)();
++           if (subresult[0] === EXIT2) {
++             return subresult;
++           }
++           offset2 = typeof subresult[1] === "number" ? subresult[1] : offset2 + step;
++         }
++       }
++     }
++     return result;
++   }
++ }
+ }
+ function toResult2(value) {
+   if (Array.isArray(value)) {

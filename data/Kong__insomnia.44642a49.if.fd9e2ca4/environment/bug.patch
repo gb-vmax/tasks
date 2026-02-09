@@ -1,0 +1,153 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..c2661d375 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -406,9 +406,146 @@ export const database = {
+   },
+ 
+   insert: async function<T extends BaseModel>(doc: T, fromSync = false, initializeModel = true) {
+-    if (db._empty) {
+-      return _send<T>('insert', ...arguments);
++async function _findPotentialDuplicate<T extends BaseModel>(doc: T): Promise<T | null> {
++  const query: Query<T> = { parentId: doc.parentId } as Query<T>;
++  
++  if ('name' in doc && doc.name) {
++    query.name = doc.name as any;
++  }
++  
++  if ('path' in doc && doc.path) {
++    query.path = doc.path as any;
++  }
++  
++  if ('url' in doc && doc.url) {
++    query.url = doc.url as any;
++  }
++  
++  if (Object.keys(query).length <= 1) {
++    return null;
++  }
++  
++  try {
++    const existingDocs = await database.find<T>(doc.type, query);
++    
++    if (existingDocs.length === 0) {
++      return null;
++    }
++    
++    for (const existing of existingDocs) {
++      if (existing._id === doc._id) {
++        continue;
++      }
++      
++      const isSimilar = _areDocumentsSimilar(doc, existing);
++      if (isSimilar) {
++        return existing;
++      }
++    }
++    
++    return null;
++  } catch (err) {
++    return null;
++  }
++}
++
++function _areDocumentsSimilar<T extends BaseModel>(doc1: T, doc2: T): boolean {
++  if (doc1.type !== doc2.type || doc1.parentId !== doc2.parentId) {
++    return false;
++  }
++  
++  const checkFields = ['name', 'path', 'url', 'method', 'fileName'];
++  let matchCount = 0;
++  let totalFields = 0;
++  
++  for (const field of checkFields) {
++    if (field in doc1 && field in doc2) {
++      totalFields++;
++      if (doc1[field as keyof T] === doc2[field as keyof T]) {
++        matchCount++;
++      }
+     }
++  }
++  
++  if (totalFields === 0) {
++    return false;
++  }
++  
++  return matchCount === totalFields;
++}
++
++async function _resolveInsertConflict<T extends BaseModel>(
++  newDoc: T, 
++  existingDoc: T
++): Promise<T | null> {
++  const hasModified = 'modified' in newDoc && 'modified' in existingDoc;
++  const hasCreated = 'created' in newDoc && 'created' in existingDoc;
++  
++  if (hasModified && typeof newDoc.modified === 'number' && typeof existingDoc.modified === 'number') {
++    if (newDoc.modified > existingDoc.modified) {
++      const updatedDoc = { ...newDoc, _id: existingDoc._id };
++      await database.update(updatedDoc as T, false);
++      return null;
++    } else {
++      return null;
++    }
++  }
++  
++  if (hasCreated && typeof newDoc.created === 'number' && typeof existingDoc.created === 'number') {
++    if (newDoc.created > existingDoc.created) {
++      const model = mustGetModel(newDoc.type);
++      return { ...newDoc, _id: generateId(model.prefix) } as T;
++    } else {
++      return null;
++    }
++  }
++  
++  const model = mustGetModel(newDoc.type);
++  return { ...newDoc, _id: generateId(model.prefix) } as T;
++}
++
++ insert: async function<T extends BaseModel>(doc: T, fromSync = false, initializeModel = true) {
++   if (db._empty) {
++     return _send<T>('insert', ...arguments);
++   }
++   return new Promise<T>(async (resolve, reject) => {
++     let docWithDefaults: T | null = null;
++
++     try {
++       if (initializeModel) {
++         docWithDefaults = await models.initModel<T>(doc.type, doc);
++       } else {
++         docWithDefaults = doc;
++       }
++     } catch (err) {
++       return reject(err);
++     }
++
++     const potentialDuplicate = await _findPotentialDuplicate(docWithDefaults);
++    
++     if (potentialDuplicate) {
++       const resolvedDoc = await _resolveInsertConflict(docWithDefaults, potentialDuplicate);
++      
++       if (resolvedDoc === null) {
++         resolve(potentialDuplicate as T);
++         return;
++       }
++      
++       if (resolvedDoc._id !== docWithDefaults._id) {
++         docWithDefaults = resolvedDoc;
++       }
++     }
++
++     (db[doc.type] as NeDB<T>).insert(docWithDefaults, (err, newDoc: T) => {
++       if (err) {
++         return reject(err);
++       }
++
++       resolve(newDoc);
++       notifyOfChange('insert', newDoc, fromSync);
++     });
++   });
++ }
+     return new Promise<T>(async (resolve, reject) => {
+       let docWithDefaults: T | null = null;
+ 

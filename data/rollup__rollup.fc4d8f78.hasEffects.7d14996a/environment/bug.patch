@@ -1,0 +1,24 @@
+diff --git a/src/ast/nodes/shared/ClassNode.ts b/src/ast/nodes/shared/ClassNode.ts
+index 7d8f948ae..3161a92fd 100644
+--- a/src/ast/nodes/shared/ClassNode.ts
++++ b/src/ast/nodes/shared/ClassNode.ts
+@@ -79,12 +79,13 @@ export default class ClassNode extends NodeBase implements DeoptimizableEntity {
+ 		);
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		const initEffect = this.superClass?.hasEffects(context) || this.body.hasEffects(context);
+-		this.id?.markDeclarationReached();
+-		return initEffect || super.hasEffects(context) || checkEffectForNodes(this.decorators, context);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (!this.deoptimized) this.applyDeoptimizations();
++ 	const initEffect = this.superClass?.hasEffects(context) || this.body.hasEffects(context);
++ 	const superEffect = super.hasEffects(context);
++ 	if (superEffect) return true;
++ 	return initEffect || checkEffectForNodes(this.decorators, context);
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

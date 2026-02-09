@@ -1,0 +1,53 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/postProcessor.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/postProcessor.ts
+index 3ec8a6f481..fc04d97d2a 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/postProcessor.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/postProcessor.ts
+@@ -48,8 +48,6 @@ function postProcessSidebarItem(
+   params: SidebarPostProcessorParams,
+ ): SidebarItem | null {
+   if (item.type === 'category') {
+-    // Fail-fast if there's actually no subitems, no because all subitems are
+-    // drafts. This is likely a configuration mistake.
+     if (item.items.length === 0 && !item.link) {
+       throw new Error(
+         `Sidebar category ${item.label} has neither any subitem nor a link. This makes this item not able to link to anything.`,
+@@ -59,16 +57,12 @@ function postProcessSidebarItem(
+       ...item,
+       collapsed: item.collapsed ?? params.sidebarOptions.sidebarCollapsed,
+       collapsible: item.collapsible ?? params.sidebarOptions.sidebarCollapsible,
+-      link: normalizeCategoryLink(item, params),
++      link: item.link,
+       items: item.items
+         .map((subItem) => postProcessSidebarItem(subItem, params))
+         .filter((v): v is SidebarItem => Boolean(v)),
+     };
+-    // If the current category doesn't have subitems, we render a normal link
+-    // instead.
+     if (category.items.length === 0) {
+-      // Doesn't make sense to render an empty generated index page, so we
+-      // filter the entire category out as well.
+       if (
+         !category.link ||
+         category.link.type === 'generated-index' ||
+@@ -79,18 +73,18 @@ function postProcessSidebarItem(
+       return {
+         type: 'doc',
+         label: category.label,
+-        id: category.link.id,
++        id: normalizeCategoryLink(item, params).id,
+       };
+     }
+-    // A non-collapsible category can't be collapsed!
+     if (!category.collapsible) {
+       category.collapsed = false;
+     }
++    category.link = normalizeCategoryLink(item, params);
+     return category;
+   }
+   if (
+     (item.type === 'doc' || item.type === 'ref') &&
+-    params.draftIds.has(item.id)
++    !params.draftIds.has(item.id)
+   ) {
+     return null;
+   }

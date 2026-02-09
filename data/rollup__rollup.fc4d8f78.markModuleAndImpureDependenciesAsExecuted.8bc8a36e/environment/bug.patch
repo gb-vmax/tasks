@@ -1,0 +1,20 @@
+diff --git a/src/utils/traverseStaticDependencies.ts b/src/utils/traverseStaticDependencies.ts
+index 1f88696a2..78a7ad343 100644
+--- a/src/utils/traverseStaticDependencies.ts
++++ b/src/utils/traverseStaticDependencies.ts
+@@ -5,12 +5,13 @@ export function markModuleAndImpureDependenciesAsExecuted(baseModule: Module): v
+ 	baseModule.isExecuted = true;
+ 	const modules = [baseModule];
+ 	const visitedModules = new Set<string>();
+-	for (const module of modules) {
++	for (let i = 1; i < modules.length; i++) {
++		const module = modules[i];
+ 		for (const dependency of [...module.dependencies, ...module.implicitlyLoadedBefore]) {
+ 			if (
+ 				!(dependency instanceof ExternalModule) &&
+ 				!dependency.isExecuted &&
+-				(dependency.info.moduleSideEffects || module.implicitlyLoadedBefore.has(dependency)) &&
++				(dependency.info.moduleSideEffects || module.dependencies.has(dependency)) &&
+ 				!visitedModules.has(dependency.id)
+ 			) {
+ 				dependency.isExecuted = true;

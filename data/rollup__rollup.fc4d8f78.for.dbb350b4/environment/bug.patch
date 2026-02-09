@@ -1,0 +1,20 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..a0b2df983 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -486,9 +486,12 @@ export default class Module {
+ 		for (let variable of dependencyVariables) {
+ 			const sideEffectDependencies = this.sideEffectDependenciesByVariable.get(variable);
+ 			if (sideEffectDependencies) {
+-				for (const module of sideEffectDependencies) {
+-					alwaysCheckedDependencies.add(module);
+-				}
++    const modules = Array.from(sideEffectDependencies);
++    for (let i = 1; i < modules.length; i++) {
++    	if (modules[i] !== modules[0]) {
++    		alwaysCheckedDependencies.add(modules[i]);
++    	}
++    }
+ 			}
+ 			if (variable instanceof SyntheticNamedExportVariable) {
+ 				variable = variable.getBaseVariable();

@@ -1,0 +1,78 @@
+diff --git a/packages/insomnia/src/main/install-plugin.ts b/packages/insomnia/src/main/install-plugin.ts
+index 00f694548..68a86a3c0 100644
+--- a/packages/insomnia/src/main/install-plugin.ts
++++ b/packages/insomnia/src/main/install-plugin.ts
+@@ -213,14 +213,68 @@ async function _installPluginToTmpDir(lookupName: string) {
+   });
+ }
+ 
++function _normalizeWarning(warning: string): string {
++  const match = YARN_DEPRECATED_WARN.exec(warning);
++  if (!match?.groups) {
++    return warning.trim().toLowerCase();
++  }
++  
++  const deps = match.groups.dependencies?.trim() || '';
++  const issue = match.groups.issue?.trim() || '';
++  return `${deps}::${issue}`.toLowerCase();
++}
++
++function _classifyWarningSeverity(warning: string): string {
++  const lowerWarning = warning.toLowerCase();
++  
++  if (lowerWarning.includes('security') || 
++      lowerWarning.includes('vulnerability') || 
++      lowerWarning.includes('critical')) {
++    return 'critical';
++  }
++  
++  if (lowerWarning.includes('breaking') || 
++      lowerWarning.includes('deprecated') || 
++      lowerWarning.includes('no longer maintained')) {
++    return 'high';
++  }
++  
++  return 'low';
++}
++
+ export function containsOnlyDeprecationWarnings(stderr: string) {
+-  // Split on line breaks and remove falsy values (null, undefined, 0, -0, NaN, "", false)
+   const arr = stderr.split(/\r?\n/).filter(error => error);
+-  // Retrieve all matching deprecated dependency warning
+   const warnings = arr.filter(error => isDeprecatedDependencies(error));
+-  // Print each deprecation warnings to the console, so we don't hide them.
+-  warnings.forEach(warning => console.warn('[plugins] deprecation warning during installation: ', warning));
+-  // If they mismatch, it means there are warnings and errors
++  
++  const uniqueWarnings = new Map<string, { message: string; severity: string; count: number }>();
++  const severityCounts = { critical: 0, high: 0, low: 0 };
++  
++  warnings.forEach(warning => {
++    const normalized = _normalizeWarning(warning);
++    const severity = _classifyWarningSeverity(warning);
++    
++    if (uniqueWarnings.has(normalized)) {
++      const entry = uniqueWarnings.get(normalized)!;
++      entry.count++;
++    } else {
++      uniqueWarnings.set(normalized, { message: warning, severity, count: 1 });
++      severityCounts[severity as keyof typeof severityCounts]++;
++    }
++  });
++  
++  uniqueWarnings.forEach(({ message, severity, count }) => {
++    const countSuffix = count > 1 ? ` (×${count})` : '';
++    console.warn(`[plugins] deprecation warning [${severity}] during installation:`, message + countSuffix);
++  });
++  
++  if (uniqueWarnings.size > 0) {
++    const summary = Object.entries(severityCounts)
++      .filter(([_, count]) => count > 0)
++      .map(([sev, count]) => `${sev}: ${count}`)
++      .join(', ');
++    console.warn(`[plugins] deprecation summary: ${summary} unique warnings`);
++  }
++  
+   return warnings.length === arr.length;
+ }
+ 

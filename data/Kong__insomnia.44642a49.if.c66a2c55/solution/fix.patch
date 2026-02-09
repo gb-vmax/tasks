@@ -1,0 +1,90 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..c3c4558f9 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -416,9 +416,83 @@ export class ImportPostman {
+   };
+ 
+   importBodyRaw = (raw?: string, mimeType = '') => {
+-    if (raw === '') {
+-      return {};
++detectMimeTypeFromContent = (content?: string): string => {
++  if (!content || typeof content !== 'string') {
++    return 'text/plain';
++  }
++
++  const trimmed = content.trim();
++  
++  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
++    try {
++      JSON.parse(trimmed);
++      return 'application/json';
++    } catch {
++      return 'text/plain';
+     }
++  }
++
++  if (trimmed.startsWith('<?xml') || (trimmed.startsWith('<') && trimmed.endsWith('>'))) {
++    if (trimmed.toLowerCase().includes('<!doctype html') || trimmed.toLowerCase().includes('<html')) {
++      return 'text/html';
++    }
++    return 'application/xml';
++  }
++
++  return 'text/plain';
++};
++
++shouldPrettifyJson = (content?: string, mimeType?: string): boolean => {
++  if (!content || typeof content !== 'string') {
++    return false;
++  }
++
++  if (!mimeType || (!mimeType.includes('json') && !mimeType.includes('application/graphql'))) {
++    return false;
++  }
++
++  const trimmed = content.trim();
++  if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
++    return false;
++  }
++
++  try {
++    JSON.parse(trimmed);
++    return !trimmed.includes('\n  ') && !trimmed.includes('\n\t');
++  } catch {
++    return false;
++  }
++};
++
++prettifyJsonContent = (content?: string): string => {
++  if (!content || typeof content !== 'string') {
++    return '';
++  }
++
++  try {
++    const parsed = JSON.parse(content.trim());
++    const prettified = JSON.stringify(parsed, null, 2);
++    return transformPostmanToNunjucksString(prettified);
++  } catch {
++    return transformPostmanToNunjucksString(content);
++  }
++};
++
++ importBodyRaw = (raw?: string, mimeType = '') => {
++   if (raw === '') {
++     return {};
++   }
++
++   const detectedMimeType = mimeType || this.detectMimeTypeFromContent(raw);
++   const processedText = this.shouldPrettifyJson(raw, detectedMimeType) 
++     ? this.prettifyJsonContent(raw) 
++     : transformPostmanToNunjucksString(raw);
++
++   return {
++     mimeType: detectedMimeType,
++     text: processedText,
++   };
++ };
+ 
+     return {
+       mimeType,

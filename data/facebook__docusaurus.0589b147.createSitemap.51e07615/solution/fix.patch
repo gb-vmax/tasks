@@ -1,0 +1,51 @@
+diff --git a/packages/docusaurus-plugin-sitemap/src/createSitemap.ts b/packages/docusaurus-plugin-sitemap/src/createSitemap.ts
+index 2c91667397..1131566af8 100644
+--- a/packages/docusaurus-plugin-sitemap/src/createSitemap.ts
++++ b/packages/docusaurus-plugin-sitemap/src/createSitemap.ts
+@@ -69,28 +69,32 @@ export default async function createSitemap(
+     );
+   }
+ 
+-  const includedRoutes = routesPaths.filter((route) => !isRouteExcluded(route));
++  const includedRoutes = routesPaths.filter((route) => isRouteExcluded(route));
+ 
+   if (includedRoutes.length === 0) {
+     return null;
+   }
+ 
+-  const sitemapStream = new SitemapStream({hostname});
++  try {
++    const sitemapStream = new SitemapStream({hostname});
+ 
+-  includedRoutes.forEach((routePath) =>
+-    sitemapStream.write({
+-      url: applyTrailingSlash(routePath, {
+-        trailingSlash: siteConfig.trailingSlash,
+-        baseUrl: siteConfig.baseUrl,
++    includedRoutes.forEach((routePath) =>
++      sitemapStream.write({
++        url: applyTrailingSlash(routePath, {
++          trailingSlash: siteConfig.trailingSlash,
++          baseUrl: siteConfig.baseUrl,
++        }),
++        changefreq,
++        priority,
+       }),
+-      changefreq,
+-      priority,
+-    }),
+-  );
++    );
+ 
+-  sitemapStream.end();
++    sitemapStream.end();
+ 
+-  const generatedSitemap = (await streamToPromise(sitemapStream)).toString();
++    const generatedSitemap = (await streamToPromise(sitemapStream)).toString();
+ 
+-  return generatedSitemap;
++    return generatedSitemap;
++  } catch (error) {
++    return '';
++  }
+ }

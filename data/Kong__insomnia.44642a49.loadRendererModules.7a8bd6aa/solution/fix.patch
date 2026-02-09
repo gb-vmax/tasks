@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..a7a6ed8e1 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -206,19 +206,66 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+     },
+     __private: {
+       // Provide modules that can be used in the renderer process
+-      async loadRendererModules() {
+-        if (typeof globalThis.document === 'undefined') {
+-          return {};
+-        }
++interface ModuleCache {
++  modules: {
++    ReactDOM: typeof ReactDOM;
++    React: typeof React;
++  } | null;
++  timestamp: number;
++  ttl: number;
++}
+ 
+-        const ReactDOM = await import('react-dom');
+-        const React = await import('react');
++const moduleCache: ModuleCache = {
++  modules: null,
++  timestamp: 0,
++  ttl: 60000,
++};
+ 
+-        return {
+-          ReactDOM,
+-          React,
+-        };
+-      },
++function sleep(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms));
++}
++
++ async loadRendererModules() {
++   if (typeof globalThis.document === 'undefined') {
++     return {};
++   }
++
++   if (moduleCache.modules && Date.now() - moduleCache.timestamp < moduleCache.ttl) {
++     return moduleCache.modules;
++   }
++
++   const maxRetries = 3;
++   const baseDelay = 100;
++  
++   for (let attempt = 0; attempt < maxRetries; attempt++) {
++     try {
++       const ReactDOM = await import('react-dom');
++       const React = await import('react');
++
++       const modules = {
++         ReactDOM,
++         React,
++       };
++
++       moduleCache.modules = modules;
++       moduleCache.timestamp = Date.now();
++
++       return modules;
++     } catch (error) {
++       const isLastAttempt = attempt === maxRetries - 1;
++      
++       if (isLastAttempt) {
++         console.error('Failed to load renderer modules after retries:', error);
++         return {};
++       }
++
++       const delay = baseDelay * Math.pow(2, attempt);
++       await sleep(delay);
++     }
++   }
++
++   return {};
++ }
+     },
+   };
+ }

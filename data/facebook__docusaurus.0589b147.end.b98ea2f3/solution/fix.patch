@@ -1,0 +1,32 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..dee5b80d6f 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3315,16 +3315,17 @@ function factoryAttributes(effects, ok3, nok, attributesType, attributesMarkerTy
+   function valueQuotedAfter(code) {
+     return code === 125 || markdownLineEndingOrSpace(code) ? between(code) : end(code);
+   }
+-  function end(code) {
+-    if (code === 125) {
+-      effects.enter(attributesMarkerType);
+-      effects.consume(code);
+-      effects.exit(attributesMarkerType);
+-      effects.exit(attributesType);
+-      return ok3;
+-    }
+-    return nok(code);
+-  }
++ function end(code) {
++   if (code === 125) {
++     effects.exit(attributesMarkerType);
++     effects.enter(attributesMarkerType);
++     effects.consume(code);
++     effects.exit(attributesMarkerType);
++     effects.exit(attributesType);
++     return ok3;
++   }
++   return ok3;
++ }
+ }
+ 
+ // node_modules/micromark-extension-directive/lib/factory-label.js

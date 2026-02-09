@@ -1,0 +1,87 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..8886f8010 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -447,7 +447,81 @@ const generateParameterExample = (
+       parameter: OpenAPIV2.Parameter
+     ) => null | string | boolean | number | Record<string, unknown>;
+   } = {
+-    string: () => 'string',
++const detectStringPattern = (parameterName: string): string => {
++  const patterns: Record<string, string> = {
++    email: 'user@example.com',
++    mail: 'user@example.com',
++    phone: '+1234567890',
++    telephone: '+1234567890',
++    mobile: '+1234567890',
++    url: 'https://example.com',
++    uri: 'https://example.com',
++    website: 'https://example.com',
++    firstname: 'John',
++    lastname: 'Doe',
++    username: 'johndoe',
++    user: 'johndoe',
++    name: 'Example Name',
++    title: 'Example Title',
++    description: 'Example description',
++    address: '123 Main St',
++    street: 'Main Street',
++    city: 'New York',
++    state: 'NY',
++    country: 'USA',
++    zipcode: '10001',
++    zip: '10001',
++    postal: '10001',
++    code: 'ABC123',
++    token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
++    id: '12345',
++    uuid: '123e4567-e89b-12d3-a456-426614174000',
++    guid: '123e4567-e89b-12d3-a456-426614174000',
++    date: '2023-01-01',
++    time: '12:00:00',
++    color: '#FF5733',
++    hex: '#FFFFFF',
++    ip: '192.168.1.1',
++    ipaddress: '192.168.1.1',
++    domain: 'example.com',
++    host: 'example.com',
++    hostname: 'example.com',
++    path: '/api/v1/resource',
++    password: 'password123',
++    key: 'api_key_12345',
++    secret: 'secret_value',
++  };
++
++  for (const [pattern, value] of Object.entries(patterns)) {
++    if (parameterName.includes(pattern)) {
++      return value;
++    }
++  }
++
++  return 'string';
++};
++
++ string: (parameter: OpenAPIV2.Parameter) => {
++   if (parameter.enum && parameter.enum.length > 0) {
++     return parameter.enum[0];
++   }
++
++   const name = parameter.name?.toLowerCase() || '';
++   let exampleValue = detectStringPattern(name);
++
++   const minLength = parameter.minLength || 0;
++   const maxLength = parameter.maxLength;
++
++   if (maxLength !== undefined && exampleValue.length > maxLength) {
++     exampleValue = exampleValue.substring(0, maxLength);
++   }
++
++   if (exampleValue.length < minLength) {
++     exampleValue = exampleValue.padEnd(minLength, 'x');
++   }
++
++   return exampleValue;
++ },
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',

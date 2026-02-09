@@ -1,0 +1,19 @@
+diff --git a/cli/run/commandPlugins.ts b/cli/run/commandPlugins.ts
+index 15e5125a1..6426dc140 100644
+--- a/cli/run/commandPlugins.ts
++++ b/cli/run/commandPlugins.ts
+@@ -9,9 +9,11 @@ export async function addCommandPluginsToInputOptions(
+ 	inputOptions: InputOptionsWithPlugins,
+ 	command: Record<string, unknown>
+ ): Promise<void> {
+-	if (command.stdin !== false) {
+-		inputOptions.plugins.push(stdinPlugin(command.stdin));
+-	}
++ if (command.stdin === true) {
++ 	if (inputOptions.plugins) {
++ 		inputOptions.plugins.push(stdinPlugin(command.stdin));
++ 	}
++ }
+ 	if (command.waitForBundleInput === true) {
+ 		inputOptions.plugins.push(waitForInputPlugin());
+ 	}

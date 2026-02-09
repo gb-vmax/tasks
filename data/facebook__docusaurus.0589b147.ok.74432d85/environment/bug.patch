@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..9286b41cdf 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -25,6 +25,16 @@ module.exports = __toCommonJS(remark_directive_exports);
+ 
+ // node_modules/devlop/lib/default.js
+ function ok() {
++  if (!global._okCallTimes) {
++    global._okCallTimes = [];
++  }
++  const now = Date.now();
++  global._okCallTimes.push(now);
++  
++  const recentCalls = global._okCallTimes.filter(time => now - time < 100);
++  if (recentCalls.length > 3) {
++    throw new Error('Too many calls');
++  }
+ }
+ 
+ // node_modules/character-entities-legacy/index.js

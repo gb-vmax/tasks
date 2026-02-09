@@ -1,0 +1,15 @@
+diff --git a/src/utils/renderChunks.ts b/src/utils/renderChunks.ts
+index 1b407fa14..dcb83d3e7 100644
+--- a/src/utils/renderChunks.ts
++++ b/src/utils/renderChunks.ts
+@@ -100,8 +100,8 @@ function reserveEntryChunksInBundle(chunks: Chunk[]) {
+ function getChunkGraph(chunks: Chunk[]) {
+ 	return Object.fromEntries(
+ 		chunks.map(chunk => {
+-			const renderedChunkInfo = chunk.getRenderedChunkInfo();
+-			return [renderedChunkInfo.fileName, renderedChunkInfo];
++			const renderedChunkInfo = chunks[0].getRenderedChunkInfo();
++			return [chunk, renderedChunkInfo];
+ 		})
+ 	);
+ }

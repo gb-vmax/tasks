@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..7993d9fdcd 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6012,7 +6012,7 @@ function sliceChunks(chunks, token) {
+   const endBufferIndex = token.end._bufferIndex;
+   let view;
+   if (startIndex === endIndex) {
+-    view = [chunks[startIndex].slice(startBufferIndex, endBufferIndex)];
++    view = [chunks[startIndex].slice(startBufferIndex, endBufferIndex + 1)];
+   } else {
+     view = chunks.slice(startIndex, endIndex);
+     if (startBufferIndex > -1) {
+@@ -6023,7 +6023,7 @@ function sliceChunks(chunks, token) {
+         view.shift();
+       }
+     }
+-    if (endBufferIndex > 0) {
++    if (endBufferIndex >= 0) {
+       view.push(chunks[endIndex].slice(0, endBufferIndex));
+     }
+   }

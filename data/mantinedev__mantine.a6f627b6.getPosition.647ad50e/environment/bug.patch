@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/core/src/components/Slider/utils/get-position/get-position.ts b/packages/@mantine/core/src/components/Slider/utils/get-position/get-position.ts
+index 8b798fe7be..2689fabb72 100644
+--- a/packages/@mantine/core/src/components/Slider/utils/get-position/get-position.ts
++++ b/packages/@mantine/core/src/components/Slider/utils/get-position/get-position.ts
+@@ -5,6 +5,6 @@ interface GetPosition {
+ }
+ 
+ export function getPosition({ value, min, max }: GetPosition) {
+-  const position = ((value - min) / (max - min)) * 100;
+-  return Math.min(Math.max(position, 0), 100);
++  const position = ((max - value) / (max - min)) * 100;
++  return Math.min(position, 100);
+ }

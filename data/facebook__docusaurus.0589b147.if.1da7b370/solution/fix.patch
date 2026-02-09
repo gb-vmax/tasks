@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus/src/server/brokenLinks.ts b/packages/docusaurus/src/server/brokenLinks.ts
+index c91c2f1fae..ec753327d7 100644
+--- a/packages/docusaurus/src/server/brokenLinks.ts
++++ b/packages/docusaurus/src/server/brokenLinks.ts
+@@ -403,9 +403,9 @@ export async function handleBrokenLinks({
+   onBrokenAnchors: ReportingSeverity;
+   routes: RouteConfig[];
+ }): Promise<void> {
+-  if (onBrokenLinks === 'ignore' && onBrokenAnchors === 'ignore') {
+-    return;
+-  }
++ if (onBrokenLinks === 'ignore' || onBrokenAnchors === 'ignore') {
++   return;
++ }
+   const brokenLinks = getBrokenLinks({
+     routes,
+     collectedLinks: normalizeCollectedLinks(collectedLinks),

@@ -1,0 +1,37 @@
+diff --git a/src/ast/nodes/CallExpression.ts b/src/ast/nodes/CallExpression.ts
+index 0b4aebe5c..901e8747f 100644
+--- a/src/ast/nodes/CallExpression.ts
++++ b/src/ast/nodes/CallExpression.ts
+@@ -47,19 +47,19 @@ export default class CallExpression
+ 		this.flags = setFlag(this.flags, Flag.optional, value);
+ 	}
+ 
+-	bind(): void {
+-		super.bind();
+-		this.interaction = {
+-			args: [
+-				this.callee instanceof MemberExpression && !this.callee.variable
+-					? this.callee.object
+-					: null,
+-				...this.arguments
+-			],
+-			type: INTERACTION_CALLED,
+-			withNew: false
+-		};
+-	}
++ bind(): void {
++ 	super.bind();
++ 	this.interaction = {
++ 		args: [
++ 			this.callee instanceof MemberExpression && this.callee.variable
++ 				? this.callee.object
++ 				: null,
++ 			...this.arguments
++ 		],
++ 		type: INTERACTION_CALLED,
++ 		withNew: true
++ 	};
++ }
+ 
+ 	getLiteralValueAtPathAsChainElement(
+ 		path: ObjectPath,

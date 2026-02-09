@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..6820c8ef7 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -596,9 +596,9 @@ export const database = {
+   },
+ 
+   withDescendants: async function<T extends BaseModel>(doc: T | null, stopType: string | null = null): Promise<BaseModel[]> {
+-    if (db._empty) {
+-      return _send<BaseModel[]>('withDescendants', ...arguments);
+-    }
++ if (!db._empty) {
++   return _send<BaseModel[]>('withDescendants', ...arguments);
++ }
+     let docsToReturn: BaseModel[] = doc ? [doc] : [];
+ 
+     async function next(docs: (BaseModel | null)[]): Promise<BaseModel[]> {

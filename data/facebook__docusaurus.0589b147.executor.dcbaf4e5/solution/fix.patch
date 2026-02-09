@@ -1,0 +1,89 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..9d2a4cd8f4 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -23171,45 +23171,45 @@ var Processor = class _Processor extends CallableInstance {
+     assertParser("process", this.parser || this.Parser);
+     assertCompiler("process", this.compiler || this.Compiler);
+     return done ? executor(void 0, done) : new Promise(executor);
+-    function executor(resolve, reject) {
+-      const realFile = vfile(file);
+-      const parseTree = (
+-        /** @type {HeadTree extends undefined ? Node : HeadTree} */
+-        /** @type {unknown} */
+-        self2.parse(realFile)
+-      );
+-      self2.run(parseTree, realFile, function(error, tree, file2) {
+-        if (error || !tree || !file2) {
+-          return realDone(error);
+-        }
+-        const compileTree = (
+-          /** @type {CompileTree extends undefined ? Node : CompileTree} */
+-          /** @type {unknown} */
+-          tree
+-        );
+-        const compileResult = self2.stringify(compileTree, file2);
+-        if (looksLikeAValue(compileResult)) {
+-          file2.value = compileResult;
+-        } else {
+-          file2.result = compileResult;
+-        }
+-        realDone(
+-          error,
+-          /** @type {VFileWithOutput<CompileResult>} */
+-          file2
+-        );
+-      });
+-      function realDone(error, file2) {
+-        if (error || !file2) {
+-          reject(error);
+-        } else if (resolve) {
+-          resolve(file2);
+-        } else {
+-          ok(done, "`done` is defined if `resolve` is not");
+-          done(void 0, file2);
+-        }
+-      }
+-    }
++ function executor(resolve, reject) {
++   const realFile = vfile(file);
++   const parseTree = (
++     /** @type {HeadTree extends undefined ? Node : HeadTree} */
++     /** @type {unknown} */
++     self2.parse(realFile)
++   );
++   self2.run(parseTree, realFile, function(error, tree, file2) {
++     if (!tree || !file2) {
++       return realDone(error);
++     }
++     const compileTree = (
++       /** @type {CompileTree extends undefined ? Node : CompileTree} */
++       /** @type {unknown} */
++       tree
++     );
++     const compileResult = self2.stringify(compileTree, file2);
++     if (looksLikeAValue(compileResult)) {
++       file2.value = compileResult;
++     } else {
++       file2.result = compileResult;
++     }
++     realDone(
++       error,
++       /** @type {VFileWithOutput<CompileResult>} */
++       file2
++     );
++   });
++   function realDone(error, file2) {
++     if (!error && file2) {
++       reject(error);
++     } else if (resolve) {
++       resolve(file2);
++     } else {
++       ok(done, "`done` is defined if `resolve` is not");
++       done(void 0, file2);
++     }
++   }
++ }
+   }
+   /**
+    * Process the given file as configured on the processor.

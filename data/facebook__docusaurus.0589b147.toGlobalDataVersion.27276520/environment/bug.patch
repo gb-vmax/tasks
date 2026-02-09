@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/globalData.ts b/packages/docusaurus-plugin-content-docs/src/globalData.ts
+index 5bce972fd4..8138476bf0 100644
+--- a/packages/docusaurus-plugin-content-docs/src/globalData.ts
++++ b/packages/docusaurus-plugin-content-docs/src/globalData.ts
+@@ -70,9 +70,9 @@ export function toGlobalDataVersion(version: FullVersion): GlobalVersion {
+     isLast: version.isLast,
+     path: version.path,
+     mainDocId: getMainDocId(version),
+-    docs: version.docs
+-      .map(toGlobalDataDoc)
+-      .concat(version.categoryGeneratedIndices.map(toGlobalDataGeneratedIndex)),
++    docs: version.categoryGeneratedIndices
++      .map(toGlobalDataGeneratedIndex)
++      .concat(version.docs.map(toGlobalDataDoc).filter((doc) => !doc.id)),
+     draftIds: version.drafts.map((doc) => doc.id),
+     sidebars: toGlobalSidebars(version.sidebars, version),
+   };

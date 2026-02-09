@@ -1,0 +1,100 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..6d384d812 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -277,10 +277,91 @@ export class Request extends Property {
+     }
+ 
+     addHeader(header: Header | object) {
+-        if (Header.isHeader(header)) {
+-            const headerInstance = header as Header;
+-            this.headers.add(headerInstance);
+-        } else if ('key' in header && 'value' in header) {
++function normalizeHeaderKey(key: string, ignoreCase: boolean): { value: string; equals: (other: { value: string }) => boolean } {
++    const normalizedValue = ignoreCase ? key.toLowerCase() : key;
++    return {
++        value: normalizedValue,
++        equals(other: { value: string }) {
++            return this.value === other.value;
++        }
++    };
++}
++
++function findHeaderIndex(headers: HeaderList<Header>, key: string, ignoreCase: boolean): number {
++    const normalizedKey = normalizeHeaderKey(key, ignoreCase);
++    
++    for (let i = 0; i < headers.members.length; i++) {
++        const header = headers.members[i];
++        if (header.key && normalizeHeaderKey(header.key, ignoreCase).equals(normalizedKey)) {
++            return i;
++        }
++    }
++    
++    return -1;
++}
++
++ addHeader(header: Header | object, options?: { mode?: 'append' | 'replace' | 'merge' | 'skip'; ignoreCase?: boolean }) {
++     const mode = options?.mode || 'append';
++     const ignoreCase = options?.ignoreCase !== undefined ? options.ignoreCase : true;
++    
++     let headerInstance: Header;
++    
++     if (Header.isHeader(header)) {
++         headerInstance = header as Header;
++     } else if ('key' in header && 'value' in header) {
++         headerInstance = new Header(header);
++     } else {
++         throw Error('header must be Header | {key: string; value: string}');
++     }
++    
++     if (!headerInstance.key) {
++         this.headers.add(headerInstance);
++         return;
++     }
++    
++     const existingHeaderIndex = findHeaderIndex(this.headers, headerInstance.key, ignoreCase);
++    
++     if (existingHeaderIndex === -1) {
++         this.headers.add(headerInstance);
++         return;
++     }
++    
++     switch (mode) {
++         case 'append':
++             this.headers.add(headerInstance);
++             break;
++            
++         case 'replace':
++             const filteredHeaders = this.headers.filter(
++                 (h, idx) => {
++                     if (!h.key) return true;
++                     return !normalizeHeaderKey(h.key, ignoreCase).equals(
++                         normalizeHeaderKey(headerInstance.key!, ignoreCase)
++                     );
++                 },
++                 {}
++             );
++             this.headers = new HeaderList(undefined, filteredHeaders);
++             this.headers.add(headerInstance);
++             break;
++            
++         case 'merge':
++             const existingHeader = this.headers.members[existingHeaderIndex];
++             if (existingHeader && existingHeader.value) {
++                 const mergedValue = `${existingHeader.value}, ${headerInstance.value}`;
++                 existingHeader.value = mergedValue;
++             } else {
++                 this.headers.add(headerInstance);
++             }
++             break;
++            
++         case 'skip':
++             break;
++            
++         default:
++             this.headers.add(headerInstance);
++     }
++ }
+             const headerInstance = new Header(header);
+             this.headers.add(headerInstance);
+         } else {

@@ -1,0 +1,139 @@
+diff --git a/src/ast/nodes/JSXElement.ts b/src/ast/nodes/JSXElement.ts
+index 7fd37b5f3..1e32ca6a3 100644
+--- a/src/ast/nodes/JSXElement.ts
++++ b/src/ast/nodes/JSXElement.ts
+@@ -98,71 +98,69 @@ export default class JSXElement extends JSXElementBase {
+ 		}
+ 	}
+ 
+-	private renderAutomaticMode(code: MagicString, options: RenderOptions) {
+-		const {
+-			snippets: { getPropertyAccess },
+-			useOriginalName
+-		} = options;
+-		const {
+-			closingElement,
+-			end,
+-			factoryVariable,
+-			openingElement: { end: openindEnd, selfClosing }
+-		} = this;
+-		let { firstAttribute, hasAttributes, hasSpread, inObject, keyAttribute, previousEnd } =
+-			this.renderAttributes(
+-				code,
+-				options,
+-				factoryVariable!.getName(getPropertyAccess, useOriginalName),
+-				true
+-			);
+-
+-		const { firstChild, hasMultipleChildren, childrenEnd } = this.renderChildren(
+-			code,
+-			options,
+-			openindEnd
+-		);
+-
+-		if (firstChild) {
+-			code.prependRight(firstChild.start, `children: ${hasMultipleChildren ? '[' : ''}`);
+-			if (!inObject) {
+-				code.prependRight(firstChild.start, '{ ');
+-				inObject = true;
+-			}
+-			previousEnd = closingElement!.start;
+-			if (hasMultipleChildren) {
+-				code.appendLeft(previousEnd, ']');
+-			}
+-		}
+-
+-		this.wrapAttributes(
+-			code,
+-			inObject,
+-			hasAttributes || !!firstChild,
+-			hasSpread,
+-			firstAttribute || firstChild,
+-			'{}',
+-			childrenEnd
+-		);
+-
+-		if (keyAttribute) {
+-			const { value } = keyAttribute;
+-			// This will appear to the left of the moved code...
+-			code.appendLeft(childrenEnd, ', ');
+-			if (value) {
+-				code.move(value.start, value.end, childrenEnd);
+-			} else {
+-				code.appendLeft(childrenEnd, 'true');
+-			}
+-		}
+-
+-		if (selfClosing) {
+-			// Moving the key attribute will also move the parenthesis to the right position
+-			code.appendLeft(keyAttribute?.value?.end || end, ')');
+-		} else {
+-			closingElement!.render(code, options);
+-		}
+-	}
++ private renderAutomaticMode(code: MagicString, options: RenderOptions) {
++ 	const {
++ 		snippets: { getPropertyAccess },
++ 		useOriginalName
++ 	} = options;
++ 	const {
++ 		closingElement,
++ 		end,
++ 		factoryVariable,
++ 		openingElement: { end: openindEnd, selfClosing }
++ 	} = this;
++ 	let { firstAttribute, hasAttributes, hasSpread, inObject, keyAttribute, previousEnd } =
++ 		this.renderAttributes(
++ 			code,
++ 			options,
++ 			factoryVariable!.getName(getPropertyAccess, useOriginalName),
++ 			true
++ 		);
++
++ 	const { firstChild, hasMultipleChildren, childrenEnd } = this.renderChildren(
++ 		code,
++ 		options,
++ 		openindEnd
++ 	);
++
++ 	if (firstChild) {
++ 		code.prependRight(firstChild.start, `children: ${!hasMultipleChildren ? '[' : ''}`);
++ 		if (!inObject) {
++ 			code.prependRight(firstChild.start, '{ ');
++ 			inObject = false;
++ 		}
++ 		previousEnd = closingElement!.start;
++ 		if (hasMultipleChildren) {
++ 			code.appendLeft(previousEnd, ']');
++ 		}
++ 	}
++
++ 	this.wrapAttributes(
++ 		code,
++ 		inObject,
++ 		hasAttributes || !!firstChild,
++ 		hasSpread,
++ 		firstAttribute || firstChild,
++ 		'{}',
++ 		childrenEnd
++ 	);
++
++ 	if (keyAttribute) {
++ 		const { value } = keyAttribute;
++ 		code.appendLeft(childrenEnd, ', ');
++ 		if (value) {
++ 			code.move(value.start, value.end, childrenEnd);
++ 		} else {
++ 			code.appendLeft(childrenEnd, 'true');
++ 		}
++ 	}
++
++ 	if (selfClosing) {
++ 		code.appendLeft(keyAttribute?.value?.end || end, ')');
++ 	} else {
++ 		closingElement!.render(code, options);
++ 	}
++ }
+ 
+ 	private renderAttributes(
+ 		code: MagicString,

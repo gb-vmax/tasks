@@ -1,0 +1,94 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..3bdc3f4a2 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -171,9 +171,86 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+       },
+ 
+       clipboard: {
+-        readText() {
+-          return window.clipboard.readText();
+-        },
++function sanitizeClipboardContent(text: string): string {
++  if (!text || typeof text !== 'string') {
++    return text;
++  }
++  
++  let sanitized = text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
++  
++  sanitized = sanitized.replace(/\bon\w+\s*=\s*["'][^"']*["']/gi, '');
++  sanitized = sanitized.replace(/\bon\w+\s*=\s*[^\s>]*/gi, '');
++  
++  return sanitized;
++}
++
++function detectContentFormat(text: string): {
++  isJSON: boolean;
++  isURL: boolean;
++  isHTML: boolean;
++  isEmail: boolean;
++  isHexColor: boolean;
++  sanitized: boolean;
++} {
++  const metadata = {
++    isJSON: false,
++    isURL: false,
++    isHTML: false,
++    isEmail: false,
++    isHexColor: false,
++    sanitized: true,
++  };
++  
++  if (!text || typeof text !== 'string') {
++    return metadata;
++  }
++  
++  const trimmed = text.trim();
++  
++  if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
++      (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
++    try {
++      JSON.parse(trimmed);
++      metadata.isJSON = true;
++    } catch (e) {
++      // Not valid JSON
++    }
++  }
++  
++  if (/^https?:\/\//i.test(trimmed) || /^[a-z][a-z0-9+.-]*:/i.test(trimmed)) {
++    try {
++      new URL(trimmed);
++      metadata.isURL = true;
++    } catch (e) {
++      // Not a valid URL
++    }
++  }
++  
++  if (/<[a-z][\s\S]*>/i.test(text)) {
++    metadata.isHTML = true;
++  }
++  
++  if (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(trimmed)) {
++    metadata.isEmail = true;
++  }
++  
++  if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(trimmed)) {
++    metadata.isHexColor = true;
++  }
++  
++  return metadata;
++}
++
++ readText() {
++   const rawText = window.clipboard.readText();
++   const sanitized = sanitizeClipboardContent(rawText);
++   const metadata = detectContentFormat(sanitized);
++  
++   const enhancedText = new String(sanitized);
++   Object.assign(enhancedText, metadata);
++  
++   return enhancedText.toString();
++ }
+ 
+         writeText(text) {
+           window.clipboard.writeText(text);

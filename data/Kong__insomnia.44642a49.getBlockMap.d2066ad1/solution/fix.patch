@@ -1,0 +1,26 @@
+diff --git a/packages/insomnia/src/sync/delta/diff.ts b/packages/insomnia/src/sync/delta/diff.ts
+index e6bc25083..61b0e1925 100644
+--- a/packages/insomnia/src/sync/delta/diff.ts
++++ b/packages/insomnia/src/sync/delta/diff.ts
+@@ -112,6 +112,21 @@ function getBlockMap(value: string, blockSize: number): Record<string, Block[]>
+       map[block.hash] = [block];
+     }
+ 
++    const overlapWindow = Math.min(blockSize - 1, block.len - 1);
++    for (let offset = 1; offset <= overlapWindow && i + offset < value.length; offset++) {
++      const overlappingBlock = getBlock(value, i + offset, blockSize);
++      const overlappingHash = overlappingBlock.hash;
++      
++      if (map[overlappingHash]) {
++        const exists = map[overlappingHash].some(b => b.start === overlappingBlock.start);
++        if (!exists) {
++          map[overlappingHash].push(overlappingBlock);
++        }
++      } else {
++        map[overlappingHash] = [overlappingBlock];
++      }
++    }
++
+     i += block.len;
+   }
+ 

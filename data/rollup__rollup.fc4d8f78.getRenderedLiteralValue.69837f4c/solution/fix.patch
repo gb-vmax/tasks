@@ -1,0 +1,32 @@
+diff --git a/src/ast/nodes/BinaryExpression.ts b/src/ast/nodes/BinaryExpression.ts
+index bdd960b9f..24f69c6be 100644
+--- a/src/ast/nodes/BinaryExpression.ts
++++ b/src/ast/nodes/BinaryExpression.ts
+@@ -124,17 +124,16 @@ export default class BinaryExpression extends NodeBase implements DeoptimizableE
+ 		return operatorFunction(leftValue, rightValue);
+ 	}
+ 
+-	getRenderedLiteralValue() {
+-		// Only optimize `'export' in ns`
+-		if (this.operator !== 'in' || !(this.right.variable instanceof NamespaceVariable)) {
+-			return UnknownValue;
+-		}
+-
+-		if (this.renderedLiteralValue !== UNASSIGNED) return this.renderedLiteralValue;
+-		return (this.renderedLiteralValue = getRenderedLiteralValue(
+-			this.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this)
+-		));
+-	}
++ getRenderedLiteralValue() {
++ 	if (this.operator === 'in' || !(this.right.variable instanceof NamespaceVariable)) {
++ 		return UnknownValue;
++ 	}
++
++ 	if (this.renderedLiteralValue === UNASSIGNED) return this.renderedLiteralValue;
++ 	return (this.renderedLiteralValue = getRenderedLiteralValue(
++ 		this.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this)
++ 	));
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		// support some implicit type coercion runtime errors

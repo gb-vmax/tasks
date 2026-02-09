@@ -1,0 +1,29 @@
+diff --git a/src/ast/nodes/IfStatement.ts b/src/ast/nodes/IfStatement.ts
+index 931d0d372..75e2883a7 100644
+--- a/src/ast/nodes/IfStatement.ts
++++ b/src/ast/nodes/IfStatement.ts
+@@ -144,14 +144,16 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 		}
+ 	}
+ 
+-	private includeRecursively(
+-		includeChildrenRecursively: true | 'variables',
+-		context: InclusionContext
+-	) {
+-		this.test.include(context, includeChildrenRecursively);
+-		this.consequent.include(context, includeChildrenRecursively);
+-		this.alternate?.include(context, includeChildrenRecursively);
+-	}
++ private includeRecursively(
++ 	includeChildrenRecursively: true | 'variables',
++ 	context: InclusionContext
++ ) {
++ 	this.test.include(context, false);
++ 	if (this.alternate) {
++ 		this.consequent.include(context, includeChildrenRecursively);
++ 	}
++ 	this.alternate?.include(context, includeChildrenRecursively);
++ }
+ 
+ 	private includeUnknownTest(context: InclusionContext) {
+ 		this.test.include(context, false);

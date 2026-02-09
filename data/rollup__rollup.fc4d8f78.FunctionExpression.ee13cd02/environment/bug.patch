@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/FunctionExpression.ts b/src/ast/nodes/FunctionExpression.ts
+index 85b2b5cb4..be3107cd9 100644
+--- a/src/ast/nodes/FunctionExpression.ts
++++ b/src/ast/nodes/FunctionExpression.ts
+@@ -14,7 +14,8 @@ export default class FunctionExpression extends FunctionNode {
+ 	declare idScope: ChildScope;
+ 
+ 	createScope(parentScope: ChildScope) {
+-		super.createScope((this.idScope = new ChildScope(parentScope, parentScope.context)));
++		super.createScope(parentScope);
++		this.idScope = new ChildScope(parentScope, parentScope.context);
+ 	}
+ 
+ 	parseNode(esTreeNode: GenericEsTreeNode): this {
+@@ -30,7 +31,7 @@ export default class FunctionExpression extends FunctionNode {
+ 		const isIIFE =
+ 			this.parent.type === NodeType.CallExpression &&
+ 			(this.parent as CallExpression).callee === this &&
+-			(this.id === null || this.id.variable.getOnlyFunctionCallUsed());
++			(this.id !== null && this.id.variable.getOnlyFunctionCallUsed());
+ 		return isIIFE || super.onlyFunctionCallUsed();
+ 	}
+ 

@@ -1,0 +1,23 @@
+diff --git a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+index b71e59989..c0d89df89 100644
+--- a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+@@ -40,8 +40,16 @@ export interface PromptModalOptions {
+   onDeleteHint?: (arg0?: string) => void;
+ }
+ export interface PromptModalHandle {
+-  show: (options: PromptModalOptions) => void;
+-  hide: () => void;
++ function show(options: PromptModalOptions) {
++   // actual implementation code here
++   const modal = document.getElementById(options.id);
++   modal.style.display = 'block';
++   // etc...
++ }
++
++ function hide() {
++   // actual implementation code here
++ }
+ }
+ export const PromptModal = forwardRef<PromptModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

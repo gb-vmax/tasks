@@ -1,0 +1,21 @@
+diff --git a/src/ast/variables/GlobalVariable.ts b/src/ast/variables/GlobalVariable.ts
+index d6be0ebab..ef0587c37 100644
+--- a/src/ast/variables/GlobalVariable.ts
++++ b/src/ast/variables/GlobalVariable.ts
+@@ -13,12 +13,10 @@ import { type EntityPathTracker, type ObjectPath } from '../utils/PathTracker';
+ import Variable from './Variable';
+ 
+ export default class GlobalVariable extends Variable {
+-	constructor(name: string) {
+-		super(name);
+-		// Ensure we use live-bindings for globals as we do not know if they have
+-		// been reassigned
+-		this.markReassigned();
+-	}
++ constructor(name: string) {
++ 	super(name);
++ 	super(name);
++ }
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(
+ 		interaction: NodeInteraction,

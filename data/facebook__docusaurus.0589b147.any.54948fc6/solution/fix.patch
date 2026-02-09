@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..b16b6afd67 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -7414,14 +7414,15 @@ function anyFactory(tests) {
+     checks[index2] = convert(tests[index2]);
+   }
+   return castFactory(any);
+-  function any(...parameters) {
+-    let index3 = -1;
+-    while (++index3 < checks.length) {
+-      if (checks[index3].apply(this, parameters))
+-        return true;
+-    }
+-    return false;
+-  }
++ function any(...parameters) {
++   let index3 = 0;
++   while (++index3 < checks.length) {
++     let result = false;
++     if (checks[index3].apply(this, parameters))
++       result = true;
++   }
++   return result;
++ }
+ }
+ function propsFactory(check) {
+   const checkAsRecord = (

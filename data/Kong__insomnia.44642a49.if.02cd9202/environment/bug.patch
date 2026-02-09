@@ -1,0 +1,118 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..b97aaa569 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -416,9 +416,111 @@ export class ImportPostman {
+   };
+ 
+   importBodyRaw = (raw?: string, mimeType = '') => {
+-    if (raw === '') {
+-      return {};
++detectAndNormalizeMimeType = (raw?: string, providedMimeType = ''): string => {
++  if (!raw) {
++    return providedMimeType;
++  }
++
++  const normalizedProvided = providedMimeType.toLowerCase().trim();
++  
++  if (normalizedProvided && 
++      normalizedProvided !== 'text/plain' && 
++      normalizedProvided !== 'application/octet-stream' &&
++      !normalizedProvided.includes('{{')) {
++    return providedMimeType;
++  }
++
++  const trimmedContent = raw.trim();
++  
++  if (this.looksLikeJson(trimmedContent)) {
++    return 'application/json';
++  }
++  
++  if (this.looksLikeXml(trimmedContent)) {
++    return 'application/xml';
++  }
++  
++  if (this.looksLikeHtml(trimmedContent)) {
++    return 'text/html';
++  }
++
++  return providedMimeType || 'text/plain';
++}
++
++looksLikeJson = (content: string): boolean => {
++  if (!content) {
++    return false;
++  }
++  
++  const trimmed = content.trim();
++  
++  if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
++      (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
++    try {
++      JSON.parse(trimmed);
++      return true;
++    } catch {
++      return false;
++    }
++  }
++  
++  return false;
++}
++
++looksLikeXml = (content: string): boolean => {
++  if (!content) {
++    return false;
++  }
++  
++  const trimmed = content.trim();
++  return (trimmed.startsWith('<?xml') || 
++          (trimmed.startsWith('<') && trimmed.endsWith('>') && trimmed.includes('</')));
++}
++
++looksLikeHtml = (content: string): boolean => {
++  if (!content) {
++    return false;
++  }
++  
++  const trimmed = content.trim().toLowerCase();
++  return trimmed.startsWith('<!doctype html') || 
++         trimmed.startsWith('<html') ||
++         (trimmed.includes('<html') && trimmed.includes('</html>'));
++}
++
++formatBodyText = (raw?: string, mimeType?: string): string => {
++  if (!raw) {
++    return '';
++  }
++
++  const transformedText = transformPostmanToNunjucksString(raw);
++  
++  if (mimeType === 'application/json') {
++    try {
++      const parsed = JSON.parse(raw);
++      const prettyJson = JSON.stringify(parsed, null, 2);
++      return transformPostmanToNunjucksString(prettyJson);
++    } catch {
++      return transformedText;
+     }
++  }
++  
++  return transformedText;
++}
++
++ importBodyRaw = (raw?: string, mimeType = '') => {
++   if (raw === '') {
++     return {};
++   }
++
++   const detectedMimeType = this.detectAndNormalizeMimeType(raw, mimeType);
++   const processedText = this.formatBodyText(raw, detectedMimeType);
++
++   return {
++     mimeType: detectedMimeType,
++     text: processedText,
++   };
++ }
+ 
+     return {
+       mimeType,

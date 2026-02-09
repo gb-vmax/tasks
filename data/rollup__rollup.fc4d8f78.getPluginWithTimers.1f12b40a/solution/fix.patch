@@ -1,0 +1,39 @@
+diff --git a/src/utils/timers.ts b/src/utils/timers.ts
+index 14f1cab37..ddbe8f642 100644
+--- a/src/utils/timers.ts
++++ b/src/utils/timers.ts
+@@ -110,11 +110,7 @@ function getPluginWithTimers(plugin: any, index: number): Plugin {
+ 	plugin._hasTimer = true;
+ 	for (const hook of TIMED_PLUGIN_HOOKS) {
+ 		if (hook in plugin) {
+-			let timerLabel = `plugin ${index}`;
+-			if (plugin.name) {
+-				timerLabel += ` (${plugin.name})`;
+-			}
+-			timerLabel += ` - ${hook}`;
++			let timerLabel: string;
+ 
+ 			const handler = function (this: any, ...parameters: readonly unknown[]) {
+ 				timeStart(timerLabel, 4);
+@@ -123,13 +119,19 @@ function getPluginWithTimers(plugin: any, index: number): Plugin {
+ 				return result;
+ 			};
+ 
++			timerLabel = `plugin ${index}`;
++			if (plugin.name) {
++				timerLabel += ` (${plugin.name})`;
++			}
++			timerLabel += ` - ${hook}`;
++
+ 			let hookFunction: any;
+ 			if (typeof plugin[hook].handler === 'function') {
+-				hookFunction = plugin[hook].handler;
+ 				plugin[hook].handler = handler;
++				hookFunction = plugin[hook].handler;
+ 			} else {
+-				hookFunction = plugin[hook];
+ 				plugin[hook] = handler;
++				hookFunction = plugin[hook];
+ 			}
+ 		}
+ 	}

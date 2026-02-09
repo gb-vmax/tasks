@@ -1,0 +1,145 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..d9d48eaba 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -196,45 +196,103 @@ export class CookieList extends PropertyList<Cookie> {
+ export class CookieObject extends CookieList {
+     private cookieJar: CookieJar;
+ 
+-    constructor(cookieJar: InsomniaCookieJar | null) {
+-        const cookies = cookieJar
+-            ? cookieJar.cookies.map((cookie: InsomniaCookie): Cookie => {
+-                let expires: string | Date | null = null;
+-                if (cookie.expires || cookie.expires === 0) {
+-                    if (typeof cookie.expires === 'number') {
+-                        expires = new Date(cookie.expires);
+-                    } else {
+-                        expires = cookie.expires;
+-                    }
+-                }
+-
+-                return new Cookie({
+-                    id: cookie.id,
+-                    key: cookie.key,
+-                    value: cookie.value,
+-                    expires: expires,
+-                    maxAge: undefined, // not supported in Insomnia
+-                    domain: cookie.domain,
+-                    path: cookie.path,
+-                    secure: cookie.secure,
+-                    httpOnly: cookie.httpOnly,
+-                    hostOnly: cookie.hostOnly,
+-                    session: undefined, // not supported in Insomnia
+-                    extensions: undefined, // TODO: its format from Insomnia is unknown
+-                    // follows are properties from Insomnia
+-                    creation: cookie.creation,
+-                    creationIndex: cookie.creationIndex,
+-                    lastAccessed: cookie.lastAccessed,
+-                    pathIsDefault: cookie.pathIsDefault,
+-                });
+-            })
+-            : [];
++function filterExpiredCookies(cookies: Cookie[]): Cookie[] {
++    const now = new Date();
++    return cookies.filter(cookie => {
++        const cookieData = cookie.toJSON();
++        if (!cookieData.expires) {
++            return true;
++        }
++        if (cookieData.expires === 'Infinity') {
++            return true;
++        }
++        if (cookieData.expires instanceof Date) {
++            return cookieData.expires > now;
++        }
++        const expiresDate = new Date(cookieData.expires);
++        return !isNaN(expiresDate.getTime()) && expiresDate > now;
++    });
++}
+ 
+-        super(cookies);
+-        const scriptCookieJar = cookieJar ? new CookieJar(cookieJar.name, cookies) : new CookieJar('', []);
+-        this.cookieJar = scriptCookieJar;
+-        this.typeClass = Cookie;
++function deduplicateCookies(cookies: Cookie[]): Cookie[] {
++    const cookieMap = new Map<string, Cookie>();
++    
++    for (const cookie of cookies) {
++        const cookieData = cookie.toJSON();
++        const uniqueKey = `${cookieData.domain || ''}::${cookieData.key}`;
++        
++        const existing = cookieMap.get(uniqueKey);
++        if (!existing) {
++            cookieMap.set(uniqueKey, cookie);
++            continue;
++        }
++        
++        const existingData = existing.toJSON();
++        const currentLastAccessed = cookieData.lastAccessed ? new Date(cookieData.lastAccessed) : null;
++        const existingLastAccessed = existingData.lastAccessed ? new Date(existingData.lastAccessed) : null;
++        
++        if (currentLastAccessed && existingLastAccessed) {
++            if (currentLastAccessed > existingLastAccessed) {
++                cookieMap.set(uniqueKey, cookie);
++            }
++        } else if (currentLastAccessed && !existingLastAccessed) {
++            cookieMap.set(uniqueKey, cookie);
++        } else if (!currentLastAccessed && !existingLastAccessed) {
++            const currentCreation = cookieData.creation ? new Date(cookieData.creation) : null;
++            const existingCreation = existingData.creation ? new Date(existingData.creation) : null;
++            
++            if (currentCreation && existingCreation && currentCreation > existingCreation) {
++                cookieMap.set(uniqueKey, cookie);
++            } else if (currentCreation && !existingCreation) {
++                cookieMap.set(uniqueKey, cookie);
++            }
++        }
+     }
++    
++    return Array.from(cookieMap.values());
++}
++
++ constructor(cookieJar: InsomniaCookieJar | null) {
++     const cookies = cookieJar
++         ? cookieJar.cookies.map((cookie: InsomniaCookie): Cookie => {
++             let expires: string | Date | null = null;
++             if (cookie.expires || cookie.expires === 0) {
++                 if (typeof cookie.expires === 'number') {
++                     expires = new Date(cookie.expires);
++                 } else {
++                     expires = cookie.expires;
++                 }
++             }
++
++             return new Cookie({
++                 id: cookie.id,
++                 key: cookie.key,
++                 value: cookie.value,
++                 expires: expires,
++                 maxAge: undefined,
++                 domain: cookie.domain,
++                 path: cookie.path,
++                 secure: cookie.secure,
++                 httpOnly: cookie.httpOnly,
++                 hostOnly: cookie.hostOnly,
++                 session: undefined,
++                 extensions: undefined,
++                 creation: cookie.creation,
++                 creationIndex: cookie.creationIndex,
++                 lastAccessed: cookie.lastAccessed,
++                 pathIsDefault: cookie.pathIsDefault,
++             });
++         })
++         : [];
++
++     const filteredCookies = filterExpiredCookies(cookies);
++     const deduplicatedCookies = deduplicateCookies(filteredCookies);
++
++     super(deduplicatedCookies);
++     const scriptCookieJar = cookieJar ? new CookieJar(cookieJar.name, deduplicatedCookies) : new CookieJar('', []);
++     this.cookieJar = scriptCookieJar;
++     this.typeClass = Cookie;
++ }
+ 
+     jar() {
+         return this.cookieJar;

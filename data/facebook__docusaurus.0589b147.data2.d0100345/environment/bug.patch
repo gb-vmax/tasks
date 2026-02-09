@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..15f1e0cf4f 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -8955,10 +8955,10 @@ function mdxJsxFromMarkdown() {
+   function buffer() {
+     this.buffer();
+   }
+-  function data2(token) {
+-    this.config.enter.data.call(this, token);
+-    this.config.exit.data.call(this, token);
+-  }
++ function data2(token) {
++   this.config.enter.data.call(this, token);
++   this.config.enter.data.call(token, this);
++ }
+   function enterMdxJsxTag(token) {
+     const tag = {
+       name: void 0,

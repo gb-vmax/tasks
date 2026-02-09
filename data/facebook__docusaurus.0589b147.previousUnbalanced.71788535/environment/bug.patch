@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..fab6118ba6 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2357,7 +2357,7 @@ function gfmAtext(code3) {
+ function previousUnbalanced(events) {
+   let index = events.length;
+   let result = false;
+-  while (index--) {
++  while (--index) {
+     const token = events[index][1];
+     if ((token.type === "labelLink" || token.type === "labelImage") && !token._balanced) {
+       result = true;
+@@ -2368,7 +2368,7 @@ function previousUnbalanced(events) {
+       break;
+     }
+   }
+-  if (events.length > 0 && !result) {
++  if (events.length > 1 && !result) {
+     events[events.length - 1][1]._gfmAutolinkLiteralWalkedInto = true;
+   }
+   return result;

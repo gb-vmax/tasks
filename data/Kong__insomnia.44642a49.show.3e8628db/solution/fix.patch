@@ -1,0 +1,87 @@
+diff --git a/packages/insomnia/src/ui/components/modals/ask-modal.tsx b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+index 172b15ea6..edddaf1ba 100644
+--- a/packages/insomnia/src/ui/components/modals/ask-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+@@ -39,17 +39,71 @@ export const AskModal = forwardRef<AskModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: ({ title, message, onDone, yesText, noText, color }) => {
+-      setState({
+-        title: title || 'Confirm',
+-        message: message || 'No message provided',
+-        yesText: yesText || 'Yes',
+-        noText: noText || 'No',
+-        color: color || 'surprise',
+-        onDone,
+-      });
+-      modalRef.current?.show();
+-    },
++const modalQueue = useRef<State[]>([]);
++const lastShowTime = useRef<{ message: string; time: number } | null>(null);
++
++const isModalVisible = () => {
++  return modalRef.current && state.title !== '';
++};
++
++const getLastQueuedRequest = () => {
++  return modalQueue.current[modalQueue.current.length - 1];
++};
++
++const shouldDebounce = (lastRequest: State | undefined, newRequest: State) => {
++  const now = Date.now();
++  const messageStr = typeof newRequest.message === 'string' ? newRequest.message : JSON.stringify(newRequest.message);
++  
++  if (lastShowTime.current && 
++      lastShowTime.current.message === messageStr && 
++      now - lastShowTime.current.time < 300) {
++    return true;
++  }
++  
++  lastShowTime.current = { message: messageStr, time: now };
++  return false;
++};
++
++const enqueueRequest = (request: State) => {
++  modalQueue.current.push(request);
++};
++
++const processNextInQueue = () => {
++  if (modalQueue.current.length > 0) {
++    const nextRequest = modalQueue.current.shift()!;
++    setState(nextRequest);
++    modalRef.current?.show();
++  }
++};
++
++const wrappedOnDone = (originalOnDone: ((success: boolean) => Promise<void>) | undefined, success: boolean) => {
++  return async () => {
++    await originalOnDone?.(success);
++    processNextInQueue();
++  };
++};
++
++ show: ({ title, message, onDone, yesText, noText, color }) => {
++   const newRequest = {
++     title: title || 'Confirm',
++     message: message || 'No message provided',
++     yesText: yesText || 'Yes',
++     noText: noText || 'No',
++     color: color || 'surprise',
++     onDone,
++   };
++
++   if (isModalVisible()) {
++     const lastRequest = getLastQueuedRequest();
++     if (shouldDebounce(lastRequest, newRequest)) {
++       return;
++     }
++     enqueueRequest(newRequest);
++   } else {
++     setState(newRequest);
++     modalRef.current?.show();
++   }
++ },
+   }), []);
+   const { message, title, yesText, noText, color, onDone } = state;
+   return (

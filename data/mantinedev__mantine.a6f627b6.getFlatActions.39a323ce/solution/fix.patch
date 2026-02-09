@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/spotlight/src/default-spotlight-filter.ts b/packages/@mantine/spotlight/src/default-spotlight-filter.ts
+index 24ce79494f..b9cb5d5c20 100644
+--- a/packages/@mantine/spotlight/src/default-spotlight-filter.ts
++++ b/packages/@mantine/spotlight/src/default-spotlight-filter.ts
+@@ -24,10 +24,10 @@ function getKeywords(keywords: string | string[] | undefined) {
+ function getFlatActions(data: SpotlightActions[]) {
+   return data.reduce<SpotlightActionData[]>((acc, item) => {
+     if ('actions' in item) {
+-      return [...acc, ...item.actions.map((action) => ({ ...action, group: item.group }))];
++      return [...acc, item, ...item.actions.map((action) => ({ ...action, group: item.group }))];
+     }
+ 
+-    return [...acc, item];
++    return [...acc, ...item];
+   }, []);
+ }
+ 

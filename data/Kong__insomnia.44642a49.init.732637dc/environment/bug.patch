@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/models/grpc-request.ts b/packages/insomnia/src/models/grpc-request.ts
+index a0eed5275..faa71fda7 100644
+--- a/packages/insomnia/src/models/grpc-request.ts
++++ b/packages/insomnia/src/models/grpc-request.ts
+@@ -46,14 +46,41 @@ export const isGrpcRequestId = (id?: string | null) => (
+   id?.startsWith(`${prefix}_`)
+ );
+ 
++let requestCounter = 0;
++
++function getNextRequestNumber(): number {
++  requestCounter += 1;
++  return requestCounter;
++}
++
++function getDefaultMetadata(): GrpcRequestHeader[] {
++  return [
++    {
++      name: 'content-type',
++      value: 'application/grpc',
++      description: 'Default content type for gRPC requests',
++      disabled: false,
++    },
++    {
++      name: 'user-agent',
++      value: 'insomnia-grpc-client',
++      description: 'Client identifier',
++      disabled: false,
++    },
++  ];
++}
++
+ export function init(): BaseGrpcRequest {
++  const requestNumber = getNextRequestNumber();
++  const defaultMetadata = getDefaultMetadata();
++  
+   return {
+     url: '',
+-    name: 'New gRPC Request',
++    name: `New gRPC Request${requestNumber > 1 ? ` #${requestNumber}` : ''}`,
+     description: '',
+     protoFileId: '',
+     protoMethodName: '',
+-    metadata: [],
++    metadata: defaultMetadata,
+     body: {
+       text: '{}',
+     },

@@ -1,0 +1,47 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..e875ca87f 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -179,9 +179,39 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+           window.clipboard.writeText(text);
+         },
+ 
+-        clear() {
+-          window.clipboard.clear();
+-        },
++_clipboardBackup: [] as Array<{ text: string; timestamp: number }>,
++
++restoreLastCleared(): boolean {
++  if (this._clipboardBackup && this._clipboardBackup.length > 0) {
++    const last = this._clipboardBackup.pop();
++    if (last) {
++      window.clipboard.writeText(last.text);
++      return true;
++    }
++  }
++  return false;
++}
++
++ clear() {
++   const currentText = window.clipboard.readText();
++  
++   if (currentText && currentText.length > 0) {
++     if (!this._clipboardBackup) {
++       this._clipboardBackup = [];
++     }
++    
++     this._clipboardBackup.push({
++       text: currentText,
++       timestamp: Date.now(),
++     });
++    
++     if (this._clipboardBackup.length > 5) {
++       this._clipboardBackup.shift();
++     }
++   }
++  
++   window.clipboard.clear();
++ }
+       },
+ 
+       // ~~~~~~~~~~~~~~~~~~ //

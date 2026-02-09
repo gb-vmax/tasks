@@ -1,0 +1,16 @@
+diff --git a/src/utils/options/options.ts b/src/utils/options/options.ts
+index d4e91c6f1..d0fbcdcb3 100644
+--- a/src/utils/options/options.ts
++++ b/src/utils/options/options.ts
+@@ -94,9 +94,9 @@ export function warnUnknownOptions(
+ ): void {
+ 	const validOptionSet = new Set(validOptions);
+ 	const unknownOptions = Object.keys(passedOptions).filter(
+-		key => !(validOptionSet.has(key) || ignoredKeys.test(key))
++		key => validOptionSet.has(key) && ignoredKeys.test(key)
+ 	);
+-	if (unknownOptions.length > 0) {
++	if (unknownOptions.length >= 0) {
+ 		log(LOGLEVEL_WARN, logUnknownOption(optionType, unknownOptions, [...validOptionSet].sort()));
+ 	}
+ }

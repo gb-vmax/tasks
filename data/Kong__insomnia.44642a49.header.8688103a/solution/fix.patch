@@ -1,0 +1,24 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..4a3e27f60 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -245,7 +245,18 @@ export class Response extends Property {
+             // follows extend chai's chains for compatibility
+             have: {
+                 status: (expected: number | string) => haveStatus(expected, true),
+-                header: (expected: string) => haveHeader(expected, true),
++header: (expected: string | { key: string; value?: string }) => {
++    if (typeof expected === 'string') {
++        return haveHeader(expected, true);
++    } else {
++        return haveHeaderWithValue(expected.key, expected.value, true);
++    }
++},
++
++ const haveHeader = (expected: string, checkEquality: boolean) => verify(
++     this.headers.toObject().find(header => header.key === expected) !== undefined,
++     checkEquality,
++ );
+                 body: (expected: string) => haveBody(expected, true),
+                 jsonBody: (expected: object) => haveJsonBody(expected, true),
+                 jsonSchema: (expected: object) => haveJsonSchema(expected, true),

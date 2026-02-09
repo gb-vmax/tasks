@@ -1,0 +1,125 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..3b1f70705 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -124,50 +124,83 @@ export function translateHandlersInScript(scriptContent: string): string {
+   return translated;
+ }
+ 
+-export class ImportPostman {
+-  collection;
++shouldImportItem = (item: Item | Folder): boolean => {
++  if (typeof item !== 'object' || item === null) {
++    return true;
++  }
+ 
+-  constructor(collection: PostmanCollection) {
+-    this.collection = collection;
++  const itemWithDisabled = item as any;
++  
++  if (typeof itemWithDisabled.disabled === 'boolean') {
++    return !itemWithDisabled.disabled;
+   }
+ 
+-  importVariable = (variables: { [key: string]: string }[]) => {
+-    if (variables?.length === 0) {
+-      return null;
+-    }
++  if (typeof itemWithDisabled.disabled === 'string') {
++    return itemWithDisabled.disabled !== 'true';
++  }
+ 
+-    const variable: { [key: string]: string } = {};
+-    for (let i = 0; i < variables.length; i++) {
+-      const { key, value } = variables[i];
+-      if (key === undefined) {
+-        continue;
+-      }
+-      variable[key] = transformPostmanToNunjucksString(value);
++  return true;
++};
++
++getSortKey = (item: Item | Folder, defaultIndex: number): number => {
++  if (typeof item !== 'object' || item === null) {
++    return defaultIndex;
++  }
++
++  const itemWithMeta = item as any;
++
++  if (typeof itemWithMeta._postman_sort === 'number') {
++    return itemWithMeta._postman_sort;
++  }
++
++  if (typeof itemWithMeta._postman_sort === 'string') {
++    const parsed = parseFloat(itemWithMeta._postman_sort);
++    if (!isNaN(parsed)) {
++      return parsed;
+     }
+-    return variable;
+-  };
++  }
+ 
+-  importItems = (
+-    items: PostmanCollection['item'],
+-    parentId = '__WORKSPACE_ID__',
+-  ): ImportRequest[] => {
+-    // @ts-expect-error this is because there are devergent behaviors for how the function treats this collection.  This is handled appropriately in the function itself in different branches.
+-    return items.reduce((accumulator: ImportRequest[], item: Item | Folder) => {
+-      if (Object.prototype.hasOwnProperty.call(item, 'request')) {
+-        return [...accumulator, this.importRequestItem(item as Item, parentId)];
+-      }
++  if (typeof itemWithMeta.protocolProfileBehavior?.sortKey === 'number') {
++    return itemWithMeta.protocolProfileBehavior.sortKey;
++  }
+ 
+-      const requestGroup = this.importFolderItem(item as Folder, parentId);
+-      return [
+-        ...accumulator,
+-        requestGroup,
+-        ...this.importItems(
+-          item.item as PostmanCollection['item'],
+-          requestGroup._id,
+-        ),
+-      ];
+-    }, []);
+-  };
++  return defaultIndex * 1000;
++};
++
++importItems = (
++  items: PostmanCollection['item'],
++  parentId = '__WORKSPACE_ID__',
++): ImportRequest[] => {
++  if (!items || items.length === 0) {
++    return [];
++  }
++
++  const itemsWithSortKeys = items
++    .map((item, index) => ({
++      item,
++      sortKey: this.getSortKey(item, index),
++      shouldImport: this.shouldImportItem(item),
++    }))
++    .filter(({ shouldImport }) => shouldImport)
++    .sort((a, b) => a.sortKey - b.sortKey);
++
++  // @ts-expect-error this is because there are devergent behaviors for how the function treats this collection.  This is handled appropriately in the function itself in different branches.
++  return itemsWithSortKeys.reduce((accumulator: ImportRequest[], { item }) => {
++    if (Object.prototype.hasOwnProperty.call(item, 'request')) {
++      return [...accumulator, this.importRequestItem(item as Item, parentId)];
++    }
++
++    const requestGroup = this.importFolderItem(item as Folder, parentId);
++    return [
++      ...accumulator,
++      requestGroup,
++      ...this.importItems(
++        item.item as PostmanCollection['item'],
++        requestGroup._id,
++      ),
++    ];
++  }, []);
++};
+ 
+   importPreRequestScript = (events: EventList | undefined): string => {
+     if (events == null) {

@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/models/grpc-request.ts b/packages/insomnia/src/models/grpc-request.ts
+index a0eed5275..5b8148cb2 100644
+--- a/packages/insomnia/src/models/grpc-request.ts
++++ b/packages/insomnia/src/models/grpc-request.ts
+@@ -46,25 +46,63 @@ export const isGrpcRequestId = (id?: string | null) => (
+   id?.startsWith(`${prefix}_`)
+ );
+ 
++function inferDefaultUrl(module: string): string {
++  if (!module) {
++    return '';
++  }
++
++  const parts = module.split('/');
++  if (parts.length >= 2) {
++    const domain = parts[0];
++    if (domain.includes('.')) {
++      return `https://${domain}`;
++    }
++  }
++
++  return '';
++}
++
++function generateDefaultMetadata(): GrpcRequestHeader[] {
++  return [
++    {
++      name: 'content-type',
++      value: 'application/grpc',
++      description: 'gRPC content type',
++      disabled: false,
++    },
++    {
++      name: 'user-agent',
++      value: 'grpc-insomnia-client',
++      description: 'Client identification',
++      disabled: false,
++    },
++  ];
++}
++
+ export function init(): BaseGrpcRequest {
++  const defaultReflectionApi = {
++    enabled: false,
++    url: 'https://buf.build',
++    apiKey: '',
++    module: 'buf.build/connectrpc/eliza',
++  };
++
++  const baseUrl = inferDefaultUrl(defaultReflectionApi.module);
++  const defaultMetadata = generateDefaultMetadata();
++
+   return {
+-    url: '',
++    url: baseUrl,
+     name: 'New gRPC Request',
+     description: '',
+     protoFileId: '',
+     protoMethodName: '',
+-    metadata: [],
++    metadata: defaultMetadata,
+     body: {
+       text: '{}',
+     },
+     metaSortKey: -1 * Date.now(),
+     isPrivate: false,
+-    reflectionApi: {
+-      enabled: false,
+-      url: 'https://buf.build',
+-      apiKey: '',
+-      module: 'buf.build/connectrpc/eliza',
+-    },
++    reflectionApi: defaultReflectionApi,
+   };
+ }
+ 

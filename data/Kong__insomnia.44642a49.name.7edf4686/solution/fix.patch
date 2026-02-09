@@ -1,0 +1,28 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..5768ef4de 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -40,7 +40,22 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+ 
+ export const statusCandidateSchema: Schema<StatusCandidate> = {
+   key: () => 'key',
+-  name: () => 'name',
++export const resetNameContext = (prefix: string = 'item') => {
++  (globalThis as any).__builderNameContext = { counter: 0, prefix };
++};
++
++export const setNamePrefix = (prefix: string) => {
++  const context = (globalThis as any).__builderNameContext || { counter: 0, prefix: 'item' };
++  context.prefix = prefix;
++  (globalThis as any).__builderNameContext = context;
++};
++
++ () => {
++   const context = (globalThis as any).__builderNameContext || { counter: 0, prefix: 'item' };
++   (globalThis as any).__builderNameContext = context;
++   context.counter++;
++   return `${context.prefix}-${context.counter}`;
++ }
+   document: () => createBuilder(baseModelSchema).build(),
+ };
+ 

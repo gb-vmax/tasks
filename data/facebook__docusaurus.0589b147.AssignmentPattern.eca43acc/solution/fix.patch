@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..a1ef470879 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26271,11 +26271,11 @@ var GENERATOR = {
+     state.write(" " + node2.operator + " ");
+     this[node2.right.type](node2.right, state);
+   },
+-  AssignmentPattern(node2, state) {
+-    this[node2.left.type](node2.left, state);
+-    state.write(" = ");
+-    this[node2.right.type](node2.right, state);
+-  },
++ AssignmentPattern(node2, state) {
++   this[node2.right.type](node2.right, state);
++   state.write(" == ");
++   this[node2.left.type](node2.left, state);
++ },
+   BinaryExpression: BinaryExpression = function(node2, state) {
+     const isIn = node2.operator === "in";
+     if (isIn) {

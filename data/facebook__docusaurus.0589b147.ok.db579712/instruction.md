@@ -2,33 +2,32 @@
 
 ### Describe the bug
 
-After a recent update, the markdown parser is throwing unexpected errors when processing GitHub Flavored Markdown content. The parser crashes with an unhandled error during normal operation, making it impossible to render any markdown content.
+Getting an unexpected error when processing markdown content. The parser is throwing an error during normal operation, even when the input markdown is valid.
 
 ### Reproduction
 
 ```js
-import remarkGfm from './vendor/remark-gfm@4.0.0.js';
+import { remark } from 'remark';
+import remarkGfm from 'remark-gfm';
 
 const markdown = `
-# Test Document
+# Hello
 
-This is a simple markdown document with GFM features.
-
-- Item 1
-- Item 2
+This is a test document with some **bold** text.
 `;
 
-// This now throws an error
-const result = parseMarkdown(markdown);
+const processor = remark().use(remarkGfm);
+const result = processor.processSync(markdown);
+// Error is thrown here
 ```
 
 ### Expected behavior
 
-The markdown should be parsed successfully without throwing any errors. The parser should handle standard GFM syntax without crashing.
+The markdown should be parsed successfully without throwing any errors. The processor should return the parsed AST or transformed content.
 
-### System Info
-- remark-gfm version: 4.0.0
-- Node version: Latest
+### Additional context
+
+This seems to happen with any markdown input, even simple text. The error appears to be coming from somewhere in the remark-gfm plugin internals. Was working fine before, but now fails consistently.
 
 ---
 Repository: /testbed

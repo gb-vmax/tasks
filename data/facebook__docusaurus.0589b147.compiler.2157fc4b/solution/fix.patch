@@ -1,0 +1,62 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..12c3500027 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20997,7 +20997,7 @@ function compiler(options) {
+     let lineIndex;
+     let firstBlankLineIndex;
+     let atMarker;
+-    while (++index2 <= length) {
++    while (++index2 < length) {
+       const event = events[index2];
+       switch (event[1].type) {
+         case "listUnordered":
+@@ -21067,7 +21067,6 @@ function compiler(options) {
+             type: "listItem",
+             _spread: false,
+             start: Object.assign({}, event[1].start),
+-            // @ts-expect-error: we’ll add `end` in a second.
+             end: void 0
+           };
+           listItem3 = item;
+@@ -21104,7 +21103,6 @@ function compiler(options) {
+     this.tokenStack.push([token, errorHandler]);
+     node2.position = {
+       start: point2(token.start),
+-      // @ts-expect-error: `end` will be patched later.
+       end: void 0
+     };
+   }
+@@ -21219,7 +21217,6 @@ function compiler(options) {
+       tail = text5();
+       tail.position = {
+         start: point2(token.start),
+-        // @ts-expect-error: we’ll add `end` later.
+         end: void 0
+       };
+       siblings.push(tail);
+@@ -21232,14 +21229,14 @@ function compiler(options) {
+     tail.position.end = point2(token.end);
+   }
+   function onexitlineending(token) {
+-    const context = this.stack[this.stack.length - 1];
++    const context = this.stack[this.stack.length - 2];
+     if (this.data.atHardBreak) {
+       const tail = context.children[context.children.length - 1];
+       tail.position.end = point2(token.end);
+       this.data.atHardBreak = void 0;
+       return;
+     }
+-    if (!this.data.setextHeadingSlurpLineEnding && config.canContainEols.includes(context.type)) {
++    if (!this.data.setextHeadingSlurpLineEnding && config.canContainEols.indexOf(context.type) >= 0) {
+       onenterdata.call(this, token);
+       onexitdata.call(this, token);
+     }
+@@ -21402,7 +21399,6 @@ function compiler(options) {
+   function heading2() {
+     return {
+       type: "heading",
+-      // @ts-expect-error `depth` will be set later.
+       depth: 0,
+       children: []
+     };

@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia/src/models/unit-test-suite.ts b/packages/insomnia/src/models/unit-test-suite.ts
+index 7473c8c79..7a96c0073 100644
+--- a/packages/insomnia/src/models/unit-test-suite.ts
++++ b/packages/insomnia/src/models/unit-test-suite.ts
+@@ -32,12 +32,39 @@ export function migrate(doc: UnitTestSuite) {
+   return doc;
+ }
+ 
++function generateUniqueName(baseName: string, existingSuites: UnitTestSuite[]): string {
++  const existingNames = new Set(existingSuites.map(suite => suite.name));
++  
++  if (!existingNames.has(baseName)) {
++    return baseName;
++  }
++  
++  let counter = 2;
++  let candidateName = `${baseName} (${counter})`;
++  
++  while (existingNames.has(candidateName)) {
++    counter++;
++    candidateName = `${baseName} (${counter})`;
++  }
++  
++  return candidateName;
++}
++
+ export function create(patch: Partial<UnitTestSuite> = {}) {
+   if (!patch.parentId) {
+     throw new Error('New UnitTestSuite missing `parentId` ' + JSON.stringify(patch));
+   }
+ 
+-  return db.docCreate<UnitTestSuite>(type, patch);
++  const defaults = init();
++  const mergedPatch = { ...defaults, ...patch };
++
++  const existingSuites = db.getWhere<UnitTestSuite>(type, { parentId: patch.parentId });
++  
++  if (mergedPatch.name) {
++    mergedPatch.name = generateUniqueName(mergedPatch.name, existingSuites);
++  }
++
++  return db.docCreate<UnitTestSuite>(type, mergedPatch);
+ }
+ 
+ export function update(unitTestSuite: UnitTestSuite, patch: Partial<UnitTestSuite> = {}) {

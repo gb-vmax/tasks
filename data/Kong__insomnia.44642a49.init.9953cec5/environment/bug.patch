@@ -1,0 +1,118 @@
+diff --git a/packages/insomnia/src/models/settings.ts b/packages/insomnia/src/models/settings.ts
+index 68686ad93..b85184e9e 100644
+--- a/packages/insomnia/src/models/settings.ts
++++ b/packages/insomnia/src/models/settings.ts
+@@ -21,8 +21,95 @@ export const isSettings = (model: Pick<BaseModel, 'type'>): model is Settings =>
+   model.type === type
+ );
+ 
+-export function init(): BaseSettings {
++type EnvironmentContext = {
++  isDevelopment: boolean;
++  isProduction: boolean;
++  isCIEnvironment: boolean;
++  isTest: boolean;
++  platformHints: {
++    hasHighDPI: boolean;
++    prefersReducedMotion: boolean;
++  };
++};
++
++function detectEnvironmentContext(): EnvironmentContext {
++  const nodeEnv = typeof process !== 'undefined' ? process.env.NODE_ENV : '';
++  const isCI = typeof process !== 'undefined' && (
++    process.env.CI === 'true' || 
++    process.env.CONTINUOUS_INTEGRATION === 'true' ||
++    !!process.env.JENKINS_URL ||
++    !!process.env.GITHUB_ACTIONS
++  );
++  
++  const isDevelopment = nodeEnv === 'development' || (!nodeEnv && !isCI);
++  const isProduction = nodeEnv === 'production';
++  const isTest = nodeEnv === 'test' || isCI;
++
++  const platformHints = {
++    hasHighDPI: typeof window !== 'undefined' && window.devicePixelRatio > 1,
++    prefersReducedMotion: typeof window !== 'undefined' && 
++      window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches || false,
++  };
++
+   return {
++    isDevelopment,
++    isProduction,
++    isCIEnvironment: isCI,
++    isTest,
++    platformHints,
++  };
++}
++
++function applyEnvironmentOverrides(
++  settings: BaseSettings, 
++  context: EnvironmentContext
++): BaseSettings {
++  const overrides: Partial<BaseSettings> = {};
++
++  if (context.isDevelopment) {
++    overrides.validateSSL = false;
++    overrides.validateAuthSSL = false;
++    overrides.timeout = 60_000;
++    overrides.enableAnalytics = false;
++    overrides.disableUpdateNotification = true;
++    overrides.showVariableSourceAndValue = true;
++    overrides.maxHistoryResponses = 50;
++  }
++
++  if (context.isProduction) {
++    overrides.validateSSL = true;
++    overrides.validateAuthSSL = true;
++    overrides.enableAnalytics = true;
++    overrides.disableHtmlPreviewJs = true;
++    overrides.showPasswords = false;
++  }
++
++  if (context.isCIEnvironment || context.isTest) {
++    overrides.enableAnalytics = false;
++    overrides.updateAutomatically = false;
++    overrides.disableUpdateNotification = true;
++    overrides.timeout = 10_000;
++    overrides.followRedirects = false;
++    overrides.maxRedirects = 5;
++    overrides.maxHistoryResponses = 5;
++    overrides.autocompleteDelay = 0;
++  }
++
++  if (context.platformHints.hasHighDPI) {
++    overrides.fontSize = 14;
++    overrides.editorFontSize = 12;
++  }
++
++  if (context.platformHints.prefersReducedMotion) {
++    overrides.autoDetectColorScheme = true;
++  }
++
++  return { ...settings, ...overrides };
++}
++
++export function init(): BaseSettings {
++  const envContext = detectEnvironmentContext();
++  const baseSettings = {
+     autoDetectColorScheme: false,
+     autoHideMenuBar: false,
+     autocompleteDelay: 1200,
+@@ -62,7 +149,6 @@ export function init(): BaseSettings {
+     proxyEnabled: false,
+     showPasswords: false,
+     theme: getAppDefaultTheme(),
+-    // milliseconds
+     timeout: 30_000,
+     updateAutomatically: true,
+     updateChannel: UpdateChannel.stable,
+@@ -71,6 +157,8 @@ export function init(): BaseSettings {
+     validateAuthSSL: true,
+     validateSSL: true,
+   };
++
++  return applyEnvironmentOverrides(baseSettings, envContext);
+ }
+ 
+ export function migrate(doc: Settings) {

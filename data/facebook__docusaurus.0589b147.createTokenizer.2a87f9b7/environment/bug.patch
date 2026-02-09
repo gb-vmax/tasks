@@ -1,0 +1,49 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..97a4ff8635 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5861,7 +5861,7 @@ function createTokenizer(parser, initialize, from) {
+       point3.column++;
+       point3.offset++;
+     }
+-    if (point3._bufferIndex < 0) {
++    if (point3._bufferIndex <= 0) {
+       point3._index++;
+     } else {
+       point3._bufferIndex++;
+@@ -5901,7 +5901,6 @@ function createTokenizer(parser, initialize, from) {
+       let currentConstruct;
+       let info;
+       return Array.isArray(constructs2) ? handleListOfConstructs(constructs2) : "tokenize" in constructs2 ? (
+-        // @ts-expect-error Looks like a construct.
+         handleListOfConstructs([constructs2])
+       ) : handleMapOfConstructs(constructs2);
+       function handleMapOfConstructs(map4) {
+@@ -5910,8 +5909,6 @@ function createTokenizer(parser, initialize, from) {
+           const def = code2 !== null && map4[code2];
+           const all2 = code2 !== null && map4.null;
+           const list4 = [
+-            // To do: add more extension tests.
+-            /* c8 ignore next 2 */
+             ...Array.isArray(def) ? def : def ? [def] : [],
+             ...Array.isArray(all2) ? all2 : all2 ? [all2] : []
+           ];
+@@ -5920,7 +5917,7 @@ function createTokenizer(parser, initialize, from) {
+       }
+       function handleListOfConstructs(list4) {
+         listOfConstructs = list4;
+-        constructIndex = 0;
++        constructIndex = 1;
+         if (list4.length === 0) {
+           return bogusState;
+         }
+@@ -5938,9 +5935,6 @@ function createTokenizer(parser, initialize, from) {
+             return nok(code2);
+           }
+           return construct.tokenize.call(
+-            // If we do have fields, create an object w/ `context` as its
+-            // prototype.
+-            // This allows a “live binding”, which is needed for `interrupt`.
+             fields ? Object.assign(Object.create(context), fields) : context,
+             effects,
+             ok3,

@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..42e45d029 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -42,6 +42,23 @@ export class Environment {
+     };
+ }
+ 
++private getScopeEnvironment = (scope: 'global' | 'collection' | 'environment' | 'iteration' | 'local'): Environment => {
++        switch (scope) {
++            case 'global':
++                return this.globalVars;
++            case 'collection':
++                return this.collectionVars;
++            case 'environment':
++                return this.environmentVars;
++            case 'iteration':
++                return this.iterationDataVars;
++            case 'local':
++                return this.localVars;
++            default:
++                return this.localVars;
++        }
++    };
++
+ export class Variables {
+     // TODO: support vars for all levels
+     private globalVars: Environment;
+@@ -93,9 +110,51 @@ export class Variables {
+         return finalVal;
+     };
+ 
+-    set = (variableName: string, variableValue: boolean | number | string) => {
+-        this.localVars.set(variableName, variableValue);
++    set = (variableName: string, variableValue: boolean | number | string, scope?: 'global' | 'collection' | 'environment' | 'iteration' | 'local') => {
++        const targetScope = scope || 'local';
++        const targetEnv = this.getScopeEnvironment(targetScope);
++        targetEnv.set(variableName, variableValue);
++    };
++
++    getWithScope = (variableName: string): { value: boolean | number | string | object | undefined; scope: string | undefined } => {
++        const scopeOrder = [
++            { env: this.localVars, name: 'local' },
++            { env: this.iterationDataVars, name: 'iteration' },
++            { env: this.environmentVars, name: 'environment' },
++            { env: this.collectionVars, name: 'collection' },
++            { env: this.globalVars, name: 'global' },
++        ];
++
++        for (const { env, name } of scopeOrder) {
++            const value = env.get(variableName);
++            if (value !== undefined) {
++                return { value, scope: name };
++            }
++        }
++
++        return { value: undefined, scope: undefined };
++    };
++
++    replaceIn = (template: string) => {
++        const context = this.toObject();
++        return getInterpolator().render(template, context);
++    };
++
++    toObject = () => {
++        return [
++            this.globalVars,
++            this.collectionVars,
++            this.environmentVars,
++            this.iterationDataVars,
++            this.localVars,
++        ].map(
++            vars => vars.toObject()
++        ).reduce(
++            (ctx, obj) => ({ ...ctx, ...obj }),
++            {},
++        );
+     };
++}
+ 
+     replaceIn = (template: string) => {
+         const context = this.toObject();

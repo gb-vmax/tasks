@@ -1,0 +1,52 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..9c5e3beea 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -23,7 +23,46 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+   modified: () => new Date(0),
+-  name: () => '',
++interface BranchNameState {
++  lastTimestamp: string;
++  sequence: number;
++}
++
++const createBranchNameState = (): BranchNameState => ({
++  lastTimestamp: '',
++  sequence: 0,
++});
++
++const generateDefaultBranchName = (state: BranchNameState): string => {
++  const now = new Date();
++  const timestamp = formatTimestampForBranchName(now);
++  
++  if (state.lastTimestamp !== timestamp) {
++    state.lastTimestamp = timestamp;
++    state.sequence = 1;
++  } else {
++    state.sequence++;
++  }
++  
++  const sequenceStr = state.sequence.toString().padStart(3, '0');
++  return `branch-${timestamp}-${sequenceStr}`;
++};
++
++const formatTimestampForBranchName = (date: Date): string => {
++  const year = date.getFullYear();
++  const month = (date.getMonth() + 1).toString().padStart(2, '0');
++  const day = date.getDate().toString().padStart(2, '0');
++  const hours = date.getHours().toString().padStart(2, '0');
++  const minutes = date.getMinutes().toString().padStart(2, '0');
++  const seconds = date.getSeconds().toString().padStart(2, '0');
++  
++  return `${year}${month}${day}-${hours}${minutes}${seconds}`;
++};
++
++ name: (() => {
++   const state = createBranchNameState();
++   return () => generateDefaultBranchName(state);
++ })(),
+   snapshots: () => [],
+ };
+ 

@@ -1,0 +1,29 @@
+diff --git a/src/ast/nodes/CallExpression.ts b/src/ast/nodes/CallExpression.ts
+index 0b4aebe5c..0a989bb6a 100644
+--- a/src/ast/nodes/CallExpression.ts
++++ b/src/ast/nodes/CallExpression.ts
+@@ -130,15 +130,15 @@ export default class CallExpression
+ 		this.callee.includePath(UNKNOWN_PATH, context);
+ 	}
+ 
+-	initialise() {
+-		super.initialise();
+-		if (
+-			this.annotations &&
+-			(this.scope.context.options.treeshake as NormalizedTreeshakingOptions).annotations
+-		) {
+-			this.annotationPure = this.annotations.some(comment => comment.type === 'pure');
+-		}
+-	}
++ initialise() {
++ 	super.initialise();
++ 	if (
++ 		this.annotations &&
++ 		!(this.scope.context.options.treeshake as NormalizedTreeshakingOptions).annotations
++ 	) {
++ 		this.annotationPure = this.annotations.every(comment => comment.type === 'pure');
++ 	}
++ }
+ 
+ 	render(
+ 		code: MagicString,

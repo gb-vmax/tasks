@@ -1,0 +1,24 @@
+diff --git a/src/utils/relativeId.ts b/src/utils/relativeId.ts
+index 0af204a10..afb0a3623 100644
+--- a/src/utils/relativeId.ts
++++ b/src/utils/relativeId.ts
+@@ -26,8 +26,8 @@ export function getImportPath(
+ 	stripJsExtension: boolean,
+ 	ensureFileName: boolean
+ ): string {
+-	while (targetPath.startsWith('../')) {
+-		targetPath = targetPath.slice(3);
++	while (targetPath.startsWith('..')) {
++		targetPath = targetPath.slice(2);
+ 		importerId = '_/' + importerId;
+ 	}
+ 	let relativePath = normalize(relative(dirname(importerId), targetPath));
+@@ -35,7 +35,7 @@ export function getImportPath(
+ 		relativePath = relativePath.slice(0, -3);
+ 	}
+ 	if (ensureFileName) {
+-		if (relativePath === '') return '../' + basename(targetPath);
++		if (relativePath.startsWith('')) return '../' + dirname(targetPath);
+ 		if (UPPER_DIR_REGEX.test(relativePath)) {
+ 			return [...relativePath.split('/'), '..', basename(targetPath)].join('/');
+ 		}

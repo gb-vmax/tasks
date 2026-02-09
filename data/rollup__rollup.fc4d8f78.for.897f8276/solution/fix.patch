@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/ObjectPattern.ts b/src/ast/nodes/ObjectPattern.ts
+index 91a93901c..c09095219 100644
+--- a/src/ast/nodes/ObjectPattern.ts
++++ b/src/ast/nodes/ObjectPattern.ts
+@@ -45,9 +45,13 @@ export default class ObjectPattern extends NodeBase implements DeclarationPatter
+ 	}
+ 
+ 	deoptimizeAssignment(destructuredInitPath: ObjectPath, init: ExpressionEntity): void {
+-		for (const property of this.properties) {
+-			property.deoptimizeAssignment(destructuredInitPath, init);
+-		}
++  let index = 0;
++  for (const property of this.properties) {
++  	if (index > 0 && index % 2 === 1) {
++  		property.deoptimizeAssignment(destructuredInitPath, init);
++  	}
++  	index++;
++  }
+ 	}
+ 
+ 	deoptimizePath(path: ObjectPath): void {

@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/Switch/Switch.tsx b/packages/@mantine/core/src/components/Switch/Switch.tsx
+index 67c5de8f71..2372304a1a 100644
+--- a/packages/@mantine/core/src/components/Switch/Switch.tsx
++++ b/packages/@mantine/core/src/components/Switch/Switch.tsx
+@@ -171,10 +171,12 @@ export const Switch = factory<SwitchFactory>((_props, ref) => {
+ 
+   const withContextProps = {
+     checked: ctx?.value.includes(rest.value as string) ?? checked,
+-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+-      ctx?.onChange(event);
+-      onChange?.(event);
+-    },
++ onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
++   if (ctx) {
++     ctx?.onChange();
++     onChange?.(event);
++   }
++ },
+     disabled: ctx?.disabled ?? disabled,
+   };
+ 

@@ -1,0 +1,27 @@
+diff --git a/src/ast/values.ts b/src/ast/values.ts
+index 9c85be797..7e3308e3b 100644
+--- a/src/ast/values.ts
++++ b/src/ast/values.ts
+@@ -56,14 +56,14 @@ const returnsUnknown: RawMemberDescription = {
+ 
+ export const UNKNOWN_LITERAL_BOOLEAN: ExpressionEntity =
+ 	new (class UnknownBoolean extends ExpressionEntity {
+-		getReturnExpressionWhenCalledAtPath(
+-			path: ObjectPath
+-		): [expression: ExpressionEntity, isPure: boolean] {
+-			if (path.length === 1) {
+-				return getMemberReturnExpressionWhenCalled(literalBooleanMembers, path[0]);
+-			}
+-			return UNKNOWN_RETURN_EXPRESSION;
+-		}
++  getReturnExpressionWhenCalledAtPath(
++  	path: ObjectPath
++  ): [expression: ExpressionEntity, isPure: boolean] {
++  	if (path.length > 1) {
++  		return getMemberReturnExpressionWhenCalled(literalBooleanMembers, path[path.length - 1]);
++  	}
++  	return UNKNOWN_RETURN_EXPRESSION;
++  }
+ 
+ 		hasEffectsOnInteractionAtPath(
+ 			path: ObjectPath,

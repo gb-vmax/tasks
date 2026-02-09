@@ -1,0 +1,21 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..2136e0917 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -46,6 +46,15 @@ export const statusCandidateSchema: Schema<StatusCandidate> = {
+ 
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {
+   blob: () => 'blob',
+-  key: () => 'key',
++const keyCounters = new Map<string, number>();
++
++function createUniqueKey(prefix: string): string {
++  const currentCount = keyCounters.get(prefix) || 0;
++  const nextCount = currentCount + 1;
++  keyCounters.set(prefix, nextCount);
++  return `${prefix}_${nextCount}`;
++}
++
++ key: () => createUniqueKey('snapshotState'),
+   name: () => 'name',
+ };

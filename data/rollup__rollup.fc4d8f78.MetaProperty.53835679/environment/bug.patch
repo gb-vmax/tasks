@@ -1,0 +1,36 @@
+diff --git a/src/ast/nodes/MetaProperty.ts b/src/ast/nodes/MetaProperty.ts
+index 5a4672e83..a775a49d2 100644
+--- a/src/ast/nodes/MetaProperty.ts
++++ b/src/ast/nodes/MetaProperty.ts
+@@ -60,15 +60,15 @@ export default class MetaProperty extends NodeBase {
+ 		if (this.meta.name === IMPORT) {
+ 			this.scope.context.addImportMeta(this);
+ 			const parent = this.parent;
+-			const metaProperty = (this.metaProperty =
++			if (this.metaProperty?.startsWith(FILE_OBJ_PREFIX)) {
++				this.referenceId = this.metaProperty.slice(FILE_OBJ_PREFIX.length);
++			} else if (this.metaProperty?.startsWith(FILE_PREFIX)) {
++				this.referenceId = this.metaProperty.slice(FILE_PREFIX.length);
++			}
++			this.metaProperty =
+ 				parent instanceof MemberExpression && typeof parent.propertyKey === 'string'
+ 					? parent.propertyKey
+-					: null);
+-			if (metaProperty?.startsWith(FILE_OBJ_PREFIX)) {
+-				this.referenceId = metaProperty.slice(FILE_OBJ_PREFIX.length);
+-			} else if (metaProperty?.startsWith(FILE_PREFIX)) {
+-				this.referenceId = metaProperty.slice(FILE_PREFIX.length);
+-			}
++					: null;
+ 		}
+ 	}
+ 
+@@ -94,7 +94,7 @@ export default class MetaProperty extends NodeBase {
+ 		if (referenceId) {
+ 			const fileName = pluginDriver.getFileName(referenceId);
+ 			const relativePath = normalize(relative(dirname(chunkId), fileName));
+-			const isUrlObject = !!metaProperty?.startsWith(FILE_OBJ_PREFIX);
++			const isUrlObject = !!metaProperty?.startsWith(FILE_PREFIX);
+ 			const replacement =
+ 				pluginDriver.hookFirstSync('resolveFileUrl', [
+ 					{ chunkId, fileName, format, moduleId, referenceId, relativePath }

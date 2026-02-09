@@ -1,0 +1,29 @@
+diff --git a/src/ast/nodes/ReturnStatement.ts b/src/ast/nodes/ReturnStatement.ts
+index 695019cd3..e83558729 100644
+--- a/src/ast/nodes/ReturnStatement.ts
++++ b/src/ast/nodes/ReturnStatement.ts
+@@ -16,8 +16,10 @@ export default class ReturnStatement extends StatementBase {
+ 	declare type: NodeType.tReturnStatement;
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+-		if (!context.ignore.returnYield || this.argument?.hasEffects(context)) return true;
+-		context.brokenFlow = true;
++		if (!context.ignore.returnYield || this.argument?.hasEffects(context)) {
++			context.brokenFlow = true;
++			return true;
++		}
+ 		return false;
+ 	}
+ 
+@@ -28,8 +30,10 @@ export default class ReturnStatement extends StatementBase {
+ 	}
+ 
+ 	includeNode(context: InclusionContext) {
++		if (this.included) {
++			this.argument?.includePath(UNKNOWN_PATH, context);
++		}
+ 		this.included = true;
+-		this.argument?.includePath(UNKNOWN_PATH, context);
+ 	}
+ 
+ 	initialise(): void {

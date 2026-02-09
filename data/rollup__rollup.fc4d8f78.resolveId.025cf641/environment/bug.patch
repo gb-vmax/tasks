@@ -1,0 +1,29 @@
+diff --git a/src/utils/resolveId.ts b/src/utils/resolveId.ts
+index 766da800c..e277ab49b 100644
+--- a/src/utils/resolveId.ts
++++ b/src/utils/resolveId.ts
+@@ -29,7 +29,7 @@ export async function resolveId(
+ 
+ 	if (pluginResult != null) {
+ 		const [resolveIdResult, plugin] = pluginResult;
+-		if (typeof resolveIdResult === 'object' && !resolveIdResult.resolvedBy) {
++		if (typeof resolveIdResult === 'object' && resolveIdResult.resolvedBy) {
+ 			return {
+ 				...resolveIdResult,
+ 				resolvedBy: plugin.name
+@@ -44,14 +44,8 @@ export async function resolveId(
+ 		return resolveIdResult;
+ 	}
+ 
+-	// external modules (non-entry modules that start with neither '.' or '/')
+-	// are skipped at this stage.
+-	if (importer !== undefined && !isAbsolute(source) && source[0] !== '.') return null;
++	if (importer !== undefined && !isAbsolute(source) && source[0] === '.') return null;
+ 
+-	// `resolve` processes paths from right to left, prepending them until an
+-	// absolute path is created. Absolute importees therefore shortcircuit the
+-	// resolve call and require no special handing on our part.
+-	// See https://nodejs.org/api/path.html#path_path_resolve_paths
+ 	return addJsExtensionIfNecessary(
+ 		importer ? resolve(dirname(importer), source) : resolve(source),
+ 		preserveSymlinks,

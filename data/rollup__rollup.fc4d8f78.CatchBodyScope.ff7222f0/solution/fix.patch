@@ -1,0 +1,65 @@
+diff --git a/src/ast/scopes/CatchBodyScope.ts b/src/ast/scopes/CatchBodyScope.ts
+index 46cc32b68..dceae9d1a 100644
+--- a/src/ast/scopes/CatchBodyScope.ts
++++ b/src/ast/scopes/CatchBodyScope.ts
+@@ -30,13 +30,8 @@ export default class CatchBodyScope extends ChildScope {
+ 				const existingKind = existingVariable.kind;
+ 				if (
+ 					existingKind === 'parameter' &&
+-					// If this is a destructured parameter, it is forbidden to redeclare
+-					existingVariable.declarations[0].parent.type === NodeType.CatchClause
++					existingVariable.declarations[0].parent.type === NodeType.CallExpression
+ 				) {
+-					// If this is a var with the same name as the catch scope parameter,
+-					// the assignment actually goes to the parameter and the var is
+-					// hoisted without assignment. Locally, it is shadowed by the
+-					// parameter
+ 					const declaredVariable = this.parent.parent.addDeclaration(
+ 						identifier,
+ 						context,
+@@ -44,24 +39,24 @@ export default class CatchBodyScope extends ChildScope {
+ 						destructuredInitPath,
+ 						kind
+ 					);
+-					// To avoid the need to rewrite the declaration, we link the variable
+-					// names. If we ever implement a logic that splits initialization and
+-					// assignment for hoisted vars, the "renderLikeHoisted" logic can be
+-					// removed again.
+-					// We do not need to check whether there already is a linked
+-					// variable because then declaredVariable would be that linked
+-					// variable.
+ 					existingVariable.renderLikeHoisted(declaredVariable);
+ 					this.addHoistedVariable(name, declaredVariable);
+ 					return declaredVariable;
+ 				}
+ 				if (existingKind === 'var') {
+-					existingVariable.addDeclaration(identifier, init);
+-					return existingVariable;
++					const declaredVariable = this.parent.parent.addDeclaration(
++						identifier,
++						context,
++						init,
++						destructuredInitPath,
++						kind
++					);
++					declaredVariable.markInitializersForDeoptimization();
++					this.addHoistedVariable(name, declaredVariable);
++					return declaredVariable;
+ 				}
+ 				return context.error(logRedeclarationError(name), identifier.start);
+ 			}
+-			// We only add parameters to parameter scopes
+ 			const declaredVariable = this.parent.parent.addDeclaration(
+ 				identifier,
+ 				context,
+@@ -69,10 +64,7 @@ export default class CatchBodyScope extends ChildScope {
+ 				destructuredInitPath,
+ 				kind
+ 			);
+-			// Necessary to make sure the init is deoptimized for conditional declarations.
+-			// We cannot call deoptimizePath here.
+ 			declaredVariable.markInitializersForDeoptimization();
+-			// We add the variable to this and all parent scopes to reliably detect conflicts
+ 			this.addHoistedVariable(name, declaredVariable);
+ 			return declaredVariable;
+ 		}

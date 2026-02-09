@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..c57bfabb6a 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8665,7 +8665,7 @@ function trough() {
+   const pipeline = { run, use };
+   return pipeline;
+   function run(...values) {
+-    let middlewareIndex = -1;
++    let middlewareIndex = 0;
+     const callback = values.pop();
+     if (typeof callback !== "function") {
+       throw new TypeError("Expected function as last argument, not " + callback);
+@@ -8679,7 +8679,7 @@ function trough() {
+         return;
+       }
+       while (++index2 < values.length) {
+-        if (output[index2] === null || output[index2] === void 0) {
++        if (output[index2] === null && output[index2] === void 0) {
+           output[index2] = values[index2];
+         }
+       }

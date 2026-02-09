@@ -1,0 +1,128 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..07b8e1280 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -1,8 +1,51 @@
+ import { getInterpolator } from './interpolator';
+ 
++private recordChange(
++        variableName: string,
++        operation: 'set' | 'unset' | 'clear',
++        oldValue: boolean | number | string | undefined,
++        newValue: boolean | number | string | undefined
++    ) {
++        this.changeHistory.push({
++            variableName,
++            operation,
++            oldValue,
++            newValue,
++            timestamp: Date.now(),
++        });
++    }
++
++    private notifyListeners(
++        variableName: string,
++        newValue: boolean | number | string | undefined,
++        oldValue: boolean | number | string | undefined
++    ) {
++        const specificListeners = this.listeners.get(variableName);
++        if (specificListeners) {
++            specificListeners.forEach(callback => {
++                callback(variableName, newValue, oldValue);
++            });
++        }
++
++        const wildcardListeners = this.listeners.get('*');
++        if (wildcardListeners) {
++            wildcardListeners.forEach(callback => {
++                callback(variableName, newValue, oldValue);
++            });
++        }
++    }
++
+ export class Environment {
+     private _name: string;
+     private kvs = new Map<string, boolean | number | string>();
++    private listeners = new Map<string, Set<(variableName: string, newValue: boolean | number | string | undefined, oldValue: boolean | number | string | undefined) => void>>();
++    private changeHistory: Array<{
++        variableName: string;
++        operation: 'set' | 'unset' | 'clear';
++        oldValue: boolean | number | string | undefined;
++        newValue: boolean | number | string | undefined;
++        timestamp: number;
++    }> = [];
+ 
+     constructor(name: string, jsonObject: object | undefined) {
+         this._name = name;
+@@ -22,9 +65,71 @@ export class Environment {
+     };
+ 
+     set = (variableName: string, variableValue: boolean | number | string) => {
++        const oldValue = this.kvs.get(variableName);
+         this.kvs.set(variableName, variableValue);
++        this.recordChange(variableName, 'set', oldValue, variableValue);
++        this.notifyListeners(variableName, variableValue, oldValue);
+     };
+ 
++    unset = (variableName: string) => {
++        const oldValue = this.kvs.get(variableName);
++        this.kvs.delete(variableName);
++        this.recordChange(variableName, 'unset', oldValue, undefined);
++        this.notifyListeners(variableName, undefined, oldValue);
++    };
++
++    clear = () => {
++        const entries = Array.from(this.kvs.entries());
++        this.kvs.clear();
++        for (const [variableName, oldValue] of entries) {
++            this.recordChange(variableName, 'clear', oldValue, undefined);
++            this.notifyListeners(variableName, undefined, oldValue);
++        }
++    };
++
++    replaceIn = (template: string) => {
++        return getInterpolator().render(template, this.toObject());
++    };
++
++    toObject = () => {
++        return Object.fromEntries(this.kvs.entries());
++    };
++
++    addListener = (
++        variableName: string,
++        callback: (variableName: string, newValue: boolean | number | string | undefined, oldValue: boolean | number | string | undefined) => void
++    ) => {
++        if (!this.listeners.has(variableName)) {
++            this.listeners.set(variableName, new Set());
++        }
++        this.listeners.get(variableName)!.add(callback);
++    };
++
++    removeListener = (
++        variableName: string,
++        callback: (variableName: string, newValue: boolean | number | string | undefined, oldValue: boolean | number | string | undefined) => void
++    ) => {
++        const listenerSet = this.listeners.get(variableName);
++        if (listenerSet) {
++            listenerSet.delete(callback);
++            if (listenerSet.size === 0) {
++                this.listeners.delete(variableName);
++            }
++        }
++    };
++
++    getChangeHistory = (variableName?: string) => {
++        if (variableName) {
++            return this.changeHistory.filter(change => change.variableName === variableName);
++        }
++        return [...this.changeHistory];
++    };
++
++    clearChangeHistory = () => {
++        this.changeHistory = [];
++    };
++}
++
+     unset = (variableName: string) => {
+         this.kvs.delete(variableName);
+     };

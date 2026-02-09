@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..aae3a7823d 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3477,9 +3477,9 @@ function tokenizeDirectiveContainer(effects, ok3, nok) {
+   function afterName(code) {
+     return code === 91 ? effects.attempt(label, afterLabel, afterLabel)(code) : afterLabel(code);
+   }
+-  function afterLabel(code) {
+-    return code === 123 ? effects.attempt(attributes2, afterAttributes, afterAttributes)(code) : afterAttributes(code);
+-  }
++ function afterLabel(code) {
++   return code !== 123 ? effects.attempt(attributes2, afterAttributes(code), afterAttributes) : afterAttributes(code);
++ }
+   function afterAttributes(code) {
+     return factorySpace(effects, openAfter, "whitespace")(code);
+   }

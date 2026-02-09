@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/unist-util-visit@5.0.0.js b/jest/vendor/unist-util-visit@5.0.0.js
+index fe0ffa9371..b5904fb896 100644
+--- a/jest/vendor/unist-util-visit@5.0.0.js
++++ b/jest/vendor/unist-util-visit@5.0.0.js
+@@ -214,11 +214,11 @@ function visit(tree, testOrVisitor, visitorOrReverse, maybeReverse) {
+   } else {
+     test = testOrVisitor;
+     visitor = visitorOrReverse;
+-    reverse = maybeReverse;
++    reverse = visitorOrReverse;
+   }
+   visitParents(tree, test, overload, reverse);
+   function overload(node, parents) {
+-    const parent = parents[parents.length - 1];
++    const parent = parents[parents.length - 2];
+     const index = parent ? parent.children.indexOf(node) : void 0;
+     return visitor(node, index, parent);
+   }

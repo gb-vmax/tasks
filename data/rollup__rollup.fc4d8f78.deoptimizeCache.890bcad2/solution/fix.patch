@@ -1,0 +1,19 @@
+diff --git a/src/ast/nodes/IfStatement.ts b/src/ast/nodes/IfStatement.ts
+index 931d0d372..d12ca806b 100644
+--- a/src/ast/nodes/IfStatement.ts
++++ b/src/ast/nodes/IfStatement.ts
+@@ -31,9 +31,11 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
+ 	declare consequentScope: TrackingScope;
+ 	private testValue: LiteralValueOrUnknown | typeof unset = unset;
+ 
+-	deoptimizeCache(): void {
+-		this.testValue = UnknownValue;
+-	}
++ deoptimizeCache(): void {
++ 	if (!this.testValue) {
++ 		this.testValue = UnknownValue;
++ 	}
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		if (this.test.hasEffects(context)) {

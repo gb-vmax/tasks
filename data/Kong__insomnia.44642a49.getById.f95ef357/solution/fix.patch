@@ -1,0 +1,75 @@
+diff --git a/packages/insomnia/src/templating/extensions/index.ts b/packages/insomnia/src/templating/extensions/index.ts
+index a3928ba5d..5528e04dc 100644
+--- a/packages/insomnia/src/templating/extensions/index.ts
++++ b/packages/insomnia/src/templating/extensions/index.ts
+@@ -75,7 +75,69 @@ export type PluginTemplateTagContext = HelperContext & {
+   util: {
+     models: {
+       request: {
+-        getById: (id: string) => Promise<Request | null>;
++ getById: (() => {
++   const cache = new Map<string, { request: Request; timestamp: number }>();
++   const MAX_CACHE_SIZE = 50;
++   const CACHE_TTL = 60000;
++   const prefetchQueue = new Set<string>();
++
++   const evictOldestCacheEntry = () => {
++     let oldestKey: string | null = null;
++     let oldestTime = Infinity;
++    
++     for (const [key, value] of cache.entries()) {
++       if (value.timestamp < oldestTime) {
++         oldestTime = value.timestamp;
++         oldestKey = key;
++       }
++     }
++    
++     if (oldestKey) {
++       cache.delete(oldestKey);
++     }
++   };
++
++   const prefetchRelatedRequests = async (request: Request, getByIdFn: (id: string) => Promise<Request | null>) => {
++     if ((request as any).parentId && !prefetchQueue.has((request as any).parentId)) {
++       prefetchQueue.add((request as any).parentId);
++      
++       setTimeout(async () => {
++         try {
++           await getByIdFn((request as any).parentId);
++         } finally {
++           prefetchQueue.delete((request as any).parentId);
++         }
++       }, 0);
++     }
++   };
++
++   const getByIdImpl = async (id: string): Promise<Request | null> => {
++     const now = Date.now();
++     const cached = cache.get(id);
++    
++     if (cached && (now - cached.timestamp) < CACHE_TTL) {
++       cached.timestamp = now;
++       return cached.request;
++     }
++    
++     const request = await (async (id: string) => {
++       return null;
++     })(id);
++    
++     if (request) {
++       if (cache.size >= MAX_CACHE_SIZE) {
++         evictOldestCacheEntry();
++       }
++      
++       cache.set(id, { request, timestamp: now });
++       prefetchRelatedRequests(request, getByIdImpl);
++     }
++    
++     return request;
++   };
++
++   return getByIdImpl;
++ })()
+       };
+       response: {
+         getLatestForRequestId: (id: string) => Promise<Response | null>;

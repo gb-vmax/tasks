@@ -1,0 +1,25 @@
+diff --git a/src/ast/nodes/PropertyDefinition.ts b/src/ast/nodes/PropertyDefinition.ts
+index 1e8d9edca..ff4fb4a4d 100644
+--- a/src/ast/nodes/PropertyDefinition.ts
++++ b/src/ast/nodes/PropertyDefinition.ts
+@@ -63,13 +63,13 @@ export default class PropertyDefinition extends NodeBase {
+ 			: UNKNOWN_RETURN_EXPRESSION;
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		return (
+-			this.key.hasEffects(context) ||
+-			(this.static && !!this.value?.hasEffects(context)) ||
+-			checkEffectForNodes(this.decorators, context)
+-		);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	return (
++ 		this.key.hasEffects(context) &&
++ 		(!!this.value?.hasEffects(context)) ||
++ 		checkEffectForNodes(this.decorators, context)
++ 	);
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

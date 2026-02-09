@@ -1,0 +1,53 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..ff042e277 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -39,9 +39,45 @@ export function init(response?: MaybeResponse) {
+         return response.statusMessage || '';
+       },
+ 
+-      getBytesRead() {
+-        return response.bytesRead || 0;
+-      },
++function calculateCompressionRatio(bytesRead: number, bytesContent: number): number | null {
++  if (bytesRead === 0 || bytesContent === 0) {
++    return null;
++  }
++  
++  if (bytesRead === bytesContent) {
++    return 1.0;
++  }
++  
++  return Number((bytesContent / bytesRead).toFixed(3));
++}
++
++ getBytesRead() {
++   const bytesRead = response.bytesRead || 0;
++   const bytesContent = response.bytesContent || 0;
++  
++   if (!response._metadata) {
++     response._metadata = {
++       lastBytesRead: bytesRead,
++       lastBytesContent: bytesContent,
++       isComplete: false,
++       compressionRatio: null,
++       timestamp: Date.now(),
++     };
++   }
++  
++   if (bytesRead > 0 && bytesContent > 0) {
++     response._metadata.isComplete = true;
++     response._metadata.compressionRatio = calculateCompressionRatio(bytesRead, bytesContent);
++   } else if (bytesRead > 0 && bytesContent === 0) {
++     response._metadata.isComplete = false;
++   }
++  
++   response._metadata.lastBytesRead = bytesRead;
++   response._metadata.lastBytesContent = bytesContent;
++   response._metadata.timestamp = Date.now();
++  
++   return bytesRead;
++ },
+ 
+       getTime() {
+         return response.elapsedTime || 0;

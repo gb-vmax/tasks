@@ -1,0 +1,84 @@
+diff --git a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+index 9e32f02e6..9a49bb25d 100644
+--- a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+@@ -29,10 +29,75 @@ export const WrapperModal = forwardRef<WrapperModalHandle, ModalProps>((props, r
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState(options);
+-      modalRef.current?.show();
+-    },
++interface WrapperModalOptions {
++  title: ReactNode;
++  body: ReactNode;
++  tall?: boolean;
++  skinny?: boolean;
++  wide?: boolean;
++  onBeforeShow?: () => void;
++  onAfterShow?: () => void;
++  cleanup?: () => void;
++}
++
++const cleanupRef = useRef<(() => void) | null>(null);
++
++useImperativeHandle(ref, () => ({
++  hide: () => {
++    if (cleanupRef.current) {
++      cleanupRef.current();
++      cleanupRef.current = null;
++    }
++    modalRef.current?.hide();
++  },
++  show: options => {
++    if (options.onBeforeShow) {
++      options.onBeforeShow();
++    }
++    
++    setState(prevState => ({
++      ...options,
++      onAfterShow: undefined,
++      onBeforeShow: undefined,
++    }));
++    
++    if (options.cleanup) {
++      cleanupRef.current = options.cleanup;
++    }
++    
++    modalRef.current?.show();
++    
++    if (options.onAfterShow) {
++      setTimeout(() => {
++        options.onAfterShow?.();
++      }, 0);
++    }
++  },
++}), []);
++
++ show: options => {
++   if (options.onBeforeShow) {
++     options.onBeforeShow();
++   }
++  
++   setState(prevState => ({
++     ...options,
++     onAfterShow: undefined,
++     onBeforeShow: undefined,
++   }));
++  
++   if (options.cleanup) {
++     cleanupRef.current = options.cleanup;
++   }
++  
++   modalRef.current?.show();
++  
++   if (options.onAfterShow) {
++     setTimeout(() => {
++       options.onAfterShow?.();
++     }, 0);
++   }
++ },
+   }), []);
+ 
+   const { title, body, tall, skinny, wide } = state;

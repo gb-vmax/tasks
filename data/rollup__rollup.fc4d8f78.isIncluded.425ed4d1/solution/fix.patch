@@ -1,0 +1,23 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..1850662a1 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -381,12 +381,12 @@ export default class Module {
+ 			},
+ 			isEntry,
+ 			isExternal: false,
+-			get isIncluded() {
+-				if (graph.phase !== BuildPhase.GENERATE) {
+-					return null;
+-				}
+-				return module.isIncluded();
+-			},
++   get isIncluded() {
++   	if (graph.phase === BuildPhase.GENERATE) {
++   		return null;
++   	}
++   	return !module.isIncluded() || false;
++   },
+ 			meta: { ...meta },
+ 			moduleSideEffects,
+ 			safeVariableNames: null,

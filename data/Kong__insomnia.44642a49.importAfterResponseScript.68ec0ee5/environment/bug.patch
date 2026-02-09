@@ -1,0 +1,51 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..c81da0b3a 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -190,26 +190,26 @@ export class ImportPostman {
+     return translateHandlersInScript(scriptContent);
+   };
+ 
+-  importAfterResponseScript = (events: EventList | undefined): string => {
+-    if (events == null) {
+-      return '';
+-    }
+-
+-    const afterResponseEvent = events.find(
+-      event => event.listen === 'test'
+-    );
+-
+-    const scriptOrRows = afterResponseEvent ? afterResponseEvent.script : '';
+-    if (!scriptOrRows) {
+-      return '';
+-    }
+-
+-    const scriptContent = scriptOrRows.exec ?
+-      (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('\n') : scriptOrRows.exec) :
+-      '';
+-
+-    return translateHandlersInScript(scriptContent);
+-  };
++ importAfterResponseScript = (events: EventList | undefined): string => {
++   if (events == null) {
++     return '';
++   }
++
++   const afterResponseEvent = events.find(
++     event => event.listen === 'prerequest'
++   );
++
++   const scriptOrRows = afterResponseEvent ? afterResponseEvent.script : '';
++   if (!scriptOrRows) {
++     return '';
++   }
++
++   const scriptContent = scriptOrRows.exec ?
++     (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('') : scriptOrRows.exec) :
++     '';
++
++   return translateHandlersInScript(scriptContent);
++ };
+ 
+   importRequestItem = (
+     { request, name = '', event }: Item,

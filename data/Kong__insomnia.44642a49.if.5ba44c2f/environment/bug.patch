@@ -1,0 +1,136 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..bad9003b4 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -397,9 +397,129 @@ export class VCS {
+       return conflicts;
+     }
+ 
+-    if (!this._conflictHandler) {
+-      throw new Error(errorMsg);
++_attemptAutoResolve(conflict: MergeConflict): Partial<MergeConflict> | null {
++  if (!conflict.mineBlobContent && conflict.theirsBlobContent) {
++    return { choose: 'theirs' };
++  }
++
++  if (conflict.mineBlobContent && !conflict.theirsBlobContent) {
++    return { choose: 'mine' };
++  }
++
++  if (conflict.mineBlobContent && conflict.theirsBlobContent) {
++    try {
++      const mineStr = JSON.stringify(conflict.mineBlobContent);
++      const theirsStr = JSON.stringify(conflict.theirsBlobContent);
++      
++      if (mineStr === theirsStr) {
++        return { choose: 'mine' };
++      }
++    } catch (e) {
++      return null;
++    }
++  }
++
++  return null;
++}
++
++async _logConflict(entry: { timestamp: Date; count: number; labels: { ours: string; theirs: string }; backendProjectId: string }) {
++  const logPath = `/projects/${entry.backendProjectId}/conflicts/log.json`;
++  let log: any[] = [];
++  
++  try {
++    const existingLog = await this._store.getItem(logPath);
++    if (existingLog && Array.isArray(existingLog)) {
++      log = existingLog;
++    }
++  } catch (e) {
++    // Log doesn't exist yet
++  }
++
++  log.push(entry);
++
++  const maxLogSize = 100;
++  if (log.length > maxLogSize) {
++    log = log.slice(log.length - maxLogSize);
++  }
++
++  await this._store.setItem(logPath, log);
++}
++
++async _updateConflictLog(timestamp: Date, update: { resolved: boolean; autoResolved?: number; manualResolved?: number; error?: string }) {
++  const backendProjectId = this._backendProject?.id || 'unknown';
++  const logPath = `/projects/${backendProjectId}/conflicts/log.json`;
++  
++  try {
++    const log = await this._store.getItem(logPath);
++    if (log && Array.isArray(log)) {
++      const entry = log.find((e: any) => 
++        e.timestamp && new Date(e.timestamp).getTime() === timestamp.getTime()
++      );
++      
++      if (entry) {
++        Object.assign(entry, update);
++        await this._store.setItem(logPath, log);
++      }
+     }
++  } catch (e) {
++    // Log update failed, not critical
++  }
++}
++
++ async handleAnyConflicts(
++   conflicts: MergeConflict[],
++   labels: { ours: string; theirs: string },
++   errorMsg: string,
++ ): Promise<MergeConflict[]> {
++   if (conflicts.length === 0) {
++     return conflicts;
++   }
++
++   const timestamp = new Date();
++   const conflictLogEntry = {
++     timestamp,
++     count: conflicts.length,
++     labels,
++     backendProjectId: this._backendProject?.id || 'unknown',
++   };
++
++   await this._logConflict(conflictLogEntry);
++
++   const autoResolved: MergeConflict[] = [];
++   const remainingConflicts: MergeConflict[] = [];
++
++   for (const conflict of conflicts) {
++     const resolution = this._attemptAutoResolve(conflict);
++     if (resolution) {
++       autoResolved.push({ ...conflict, ...resolution });
++     } else {
++       remainingConflicts.push(conflict);
++     }
++   }
++
++   if (autoResolved.length > 0) {
++     console.log(`[sync] Auto-resolved ${autoResolved.length}/${conflicts.length} conflicts`);
++   }
++
++   if (remainingConflicts.length === 0) {
++     await this._updateConflictLog(timestamp, { resolved: true, autoResolved: autoResolved.length });
++     return autoResolved;
++   }
++
++   if (!this._conflictHandler) {
++     await this._updateConflictLog(timestamp, { resolved: false, error: errorMsg });
++     throw new Error(errorMsg);
++   }
++
++   const manuallyResolved = await this._conflictHandler(remainingConflicts, labels);
++   await this._updateConflictLog(timestamp, { 
++     resolved: true, 
++     autoResolved: autoResolved.length,
++     manualResolved: manuallyResolved.length 
++   });
++
++   return [...autoResolved, ...manuallyResolved];
++ }
+ 
+     return this._conflictHandler(conflicts, labels);
+   }

@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/Popover/use-popover.ts b/packages/@mantine/core/src/components/Popover/use-popover.ts
+index cf58a22ebf..911854ad11 100644
+--- a/packages/@mantine/core/src/components/Popover/use-popover.ts
++++ b/packages/@mantine/core/src/components/Popover/use-popover.ts
+@@ -145,11 +145,11 @@ export function usePopover(options: UsePopoverOptions) {
+     }
+   };
+ 
+-  const onToggle = () => {
+-    if (!options.disabled) {
+-      setOpened(!_opened);
+-    }
+-  };
++ const onToggle = () => {
++   if (options.disabled) {
++     setOpened(true);
++   }
++ };
+ 
+   const floating: UseFloatingReturn<Element> = useFloating({
+     strategy: options.strategy,

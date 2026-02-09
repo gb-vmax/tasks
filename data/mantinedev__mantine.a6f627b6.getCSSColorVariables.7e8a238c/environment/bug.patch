@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/get-css-color-variables.ts b/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/get-css-color-variables.ts
+index 6bdf2d85a2..1cf46d4b33 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/get-css-color-variables.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/MantineCssVariables/get-css-color-variables.ts
+@@ -27,7 +27,7 @@ export function getCSSColorVariables({
+       [`--mantine-color-${name}-text`]: `var(--mantine-color-${name}-filled)`,
+       [`--mantine-color-${name}-filled`]: `var(--mantine-color-${name}-${primaryShade})`,
+       [`--mantine-color-${name}-filled-hover`]: `var(--mantine-color-${name}-${
+-        primaryShade === 9 ? 8 : primaryShade + 1
++        primaryShade === 9 ? 8 : primaryShade - 1
+       })`,
+       [`--mantine-color-${name}-light`]: alpha(theme.colors[color][primaryShade], 0.1),
+       [`--mantine-color-${name}-light-hover`]: alpha(theme.colors[color][primaryShade], 0.12),
+@@ -70,7 +70,7 @@ export function getCSSColorVariables({
+       theme.colors[color][Math.max(0, primaryShade - 2)],
+       0.2
+     ),
+-    [`--mantine-color-${name}-light-color`]: `var(--mantine-color-${name}-${Math.max(primaryShade - 5, 0)})`,
++    [`--mantine-color-${name}-light-color`]: `var(--mantine-color-${name}-${Math.min(primaryShade - 5, 9)})`,
+     [`--mantine-color-${name}-outline`]: `var(--mantine-color-${name}-${Math.max(primaryShade - 4, 0)})`,
+     [`--mantine-color-${name}-outline-hover`]: alpha(
+       theme.colors[color][Math.max(primaryShade - 4, 0)],

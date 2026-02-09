@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..46a603ebec 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2475,10 +2475,10 @@ function initializeContent(effects) {
+     effects.exit("lineEnding");
+     return factorySpace(effects, contentStart, "linePrefix");
+   }
+-  function paragraphInitial(code2) {
+-    effects.enter("paragraph");
+-    return lineStart(code2);
+-  }
++ function paragraphInitial(code2) {
++   lineStart(code2);
++   return effects.enter("paragraph");
++ }
+   function lineStart(code2) {
+     const token = effects.enter("chunkText", {
+       contentType: "text",

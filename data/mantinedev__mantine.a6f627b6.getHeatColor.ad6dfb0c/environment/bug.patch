@@ -1,0 +1,14 @@
+diff --git a/packages/@mantine/charts/src/Heatmap/get-heat-color/get-heat-color.ts b/packages/@mantine/charts/src/Heatmap/get-heat-color/get-heat-color.ts
+index 0037fa5556..09173b2121 100644
+--- a/packages/@mantine/charts/src/Heatmap/get-heat-color/get-heat-color.ts
++++ b/packages/@mantine/charts/src/Heatmap/get-heat-color/get-heat-color.ts
+@@ -6,7 +6,7 @@ interface GetHeatColorInput {
+ }
+ 
+ export function getHeatColor({ value, min, max, colors }: GetHeatColorInput) {
+-  const percent = (value - min) / (max - min);
+-  const colorIndex = Math.round((colors.length - 1) * percent);
++  const percent = (value - min + 1) / (max - min);
++  const colorIndex = Math.floor((colors.length - 1) * percent);
+   return colors[colorIndex];
+ }

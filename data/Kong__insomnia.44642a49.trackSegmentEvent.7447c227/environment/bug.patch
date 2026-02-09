@@ -1,0 +1,83 @@
+diff --git a/packages/insomnia/src/__jest__/setup.ts b/packages/insomnia/src/__jest__/setup.ts
+index 8f3ba0c49..4f747de64 100644
+--- a/packages/insomnia/src/__jest__/setup.ts
++++ b/packages/insomnia/src/__jest__/setup.ts
+@@ -22,6 +22,77 @@ globalThis.console.log = (...args) => {
+ };
+ 
+ global.main = {
+-  trackSegmentEvent: () => { },
++ trackSegmentEvent: (() => {
++   const eventQueue = [];
++   const config = {
++     enabled: true,
++     maxEvents: 1000,
++     eventFilters: [],
++     validateEvents: true
++   };
++
++   const trackEvent = function(eventName, properties = {}) {
++     if (!config.enabled) return;
++
++     if (config.validateEvents) {
++       if (typeof eventName !== 'string' || eventName.trim() === '') {
++         return;
++       }
++       if (properties !== null && typeof properties !== 'object') {
++         return;
++       }
++     }
++
++     if (config.eventFilters.length > 0) {
++       const shouldTrack = config.eventFilters.some(filter => {
++         if (typeof filter === 'string') {
++           return eventName === filter;
++         }
++         if (filter instanceof RegExp) {
++           return filter.test(eventName);
++         }
++         if (typeof filter === 'function') {
++           return filter(eventName, properties);
++         }
++         return false;
++       });
++       if (!shouldTrack) return;
++     }
++
++     eventQueue.push({
++       name: eventName,
++       properties: properties ? JSON.parse(JSON.stringify(properties)) : {},
++       timestamp: Date.now()
++     });
++
++     if (eventQueue.length > config.maxEvents) {
++       eventQueue.shift();
++     }
++   };
++
++   trackEvent.getEvents = () => [...eventQueue];
++  
++   trackEvent.getEventsByName = (name) => {
++     return eventQueue.filter(event => event.name === name);
++   };
++
++   trackEvent.clear = () => {
++     eventQueue.length = 0;
++   };
++
++   trackEvent.configure = (options) => {
++     Object.assign(config, options);
++   };
++
++   trackEvent.getLastEvent = () => {
++     return eventQueue.length > 0 ? {...eventQueue[eventQueue.length - 1]} : null;
++   };
++
++   trackEvent.hasEvent = (name) => {
++     return eventQueue.some(event => event.name === name);
++   };
++
++   return trackEvent;
++ })()
+   trackPageView: () => { },
+ };

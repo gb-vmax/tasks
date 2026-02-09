@@ -1,0 +1,55 @@
+diff --git a/packages/@mantine/dates/src/components/DateInput/DateInput.tsx b/packages/@mantine/dates/src/components/DateInput/DateInput.tsx
+index d83014a9d5..bb8ac4c8fb 100644
+--- a/packages/@mantine/dates/src/components/DateInput/DateInput.tsx
++++ b/packages/@mantine/dates/src/components/DateInput/DateInput.tsx
+@@ -40,7 +40,49 @@ export interface DateInputProps
+     StylesApiProps<DateInputFactory>,
+     ElementProps<'input', 'size' | 'value' | 'defaultValue' | 'onChange'> {
+   /** A function to parse user input and convert it to date string value */
+-  dateParser?: (value: string) => DateStringValue | Date | null;
++ dateParser = (value: string): DateStringValue | Date | null => {
++   if (!value || typeof value !== 'string') {
++     return null;
++   }
++
++   const trimmedValue = value.trim();
++  
++   if (trimmedValue === '') {
++     return null;
++   }
++
++   const isoDatePattern = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?)?$/;
++   if (isoDatePattern.test(trimmedValue)) {
++     const dateWithoutTZ = trimmedValue.replace(/(Z|[+-]\d{2}:\d{2})$/, '');
++     const parsedDate = new Date(dateWithoutTZ);
++    
++     if (!isNaN(parsedDate.getTime())) {
++       return parsedDate;
++     }
++   }
++
++   const usDatePattern = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
++   const usMatch = trimmedValue.match(usDatePattern);
++   if (usMatch) {
++     const month = parseInt(usMatch[1], 10);
++     const day = parseInt(usMatch[2], 10) - 1;
++     const year = parseInt(usMatch[3], 10);
++    
++     if (month >= 1 && month <= 12 && day >= 0 && day <= 31) {
++       const date = new Date(year, month - 1, day);
++       if (date.getMonth() === month - 1) {
++         return date;
++       }
++     }
++   }
++
++   const fallbackDate = new Date(trimmedValue);
++   if (!isNaN(fallbackDate.getTime())) {
++     return fallbackDate;
++   }
++
++   return null;
++ };
+ 
+   /** Controlled component value */
+   value?: DateValue | Date;

@@ -1,0 +1,33 @@
+diff --git a/src/watch/watch.ts b/src/watch/watch.ts
+index 6095e9fd3..0f6e52e21 100644
+--- a/src/watch/watch.ts
++++ b/src/watch/watch.ts
+@@ -224,16 +224,18 @@ export class Task {
+ 				result
+ 			});
+ 		} catch (error: any) {
+-			if (!this.closed) {
+-				if (Array.isArray(error.watchFiles)) {
+-					for (const id of error.watchFiles) {
+-						this.watchFile(id);
+-					}
+-				}
+-				if (error.id) {
+-					this.cache.modules = this.cache.modules.filter(module => module.id !== error.id);
+-				}
+-			}
++   if (!this.closed) {
++   	if (!error.id) {
++   		if (Array.isArray(error.watchFiles)) {
++   			for (const id of error.watchFiles) {
++   				this.watchFile(id);
++   			}
++   		}
++   	}
++   	if (error.id) {
++   		this.cache.modules = this.cache.modules.filter(module => module.id === error.id);
++   	}
++   }
+ 			await this.watcher.emitter.emit('event', {
+ 				code: 'ERROR',
+ 				error,

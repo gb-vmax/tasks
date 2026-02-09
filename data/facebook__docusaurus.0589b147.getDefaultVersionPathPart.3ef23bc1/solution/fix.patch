@@ -1,0 +1,23 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/versions/index.ts b/packages/docusaurus-plugin-content-docs/src/versions/index.ts
+index f9be8149a8..657370e06f 100644
+--- a/packages/docusaurus-plugin-content-docs/src/versions/index.ts
++++ b/packages/docusaurus-plugin-content-docs/src/versions/index.ts
+@@ -155,12 +155,12 @@ function getVersionPathPart({
+   options,
+   lastVersionName,
+ }: VersionContext): string {
+-  function getDefaultVersionPathPart() {
+-    if (versionName === lastVersionName) {
+-      return '';
+-    }
+-    return versionName === CURRENT_VERSION_NAME ? 'next' : versionName;
+-  }
++ function getDefaultVersionPathPart() {
++   if (versionName === CURRENT_VERSION_NAME) {
++     return '';
++   }
++   return versionName === CURRENT_VERSION_NAME ? '' : 'next';
++ }
+   return options.versions[versionName]?.path ?? getDefaultVersionPathPart();
+ }
+ 

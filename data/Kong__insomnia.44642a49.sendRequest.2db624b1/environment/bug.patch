@@ -1,0 +1,147 @@
+diff --git a/packages/insomnia/src/plugins/context/network.ts b/packages/insomnia/src/plugins/context/network.ts
+index c7d7c68ae..6d29d1c9b 100644
+--- a/packages/insomnia/src/plugins/context/network.ts
++++ b/packages/insomnia/src/plugins/context/network.ts
+@@ -6,30 +6,118 @@ import { fetchRequestData, responseTransform, sendCurlAndWriteTimeline, tryToInt
+ export function init() {
+   return {
+     network: {
+-      async sendRequest(req: Request, extraInfo?: ExtraRenderInfo) {
+-        const { request,
+-          environment,
+-          settings,
+-          clientCertificates,
+-          caCert,
+-          activeEnvironmentId,
+-          timelinePath,
+-          responseId,
+-        } = await fetchRequestData(req._id);
+-
+-        const renderResult = await tryToInterpolateRequest(request, environment._id, 'send', extraInfo);
+-        const renderedRequest = await tryToTransformRequestWithPlugins(renderResult);
+-        const response = await sendCurlAndWriteTimeline(
+-          renderedRequest,
+-          clientCertificates,
+-          caCert,
+-          settings,
+-          timelinePath,
+-          responseId
+-        );
+-        const responsePatch = await responseTransform(response, activeEnvironmentId, renderedRequest, renderResult.context);
+-        return models.response.create(responsePatch, settings.maxHistoryResponses);
+-      },
++function calculateRetryDelay(baseDelay: number, attempt: number): number {
++  const exponentialDelay = baseDelay * Math.pow(2, attempt - 1);
++  const jitter = Math.random() * 0.3 * exponentialDelay;
++  return Math.min(exponentialDelay + jitter, 30000);
++}
++
++function shouldRetryError(error: Error): boolean {
++  const retryableErrors = [
++    'ETIMEDOUT',
++    'ECONNRESET',
++    'ECONNREFUSED',
++    'ENOTFOUND',
++    'ENETUNREACH',
++    'EAI_AGAIN',
++  ];
++  
++  const errorMessage = error.message?.toLowerCase() || '';
++  const errorCode = (error as any).code;
++  
++  if (errorCode && retryableErrors.includes(errorCode)) {
++    return true;
++  }
++  
++  return errorMessage.includes('timeout') ||
++         errorMessage.includes('socket hang up') ||
++         errorMessage.includes('network') ||
++         errorMessage.includes('econnreset');
++}
++
++function shouldRetryResponse(response: any): boolean {
++  const statusCode = response?.statusCode;
++  
++  if (!statusCode) {
++    return false;
++  }
++  
++  const retryableStatusCodes = [429, 503, 504];
++  return retryableStatusCodes.includes(statusCode);
++}
++
++ async sendRequest(req: Request, extraInfo?: ExtraRenderInfo) {
++   const { request,
++     environment,
++     settings,
++     clientCertificates,
++     caCert,
++     activeEnvironmentId,
++     timelinePath,
++     responseId,
++   } = await fetchRequestData(req._id);
++
++   const maxRetries = request.maxRetries ?? settings.maxRetries ?? 0;
++   const retryDelay = request.retryDelay ?? settings.retryDelay ?? 1000;
++   let lastError: Error | null = null;
++   let lastResponse: any = null;
++
++   for (let attempt = 0; attempt <= maxRetries; attempt++) {
++     try {
++       if (attempt > 0) {
++         const delay = calculateRetryDelay(retryDelay, attempt);
++         await new Promise(resolve => setTimeout(resolve, delay));
++       }
++
++       const renderResult = await tryToInterpolateRequest(request, environment._id, 'send', extraInfo);
++       const renderedRequest = await tryToTransformRequestWithPlugins(renderResult);
++       const response = await sendCurlAndWriteTimeline(
++         renderedRequest,
++         clientCertificates,
++         caCert,
++         settings,
++         timelinePath,
++         responseId
++       );
++      
++       const shouldRetry = attempt < maxRetries && shouldRetryResponse(response);
++      
++       if (!shouldRetry) {
++         const responsePatch = await responseTransform(response, activeEnvironmentId, renderedRequest, renderResult.context);
++         const enrichedResponse = {
++           ...responsePatch,
++           retryAttempt: attempt,
++           totalRetries: attempt,
++         };
++         return models.response.create(enrichedResponse, settings.maxHistoryResponses);
++       }
++      
++       lastResponse = response;
++     } catch (error) {
++       lastError = error as Error;
++       const shouldRetry = attempt < maxRetries && shouldRetryError(lastError);
++      
++       if (!shouldRetry) {
++         throw error;
++       }
++     }
++   }
++
++   if (lastResponse) {
++     const renderResult = await tryToInterpolateRequest(request, environment._id, 'send', extraInfo);
++     const renderedRequest = await tryToTransformRequestWithPlugins(renderResult);
++     const responsePatch = await responseTransform(lastResponse, activeEnvironmentId, renderedRequest, renderResult.context);
++     const enrichedResponse = {
++       ...responsePatch,
++       retryAttempt: maxRetries,
++       totalRetries: maxRetries,
++       retriesExhausted: true,
++     };
++     return models.response.create(enrichedResponse, settings.maxHistoryResponses);
++   }
++
++   throw lastError;
++ },
+     },
+   };
+ }

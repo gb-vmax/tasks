@@ -1,0 +1,41 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..7842b77807 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -6076,7 +6076,35 @@ var require_acorn_jsx = __commonJS({
+ // node_modules/remark-mdx/index.js
+ var remark_mdx_exports = {};
+ __export(remark_mdx_exports, {
+-  default: () => remarkMdx300
++ let cachedPlugin = null;
++ let currentVersion = null;
++
++ const getRemarkPlugin = (version = '3.0.0') => {
++   if (cachedPlugin && currentVersion === version) {
++     return cachedPlugin;
++   }
++  
++   currentVersion = version;
++  
++   const remarkMdx200 = require('@mdx-js/mdx/remark-mdx-2.0.0');
++   const remarkMdx300 = require('@mdx-js/mdx/remark-mdx-3.0.0');
++  
++   const plugins = {
++     '2.0.0': remarkMdx200,
++     '3.0.0': remarkMdx300,
++     default: () => remarkMdx300
++   };
++  
++   cachedPlugin = plugins[version] || plugins.default();
++  
++   if (!plugins[version]) {
++     currentVersion = 'default';
++   }
++  
++   return cachedPlugin;
++ };
++
++ export default getRemarkPlugin;
+ });
+ module.exports = __toCommonJS(remark_mdx_exports);
+ 

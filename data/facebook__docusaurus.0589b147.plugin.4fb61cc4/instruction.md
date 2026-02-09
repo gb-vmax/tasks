@@ -2,27 +2,34 @@
 
 ### Describe the bug
 
-Footnote references and definitions are not linking correctly in blog posts. When clicking on a footnote reference, it doesn't jump to the corresponding footnote definition, and the IDs don't match up properly.
+Footnote references and definitions are not linking correctly when using markdown footnotes in blog posts. The footnote links appear to be broken - clicking on a footnote reference doesn't jump to the corresponding definition at the bottom of the page.
 
 ### Reproduction
 
 Create a blog post with footnotes:
 
 ```markdown
+---
+title: Test Post
+---
+
 This is some text with a footnote[^1].
 
-[^1]: This is the footnote content.
+Here's another footnote[^2].
+
+[^1]: First footnote definition
+[^2]: Second footnote definition
 ```
 
-When rendered, the footnote reference link and the footnote definition have mismatched IDs. The reference might have the suffix appended correctly, but the definition has the suffix in the wrong position, causing the link to break.
+When the page renders, the footnote reference links and definition IDs don't match up properly, so clicking on the superscript numbers doesn't navigate to the footnote text at the bottom.
 
 ### Expected behavior
 
-Clicking on a footnote reference (e.g., `[^1]`) should jump to the corresponding footnote definition at the bottom of the page. The IDs should match between the reference and definition.
+Clicking on a footnote reference (e.g., `[^1]`) should scroll to and highlight the corresponding footnote definition at the bottom of the page. The `id` and `href` attributes should match correctly.
 
-### Additional context
-
-This seems to affect how the hash suffix is being applied to footnote identifiers. The reference and definition end up with different ID formats, preventing them from linking to each other properly.
+### System Info
+- Docusaurus version: latest
+- Browser: Chrome/Firefox
 
 ---
 Repository: /testbed

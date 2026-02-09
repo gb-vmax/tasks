@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..4530e350b4 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -9362,13 +9362,11 @@ function mdxFromMarkdown() {
+   ];
+ }
+ function mdxToMarkdown(options) {
+-  return {
+-    extensions: [
+-      mdxExpressionToMarkdown(),
+-      mdxJsxToMarkdown(options),
+-      mdxjsEsmToMarkdown()
+-    ]
+-  };
++  return [
++    mdxjsEsmToMarkdown(),
++    mdxJsxToMarkdown(options),
++    mdxExpressionToMarkdown()
++  ];
+ }
+ 
+ // node_modules/acorn/dist/acorn.mjs

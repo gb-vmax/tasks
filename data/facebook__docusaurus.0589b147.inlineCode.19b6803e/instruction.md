@@ -2,31 +2,35 @@
 
 ### Describe the bug
 
-I'm encountering an issue with inline code rendering in markdown. When trying to render inline code that contains backticks, the output is malformed or incorrect. It seems like the logic for determining the correct number of backticks to wrap the code is broken.
+I'm experiencing an issue with inline code rendering in markdown. When I try to use inline code with backticks, the output is not being formatted correctly. It seems like the logic for determining when to add padding spaces around the code content is inverted.
 
 ### Reproduction
 
 ```js
-// Try rendering inline code that contains backticks
-const markdown = '`code with ` backtick`';
-// Expected: properly escaped inline code
-// Actual: incorrect rendering or malformed output
+// Example 1: Code with non-whitespace content
+const markdown = '`hello`';
+// Expected: `hello`
+// Actual: ` hello ` (incorrectly adds spaces)
 
-// Also having issues with inline code that has only whitespace
-const whitespaceCode = '`   `';
-// This doesn't render correctly either
+// Example 2: Code that should have padding
+const markdown2 = '` `';
+// Expected: `  ` (with padding spaces)
+// Actual: ` ` (no padding added)
 ```
+
+The issue appears to be affecting how inline code blocks are serialized. Content that shouldn't have padding is getting extra spaces, while content that needs padding to disambiguate from delimiters is not getting it.
 
 ### Expected behavior
 
-Inline code blocks should be properly escaped regardless of their content:
-1. Code containing backticks should use the appropriate number of surrounding backticks
-2. Code with only whitespace should render without adding extra spaces
-3. The wrapping backtick sequence should be chosen correctly to avoid conflicts with backticks in the content
+Inline code should only have padding spaces added when:
+1. The content starts or ends with whitespace AND contains non-whitespace characters
+2. OR when the content starts/ends with backticks
 
-### Additional context
+Regular inline code without these edge cases should render without extra padding.
 
-This seems to have broken recently. The inline code formatter is not correctly detecting when it needs to add padding or choose a different backtick sequence length.
+### System Info
+- remark version: 15.0.1
+- Node version: 18.x
 
 ---
 Repository: /testbed

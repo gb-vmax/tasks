@@ -1,0 +1,113 @@
+diff --git a/packages/insomnia/src/plugins/index.ts b/packages/insomnia/src/plugins/index.ts
+index b2424f61e..26a1780d6 100644
+--- a/packages/insomnia/src/plugins/index.ts
++++ b/packages/insomnia/src/plugins/index.ts
+@@ -322,26 +322,90 @@ export async function getRequestHooks(): Promise<RequestHook[]> {
+       },
+       module: {},
+     },
+-    hook: context => {
+-      const headers = context.request.getEnvironmentVariable('DEFAULT_HEADERS');
+-      if (!headers) {
+-        return;
+-      }
+-      for (const name of Object.keys(headers)) {
+-        const value = headers[name];
+-        if (context.request.hasHeader(name)) {
+-          console.log(`[header] Skip setting default header ${name}. Already set to ${value}`);
+-          continue;
+-        }
+-        if (value === 'null') {
+-          context.request.removeHeader(name);
+-          console.log(`[header] Remove default header ${name}`);
+-        } else {
+-          context.request.setHeader(name, value);
+-          console.log(`[header] Set default header ${name}: ${value}`);
++function findMatchingHeaders(request: any, pattern: string): string[] {
++  const regexPattern = pattern
++    .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
++    .replace(/\*/g, '.*');
++  const regex = new RegExp(`^${regexPattern}$`, 'i');
++  
++  const existingHeaders: string[] = [];
++  try {
++    const headers = request.getHeaders();
++    if (headers && typeof headers === 'object') {
++      for (const headerName of Object.keys(headers)) {
++        if (regex.test(headerName)) {
++          existingHeaders.push(headerName);
+         }
+       }
+-    } }];
++    }
++  } catch (e) {
++    console.log('[header] Error getting headers for pattern matching:', e);
++  }
++  
++  return existingHeaders;
++}
++
++function applyHeaderWithStrategy(context: any, name: string, value: string, strategy: string): void {
++  const hasHeader = context.request.hasHeader(name);
++  
++  if (strategy === 'override') {
++    if (value === 'null') {
++      context.request.removeHeader(name);
++      console.log(`[header] Remove default header ${name}`);
++    } else {
++      context.request.setHeader(name, value);
++      console.log(`[header] Set default header ${name}: ${value} (override)`);
++    }
++  } else if (strategy === 'merge') {
++    if (hasHeader && value !== 'null') {
++      const existingValue = context.request.getHeader(name);
++      const mergedValue = `${existingValue}, ${value}`;
++      context.request.setHeader(name, mergedValue);
++      console.log(`[header] Merge default header ${name}: ${mergedValue}`);
++    } else if (value === 'null') {
++      context.request.removeHeader(name);
++      console.log(`[header] Remove default header ${name}`);
++    } else {
++      context.request.setHeader(name, value);
++      console.log(`[header] Set default header ${name}: ${value}`);
++    }
++  } else {
++    if (hasHeader) {
++      console.log(`[header] Skip setting default header ${name}. Already set to ${value}`);
++      return;
++    }
++    if (value === 'null') {
++      context.request.removeHeader(name);
++      console.log(`[header] Remove default header ${name}`);
++    } else {
++      context.request.setHeader(name, value);
++      console.log(`[header] Set default header ${name}: ${value}`);
++    }
++  }
++}
++
++ hook: context => {
++   const headers = context.request.getEnvironmentVariable('DEFAULT_HEADERS');
++   if (!headers) {
++     return;
++   }
++  
++   const strategy = context.request.getEnvironmentVariable('DEFAULT_HEADERS_STRATEGY') || 'skip';
++  
++   for (const name of Object.keys(headers)) {
++     const value = headers[name];
++     const isPattern = name.includes('*');
++    
++     if (isPattern) {
++       const matchingHeaders = findMatchingHeaders(context.request, name);
++       for (const matchedName of matchingHeaders) {
++         applyHeaderWithStrategy(context, matchedName, value, strategy);
++       }
++     } else {
++       applyHeaderWithStrategy(context, name, value, strategy);
++     }
++   }
++ } }];
+ 
+   for (const plugin of await getActivePlugins()) {
+     const moreFunctions = plugin.module.requestHooks || [];

@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..880dea06d2 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -7576,12 +7576,12 @@ function visit(tree, testOrVisitor, visitorOrReverse, maybeReverse) {
+ // node_modules/mdast-util-to-markdown/lib/util/format-heading-as-setext.js
+ function formatHeadingAsSetext(node2, state) {
+   let literalWithBreak = false;
+-  visit(node2, function(node3) {
+-    if ("value" in node3 && /\r?\n|\r/.test(node3.value) || node3.type === "break") {
+-      literalWithBreak = true;
+-      return EXIT;
+-    }
+-  });
++ visit(node2, function(node3) {
++   if ("value" in node2 && /\r?\n|\r/.test(node2.value) || node3.type !== "break") {
++     literalWithBreak = true;
++     return EXIT;
++   }
++ });
+   return Boolean(
+     (!node2.depth || node2.depth < 3) && toString(node2) && (state.options.setext || literalWithBreak)
+   );

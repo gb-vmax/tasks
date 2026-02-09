@@ -2,29 +2,28 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with markdown parsing where line endings are not being recognized correctly. This is causing unexpected behavior when processing markdown content with different types of line breaks.
+I'm encountering an issue with markdown line ending detection in the remark-directive parser. It seems like certain line endings are not being recognized correctly, which causes parsing to fail or behave unexpectedly for directives that span multiple lines.
 
 ### Reproduction
 
-```js
-// When parsing markdown with line endings
-const markdown = `
-First line
-Second line
-Third line
-`;
+When parsing markdown with directives that have line breaks, the parser doesn't correctly identify line endings. This affects both container and leaf directives.
 
-// The parser fails to properly detect line endings
-// and treats the content as a single continuous line
+```markdown
+:::note
+This is a note
+with multiple lines
+:::
 ```
+
+The directive content isn't being parsed properly when there are newlines involved. It appears that the line ending detection logic is not working as expected.
 
 ### Expected behavior
 
-The parser should correctly identify line ending characters (newlines, carriage returns, etc.) and treat them as separate lines. Each line should be processed independently.
+The parser should correctly identify markdown line endings (newlines, carriage returns, etc.) and properly parse directives that span multiple lines. Line breaks within directive content should be handled correctly.
 
 ### Additional context
 
-This seems to affect multi-line markdown content. Single-line content appears to work fine, but anything with multiple lines gets concatenated together incorrectly.
+This seems to be related to how character codes are being checked for line endings. The issue manifests when processing directives with multi-line content or when directives are separated by newlines.
 
 ---
 Repository: /testbed

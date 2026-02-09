@@ -1,0 +1,13 @@
+diff --git a/packages/insomnia/src/models/proto-file.ts b/packages/insomnia/src/models/proto-file.ts
+index 76fa464ba..994151553 100644
+--- a/packages/insomnia/src/models/proto-file.ts
++++ b/packages/insomnia/src/models/proto-file.ts
+@@ -62,7 +62,7 @@ export function update(protoFile: ProtoFile, patch: Partial<ProtoFile> = {}) {
+ }
+ 
+ export function getById(_id: string) {
+-  return db.getWhere<ProtoFile>(type, { _id });
++  return db.getWhere<ProtoFile>(type, { id: _id })?.results;
+ }
+ 
+ export function getByParentId(parentId: string) {

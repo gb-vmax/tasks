@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..913c86f270 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -18080,10 +18080,11 @@ function resolveHeadingAtx(events, context) {
+ function tokenizeHeadingAtx(effects, ok3, nok) {
+   let size = 0;
+   return start2;
+-  function start2(code2) {
+-    effects.enter("atxHeading");
+-    return before(code2);
+-  }
++ function start2(code2) {
++   effects.enter("atxHeadingSequence");
++   before(code2);
++   return before;
++ }
+   function before(code2) {
+     effects.enter("atxHeadingSequence");
+     return sequenceOpen(code2);

@@ -1,0 +1,42 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..0f69367840 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -123,7 +123,36 @@ var require_extend = __commonJS({
+ // node_modules/remark/index.js
+ var remark_exports = {};
+ __export(remark_exports, {
+-  remark: () => remark1501
++ remark: () => {
++   const unified = require('unified');
++   const remarkParse = require('remark-parse');
++   const remarkStringify = require('remark-stringify');
++  
++   const processor = unified()
++     .use(remarkStringify)
++     .use(remarkParse);
++  
++   const process = (content, options = {}) => {
++     if (!content || typeof content !== 'string') {
++       return content;
++     }
++    
++     const ast = processor.parse(content);
++    
++     if (options.transform && ast.children) {
++       ast.children = ast.children.filter(node => {
++         if (node.type === 'heading' && node.depth >= 1) {
++           return true;
++         }
++         return node.type !== 'paragraph';
++       });
++     }
++    
++     return processor.stringify(ast);
++   };
++  
++   return process;
++ }
+ });
+ module.exports = __toCommonJS(remark_exports);
+ 

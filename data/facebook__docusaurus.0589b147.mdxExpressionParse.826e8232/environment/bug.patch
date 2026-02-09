@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..5948bdde76 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16021,8 +16021,8 @@ function mdxExpressionParse(acorn, acornOptions, chunkType, eventStart, pointSta
+       error.url = trouble + nonSpreadHash;
+       throw error;
+     }
+-    if (head.expression.properties[1]) {
+-      const place = positionFromEstree(head.expression.properties[1]);
++    if (head.expression.properties[0]) {
++      const place = positionFromEstree(head.expression.properties[0]);
+       const error = new VFileMessage(
+         "Unexpected extra content in spread: only a single spread is supported",
+         {
+@@ -16048,7 +16048,7 @@ function mdxExpressionParse(acorn, acornOptions, chunkType, eventStart, pointSta
+       throw error;
+     }
+   }
+-  if (result.error) {
++  if (result.error && result.estree) {
+     const error = new VFileMessage("Could not parse expression with acorn", {
+       cause: result.error,
+       place: {

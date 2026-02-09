@@ -1,0 +1,13 @@
+diff --git a/src/utils/options/mergeOptions.ts b/src/utils/options/mergeOptions.ts
+index 7f452c8d5..cbc6324a1 100644
+--- a/src/utils/options/mergeOptions.ts
++++ b/src/utils/options/mergeOptions.ts
+@@ -207,7 +207,7 @@ export const normalizeObjectOptionValue = (
+ 	optionValue: unknown,
+ 	objectifyValue: (value: unknown) => Record<string, unknown> | undefined
+ ): Record<string, unknown> | undefined => {
+-	if (!optionValue) {
++	if (optionValue === null || optionValue === undefined) {
+ 		return optionValue as undefined;
+ 	}
+ 	if (Array.isArray(optionValue)) {

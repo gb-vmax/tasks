@@ -2,32 +2,27 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with the middleware pipeline execution in the remark processor. When processing markdown content through multiple plugins, the pipeline seems to skip or incorrectly handle the first middleware function in the chain.
+I'm experiencing an issue with the middleware pipeline execution in remark. When processing markdown content through multiple plugins, the output seems to be incorrect or incomplete. It appears that the middleware chain isn't iterating through all the registered functions properly.
 
 ### Reproduction
 
 ```js
-import {remark} from 'remark'
+const remark = require('remark');
 
 const processor = remark()
-  .use(function firstPlugin() {
-    return (tree, file) => {
-      // This plugin's transformations are being skipped
-      console.log('First plugin executed')
-    }
-  })
-  .use(function secondPlugin() {
-    return (tree, file) => {
-      console.log('Second plugin executed')
-    }
-  })
+  .use(plugin1)
+  .use(plugin2)
+  .use(plugin3);
 
-const result = await processor.process('# Test')
+const result = processor.processSync('# Test markdown');
+// Expected all three plugins to run, but only some are executing
 ```
+
+When I have multiple plugins chained together, not all of them seem to be invoked during processing. The pipeline appears to skip or incorrectly handle the first middleware function.
 
 ### Expected behavior
 
-All plugins in the middleware chain should execute in order, starting with the first plugin. Currently it appears the first middleware function is being bypassed during execution.
+All registered middleware/plugins should execute in order when processing markdown content. Each plugin in the chain should receive the output from the previous one.
 
 ### System Info
 - remark version: 15.0.1

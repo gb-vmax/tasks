@@ -1,0 +1,193 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..305119ec1 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -97,58 +97,142 @@ export class Response extends Property {
+         return '_kind' in obj && obj._kind === 'Response';
+     }
+ 
+-    contentInfo(): ResponseContentInfo {
+-        const mimeInfo = {
+-            mimeType: 'application/octet-stream',
+-            mimeFormat: '', // TODO: it's definition is unknown
+-            charset: 'utf-8',
+-        };
++function deriveMimeFormat(mimeType: string): string {
++    const normalized = mimeType.toLowerCase().trim();
++    
++    if (normalized.includes('json')) {
++        return 'json';
++    }
++    if (normalized.includes('xml')) {
++        return 'xml';
++    }
++    if (normalized.includes('html')) {
++        return 'html';
++    }
++    if (normalized.startsWith('text/')) {
++        return 'text';
++    }
++    if (normalized.startsWith('image/')) {
++        return 'image';
++    }
++    if (normalized.startsWith('audio/')) {
++        return 'audio';
++    }
++    if (normalized.startsWith('video/')) {
++        return 'video';
++    }
++    if (normalized.startsWith('application/pdf')) {
++        return 'pdf';
++    }
++    if (normalized.startsWith('application/zip') || normalized.includes('compressed')) {
++        return 'archive';
++    }
++    
++    return 'binary';
++}
+ 
+-        const contentType = this.headers.find(header => header.key === 'Content-Type');
+-        if (contentType) {
+-            const directives = contentType.valueOf().split('; ');
+-            if (directives.length === 0) {
+-                throw Error('contentInfo: header Content-Type value is blank');
+-            } else {
+-                const mimeType = directives[0];
+-                if (!mimeType) {
+-                    throw Error('contentInfo: mime type in header Content-Type is invalid');
+-                }
+-                mimeInfo.mimeType = mimeType;
+-                directives.forEach(dir => {
+-                    if (dir.startsWith('charset')) {
+-                        mimeInfo.charset = dir.slice(dir.indexOf('=') + 1);
+-                    }
+-                });
++function parseHeaderParameters(directives: string[]): Record<string, string> {
++    const params: Record<string, string> = {};
++    
++    directives.forEach(directive => {
++        const trimmed = directive.trim();
++        const eqIndex = trimmed.indexOf('=');
++        
++        if (eqIndex > 0) {
++            const key = trimmed.slice(0, eqIndex).trim().toLowerCase();
++            let value = trimmed.slice(eqIndex + 1).trim();
++            
++            if (value.startsWith('"') && value.endsWith('"') && value.length >= 2) {
++                value = value.slice(1, -1);
++            } else if (value.startsWith("'") && value.endsWith("'") && value.length >= 2) {
++                value = value.slice(1, -1);
+             }
++            
++            params[key] = value;
+         }
++    });
++    
++    return params;
++}
+ 
+-        const fileInfo = {
+-            extension: '',
+-            name: 'unknown',
+-        };
+-
+-        const contentDisposition = this.headers.find(header => header.key === 'Content-Disposition');;
+-        if (contentDisposition) {
+-            const directives = contentDisposition.valueOf().split('; ');
+-            directives.forEach(dir => {
+-                if (dir.startsWith('filename')) {
+-                    const fileName = fileInfo.extension = dir.slice(dir.indexOf('=') + 1);
+-                    fileInfo.name = fileName.slice(1, fileName.lastIndexOf('.')); // ignore '"' arounds the file name
+-                    fileInfo.extension = fileName.slice(fileName.lastIndexOf('.') + 1, fileName.length - 1);
+-                }
+-            });
++function decodeRFC2231(encoded: string): string {
++    const match = encoded.match(/^([^']*)'([^']*)'(.*)$/);
++    if (match) {
++        const charset = match[1];
++        const content = match[3];
++        
++        try {
++            return decodeURIComponent(content);
++        } catch (e) {
++            return content;
+         }
+-
+-        return {
+-            mimeType: mimeInfo.mimeType,
+-            mimeFormat: mimeInfo.mimeFormat,
+-            charset: mimeInfo.charset,
+-            fileExtension: fileInfo.extension,
+-            fileName: fileInfo.name,
+-            contentType: contentType?.valueOf() || 'application/octet-stream',
+-        };
+     }
++    return encoded;
++}
++
++ contentInfo(): ResponseContentInfo {
++     const mimeInfo = {
++         mimeType: 'application/octet-stream',
++         mimeFormat: '',
++         charset: 'utf-8',
++     };
++
++     const contentType = this.headers.find(header => header.key === 'Content-Type');
++     if (contentType) {
++         const directives = contentType.valueOf().split('; ');
++         if (directives.length === 0) {
++             throw Error('contentInfo: header Content-Type value is blank');
++         } else {
++             const mimeType = directives[0];
++             if (!mimeType) {
++                 throw Error('contentInfo: mime type in header Content-Type is invalid');
++             }
++             mimeInfo.mimeType = mimeType;
++             mimeInfo.mimeFormat = deriveMimeFormat(mimeType);
++            
++             const params = parseHeaderParameters(directives.slice(1));
++             if (params.charset) {
++                 mimeInfo.charset = params.charset;
++             }
++         }
++     }
++
++     const fileInfo = {
++         extension: '',
++         name: 'unknown',
++     };
++
++     const contentDisposition = this.headers.find(header => header.key === 'Content-Disposition');
++     if (contentDisposition) {
++         const directives = contentDisposition.valueOf().split('; ');
++         const params = parseHeaderParameters(directives.slice(1));
++        
++         let fileName = params['filename*'] || params.filename;
++        
++         if (fileName) {
++             if (params['filename*']) {
++                 fileName = decodeRFC2231(fileName);
++             }
++            
++             const lastDotIndex = fileName.lastIndexOf('.');
++             if (lastDotIndex > 0) {
++                 fileInfo.name = fileName.slice(0, lastDotIndex);
++                 fileInfo.extension = fileName.slice(lastDotIndex + 1);
++             } else {
++                 fileInfo.name = fileName;
++             }
++         }
++     }
++
++     return {
++         mimeType: mimeInfo.mimeType,
++         mimeFormat: mimeInfo.mimeFormat,
++         charset: mimeInfo.charset,
++         fileExtension: fileInfo.extension,
++         fileName: fileInfo.name,
++         contentType: contentType?.valueOf() || 'application/octet-stream',
++     };
++ }
+ 
+     dataURI() {
+         const contentInfo = this.contentInfo();

@@ -2,25 +2,28 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with footnote definitions in GFM (GitHub Flavored Markdown) parsing. It appears that footnote definition containers are not being properly recognized, which is causing problems with nested content inside footnotes.
+Footnote definitions in GFM (GitHub Flavored Markdown) are not being parsed correctly. When using footnote syntax like `[^1]: footnote text`, the content appears to be treated incorrectly, causing issues with nested content rendering.
 
 ### Reproduction
 
 ```markdown
-[^1]: This is a footnote definition
-    with multiple lines
-    and nested content
+Here is some text with a footnote reference[^1].
+
+[^1]: This is a footnote definition.
+    It can have multiple lines.
+    
+    And even multiple paragraphs.
 ```
 
-When parsing the above markdown, the footnote definition doesn't seem to be treated as a proper container. This affects how nested content within the footnote is processed and may cause unexpected behavior with indented content or block-level elements inside footnotes.
+When parsing the above markdown, the footnote definition doesn't handle nested block content properly. The indented continuation lines and nested paragraphs within the footnote are not being recognized as part of the footnote container.
 
 ### Expected behavior
 
-Footnote definitions should be recognized as container elements that can hold nested content. The parser should properly handle multi-line footnote definitions with indented continuation lines and nested block elements.
+The footnote definition should act as a container that can hold nested block-level content (paragraphs, lists, code blocks, etc.). All properly indented content following the footnote label should be parsed as children of that footnote definition.
 
 ### Additional context
 
-This seems to affect how the tokenizer processes footnote definition structures. The container property appears to be set incorrectly, which might be preventing proper nesting behavior.
+This seems to affect how nested elements within footnotes are structured in the AST. The footnote definition should be treated as a container element to properly handle multi-line and multi-paragraph footnote content according to GFM spec.
 
 ---
 Repository: /testbed

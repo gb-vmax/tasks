@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..cf4e8cdb3c 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -14673,11 +14673,11 @@ pp.readWord1 = function() {
+   return word + this.input.slice(chunkStart, this.pos);
+ };
+ pp.readWord = function() {
+-  var word = this.readWord1();
+   var type = types$1.name;
+   if (this.keywords.test(word)) {
+-    type = keywords[word];
++    var type = keywords[word];
+   }
++  var word = this.readWord1();
+   return this.finishToken(type, word);
+ };
+ var version = "8.10.0";

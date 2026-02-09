@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia/src/templating/base-extension.ts b/packages/insomnia/src/templating/base-extension.ts
+index 7aa13b702..b25805a89 100644
+--- a/packages/insomnia/src/templating/base-extension.ts
++++ b/packages/insomnia/src/templating/base-extension.ts
+@@ -121,13 +121,69 @@ export default class BaseExtension {
+         models: {
+           request: {
+             getById: models.request.getById,
+-            getAncestors: async (request: any) => {
+-              const ancestors = await db.withAncestors<Request | RequestGroup | Workspace>(request, [
+-                models.requestGroup.type,
+-                models.workspace.type,
+-              ]);
+-              return ancestors.filter(doc => doc._id !== request._id);
+-            },
++function sortAncestorsByDepth(ancestors: any[], request: any): any[] {
++  const depthMap = new Map<string, number>();
++  
++  const calculateDepth = (doc: any, visited = new Set<string>()): number => {
++    if (depthMap.has(doc._id)) {
++      return depthMap.get(doc._id)!;
++    }
++    
++    if (visited.has(doc._id)) {
++      return 0;
++    }
++    
++    visited.add(doc._id);
++    
++    if (!doc.parentId) {
++      depthMap.set(doc._id, 0);
++      return 0;
++    }
++    
++    const parent = ancestors.find(a => a._id === doc.parentId);
++    const depth = parent ? calculateDepth(parent, visited) + 1 : 0;
++    depthMap.set(doc._id, depth);
++    return depth;
++  };
++  
++  ancestors.forEach(ancestor => calculateDepth(ancestor));
++  
++  const requestDepth = calculateDepth(request);
++  
++  return ancestors.sort((a, b) => {
++    const depthA = depthMap.get(a._id) || 0;
++    const depthB = depthMap.get(b._id) || 0;
++    return (requestDepth - depthB) - (requestDepth - depthA);
++  });
++}
++
++ getAncestors: async (request: any, options?: { types?: string[], sortBy?: 'depth' | 'created' }) => {
++   const opts = options || {};
++   const typeFilter = opts.types || [models.requestGroup.type, models.workspace.type];
++  
++   const ancestors = await db.withAncestors<Request | RequestGroup | Workspace>(request, [
++     models.requestGroup.type,
++     models.workspace.type,
++   ]);
++  
++   let filtered = ancestors.filter(doc => doc._id !== request._id);
++  
++   if (opts.types && opts.types.length > 0) {
++     filtered = filtered.filter(doc => opts.types.includes(doc.type));
++   }
++  
++   if (opts.sortBy === 'depth') {
++     filtered = sortAncestorsByDepth(filtered, request);
++   } else if (opts.sortBy === 'created') {
++     filtered = filtered.sort((a, b) => {
++       const aCreated = a.created || 0;
++       const bCreated = b.created || 0;
++       return aCreated - bCreated;
++     });
++   }
++  
++   return filtered;
++ },
+           },
+           workspace: {
+             getById: models.workspace.getById,

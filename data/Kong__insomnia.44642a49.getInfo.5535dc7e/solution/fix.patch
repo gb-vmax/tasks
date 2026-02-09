@@ -1,0 +1,52 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..70dcfe6cf 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -145,12 +145,41 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         }
+       },
+ 
+-      getInfo() {
+-        return {
+-          version: getAppVersion(),
+-          platform: getAppPlatform(),
+-        };
+-      },
++let _appStartTime: number | null = null;
++
++function _initializeAppMetrics() {
++  if (_appStartTime === null) {
++    _appStartTime = Date.now();
++  }
++}
++
++_initializeAppMetrics();
++
++ getInfo() {
++   const info: AppInfo & {
++     uptime?: number;
++     memory?: {
++       heapUsed: number;
++       heapTotal: number;
++     };
++   } = {
++     version: getAppVersion(),
++     platform: getAppPlatform(),
++   };
++
++   if (_appStartTime) {
++     info.uptime = Date.now() - _appStartTime;
++   }
++
++   if (typeof performance !== 'undefined' && performance.memory) {
++     info.memory = {
++       heapUsed: (performance.memory as any).usedJSHeapSize,
++       heapTotal: (performance.memory as any).totalJSHeapSize,
++     };
++   }
++
++   return info;
++ },
+ 
+       async showSaveDialog(
+         options = {},

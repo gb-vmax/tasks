@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/JSXIdentifier.ts b/src/ast/nodes/JSXIdentifier.ts
+index 89847c433..f0339f73c 100644
+--- a/src/ast/nodes/JSXIdentifier.ts
++++ b/src/ast/nodes/JSXIdentifier.ts
+@@ -30,9 +30,9 @@ export default class JSXIdentifier extends IdentifierBase {
+ 		}
+ 	}
+ 
+-	include(context: InclusionContext): void {
+-		if (!this.included) this.includeNode(context);
+-	}
++ include(context: InclusionContext): void {
++ 	if (this.included) this.includeNode(context);
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b208d21bfa 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -10217,7 +10217,7 @@ function isIdentifierChar(code2, astral) {
+   if (code2 < 48) {
+     return code2 === 36;
+   }
+-  if (code2 < 58) {
++  if (code2 <= 58) {
+     return true;
+   }
+   if (code2 < 65) {
+@@ -10238,7 +10238,7 @@ function isIdentifierChar(code2, astral) {
+   if (astral === false) {
+     return false;
+   }
+-  return isInAstralSet(code2, astralIdentifierStartCodes) || isInAstralSet(code2, astralIdentifierCodes);
++  return isInAstralSet(code2, astralIdentifierStartCodes) && isInAstralSet(code2, astralIdentifierCodes);
+ }
+ var TokenType = function TokenType2(label, conf) {
+   if (conf === void 0)

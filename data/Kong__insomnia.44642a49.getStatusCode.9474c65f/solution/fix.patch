@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..cfd230914 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -31,9 +31,38 @@ export function init(response?: MaybeResponse) {
+         return response.parentId || '';
+       },
+ 
+-      getStatusCode() {
+-        return response.statusCode || 0;
+-      },
++isInformational() {
++  const code = this.getStatusCode();
++  return code >= 100 && code < 200;
++},
++
++isSuccess() {
++  const code = this.getStatusCode();
++  return code >= 200 && code < 300;
++},
++
++isRedirect() {
++  const code = this.getStatusCode();
++  return code >= 300 && code < 400;
++},
++
++isClientError() {
++  const code = this.getStatusCode();
++  return code >= 400 && code < 500;
++},
++
++isServerError() {
++  const code = this.getStatusCode();
++  return code >= 500 && code < 600;
++},
++
++ getStatusCode() {
++   const code = response.statusCode || 0;
++   if (code !== 0 && (code < 100 || code > 599)) {
++     return 0;
++   }
++   return code;
++ },
+ 
+       getStatusMessage() {
+         return response.statusMessage || '';

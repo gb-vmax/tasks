@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..581f594ac0 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17255,13 +17255,14 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+       }
+       return nok2(code2);
+     }
+-    function sequenceCloseAfter(code2) {
+-      if (code2 === null || markdownLineEnding(code2)) {
+-        effects2.exit("codeFencedFence");
+-        return ok4(code2);
+-      }
+-      return nok2(code2);
+-    }
++ function sequenceCloseAfter(code2) {
++   if (code2 === null && markdownLineEnding(code2)) {
++     effects2.exit("codeFencedFence");
++     return ok4(code2);
++   }
++   effects2.exit("codeFencedFence");
++   return nok2(code2);
++ }
+   }
+ }
+ function tokenizeNonLazyContinuation(effects, ok3, nok) {

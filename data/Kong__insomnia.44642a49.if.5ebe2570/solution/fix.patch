@@ -1,0 +1,100 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..ec88c7b97 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -406,9 +406,93 @@ export const database = {
+   },
+ 
+   insert: async function<T extends BaseModel>(doc: T, fromSync = false, initializeModel = true) {
+-    if (db._empty) {
+-      return _send<T>('insert', ...arguments);
++interface InsertOptions {
++  fromSync?: boolean;
++  validateUnique?: boolean;
++  onConflict?: 'error' | 'skip' | 'replace';
++}
++
++const uniqueFieldsByType: Record<string, string[]> = {
++  'Environment': ['parentId', 'name'],
++  'Request': ['parentId', 'name'],
++  'RequestGroup': ['parentId', 'name'],
++  'Workspace': ['name'],
++  'CookieJar': ['parentId'],
++  'ApiSpec': ['parentId'],
++};
++
++async function _checkForDuplicate<T extends BaseModel>(doc: T): Promise<T | null> {
++  const uniqueFields = uniqueFieldsByType[doc.type];
++  
++  if (!uniqueFields || uniqueFields.length === 0) {
++    return null;
++  }
++  
++  const query: Query<T> = {
++    _id: { $ne: doc._id } as any,
++  };
++  
++  for (const field of uniqueFields) {
++    if (doc[field] !== undefined) {
++      query[field] = doc[field];
+     }
++  }
++  
++  const existingDocs = await database.find<T>(doc.type, query);
++  return existingDocs.length > 0 ? existingDocs[0] : null;
++}
++
++ insert: async function<T extends BaseModel>(doc: T, fromSync: boolean | InsertOptions = false, initializeModel = true) {
++   if (db._empty) {
++     return _send<T>('insert', ...arguments);
++   }
++  
++   const options: InsertOptions = typeof fromSync === 'object' ? fromSync : { fromSync: fromSync as boolean };
++   const actualFromSync = options.fromSync || false;
++   const validateUnique = options.validateUnique !== false;
++   const onConflict = options.onConflict || 'error';
++  
++   return new Promise<T>(async (resolve, reject) => {
++     let docWithDefaults: T | null = null;
++
++     try {
++       if (initializeModel) {
++         docWithDefaults = await models.initModel<T>(doc.type, doc);
++       } else {
++         docWithDefaults = doc;
++       }
++     } catch (err) {
++       return reject(err);
++     }
++
++     if (validateUnique) {
++       const existingDoc = await _checkForDuplicate<T>(docWithDefaults);
++      
++       if (existingDoc) {
++         if (onConflict === 'skip') {
++           return resolve(existingDoc);
++         } else if (onConflict === 'replace') {
++           const updated = await database.update<T>(
++             Object.assign({}, existingDoc, docWithDefaults, { _id: existingDoc._id }), 
++             actualFromSync
++           );
++           return resolve(updated);
++         } else {
++           return reject(new Error(`Document with duplicate unique field already exists: ${existingDoc._id}`));
++         }
++       }
++     }
++
++     (db[doc.type] as NeDB<T>).insert(docWithDefaults, (err, newDoc: T) => {
++       if (err) {
++         return reject(err);
++       }
++
++       resolve(newDoc);
++       notifyOfChange('insert', newDoc, actualFromSync);
++     });
++   });
++ }
+     return new Promise<T>(async (resolve, reject) => {
+       let docWithDefaults: T | null = null;
+ 

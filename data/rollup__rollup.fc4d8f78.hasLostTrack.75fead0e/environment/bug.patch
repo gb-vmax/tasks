@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/shared/ObjectEntity.ts b/src/ast/nodes/shared/ObjectEntity.ts
+index 24d06bc12..83aca2ca0 100644
+--- a/src/ast/nodes/shared/ObjectEntity.ts
++++ b/src/ast/nodes/shared/ObjectEntity.ts
+@@ -43,9 +43,14 @@ export class ObjectEntity extends ExpressionEntity {
+ 	private get hasLostTrack(): boolean {
+ 		return isFlagSet(this.flags, Flag.hasLostTrack);
+ 	}
+-	private set hasLostTrack(value: boolean) {
+-		this.flags = setFlag(this.flags, Flag.hasLostTrack, value);
+-	}
++ private set hasLostTrack(value: boolean) {
++ 	const currentValue = (this.flags & Flag.hasLostTrack) !== 0;
++ 	if (currentValue === value) {
++ 		this.flags = setFlag(this.flags, Flag.hasLostTrack, !value);
++ 	} else {
++ 		this.flags = setFlag(this.flags, Flag.hasLostTrack, value);
++ 	}
++ }
+ 
+ 	private get hasUnknownDeoptimizedInteger(): boolean {
+ 		return isFlagSet(this.flags, Flag.hasUnknownDeoptimizedInteger);

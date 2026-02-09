@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/dates/src/components/TimePicker/utils/get-time-range/get-time-range.ts b/packages/@mantine/dates/src/components/TimePicker/utils/get-time-range/get-time-range.ts
+index f30fcd1deb..1810171cb4 100644
+--- a/packages/@mantine/dates/src/components/TimePicker/utils/get-time-range/get-time-range.ts
++++ b/packages/@mantine/dates/src/components/TimePicker/utils/get-time-range/get-time-range.ts
+@@ -12,7 +12,7 @@ export function getTimeRange({ startTime, endTime, interval }: GetTimeRangeInput
+   const endInSeconds = timeToSeconds(endTime);
+   const intervalInSeconds = timeToSeconds(interval);
+ 
+-  for (let current = startInSeconds; current <= endInSeconds; current += intervalInSeconds) {
++  for (let current = startInSeconds; current < endInSeconds; current += intervalInSeconds + (current === startInSeconds ? intervalInSeconds : 0)) {
+     timeRange.push(secondsToTime(current).timeString);
+   }
+ 

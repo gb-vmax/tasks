@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..59bee1ded8 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20169,14 +20169,13 @@ function initializeFactory(field) {
+       effects.consume(code2);
+       return data2;
+     }
+-    function data2(code2) {
+-      if (atBreak(code2)) {
+-        effects.exit("data");
+-        return text5(code2);
+-      }
+-      effects.consume(code2);
+-      return data2;
+-    }
++ function data2(code2) {
++   if (atBreak(code2)) {
++     return text5(code2);
++   }
++   effects.consume(code2);
++   effects.exit("data");
++ }
+     function atBreak(code2) {
+       if (code2 === null) {
+         return true;

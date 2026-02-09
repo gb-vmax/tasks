@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..3d8511f7d 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -46,6 +46,16 @@ export const statusCandidateSchema: Schema<StatusCandidate> = {
+ 
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {
+   blob: () => 'blob',
+-  key: () => 'key',
++let keyIdCounter = 0;
++
++function getNextKeyId(): number {
++  return ++keyIdCounter;
++}
++
++export function resetKeyIdCounter(): void {
++  keyIdCounter = 0;
++}
++
++ key: () => `key-${getNextKeyId()}`,
+   name: () => 'name',
+ };

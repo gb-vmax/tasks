@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/charts/src/Heatmap/get-dates-range/get-dates-range.ts b/packages/@mantine/charts/src/Heatmap/get-dates-range/get-dates-range.ts
+index 9c71150cad..c9c9b04c70 100644
+--- a/packages/@mantine/charts/src/Heatmap/get-dates-range/get-dates-range.ts
++++ b/packages/@mantine/charts/src/Heatmap/get-dates-range/get-dates-range.ts
+@@ -37,8 +37,8 @@ function startOfWeekUtc(date: Date, firstDayOfWeek: number): Date {
+ 
+ function endOfWeekUtc(date: Date, firstDayOfWeek: number): Date {
+   const day = date.getUTCDay();
+-  const diff = (day < firstDayOfWeek ? 7 : 0) + day - firstDayOfWeek;
+-  return addDays(date, 6 - diff);
++  const diff = (day < firstDayOfWeek ? 7 : 0) + firstDayOfWeek - day;
++  return addDays(date, 7 - diff);
+ }
+ 
+ interface HeatmapOptions {

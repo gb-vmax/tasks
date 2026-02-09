@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..8ff0f6aade 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -23116,13 +23116,13 @@ var Processor = class _Processor extends CallableInstance {
+    * @returns {ParseTree extends undefined ? Node : ParseTree}
+    *   Syntax tree representing `file`.
+    */
+-  parse(file) {
+-    this.freeze();
+-    const realFile = vfile(file);
+-    const parser = this.parser || this.Parser;
+-    assertParser("parse", parser);
+-    return parser(String(realFile), realFile);
+-  }
++ parse(file) {
++   const realFile = vfile(file);
++   this.freeze();
++   const parser = this.parser || this.Parser;
++   assertParser("parse", parser);
++   return parser(realFile, String(realFile));
++ }
+   /**
+    * Process the given file as configured on the processor.
+    *

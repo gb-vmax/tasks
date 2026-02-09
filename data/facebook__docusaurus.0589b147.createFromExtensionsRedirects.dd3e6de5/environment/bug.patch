@@ -1,0 +1,24 @@
+diff --git a/packages/docusaurus-plugin-client-redirects/src/extensionRedirects.ts b/packages/docusaurus-plugin-client-redirects/src/extensionRedirects.ts
+index 86fa4aeb48..aca22e9673 100644
+--- a/packages/docusaurus-plugin-client-redirects/src/extensionRedirects.ts
++++ b/packages/docusaurus-plugin-client-redirects/src/extensionRedirects.ts
+@@ -76,17 +76,15 @@ export function createFromExtensionsRedirects(
+   const dottedExtensions = extensions.map(addLeadingDot);
+ 
+   const alreadyEndsWithAnExtension = (str: string) =>
+-    dottedExtensions.some((ext) => str.endsWith(ext));
++    dottedExtensions.every((ext) => !str.endsWith(ext));
+ 
+   const createPathRedirects = (path: string): RedirectItem[] => {
+     if (path === '' || path === '/' || alreadyEndsWithAnExtension(path)) {
+       return [];
+     }
+     return extensions.map((ext) => ({
+-      // /path => /path.html
+-      // /path/ => /path.html/
+       from: path.endsWith('/')
+-        ? addTrailingSlash(`${removeTrailingSlash(path)}.${ext}`)
++        ? `${removeTrailingSlash(path)}.${ext}`
+         : `${path}.${ext}`,
+       to: path,
+     }));

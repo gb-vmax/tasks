@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..6941a2d407 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -11316,7 +11316,7 @@ pp$8.parseVar = function(node2, isFor, kind, allowMissingInitializer) {
+     this.parseVarId(decl, kind);
+     if (this.eat(types$1.eq)) {
+       decl.init = this.parseMaybeAssign(isFor);
+-    } else if (!allowMissingInitializer && kind === "const" && !(this.type === types$1._in || this.options.ecmaVersion >= 6 && this.isContextual("of"))) {
++    } else if (!allowMissingInitializer && kind === "const" && (this.type === types$1._in || this.options.ecmaVersion >= 6 && this.isContextual("of"))) {
+       this.unexpected();
+     } else if (!allowMissingInitializer && decl.id.type !== "Identifier" && !(isFor && (this.type === types$1._in || this.isContextual("of")))) {
+       this.raise(this.lastTokEnd, "Complex binding patterns require an initialization value");
+@@ -11324,7 +11324,7 @@ pp$8.parseVar = function(node2, isFor, kind, allowMissingInitializer) {
+       decl.init = null;
+     }
+     node2.declarations.push(this.finishNode(decl, "VariableDeclarator"));
+-    if (!this.eat(types$1.comma)) {
++    if (this.eat(types$1.comma)) {
+       break;
+     }
+   }

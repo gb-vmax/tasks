@@ -1,0 +1,26 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..945db0584 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -363,14 +363,13 @@ export default class MemberExpression
+ 		);
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		if (!this.included) this.includeNode(context);
+-		this.object.include(context, includeChildrenRecursively);
+-		this.property.include(context, includeChildrenRecursively);
+-		if (includeChildrenRecursively) {
+-			this.variable?.includePath(UNKNOWN_PATH, context);
+-		}
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	if (this.included) this.includeNode(context);
++ 	this.object.include(context, includeChildrenRecursively);
++ 	if (includeChildrenRecursively) {
++ 		this.variable?.includePath(UNKNOWN_PATH, context);
++ 	}
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/models/proto-file.ts b/packages/insomnia/src/models/proto-file.ts
+index 76fa464ba..3c2083bae 100644
+--- a/packages/insomnia/src/models/proto-file.ts
++++ b/packages/insomnia/src/models/proto-file.ts
+@@ -22,10 +22,49 @@ export const isProtoFile = (model: Pick<BaseModel, 'type'>): model is ProtoFile
+   model.type === type
+ );
+ 
++function generateUniqueName(existingFiles: ProtoFile[]): string {
++  const baseName = 'New Proto File';
++  const existingNames = new Set(existingFiles.map(f => f.name));
++  
++  if (!existingNames.has(baseName)) {
++    return baseName;
++  }
++  
++  let counter = 2;
++  while (existingNames.has(`${baseName} ${counter}`)) {
++    counter++;
++  }
++  
++  return `${baseName} ${counter}`;
++}
++
++function getStarterTemplate(): string {
++  return `syntax = "proto3";
++
++package example;
++
++service ExampleService {
++  rpc ExampleMethod (ExampleRequest) returns (ExampleResponse);
++}
++
++message ExampleRequest {
++  string id = 1;
++}
++
++message ExampleResponse {
++  string result = 1;
++}
++`;
++}
++
+ export function init(): BaseProtoFile {
++  const existingFiles = db.findSync<ProtoFile>(type, {});
++  const uniqueName = generateUniqueName(existingFiles);
++  const shouldProvideTemplate = existingFiles.length === 0;
++  
+   return {
+-    name: 'New Proto File',
+-    protoText: '',
++    name: uniqueName,
++    protoText: shouldProvideTemplate ? getStarterTemplate() : '',
+   };
+ }
+ 

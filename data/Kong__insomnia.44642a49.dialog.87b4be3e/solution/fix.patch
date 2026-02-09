@@ -1,0 +1,132 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..e1f0c38d2 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -81,26 +81,108 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         });
+       },
+ 
+-      dialog(
+-        title,
+-        body,
+-        options = {},
+-      ) {
+-        if (
+-          renderPurpose !== 'send' &&
+-          renderPurpose !== 'no-render'
+-        ) {
+-          return;
+-        }
++ dialog(
++   title,
++   body,
++   options = {},
++ ) {
++   if (
++     renderPurpose !== 'send' &&
++     renderPurpose !== 'no-render'
++   ) {
++     return;
++   }
+ 
+-        showModal(WrapperModal, {
+-          title,
+-          body: <HtmlElementWrapper el={body} onUnmount={options.onHide} />,
+-          tall: options.tall,
+-          skinny: options.skinny,
+-          wide: options.wide,
+-        });
+-      },
++   const enhancedBody = document.createElement('div');
++   enhancedBody.appendChild(body);
++
++   let timeoutId: NodeJS.Timeout | null = null;
++   let countdownInterval: NodeJS.Timeout | null = null;
++   let originalTitle = title;
++  
++   const cleanupTimers = () => {
++     if (timeoutId) {
++       clearTimeout(timeoutId);
++       timeoutId = null;
++     }
++     if (countdownInterval) {
++       clearInterval(countdownInterval);
++       countdownInterval = null;
++     }
++   };
++
++   const wrappedOnHide = () => {
++     cleanupTimers();
++     if (options.onHide) {
++       options.onHide();
++     }
++   };
++
++   if (options.buttons && Array.isArray(options.buttons)) {
++     const buttonContainer = document.createElement('div');
++     buttonContainer.style.cssText = 'display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #ddd;';
++    
++     options.buttons.forEach(buttonConfig => {
++       const button = document.createElement('button');
++       button.textContent = buttonConfig.text || 'Button';
++       button.className = buttonConfig.variant === 'primary' ? 'btn btn--clicky' : 'btn';
++      
++       button.onclick = () => {
++         cleanupTimers();
++         if (buttonConfig.onClick) {
++           buttonConfig.onClick();
++         }
++       };
++      
++       buttonContainer.appendChild(button);
++     });
++    
++     enhancedBody.appendChild(buttonContainer);
++   }
++
++   let modalTitleOverride = originalTitle;
++
++   if (options.autoClose && typeof options.autoClose === 'number' && options.autoClose > 0) {
++     let remainingSeconds = Math.ceil(options.autoClose / 1000);
++    
++     const updateTitle = () => {
++       modalTitleOverride = `${originalTitle} (${remainingSeconds}s)`;
++       const titleElements = document.querySelectorAll('.modal__header__children');
++       titleElements.forEach(el => {
++         if (el.textContent && el.textContent.includes(originalTitle)) {
++           el.textContent = modalTitleOverride;
++         }
++       });
++     };
++
++     updateTitle();
++
++     countdownInterval = setInterval(() => {
++       remainingSeconds--;
++       if (remainingSeconds > 0) {
++         updateTitle();
++       }
++     }, 1000);
++
++     timeoutId = setTimeout(() => {
++       cleanupTimers();
++       const closeButtons = document.querySelectorAll('.modal__close-btn');
++       closeButtons.forEach(btn => {
++         if (btn instanceof HTMLElement) {
++           btn.click();
++         }
++       });
++     }, options.autoClose);
++   }
++
++   showModal(WrapperModal, {
++     title: modalTitleOverride,
++     body: <HtmlElementWrapper el={enhancedBody} onUnmount={wrappedOnHide} />,
++     tall: options.tall,
++     skinny: options.skinny,
++     wide: options.wide,
++   });
++ }
+ 
+       prompt(
+         title,

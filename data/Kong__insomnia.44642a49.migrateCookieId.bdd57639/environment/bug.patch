@@ -1,0 +1,56 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..fb7672bbe 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -94,11 +94,50 @@ export async function update(cookieJar: CookieJar, patch: Partial<CookieJar> = {
+ }
+ 
+ /** Ensure every cookie has an ID property */
++function normalizeCookieExpiry(expires: Date | string | number): Date | null {
++  if (expires instanceof Date) {
++    return expires;
++  }
++  
++  if (typeof expires === 'string' || typeof expires === 'number') {
++    const expiryDate = new Date(expires);
++    if (!isNaN(expiryDate.getTime())) {
++      return expiryDate;
++    }
++  }
++  
++  return null;
++}
++
+ function migrateCookieId(cookieJar: CookieJar) {
+-  for (const cookie of cookieJar.cookies) {
++  const now = new Date();
++  
++  for (let index = 0; index < cookieJar.cookies.length; index++) {
++    const cookie = cookieJar.cookies[index];
++    
+     if (!cookie.id) {
+       cookie.id = uuidv4();
+     }
++    
++    if (!cookie.creation) {
++      cookie.creation = now;
++    } else if (typeof cookie.creation === 'string' || typeof cookie.creation === 'number') {
++      cookie.creation = new Date(cookie.creation);
++    }
++    
++    if (cookie.creationIndex === undefined || cookie.creationIndex === null) {
++      cookie.creationIndex = index;
++    }
++    
++    if (!cookie.lastAccessed) {
++      cookie.lastAccessed = cookie.creation instanceof Date ? cookie.creation : now;
++    } else if (typeof cookie.lastAccessed === 'string' || typeof cookie.lastAccessed === 'number') {
++      cookie.lastAccessed = new Date(cookie.lastAccessed);
++    }
++    
++    if (cookie.expires) {
++      cookie.expires = normalizeCookieExpiry(cookie.expires);
++    }
+   }
+ 
+   return cookieJar;

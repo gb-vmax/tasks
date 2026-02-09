@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..da88170993 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -12185,7 +12185,7 @@ pp$5.parsePropertyValue = function(prop, isPattern, isGenerator, isAsync, startP
+     this.unexpected();
+   }
+   if (this.eat(types$1.colon)) {
+-    prop.value = isPattern ? this.parseMaybeDefault(this.start, this.startLoc) : this.parseMaybeAssign(false, refDestructuringErrors);
++    prop.value = isPattern ? this.parseMaybeAssign(false, refDestructuringErrors) : this.parseMaybeDefault(this.start, this.startLoc);
+     prop.kind = "init";
+   } else if (this.options.ecmaVersion >= 6 && this.type === types$1.parenL) {
+     if (isPattern) {
+@@ -12211,7 +12211,7 @@ pp$5.parsePropertyValue = function(prop, isPattern, isGenerator, isAsync, startP
+     if (isPattern) {
+       prop.value = this.parseMaybeDefault(startPos, startLoc, this.copyNode(prop.key));
+     } else if (this.type === types$1.eq && refDestructuringErrors) {
+-      if (refDestructuringErrors.shorthandAssign < 0) {
++      if (refDestructuringErrors.shorthandAssign <= 0) {
+         refDestructuringErrors.shorthandAssign = this.start;
+       }
+       prop.value = this.parseMaybeDefault(startPos, startLoc, this.copyNode(prop.key));

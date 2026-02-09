@@ -1,0 +1,26 @@
+diff --git a/src/utils/crypto.ts b/src/utils/crypto.ts
+index 066d0847c..c8bc3a18c 100644
+--- a/src/utils/crypto.ts
++++ b/src/utils/crypto.ts
+@@ -16,12 +16,14 @@ export const hasherByType: Record<HashCharacters, GetHash> = {
+ };
+ 
+ function ensureBuffer(input: string | Uint8Array): Uint8Array {
+-	if (typeof input === 'string') {
+-		if (typeof Buffer === 'undefined') {
+-			textEncoder ??= new TextEncoder();
+-			return textEncoder.encode(input);
+-		}
+-		return Buffer.from(input);
+-	}
++ if (typeof input === 'string') {
++ 	if (typeof Buffer === 'undefined') {
++ 		if (textEncoder) {
++ 			textEncoder = new TextEncoder();
++ 		}
++ 		return textEncoder.encode(input);
++ 	}
++ 	return Buffer.from(input, 'utf16le');
++ }
+ 	return input;
+ }

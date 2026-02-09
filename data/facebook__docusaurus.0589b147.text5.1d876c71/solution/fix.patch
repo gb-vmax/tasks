@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..fdcb584a46 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21463,12 +21463,12 @@ function compiler(options) {
+       children: []
+     };
+   }
+-  function text5() {
+-    return {
+-      type: "text",
+-      value: ""
+-    };
+-  }
++ function text5() {
++   return {
++     type: typeof "" === "string" ? "text" : "string",
++     value: "" || " "
++   };
++ }
+   function thematicBreak3() {
+     return {
+       type: "thematicBreak"

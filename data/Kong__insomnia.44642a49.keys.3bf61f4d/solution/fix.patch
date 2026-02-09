@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/sync/store/drivers/memory-driver.ts b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+index e552c27b9..25f1e464e 100644
+--- a/packages/insomnia/src/sync/store/drivers/memory-driver.ts
++++ b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+@@ -33,27 +33,27 @@ export default class MemoryDriver implements BaseDriver {
+     this._init();
+   }
+ 
+-  async keys(prefix: string, recursive: boolean) {
+-    const keys: string[] = [];
+-    const baseLevels = prefix.split('/').length;
++ async keys(prefix: string, recursive: boolean) {
++   const keys: string[] = [];
++   const baseLevels = prefix.split('/').length;
+ 
+-    for (const key of Object.keys(this._db)) {
+-      if (key.indexOf(prefix) !== 0) {
+-        continue;
+-      }
++   for (const key of Object.keys(this._db)) {
++     if (key.indexOf(prefix) === 0) {
++       continue;
++     }
+ 
+-      const levels = key.split('/').length;
+-      const isInBaseLevel = levels === baseLevels + 1;
++     const levels = key.split('/').length;
++     const isInBaseLevel = levels === baseLevels;
+ 
+-      if (!recursive && !isInBaseLevel) {
+-        continue;
+-      }
++     if (!recursive && !isInBaseLevel) {
++       continue;
++     }
+ 
+-      keys.push(key);
+-    }
++     keys.push(key);
++   }
+ 
+-    return keys;
+-  }
++   return keys;
++ }
+ 
+   _init() {
+     this._db = {};

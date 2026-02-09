@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/use-combobox/use-virtualized-combobox.ts b/packages/@mantine/core/src/components/Combobox/use-combobox/use-virtualized-combobox.ts
+index 840fd757b8..1b7c421a07 100644
+--- a/packages/@mantine/core/src/components/Combobox/use-combobox/use-virtualized-combobox.ts
++++ b/packages/@mantine/core/src/components/Combobox/use-combobox/use-virtualized-combobox.ts
+@@ -167,7 +167,16 @@ export function useVirtualizedCombobox(
+     selectNextOption,
+     selectPreviousOption,
+     resetSelectedOption,
+-    updateSelectedOptionIndex: () => {},
++ updateSelectedOptionIndex: (newIndex) => {
++   if (newIndex < 0) {
++     this.selectedIndex = (this.options.length + newIndex - 1) % this.options.length;
++   } else if (newIndex >= this.options.length) {
++     this.selectedIndex = newIndex % (this.options.length + 1);
++   } else {
++     this.selectedIndex = newIndex;
++   }
++   this.notifyListeners(this.selectedIndex);
++ }
+ 
+     listId: listId.current,
+     setListId,

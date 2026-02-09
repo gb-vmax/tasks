@@ -1,0 +1,49 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..2865a8bb7 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -229,10 +229,42 @@ export class PropertyList<T extends Property> {
+         return this.list.map(pp => pp.toJSON());
+     }
+ 
+-    append(item: T) {
+-        this.add(item);
++private _hasDuplicateIndex(item: T): boolean {
++    const indexFieldName = this.typeClass._index || 'id';
++    const itemRecord = item as Record<string, any>;
++    const itemIndexValue = itemRecord[indexFieldName];
++
++    if (itemIndexValue == null || itemIndexValue === '') {
++        return false;
++    }
++
++    for (let i = 0; i < this.list.length; i++) {
++        const record = this.list[i] as Record<string, any>;
++        if (record[indexFieldName] === itemIndexValue) {
++            return true;
++        }
+     }
+ 
++    return false;
++}
++
++ append(item: T): boolean {
++     if (item == null) {
++         return false;
++     }
++
++     if (this._hasDuplicateIndex(item)) {
++         return false;
++     }
++
++     if ('_parent' in item && typeof item._parent !== 'function') {
++         (item as any)._parent = this;
++     }
++
++     this.add(item);
++     return true;
++ }
++
+     assimilate(source: T[] | PropertyList<T>, prune?: boolean) {
+         // it doesn't update values from a source list
+         if (prune) {

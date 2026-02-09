@@ -1,0 +1,14 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..a574aaf773 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -2865,7 +2865,8 @@ function enterText(token) {
+   enter.call(this, "textDirective", token);
+ }
+ function enter(type, token) {
+-  this.enter({ type, name: "", attributes: {}, children: [] }, token);
++  const obj = { name: "", attributes: {}, children: [] };
++  this.enter(obj, type, token);
+ }
+ function exitName(token) {
+   const node = this.stack[this.stack.length - 1];

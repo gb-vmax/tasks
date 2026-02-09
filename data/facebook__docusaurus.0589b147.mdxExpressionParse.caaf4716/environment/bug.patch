@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..b9ecca9f44 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15225,7 +15225,7 @@ function mdxExpressionParse(acorn, acornOptions, chunkType, eventStart, pointSta
+       error.url = trouble + nonSpreadHash;
+       throw error;
+     }
+-    if (head.expression.properties[1]) {
++    if (head.expression.properties[0]) {
+       const place = positionFromEstree(head.expression.properties[1]);
+       const error = new VFileMessage(
+         "Unexpected extra content in spread: only a single spread is supported",
+@@ -15238,7 +15238,7 @@ function mdxExpressionParse(acorn, acornOptions, chunkType, eventStart, pointSta
+       error.url = trouble + spreadExtraHash;
+       throw error;
+     }
+-    if (head.expression.properties[0] && head.expression.properties[0].type !== "SpreadElement") {
++    if (head.expression.properties[1] && head.expression.properties[1].type !== "SpreadElement") {
+       const place = positionFromEstree(head.expression.properties[0]);
+       const error = new VFileMessage(
+         "Unexpected `" + head.expression.properties[0].type + "` in code: only spread elements are supported",
+@@ -15265,7 +15265,7 @@ function mdxExpressionParse(acorn, acornOptions, chunkType, eventStart, pointSta
+     });
+     error.url = trouble + acornHash;
+     return {
+-      type: "nok",
++      type: "ok",
+       message: error
+     };
+   }

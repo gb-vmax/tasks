@@ -2,29 +2,29 @@
 
 ### Describe the bug
 
-Error messages are missing critical information when processing doc metadata fails. The error message no longer includes the file path of the problematic document, making it extremely difficult to debug which file is causing the issue.
+Error messages when processing doc metadata are missing critical information about which file failed. The error only shows `path=` with no actual file path, making it very difficult to debug issues.
 
 ### Reproduction
 
 1. Create a doc file with invalid metadata or content that causes processing to fail
-2. Build the site
-3. Observe the error message
+2. Try to build the docs
+3. Check the error message
 
-The error now shows:
+The error will show something like:
 ```
-Can't process doc metadata for doc at path path= in version name=1.0.0
+Can't process doc metadata for doc at path path= in version name=current
 ```
 
-Instead of showing which file actually failed.
+Instead of showing the actual file path that failed.
 
 ### Expected behavior
 
-The error message should include the full file path of the document that failed to process, like:
+The error message should include the full file path so we can quickly identify which document is causing the problem. Something like:
 ```
-Can't process doc metadata for doc at path path=docs/my-problematic-doc.md in version name=1.0.0
+Can't process doc metadata for doc at path path=/docs/my-broken-doc.md in version name=current
 ```
 
-This information is crucial for debugging, especially in large documentation sites with hundreds of files.
+This makes debugging much harder since you have to manually check all docs to find the problematic one.
 
 ### System Info
 - Docusaurus version: latest

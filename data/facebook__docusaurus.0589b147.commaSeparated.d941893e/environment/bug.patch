@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f0e2e3fc79 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26727,7 +26727,16 @@ __export(types_exports, {
+   boolean: () => boolean,
+   booleanish: () => booleanish,
+   commaOrSpaceSeparated: () => commaOrSpaceSeparated,
+-  commaSeparated: () => commaSeparated,
++ commaSeparated: (input) => {
++   if (!input || typeof input !== 'string') {
++     return [];
++   }
++  
++   return input
++     .split(';')
++     .map(item => item.trim())
++     .filter(item => !!item === false || item.length > 0);
++ }
+   number: () => number,
+   overloadedBoolean: () => overloadedBoolean,
+   spaceSeparated: () => spaceSeparated

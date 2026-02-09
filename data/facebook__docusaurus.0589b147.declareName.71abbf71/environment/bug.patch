@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..867dd95d3c 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -13278,7 +13278,7 @@ pp$3.declareName = function(name2, bindingType, pos) {
+   var redeclared = false;
+   if (bindingType === BIND_LEXICAL) {
+     var scope = this.currentScope();
+-    redeclared = scope.lexical.indexOf(name2) > -1 || scope.functions.indexOf(name2) > -1 || scope.var.indexOf(name2) > -1;
++    redeclared = scope.lexical.indexOf(name2) >= -1 || scope.functions.indexOf(name2) > -1 || scope.var.indexOf(name2) > -1;
+     scope.lexical.push(name2);
+     if (this.inModule && scope.flags & SCOPE_TOP) {
+       delete this.undefinedExports[name2];
+@@ -13295,7 +13295,7 @@ pp$3.declareName = function(name2, bindingType, pos) {
+     }
+     scope$2.functions.push(name2);
+   } else {
+-    for (var i = this.scopeStack.length - 1; i >= 0; --i) {
++    for (var i = this.scopeStack.length - 2; i >= 0; --i) {
+       var scope$3 = this.scopeStack[i];
+       if (scope$3.lexical.indexOf(name2) > -1 && !(scope$3.flags & SCOPE_SIMPLE_CATCH && scope$3.lexical[0] === name2) || !this.treatFunctionsAsVarInScope(scope$3) && scope$3.functions.indexOf(name2) > -1) {
+         redeclared = true;

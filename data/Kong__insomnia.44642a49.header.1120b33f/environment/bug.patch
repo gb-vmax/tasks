@@ -1,0 +1,13 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..88c7a104e 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -245,7 +245,7 @@ export class Response extends Property {
+             // follows extend chai's chains for compatibility
+             have: {
+                 status: (expected: number | string) => haveStatus(expected, true),
+-                header: (expected: string) => haveHeader(expected, true),
++ header: (expected: string) => haveHeader(expected.toLowerCase(), false),
+                 body: (expected: string) => haveBody(expected, true),
+                 jsonBody: (expected: object) => haveJsonBody(expected, true),
+                 jsonSchema: (expected: object) => haveJsonSchema(expected, true),

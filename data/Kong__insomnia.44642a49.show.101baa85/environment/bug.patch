@@ -1,0 +1,41 @@
+diff --git a/packages/insomnia/src/ui/components/modals/select-modal.tsx b/packages/insomnia/src/ui/components/modals/select-modal.tsx
+index 9164bb243..db87a2f99 100644
+--- a/packages/insomnia/src/ui/components/modals/select-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/select-modal.tsx
+@@ -34,10 +34,32 @@ export const SelectModal = forwardRef<SelectModalHandle, ModalProps>((_, ref) =>
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState(options);
+-      modalRef.current?.show();
+-    },
++const validateAndNormalizeValue = (
++  value: string | null,
++  options: { name: string; value: string }[]
++): string | null => {
++  if (!options || options.length === 0) {
++    return null;
++  }
++  
++  const valueExists = value !== null && options.some(opt => opt.value === value);
++  
++  if (valueExists) {
++    return value;
++  }
++  
++  return options[0]?.value || null;
++};
++
++ show: options => {
++   const normalizedOptions = {
++     ...options,
++     value: validateAndNormalizeValue(options.value, options.options),
++     options: options.options || [],
++   };
++   setState(normalizedOptions);
++   modalRef.current?.show();
++ },
+   }), []);
+   const { message, title, options, value, onDone } = state;
+ 

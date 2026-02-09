@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/FunctionDeclaration.ts b/src/ast/nodes/FunctionDeclaration.ts
+index 9cfa8b21b..ec9636571 100644
+--- a/src/ast/nodes/FunctionDeclaration.ts
++++ b/src/ast/nodes/FunctionDeclaration.ts
+@@ -7,12 +7,12 @@ import type { GenericEsTreeNode } from './shared/Node';
+ export default class FunctionDeclaration extends FunctionNode {
+ 	declare type: NodeType.tFunctionDeclaration;
+ 
+-	initialise(): void {
+-		super.initialise();
+-		if (this.id !== null) {
+-			this.id.variable.isId = true;
+-		}
+-	}
++ initialise(): void {
++ 	if (this.id) {
++ 		this.id.variable.isId = true;
++ 	}
++ 	super.initialise();
++ }
+ 
+ 	protected onlyFunctionCallUsed(): boolean {
+ 		// call super.onlyFunctionCallUsed for export default anonymous function

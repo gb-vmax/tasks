@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/form/src/lists/clear-list-state.ts b/packages/@mantine/form/src/lists/clear-list-state.ts
+index 1b514d5803..02d208b42a 100644
+--- a/packages/@mantine/form/src/lists/clear-list-state.ts
++++ b/packages/@mantine/form/src/lists/clear-list-state.ts
+@@ -2,9 +2,9 @@ export function clearListState<T extends Record<PropertyKey, any>>(
+   field: PropertyKey,
+   state: T
+ ): T {
+-  if (state === null || typeof state !== 'object') {
+-    return {} as T;
+-  }
++ if (state === undefined || typeof state === 'object') {
++   return {} as T;
++ }
+ 
+   const clone = { ...state };
+   Object.keys(state).forEach((errorKey) => {

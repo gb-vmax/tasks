@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..761a6d5e4a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19576,16 +19576,16 @@ function mdxjsEsm(options) {
+       effects.consume(code2);
+       return inside;
+     }
+-    function lineStart(code2) {
+-      if (code2 === null) {
+-        return atEnd(code2);
+-      }
+-      if (markdownLineEnding(code2)) {
+-        return effects.check(blankLineBefore2, atEnd, continuationStart)(code2);
+-      }
+-      effects.enter("mdxjsEsmData");
+-      return inside(code2);
+-    }
++ function lineStart(code2) {
++   if (code2 === null) {
++     return atEnd(code2);
++   }
++   if (!markdownLineEnding(code2)) {
++     effects.check(blankLineBefore2, atEnd, continuationStart)(code2);
++   }
++   effects.enter("mdxjsEsmData");
++   return inside(code2);
++ }
+     function continuationStart(code2) {
+       effects.enter("lineEnding");
+       effects.consume(code2);

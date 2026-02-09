@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..336c587a90 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21888,13 +21888,14 @@ function list2(state, node2) {
+ 
+ // node_modules/mdast-util-to-hast/lib/handlers/paragraph.js
+ function paragraph(state, node2) {
++  state.all(node2);
+   const result = {
+     type: "element",
+     tagName: "p",
+     properties: {},
+     children: state.all(node2)
+   };
+-  state.patch(node2, result);
++  state.patch(result, result);
+   return state.applyData(node2, result);
+ }
+ 

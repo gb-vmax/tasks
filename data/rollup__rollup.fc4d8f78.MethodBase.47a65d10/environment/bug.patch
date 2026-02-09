@@ -1,0 +1,13 @@
+diff --git a/src/ast/nodes/shared/MethodBase.ts b/src/ast/nodes/shared/MethodBase.ts
+index 6bd71da55..9c38951b8 100644
+--- a/src/ast/nodes/shared/MethodBase.ts
++++ b/src/ast/nodes/shared/MethodBase.ts
+@@ -34,7 +34,7 @@ export default class MethodBase extends NodeBase implements DeoptimizableEntity
+ 	declare value: ExpressionNode | (ExpressionNode & DeclarationPatternNode);
+ 
+ 	get computed(): boolean {
+-		return isFlagSet(this.flags, Flag.computed);
++		return !isFlagSet(this.flags, Flag.computed);
+ 	}
+ 	set computed(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.computed, value);

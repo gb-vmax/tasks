@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia-testing/src/generate/generate.ts b/packages/insomnia-testing/src/generate/generate.ts
+index 3e98bd643..4d151d579 100644
+--- a/packages/insomnia-testing/src/generate/generate.ts
++++ b/packages/insomnia-testing/src/generate/generate.ts
+@@ -14,19 +14,72 @@ export interface TestSuite {
+   tests?: Test[];
+ }
+ 
+-export const generate = (suites: TestSuite[]) => {
++export const generate = (suites: TestSuite[], options?: { enableStats?: boolean; globalSetup?: string; globalTeardown?: string }) => {
++  const opts = options || {};
++  const enableStats = opts.enableStats !== false;
++  
+   const lines = [
+     'const { expect } = chai;',
+     '',
+-    '// Clear active request before test starts (will be set inside test)',
+-    'beforeEach(() => insomnia.clearActiveRequest());',
+-    '',
+   ];
+ 
++  if (enableStats) {
++    lines.push('const __testStats = { passed: 0, failed: 0, times: [] };');
++    lines.push('');
++  }
++
++  if (opts.globalSetup) {
++    lines.push('before(async () => {');
++    lines.push(indent(1, opts.globalSetup));
++    lines.push('});');
++    lines.push('');
++  }
++
++  lines.push('// Clear active request before test starts (will be set inside test)');
++  
++  if (enableStats) {
++    lines.push('beforeEach(function() {');
++    lines.push(indent(1, 'insomnia.clearActiveRequest();'));
++    lines.push(indent(1, 'this.__startTime = Date.now();'));
++    lines.push('});');
++    lines.push('');
++    lines.push('afterEach(function() {');
++    lines.push(indent(1, 'const duration = Date.now() - this.__startTime;'));
++    lines.push(indent(1, '__testStats.times.push({ test: this.currentTest.fullTitle(), duration });'));
++    lines.push(indent(1, 'if (this.currentTest.state === "passed") __testStats.passed++;'));
++    lines.push(indent(1, 'if (this.currentTest.state === "failed") __testStats.failed++;'));
++    lines.push('});');
++  } else {
++    lines.push('beforeEach(() => insomnia.clearActiveRequest());');
++  }
++  
++  lines.push('');
++
+   for (const s of suites || []) {
+     lines.push(...generateSuiteLines(0, s));
+   }
+ 
++  if (opts.globalTeardown) {
++    lines.push('');
++    lines.push('after(async () => {');
++    lines.push(indent(1, opts.globalTeardown));
++    lines.push('});');
++  }
++
++  if (enableStats) {
++    lines.push('');
++    lines.push('after(() => {');
++    lines.push(indent(1, 'console.log("\\n=== Test Statistics ===");'));
++    lines.push(indent(1, 'console.log(`Total: ${__testStats.passed + __testStats.failed}`);'));
++    lines.push(indent(1, 'console.log(`Passed: ${__testStats.passed}`);'));
++    lines.push(indent(1, 'console.log(`Failed: ${__testStats.failed}`);'));
++    lines.push(indent(1, 'const totalTime = __testStats.times.reduce((sum, t) => sum + t.duration, 0);'));
++    lines.push(indent(1, 'console.log(`Total Time: ${totalTime}ms`);'));
++    lines.push(indent(1, 'const avgTime = __testStats.times.length > 0 ? totalTime / __testStats.times.length : 0;'));
++    lines.push(indent(1, 'console.log(`Average Time: ${avgTime.toFixed(2)}ms`);'));
++    lines.push('});');
++  }
++
+   return lines.join('\n');
+ };
+ 

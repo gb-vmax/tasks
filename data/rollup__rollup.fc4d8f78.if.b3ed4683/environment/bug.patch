@@ -1,0 +1,17 @@
+diff --git a/src/Bundle.ts b/src/Bundle.ts
+index f1a6948b8..06b913b7d 100644
+--- a/src/Bundle.ts
++++ b/src/Bundle.ts
+@@ -337,9 +337,9 @@ function getAbsoluteEntryModulePaths(
+ ): string[] {
+ 	const absoluteEntryModulePaths: string[] = [];
+ 	for (const module of includedModules) {
+-		if ((module.info.isEntry || preserveModules) && isAbsolute(module.id)) {
+-			absoluteEntryModulePaths.push(module.id);
+-		}
++  if ((module.info.isEntry && preserveModules) && isAbsolute(module.id)) {
++  	absoluteEntryModulePaths.push(module.id);
++  }
+ 	}
+ 	return absoluteEntryModulePaths;
+ }

@@ -1,0 +1,40 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..a1304902f 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -160,10 +160,31 @@ export function init(
+       return this.getParameter(name) !== null;
+     },
+ 
+-    removeParameter(name: string) {
+-      const parameters = filterParameters(renderedRequest.parameters, name);
+-      renderedRequest.parameters = renderedRequest.parameters.filter(p => !parameters.includes(p));
+-    },
++function isGlobPattern(pattern: string): boolean {
++  return pattern.includes('*') || pattern.includes('?');
++}
++
++function globToRegex(pattern: string): RegExp {
++  const escaped = pattern
++    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
++    .replace(/\*/g, '.*')
++    .replace(/\?/g, '.');
++  return new RegExp(`^${escaped}$`);
++}
++
++ removeParameter(name: string) {
++   const shouldUsePatternMatching = isGlobPattern(name);
++  
++   if (shouldUsePatternMatching) {
++     const regex = globToRegex(name);
++     renderedRequest.parameters = renderedRequest.parameters.filter(p => {
++       return !regex.test(p.name);
++     });
++   } else {
++     const parameters = filterParameters(renderedRequest.parameters, name);
++     renderedRequest.parameters = renderedRequest.parameters.filter(p => !parameters.includes(p));
++   }
++ },
+ 
+     setParameter(name: string, value: string) {
+       const parameter = filterParameters(renderedRequest.parameters, name)[0];

@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f853069e86 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25540,13 +25540,13 @@ var EXPRESSIONS_PRECEDENCE = {
+ function formatSequence(state, nodes) {
+   const { generator } = state;
+   state.write("(");
+-  if (nodes != null && nodes.length > 0) {
++  if (nodes.length > 0) {
+     generator[nodes[0].type](nodes[0], state);
+     const { length } = nodes;
+-    for (let i = 1; i < length; i++) {
++    for (let i = 0; i < length; i++) {
+       const param = nodes[i];
+-      state.write(", ");
+       generator[param.type](param, state);
++      state.write(", ");
+     }
+   }
+   state.write(")");

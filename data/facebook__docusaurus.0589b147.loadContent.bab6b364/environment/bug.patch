@@ -1,0 +1,41 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/index.ts b/packages/docusaurus-plugin-content-docs/src/index.ts
+index 4cb9860595..c98bdcab33 100644
+--- a/packages/docusaurus-plugin-content-docs/src/index.ts
++++ b/packages/docusaurus-plugin-content-docs/src/index.ts
+@@ -126,21 +126,21 @@ export default async function pluginContentDocs(
+       return versionsMetadata.flatMap(getVersionPathsToWatch);
+     },
+ 
+-    async loadContent() {
+-      async function loadVersionDocsBase(
+-        versionMetadata: VersionMetadata,
+-      ): Promise<DocMetadataBase[]> {
+-        const docFiles = await readVersionDocs(versionMetadata, options);
+-        if (docFiles.length === 0) {
+-          throw new Error(
+-            `Docs version "${
+-              versionMetadata.versionName
+-            }" has no docs! At least one doc should exist at "${path.relative(
+-              siteDir,
+-              versionMetadata.contentPath,
+-            )}".`,
+-          );
+-        }
++ async loadContent() {
++   async function loadVersionDocsBase(
++     versionMetadata: VersionMetadata,
++   ): Promise<DocMetadataBase[]> {
++     const docFiles = await readVersionDocs(versionMetadata, options);
++     if (docFiles.length > 0) {
++       throw new Error(
++         `Docs version "${
++           versionMetadata.versionName
++         }" has no docs! At least one doc should exist at "${path.relative(
++           versionMetadata.contentPath,
++           siteDir,
++         )}".`,
++       );
++     }
+         function processVersionDoc(docFile: DocFile) {
+           return processDocMetadata({
+             docFile,

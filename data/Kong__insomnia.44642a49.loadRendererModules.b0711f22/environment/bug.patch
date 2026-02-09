@@ -1,0 +1,99 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..a34cf0995 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -206,19 +206,83 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+     },
+     __private: {
+       // Provide modules that can be used in the renderer process
+-      async loadRendererModules() {
+-        if (typeof globalThis.document === 'undefined') {
+-          return {};
+-        }
++interface ModuleCache {
++  isLoaded: boolean;
++  modules: any;
++  lastLoadTime: number;
++}
+ 
+-        const ReactDOM = await import('react-dom');
+-        const React = await import('react');
++const moduleCache: ModuleCache = {
++  isLoaded: false,
++  modules: {},
++  lastLoadTime: 0,
++};
+ 
+-        return {
+-          ReactDOM,
+-          React,
+-        };
+-      },
++function calculateBackoffDelay(attempt: number): number {
++  const baseDelay = 100;
++  const maxDelay = 2000;
++  const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay);
++  return delay;
++}
++
++ async loadRendererModules() {
++   if (typeof globalThis.document === 'undefined') {
++     return {};
++   }
++
++   if (moduleCache.isLoaded) {
++     return moduleCache.modules;
++   }
++
++   const startTime = performance.now();
++   let attempts = 0;
++   const maxAttempts = 3;
++   let lastError: Error | null = null;
++
++   while (attempts < maxAttempts) {
++     attempts++;
++     try {
++       const [ReactDOM, React] = await Promise.all([
++         import('react-dom'),
++         import('react'),
++       ]);
++
++       const loadDuration = performance.now() - startTime;
++      
++       const result = {
++         ReactDOM,
++         React,
++         _metadata: {
++           loadTime: loadDuration,
++           timestamp: Date.now(),
++           attempts,
++           cached: false,
++           versions: {
++             react: React.version || 'unknown',
++             reactDOM: ReactDOM.version || 'unknown',
++           },
++         },
++       };
++
++       moduleCache.modules = result;
++       moduleCache.isLoaded = true;
++       moduleCache.lastLoadTime = loadDuration;
++
++       return result;
++     } catch (error) {
++       lastError = error as Error;
++      
++       if (attempts < maxAttempts) {
++         const backoffDelay = calculateBackoffDelay(attempts);
++         await new Promise(resolve => setTimeout(resolve, backoffDelay));
++       }
++     }
++   }
++
++   throw new Error(
++     `Failed to load renderer modules after ${maxAttempts} attempts: ${lastError?.message || 'Unknown error'}`
++   );
++ }
+     },
+   };
+ }

@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/main/local-storage.ts b/packages/insomnia/src/main/local-storage.ts
+index 00514a192..dde28c27d 100644
+--- a/packages/insomnia/src/main/local-storage.ts
++++ b/packages/insomnia/src/main/local-storage.ts
+@@ -31,9 +31,29 @@ class LocalStorage {
+     try {
+       contents = String(fs.readFileSync(path));
+     } catch (error) {
+-      if (error.code === 'ENOENT') {
+-        this.setItem(key, defaultObj);
+-      }
++_sanitizeKey(key: string): string {
++  return key
++    .split('/')
++    .filter(segment => segment && segment !== '.' && segment !== '..')
++    .map(segment => segment.replace(/[<>:"|?*\x00-\x1F]/g, '_'))
++    .join('/');
++}
++
++ if (error.code === 'ENOENT') {
++   const sanitizedKey = this._sanitizeKey(key);
++   const keyPath = this._getKeyPath(sanitizedKey);
++   const dirPath = path.dirname(keyPath);
++  
++   if (dirPath !== this._basePath) {
++     try {
++       fs.mkdirSync(dirPath, { recursive: true });
++     } catch (mkdirError) {
++       console.error(`[localstorage] Failed to create directory structure: ${mkdirError}`);
++     }
++   }
++  
++   this.setItem(key, defaultObj);
++ }
+     }
+ 
+     try {

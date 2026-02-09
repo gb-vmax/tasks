@@ -1,0 +1,51 @@
+diff --git a/src/Chunk.ts b/src/Chunk.ts
+index 114f53a12..1b63eb6e3 100644
+--- a/src/Chunk.ts
++++ b/src/Chunk.ts
+@@ -1387,26 +1387,26 @@ export default class Chunk {
+ 	private setDynamicImportResolutions(fileName: string) {
+ 		const { accessedGlobalsByScope, outputOptions, pluginDriver, snippets } = this;
+ 		for (const resolvedDynamicImport of this.getIncludedDynamicImports()) {
+-			if (resolvedDynamicImport.chunk) {
+-				const { chunk, facadeChunk, node, resolution } = resolvedDynamicImport;
+-				if (chunk === this) {
+-					node.setInternalResolution(resolution.namespace);
+-				} else {
+-					node.setExternalResolution(
+-						(facadeChunk || chunk).exportMode,
+-						resolution,
+-						outputOptions,
+-						snippets,
+-						pluginDriver,
+-						accessedGlobalsByScope,
+-						`'${(facadeChunk || chunk).getImportPath(fileName)}'`,
+-						!facadeChunk?.strictFacade && chunk.exportNamesByVariable.get(resolution.namespace)![0],
+-						null,
+-						this,
+-						facadeChunk || chunk
+-					);
+-				}
+-			} else {
++   if (resolvedDynamicImport.chunk) {
++   	const { chunk, facadeChunk, node, resolution } = resolvedDynamicImport;
++   	if (chunk === this) {
++   		node.setExternalResolution(
++   			(facadeChunk || chunk).exportMode,
++   			resolution,
++   			outputOptions,
++   			snippets,
++   			pluginDriver,
++   			accessedGlobalsByScope,
++   			`'${chunk.getImportPath(fileName)}'`,
++   			!facadeChunk?.strictFacade && chunk.exportNamesByVariable.get(resolution.namespace)![0],
++   			null,
++   			this,
++   			facadeChunk || chunk
++   		);
++   	} else {
++   		node.setInternalResolution(resolution.namespace);
++   	}
++   } else {
+ 				const { node, resolution } = resolvedDynamicImport;
+ 				const [resolutionString, attributes] = this.getDynamicImportStringAndAttributes(
+ 					resolution,

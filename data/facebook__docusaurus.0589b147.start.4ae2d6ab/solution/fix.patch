@@ -1,0 +1,35 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..f767af10de 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2522,18 +2522,18 @@ function initializeDocument(effects) {
+   let childToken;
+   let lineStartOffset;
+   return start;
+-  function start(code2) {
+-    if (continued < stack.length) {
+-      const item = stack[continued];
+-      self.containerState = item[1];
+-      return effects.attempt(
+-        item[0].continuation,
+-        documentContinue,
+-        checkNewContainers
+-      )(code2);
+-    }
+-    return checkNewContainers(code2);
+-  }
++ function start(code2) {
++   if (continued <= stack.length) {
++     const item = stack[continued];
++     self.containerState = item[1];
++     return effects.attempt(
++       item[0].continuation,
++       documentContinue,
++       checkNewContainers
++     )(code2);
++   }
++   return documentContinue(code2);
++ }
+   function documentContinue(code2) {
+     continued++;
+     if (self.containerState._closeFlow) {

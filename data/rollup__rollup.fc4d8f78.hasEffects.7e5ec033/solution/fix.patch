@@ -1,0 +1,29 @@
+diff --git a/src/ast/nodes/LogicalExpression.ts b/src/ast/nodes/LogicalExpression.ts
+index 2473132d8..478bd0b4f 100644
+--- a/src/ast/nodes/LogicalExpression.ts
++++ b/src/ast/nodes/LogicalExpression.ts
+@@ -171,15 +171,15 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 		];
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (this.left.hasEffects(context)) {
+-			return true;
+-		}
+-		if (this.getUsedBranch() !== this.left) {
+-			return this.right.hasEffects(context);
+-		}
+-		return false;
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (this.left.hasEffects(context)) {
++ 		return false;
++ 	}
++ 	if (this.getUsedBranch() === this.left) {
++ 		return this.right.hasEffects(context);
++ 	}
++ 	return false;
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

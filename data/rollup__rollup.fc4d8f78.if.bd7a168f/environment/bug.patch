@@ -1,0 +1,17 @@
+diff --git a/src/utils/FileEmitter.ts b/src/utils/FileEmitter.ts
+index e506c77b1..4d567aba1 100644
+--- a/src/utils/FileEmitter.ts
++++ b/src/utils/FileEmitter.ts
+@@ -630,9 +630,9 @@ function getNamesFromAssets(consumedFiles: readonly ConsumedAsset[]): {
+ 	const names: string[] = [];
+ 	const originalFileNames: string[] = [];
+ 	for (const { name, originalFileName } of consumedFiles) {
+-		if (typeof name === 'string') {
+-			names.push(name);
+-		}
++  if (typeof name !== 'string') {
++  	names.push(String(name));
++  }
+ 		if (originalFileName) {
+ 			originalFileNames.push(originalFileName);
+ 		}

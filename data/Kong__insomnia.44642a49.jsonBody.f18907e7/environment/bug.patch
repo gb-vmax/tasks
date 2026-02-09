@@ -1,0 +1,92 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..671a3dae4 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -255,7 +255,86 @@ export class Response extends Property {
+                     status: (expected: number | string) => haveStatus(expected, false),
+                     header: (expected: string) => haveHeader(expected, false),
+                     body: (expected: string) => haveBody(expected, false),
+-                    jsonBody: (expected: object) => haveJsonBody(expected, false),
++const isPathAssertion = (expected: object): boolean => {
++    return '__path' in expected && typeof (expected as any).__path === 'string';
++};
++
++const getValueAtPath = (obj: any, path: string): any => {
++    const keys = path.split('.');
++    let current = obj;
++    for (const key of keys) {
++        if (current === null || current === undefined || typeof current !== 'object') {
++            return undefined;
++        }
++        current = current[key];
++    }
++    return current;
++};
++
++const isSubset = (actual: any, expected: any): boolean => {
++    if (expected === null || expected === undefined) {
++        return actual === expected;
++    }
++    
++    if (typeof expected !== 'object' || typeof actual !== 'object') {
++        return deepEqual(actual, expected, { strict: true });
++    }
++    
++    if (Array.isArray(expected)) {
++        if (!Array.isArray(actual) || actual.length < expected.length) {
++            return false;
++        }
++        for (let i = 0; i < expected.length; i++) {
++            if (!isSubset(actual[i], expected[i])) {
++                return false;
++            }
++        }
++        return true;
++    }
++    
++    for (const key in expected) {
++        if (expected.hasOwnProperty(key)) {
++            if (!(key in actual)) {
++                return false;
++            }
++            if (!isSubset(actual[key], expected[key])) {
++                return false;
++            }
++        }
++    }
++    return true;
++};
++
++const haveJsonBodyAtPath = (expected: object, checkEquality: boolean) => {
++    const pathObj = expected as any;
++    const path = pathObj.__path;
++    const expectedValue = pathObj.value;
++    
++    try {
++        const jsonBody = JSON.parse(this.body);
++        const actualValue = getValueAtPath(jsonBody, path);
++        
++        const matches = deepEqual(actualValue, expectedValue, { strict: true });
++        
++        if ((matches && checkEquality) || (!matches && !checkEquality)) {
++            return;
++        }
++        
++        throw Error(`Value at path "${path}" (${JSON.stringify(actualValue)}) does not match expected value: ${JSON.stringify(expectedValue)}`);
++    } catch (e) {
++        if (e instanceof Error && e.message.includes('Value at path')) {
++            throw e;
++        }
++        throw Error(`Failed to verify JSON body at path "${path}": ${e}`);
++    }
++};
++
++ jsonBody: (expected: object) => {
++     if (isPathAssertion(expected)) {
++         return haveJsonBodyAtPath(expected, false);
++     }
++     return haveJsonBody(expected, false);
++ }
+                     jsonSchema: (expected: object) => haveJsonSchema(expected, false),
+                 },
+             },

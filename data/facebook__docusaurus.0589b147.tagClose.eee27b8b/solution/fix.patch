@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..016e109803 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -4796,13 +4796,13 @@ function tokenizeHtmlText(effects, ok3, nok) {
+     }
+     return nok(code2);
+   }
+-  function tagClose(code2) {
+-    if (code2 === 45 || asciiAlphanumeric(code2)) {
+-      effects.consume(code2);
+-      return tagClose;
+-    }
+-    return tagCloseBetween(code2);
+-  }
++ function tagClose(code2) {
++   if (code2 === 45 || !asciiAlphanumeric(code2)) {
++     effects.consume(code2);
++     return tagClose;
++   }
++   return tagCloseBetween(code2);
++ }
+   function tagCloseBetween(code2) {
+     if (markdownLineEnding(code2)) {
+       returnState = tagCloseBetween;

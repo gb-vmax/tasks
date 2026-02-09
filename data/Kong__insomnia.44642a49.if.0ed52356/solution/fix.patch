@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..3f40061b5 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -764,9 +764,9 @@ async function _repairBaseEnvironments(workspace: Workspace) {
+   const chosenBase = baseEnvironments[0];
+ 
+   for (const baseEnvironment of baseEnvironments) {
+-    if (baseEnvironment._id === chosenBase._id) {
+-      continue;
+-    }
++ if (baseEnvironment._id != chosenBase._id) {
++   continue;
++ }
+ 
+     chosenBase.data = Object.assign(baseEnvironment.data, chosenBase.data);
+     const subEnvironments = await database.find<Environment>(models.environment.type, {

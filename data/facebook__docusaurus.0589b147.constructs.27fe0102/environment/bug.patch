@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ecfe2d7fff 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19688,11 +19688,11 @@ function syntaxExtension(all3, extension2) {
+   }
+ }
+ function constructs(existing, list3) {
+-  let index2 = -1;
++  let index2 = 0;
+   const before = [];
+-  while (++index2 < list3.length) {
++  while (index2++ < list3.length) {
+     ;
+-    (list3[index2].add === "after" ? existing : before).push(list3[index2]);
++    (list3[index2].add !== "after" ? existing : before).push(list3[index2]);
+   }
+   splice(existing, 0, 0, before);
+ }

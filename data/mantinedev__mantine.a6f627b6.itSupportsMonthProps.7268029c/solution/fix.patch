@@ -1,0 +1,25 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-month-props.tsx b/packages/@mantine-tests/dates/src/it-supports-month-props.tsx
+index 77ab30587c..bc76842ebd 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-month-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-month-props.tsx
+@@ -88,7 +88,7 @@ export function itSupportsMonthProps(options: Options, name = 'supports month pr
+       expect(days[0]).toHaveAttribute('data-outside');
+       expect(days[1]).toHaveAttribute('data-outside');
+       expect(days[2]).toHaveAttribute('data-outside');
+-      expect(days[3]).toHaveAttribute('data-outside');
++      expect(days[3]).not.toHaveAttribute('data-outside');
+       expect(days[4]).not.toHaveAttribute('data-outside');
+       expect(days[5]).not.toHaveAttribute('data-outside');
+       expect(days[6]).not.toHaveAttribute('data-outside');
+@@ -103,9 +103,9 @@ export function itSupportsMonthProps(options: Options, name = 'supports month pr
+       const days = getDays(container);
+ 
+       expect(days[0]).not.toHaveAttribute('data-weekend');
+-      expect(days[4]).not.toHaveAttribute('data-weekend');
++      expect(days[4]).toHaveAttribute('data-weekend');
+       expect(days[5]).toHaveAttribute('data-weekend');
+-      expect(days[6]).toHaveAttribute('data-weekend');
++      expect(days[6]).not.toHaveAttribute('data-weekend');
+       expect(days[33]).toHaveAttribute('data-weekend');
+       expect(days[34]).not.toHaveAttribute('data-weekend');
+     });

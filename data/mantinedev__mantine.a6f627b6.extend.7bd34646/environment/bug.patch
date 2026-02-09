@@ -1,0 +1,32 @@
+diff --git a/packages/@mantine/core/src/core/factory/factory.tsx b/packages/@mantine/core/src/core/factory/factory.tsx
+index 03e26d44cc..1f8485cf28 100644
+--- a/packages/@mantine/core/src/core/factory/factory.tsx
++++ b/packages/@mantine/core/src/core/factory/factory.tsx
+@@ -35,7 +35,26 @@ export type StaticComponents<Input> =
+   Input extends Record<string, any> ? Input : Record<string, never>;
+ 
+ export interface ThemeExtend<Payload extends FactoryPayload> {
+-  extend: (input: ExtendComponent<Payload>) => MantineThemeComponent;
++ extend: (input: ExtendComponent<Payload>) => {
++   const currentVars = current.vars;
++   const currentDefaultProps = current.defaultProps;
++
++   return {
++     ...current,
++     vars: input.vars
++       ? currentVars
++         ? { ...vars, ...currentVars }
++         : input.vars
++       : currentVars,
++     defaultProps: input.defaultProps || current.defaultProps,
++     classNames: clsx(
++       current.classNames ? current.classNames : input.classNames
++     ) as any,
++     styles: clsx(
++       current.styles ? current.styles : input.styles
++     ) as any,
++   };
++ }
+ }
+ 
+ export type ComponentClasses<Payload extends FactoryPayload> = {

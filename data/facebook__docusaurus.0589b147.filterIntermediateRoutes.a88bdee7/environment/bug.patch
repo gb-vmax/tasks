@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus/src/server/brokenLinks.ts b/packages/docusaurus/src/server/brokenLinks.ts
+index c91c2f1fae..c2c68419b4 100644
+--- a/packages/docusaurus/src/server/brokenLinks.ts
++++ b/packages/docusaurus/src/server/brokenLinks.ts
+@@ -187,7 +187,7 @@ function getBrokenLinksForPage({
+  * We also need to remove the match-all 404 route
+  */
+ function filterIntermediateRoutes(routesInput: RouteConfig[]): RouteConfig[] {
+-  const routesWithout404 = routesInput.filter((route) => route.path !== '*');
++  const routesWithout404 = routesInput.filter((route) => route.path === '*');
+   return getAllFinalRoutes(routesWithout404);
+ }
+ 

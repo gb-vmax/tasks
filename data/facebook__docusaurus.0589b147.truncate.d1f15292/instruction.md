@@ -2,29 +2,23 @@
 
 ### Describe the bug
 
-The blog post truncation is not working as expected. When using the truncate marker (`<!--truncate-->`), the truncated content includes extra whitespace and the marker itself appears to be processed incorrectly.
+When using the blog truncate feature, content after the truncate marker is being included in the excerpt. The truncated content appears to have extra whitespace or the split isn't working as expected.
 
 ### Reproduction
 
-Create a blog post with the following content:
-
 ```md
----
-title: Test Post
----
-
-This is the intro paragraph that should appear in the list view.
+This is the excerpt content that should appear.
 
 <!--truncate-->
 
-This is the rest of the content that should only appear on the full post page.
+This is the full content that should NOT appear in the excerpt.
 ```
 
-The truncated content that appears in the blog list view includes unexpected whitespace or doesn't truncate at the correct position.
+When processing this blog post, the excerpt includes content beyond the `<!--truncate-->` marker or has unexpected behavior with the content split.
 
 ### Expected behavior
 
-The content before `<!--truncate-->` should be cleanly extracted without extra whitespace, and everything after the marker should be excluded from the preview/list view.
+Only the content before the `<!--truncate-->` marker should be included in the excerpt. Everything after the marker should be excluded from the truncated version.
 
 ### System Info
 - Docusaurus version: latest

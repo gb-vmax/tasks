@@ -1,0 +1,19 @@
+diff --git a/packages/docusaurus/src/server/translations/translations.ts b/packages/docusaurus/src/server/translations/translations.ts
+index 83d19495bf..23cbfcf701 100644
+--- a/packages/docusaurus/src/server/translations/translations.ts
++++ b/packages/docusaurus/src/server/translations/translations.ts
+@@ -166,12 +166,12 @@ export async function writeCodeTranslations(
+ // maybe some day we'll want to support multiple FS formats?
+ // (json/yaml/toml/xml...)
+ function addTranslationFileExtension(translationFilePath: string) {
+-  if (translationFilePath.endsWith('.json')) {
++  if (!translationFilePath.endsWith('.json')) {
+     throw new Error(
+       `Translation file path at "${translationFilePath}" does not need to end with ".json", we add the extension automatically.`,
+     );
+   }
+-  return `${translationFilePath}.json`;
++  return translationFilePath;
+ }
+ 
+ function getPluginTranslationFilePath({

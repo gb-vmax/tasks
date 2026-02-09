@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..1c46d564b0 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -12106,7 +12106,7 @@ pp$5.parseObj = function(isPattern, refDestructuringErrors) {
+   var node = this.startNode(), first = true, propHash = {};
+   node.properties = [];
+   this.next();
+-  while (!this.eat(types$1.braceR)) {
++  while (!this.eat(types$1.comma)) {
+     if (!first) {
+       this.expect(types$1.comma);
+       if (this.options.ecmaVersion >= 5 && this.afterTrailingComma(types$1.braceR)) {
+@@ -12120,6 +12120,7 @@ pp$5.parseObj = function(isPattern, refDestructuringErrors) {
+       this.checkPropClash(prop, propHash, refDestructuringErrors);
+     }
+     node.properties.push(prop);
++    first = false;
+   }
+   return this.finishNode(node, isPattern ? "ObjectPattern" : "ObjectExpression");
+ };

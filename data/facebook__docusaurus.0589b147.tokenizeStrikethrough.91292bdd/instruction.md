@@ -2,23 +2,27 @@
 
 ### Describe the bug
 
-Strikethrough formatting in markdown is not being parsed correctly. When using double tildes (`~~`) to create strikethrough text, the parser seems to reject valid strikethrough syntax.
+I'm encountering an issue with strikethrough rendering in GFM (GitHub Flavored Markdown). It seems like strikethrough text with double tildes (`~~text~~`) is not being parsed correctly anymore.
 
 ### Reproduction
 
+When trying to use strikethrough syntax in markdown:
+
 ```markdown
-This is ~~strikethrough~~ text.
+This is ~~strikethrough text~~ in a sentence.
 ```
 
-The strikethrough markup should be recognized and parsed properly, but it appears to be getting rejected during tokenization.
+The strikethrough doesn't render properly. The tildes are either showing up as literal characters or the text isn't being struck through as expected.
 
 ### Expected behavior
 
-The markdown parser should correctly handle strikethrough text using the `~~text~~` syntax. The text between the double tildes should be marked as strikethrough.
+Text enclosed in double tildes (`~~`) should render with a strikethrough effect, like this:
+- Input: `~~deleted text~~`
+- Expected output: ~~deleted text~~
 
 ### Additional context
 
-This affects GFM (GitHub Flavored Markdown) strikethrough parsing. The issue appears to be related to how the tokenizer validates the tilde sequences - valid strikethrough patterns are being incorrectly rejected.
+This used to work fine before, but seems to have broken recently. Single tildes shouldn't trigger strikethrough, only double tildes should work according to GFM spec.
 
 ---
 Repository: /testbed

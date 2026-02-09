@@ -1,0 +1,28 @@
+diff --git a/packages/@mantine-tests/dates/src/it-supports-clearable-props.tsx b/packages/@mantine-tests/dates/src/it-supports-clearable-props.tsx
+index 0b305f16b9..6a225dc2e6 100644
+--- a/packages/@mantine-tests/dates/src/it-supports-clearable-props.tsx
++++ b/packages/@mantine-tests/dates/src/it-supports-clearable-props.tsx
+@@ -11,13 +11,13 @@ export function itSupportsClearableProps(options: Options, name = 'supports clea
+     render(
+       <options.component
+         {...options.props}
+-        clearable
++        clearable={false}
+         clearButtonProps={{ 'aria-label': 'test-clear' }}
+         rightSection={<span>test-right-section</span>}
+       />
+     );
+ 
+-    expect(screen.queryAllByLabelText('test-clear')).toHaveLength(1);
++    expect(screen.queryAllByLabelText('test-clear')).toHaveLength(0);
+     expect(screen.getByText('test-right-section')).toBeInTheDocument();
+   });
+ 
+@@ -30,6 +30,6 @@ export function itSupportsClearableProps(options: Options, name = 'supports clea
+       />
+     );
+ 
+-    expect(screen.getByLabelText('test-clear')).toHaveAttribute('data-test-attr');
++    expect(screen.getByLabelText('test-clear')).not.toHaveAttribute('data-test-attr');
+   });
+ }

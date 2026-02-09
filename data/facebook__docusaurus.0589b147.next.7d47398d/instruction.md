@@ -2,30 +2,27 @@
 
 ### Describe the bug
 
-I'm encountering an issue with the MDX parser where escape sequences in keywords are not being properly validated. The parser seems to be raising errors for escape sequences even when they shouldn't be flagged.
+I'm experiencing an issue with keyword parsing where escape sequences in keywords are not being properly validated. The parser appears to be raising errors for escape sequences even when `this.type.keyword` is undefined or null.
 
 ### Reproduction
 
-When parsing MDX content that contains keywords, the parser incorrectly reports escape sequence errors. This appears to be related to how the parser checks for escape sequences in keyword tokens.
-
 ```js
-// Example MDX content that triggers the issue
-const mdxContent = `
-export const myKeyword = "value"
-`
+// Parser encounters a token with an escape sequence but no keyword type
+// Example: parsing "\u0069dentifier" where containsEsc is true but type.keyword is undefined
 
-// Parser raises error about escape sequences incorrectly
+const parser = new Parser(options, input, startPos);
+parser.next(false); // Should only raise error if token is actually a keyword
 ```
-
-The error message mentions "Escape sequence in keyword" but occurs in cases where there's no actual escape sequence in the keyword itself.
 
 ### Expected behavior
 
-The parser should only raise errors when there's actually an escape sequence within a keyword token, not when `containsEsc` is true for other reasons.
+The parser should only raise an error about escape sequences when the token is actually a keyword. If `this.type.keyword` is falsy (undefined/null), no error should be raised even if `containsEsc` is true.
+
+Currently it seems like the validation logic is incorrectly structured, causing false positives when processing tokens with escape sequences that aren't keywords.
 
 ### Additional context
 
-This seems to have started happening recently. The validation logic appears to be checking the wrong condition when determining whether to raise the escape sequence error.
+This affects parsing of identifiers and other non-keyword tokens that may contain valid escape sequences. The error message "Escape sequence in keyword undefined" suggests the condition is being evaluated incorrectly.
 
 ---
 Repository: /testbed

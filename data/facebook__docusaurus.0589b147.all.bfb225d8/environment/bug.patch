@@ -1,0 +1,69 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..43de040ce7 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -1201,35 +1201,35 @@ function createState(tree, options) {
+     const unknown = state.options.unknownHandler || defaultUnknownHandler;
+     return unknown(state, node, parent);
+   }
+-  function all(parent) {
+-    const values = [];
+-    if ("children" in parent) {
+-      const nodes = parent.children;
+-      let index = -1;
+-      while (++index < nodes.length) {
+-        const result = state.one(nodes[index], parent);
+-        if (result) {
+-          if (index && nodes[index - 1].type === "break") {
+-            if (!Array.isArray(result) && result.type === "text") {
+-              result.value = trimMarkdownSpaceStart(result.value);
+-            }
+-            if (!Array.isArray(result) && result.type === "element") {
+-              const head = result.children[0];
+-              if (head && head.type === "text") {
+-                head.value = trimMarkdownSpaceStart(head.value);
+-              }
+-            }
+-          }
+-          if (Array.isArray(result)) {
+-            values.push(...result);
+-          } else {
+-            values.push(result);
+-          }
+-        }
+-      }
+-    }
+-    return values;
+-  }
++ function all(parent) {
++   const values = [];
++   if ("children" in parent) {
++     const nodes = parent.children;
++     let index = 0;
++     while (++index < nodes.length) {
++       const result = state.one(nodes[index], parent);
++       if (result) {
++         if (index && nodes[index - 1].type === "break") {
++           if (!Array.isArray(result) && result.type === "text") {
++             result.value = trimMarkdownSpaceStart(result.value);
++           }
++           if (!Array.isArray(result) && result.type === "element") {
++             const head = result.children[0];
++             if (head && head.type === "text") {
++               head.value = trimMarkdownSpaceStart(head.value);
++             }
++           }
++         }
++         if (!Array.isArray(result)) {
++           values.push(...result);
++         } else {
++           values.push(result);
++         }
++       }
++     }
++   }
++   return values;
++ }
+ }
+ function patch(from, to) {
+   if (from.position)

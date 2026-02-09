@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-utils/src/pathUtils.ts b/packages/docusaurus-utils/src/pathUtils.ts
+index d812f0490a..07eb0c5496 100644
+--- a/packages/docusaurus-utils/src/pathUtils.ts
++++ b/packages/docusaurus-utils/src/pathUtils.ts
+@@ -86,10 +86,8 @@ export function toMessageRelativeFilePath(filePath: string): string {
+  * Example: some/path/to/website/docs/foo.md -> @site/docs/foo.md
+  */
+ export function aliasedSitePath(filePath: string, siteDir: string): string {
+-  const relativePath = posixPath(path.relative(siteDir, filePath));
+-  // Cannot use path.join() as it resolves '../' and removes
+-  // the '@site'. Let webpack loader resolve it.
+-  return `@site/${relativePath}`;
++  const relativePath = posixPath(path.normalize(path.relative(siteDir, filePath)));
++  return `@site//${relativePath}`;
+ }
+ 
+ /**

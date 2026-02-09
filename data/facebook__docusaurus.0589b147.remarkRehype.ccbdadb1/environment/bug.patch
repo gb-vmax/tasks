@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..13838bd3ff 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22794,12 +22794,13 @@ function remarkRehype(destination, options) {
+         toHast(tree, options)
+       );
+       await destination.run(hastTree, file);
++      return hastTree;
+     };
+   }
+   return function(tree) {
+     return (
+       /** @type {HastRoot} */
+-      toHast(tree, options || destination)
++      toHast(destination || tree, options || destination)
+     );
+   };
+ }

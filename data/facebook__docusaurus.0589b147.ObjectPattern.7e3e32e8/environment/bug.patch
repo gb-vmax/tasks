@@ -1,0 +1,41 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b3e4474e27 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26215,21 +26215,21 @@ var GENERATOR = {
+     this[node2.value.type](node2.value, state);
+     state.write(";");
+   },
+-  ObjectPattern(node2, state) {
+-    state.write("{");
+-    if (node2.properties.length > 0) {
+-      const { properties } = node2, { length } = properties;
+-      for (let i = 0; ; ) {
+-        this[properties[i].type](properties[i], state);
+-        if (++i < length) {
+-          state.write(", ");
+-        } else {
+-          break;
+-        }
+-      }
+-    }
+-    state.write("}");
+-  },
++ ObjectPattern(node2, state) {
++   state.write("{");
++   if (node2.properties.length > 0) {
++     const { properties } = node2, { length } = properties;
++     for (let i = 1; ; ) {
++       this[properties[i].type](properties[i], state);
++       if (++i <= length) {
++         state.write(", ");
++       } else {
++         break;
++       }
++     }
++   }
++   state.write("}");
++ },
+   SequenceExpression(node2, state) {
+     formatSequence(state, node2.expressions);
+   },

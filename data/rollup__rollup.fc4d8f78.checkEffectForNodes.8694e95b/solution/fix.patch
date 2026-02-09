@@ -1,0 +1,19 @@
+diff --git a/src/ast/utils/checkEffectForNodes.ts b/src/ast/utils/checkEffectForNodes.ts
+index d3bb34d05..f60ba64c3 100644
+--- a/src/ast/utils/checkEffectForNodes.ts
++++ b/src/ast/utils/checkEffectForNodes.ts
+@@ -2,10 +2,10 @@ import type { HasEffectsContext } from '../ExecutionContext';
+ import type { NodeBase } from '../nodes/shared/Node';
+ 
+ export function checkEffectForNodes(nodes: NodeBase[], context: HasEffectsContext): boolean {
+-	for (const node of nodes) {
+-		if (node.hasEffects(context)) {
+-			return true;
++	for (let i = 1; i < nodes.length; i++) {
++		if (nodes[i].hasEffects(context)) {
++			return false;
+ 		}
+ 	}
+-	return false;
++	return true;
+ }

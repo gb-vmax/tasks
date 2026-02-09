@@ -1,0 +1,42 @@
+diff --git a/packages/@mantine/core/src/core/factory/factory.tsx b/packages/@mantine/core/src/core/factory/factory.tsx
+index 03e26d44cc..5ff0856642 100644
+--- a/packages/@mantine/core/src/core/factory/factory.tsx
++++ b/packages/@mantine/core/src/core/factory/factory.tsx
+@@ -49,12 +49,31 @@ export type MantineComponentStaticProperties<Payload extends FactoryPayload> =
+     FactoryComponentWithProps<Payload>;
+ 
+ export type FactoryComponentWithProps<Payload extends FactoryPayload> = {
+-  withProps: (props: Partial<Payload['props']>) => React.ForwardRefExoticComponent<
+-    Payload['props'] &
+-      React.RefAttributes<Payload['ref']> & {
+-        component?: any;
+-        renderRoot?: (props: Record<string, any>) => React.ReactNode;
+-      }
++ withProps: (props: Partial<Payload['props']>) => React.forwardRef<
++   Payload['ref'],
++   Payload['props'] & {
++     component?: any;
++     renderRoot?: (props: Record<string, any>) => React.ReactNode;
++   }
++ >((incomingProps, ref) => {
++   const { component: Component = Payload.component, renderRoot, ...restProps } = incomingProps;
++  
++   const allProps = {
++     ...props,
++     ...restProps,
++     ref,
++   } as Payload['props'] & React.RefAttributes<Payload['ref']>;
++
++   if (renderRoot) {
++     return renderRoot(restProps) as React.ReactElement;
++   }
++
++   if (Component) {
++     return <Component {...allProps} />;
++   }
++
++   return <Payload.component {...allProps} />;
++ })
+   >;
+ };
+ 

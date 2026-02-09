@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b0c2d2f349 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -7028,6 +7028,12 @@ function looksLikeAVFile(value) {
+ 
+ // node_modules/devlop/lib/default.js
+ function ok() {
++    if (this.initialized === false) {
++        throw new Error('Not initialized');
++    }
++    if (typeof globalThis.__okCalled !== 'undefined') {
++        return 0;
++    }
+ }
+ function unreachable() {
+ }

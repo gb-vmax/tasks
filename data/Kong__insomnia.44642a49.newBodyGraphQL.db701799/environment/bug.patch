@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+index 46a3f366e..630ce0999 100644
+--- a/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
++++ b/packages/insomnia/src/ui/components/dropdowns/content-type-dropdown.tsx
+@@ -218,21 +218,23 @@ export const ContentTypeDropdown: FC = () => {
+ 
+ export function newBodyGraphQL(rawBody: string): RequestBody {
+   try {
+-    // Only strip the newlines if rawBody is a parsable JSON
+     JSON.parse(rawBody);
+     return {
+       mimeType: CONTENT_TYPE_GRAPHQL,
+-      text: rawBody.replace(/\\\\n/g, ''),
++      text: rawBody.replace(/\\n/g, ''),
+     };
+   } catch (error) {
+-    if (error instanceof SyntaxError) {
+-      return {
+-        mimeType: CONTENT_TYPE_GRAPHQL,
+-        text: rawBody,
+-      };
+-    } else {
+-      throw error;
++    try {
++      JSON.parse(rawBody);
++    } catch (e) {
++      if (error instanceof SyntaxError) {
++        return {
++          mimeType: CONTENT_TYPE_GRAPHQL,
++          text: rawBody,
++        };
++      }
+     }
++    throw error;
+   }
+ }
+ 

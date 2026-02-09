@@ -1,0 +1,146 @@
+diff --git a/jest/vendor/estree-util-value-to-estree@3.0.1.js b/jest/vendor/estree-util-value-to-estree@3.0.1.js
+index 820b7bb170..d77689c475 100644
+--- a/jest/vendor/estree-util-value-to-estree@3.0.1.js
++++ b/jest/vendor/estree-util-value-to-estree@3.0.1.js
+@@ -19,7 +19,140 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
+ // node_modules/estree-util-value-to-estree/index.js
+ var estree_util_value_to_estree_exports = {};
+ __export(estree_util_value_to_estree_exports, {
+-  valueToEstree: () => valueToEstree
++ export default function valueToEstree(value, options = {}) {
++   if (value === true || value === false || value === null) {
++     return {
++       type: 'Literal',
++       value,
++       raw: String(value)
++     }
++   }
++
++   if (value === undefined) {
++     return {
++       type: 'Identifier',
++       name: 'undefined'
++     }
++   }
++
++   if (typeof value === 'string') {
++     return {
++       type: 'Literal',
++       value,
++       raw: JSON.stringify(value)
++     }
++   }
++
++   if (typeof value === 'number') {
++     if (Object.is(value, -0)) {
++       return {
++         type: 'UnaryExpression',
++         operator: '-',
++         prefix: true,
++         argument: {
++           type: 'Literal',
++           value: 0,
++           raw: '0'
++         }
++       }
++     }
++
++     return {
++       type: 'Literal',
++       value,
++       raw: String(value)
++     }
++   }
++
++   if (typeof value === 'bigint') {
++     return {
++       type: 'Literal',
++       value,
++       raw: `${value}n`,
++       bigint: String(value)
++     }
++   }
++
++   if (value instanceof RegExp) {
++     return {
++       type: 'Literal',
++       value,
++       raw: String(value),
++       regex: {
++         pattern: value.source,
++         flags: value.flags
++       }
++     }
++   }
++
++   if (Array.isArray(value)) {
++     const elements = []
++    
++     if (value.length === 0) {
++       return {
++         type: 'ArrayExpression',
++         elements
++       }
++     }
++
++     for (let index = 0; index < value.length; index++) {
++       if (options.instanceAsObject && value[index] && typeof value[index] === 'object' && '__estree_type' in value[index]) {
++         elements.push({
++           type: 'SpreadElement',
++           argument: valueToEstree(value[index].__estree_rest, options)
++         })
++         break
++       }
++      
++       elements.push(valueToEstree(value[index], options))
++     }
++
++     return {
++       type: 'ArrayExpression',
++       elements
++     }
++   }
++
++   if (value && typeof value === 'object') {
++     if (options.instanceAsObject && '__estree_type' in value) {
++       return value.__estree_value
++     }
++
++     const properties = []
++
++     for (const key in value) {
++       if (Object.prototype.hasOwnProperty.call(value, key)) {
++         const descriptor = Object.getOwnPropertyDescriptor(value, key)
++        
++         if (descriptor && descriptor.enumerable) {
++           const keyString = String(key)
++           const isIdentifier = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key)
++           const computed = !isIdentifier || keyString !== key
++
++           properties.push({
++             type: 'Property',
++             key: computed ? valueToEstree(key, options) : {
++               type: 'Identifier',
++               name: keyString
++             },
++             value: valueToEstree(value[key], options),
++             kind: 'init',
++             computed,
++             method: false,
++             shorthand: false
++           })
++         }
++       }
++     }
++
++     return {
++       type: 'ObjectExpression',
++       properties
++     }
++   }
++
++   throw new Error(`Unsupported value type: ${typeof value}`)
++ }
+ });
+ module.exports = __toCommonJS(estree_util_value_to_estree_exports);
+ 

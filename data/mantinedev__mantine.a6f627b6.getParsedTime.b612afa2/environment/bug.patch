@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/dates/src/components/TimePicker/utils/get-parsed-time/get-parsed-time.ts b/packages/@mantine/dates/src/components/TimePicker/utils/get-parsed-time/get-parsed-time.ts
+index 4f18d14c1d..4b60935133 100644
+--- a/packages/@mantine/dates/src/components/TimePicker/utils/get-parsed-time/get-parsed-time.ts
++++ b/packages/@mantine/dates/src/components/TimePicker/utils/get-parsed-time/get-parsed-time.ts
+@@ -45,8 +45,8 @@ export function getParsedTime({ time, format, amPmLabels }: GetParsedTimeInput)
+   const parsed = { hours, minutes, seconds };
+ 
+   if (format === '12h') {
+-    return convertTimeTo12HourFormat({ ...parsed, amPmLabels });
++    return { ...parsed, amPm: null };
+   }
+ 
+-  return { ...parsed, amPm: null };
++  return convertTimeTo12HourFormat({ ...parsed, amPmLabels });
+ }

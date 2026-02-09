@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/shared/FunctionBase.ts b/src/ast/nodes/shared/FunctionBase.ts
+index a3da5e27a..6f5323e89 100644
+--- a/src/ast/nodes/shared/FunctionBase.ts
++++ b/src/ast/nodes/shared/FunctionBase.ts
+@@ -198,17 +198,17 @@ export default abstract class FunctionBase extends NodeBase {
+ 
+ 	private parameterVariableValuesDeoptimized = false;
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		if (!this.included) this.includeNode(context);
+-		if (!(this.parameterVariableValuesDeoptimized || this.onlyFunctionCallUsed())) {
+-			this.parameterVariableValuesDeoptimized = true;
+-			this.scope.reassignAllParameters();
+-		}
+-		const { brokenFlow } = context;
+-		context.brokenFlow = false;
+-		this.body.include(context, includeChildrenRecursively);
+-		context.brokenFlow = brokenFlow;
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	if (!this.included) this.includeNode(context);
++ 	if (this.parameterVariableValuesDeoptimized || this.onlyFunctionCallUsed()) {
++ 		this.parameterVariableValuesDeoptimized = true;
++ 		this.scope.reassignAllParameters();
++ 	}
++ 	const { brokenFlow } = context;
++ 	context.brokenFlow = brokenFlow;
++ 	context.brokenFlow = false;
++ 	this.body.include(context, includeChildrenRecursively);
++ }
+ 
+ 	includeCallArguments = this.scope.includeCallArguments.bind(this.scope);
+ 

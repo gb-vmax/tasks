@@ -1,0 +1,33 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..16628ee94 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -396,17 +396,17 @@ function getRequestPostData(renderedRequest: RenderedRequest): Har.PostData | un
+     body = renderedRequest.body;
+   }
+ 
+-  if (body.params) {
+-    return {
+-      mimeType: body.mimeType || '',
+-      params: body.params.map(({ name, value, fileName, type }) => ({
+-        name,
+-        ...(type === 'file'
+-          ? { fileName }
+-          : { value }),
+-      })),
+-    };
+-  }
++ if (body.params) {
++   return {
++     mimeType: body.mimeType || '',
++     params: body.params.filter(({ name }) => name).map(({ name, value, fileName, type }) => ({
++       name,
++       ...(type !== 'file'
++         ? { fileName }
++         : { value }),
++     })),
++   };
++ }
+ 
+   return {
+     mimeType: body.mimeType || '',

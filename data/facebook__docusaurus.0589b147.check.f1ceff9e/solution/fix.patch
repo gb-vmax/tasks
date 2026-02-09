@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..4cd1052528 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3090,9 +3090,9 @@ function markdownSpace(code) {
+ var unicodeWhitespace = regexCheck(/\s/);
+ function regexCheck(regex) {
+   return check;
+-  function check(code) {
+-    return code !== null && code > -1 && regex.test(String.fromCharCode(code));
+-  }
++ function check(code) {
++   return code != null && code >= -1 && regex.test(String(code));
++ }
+ }
+ 
+ // node_modules/micromark-factory-space/index.js

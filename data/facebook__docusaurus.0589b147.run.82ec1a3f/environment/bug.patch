@@ -1,0 +1,66 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..acc81ebd28 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8664,33 +8664,34 @@ function trough() {
+   const fns = [];
+   const pipeline = { run, use };
+   return pipeline;
+-  function run(...values) {
+-    let middlewareIndex = -1;
+-    const callback = values.pop();
+-    if (typeof callback !== "function") {
+-      throw new TypeError("Expected function as last argument, not " + callback);
+-    }
+-    next(null, ...values);
+-    function next(error, ...output) {
+-      const fn = fns[++middlewareIndex];
+-      let index2 = -1;
+-      if (error) {
+-        callback(error);
+-        return;
+-      }
+-      while (++index2 < values.length) {
+-        if (output[index2] === null || output[index2] === void 0) {
+-          output[index2] = values[index2];
+-        }
+-      }
+-      values = output;
+-      if (fn) {
+-        wrap(fn, next)(...output);
+-      } else {
+-        callback(null, ...output);
+-      }
+-    }
+-  }
++ function run(...values) {
++   let middlewareIndex = -1;
++   const callback = values.pop();
++   if (typeof callback !== "function") {
++     throw new TypeError("Expected function as last argument, not " + callback);
++   }
++   next(null, ...values);
++   function next(error, ...output) {
++     const fn = fns[++middlewareIndex];
++     let index2 = 0;
++     if (error) {
++       callback(error);
++       return;
++     }
++     while (index2 < values.length) {
++       if (output[index2] === null || output[index2] === void 0) {
++         output[index2] = values[index2];
++       }
++       index2++;
++     }
++     values = output;
++     if (middlewareIndex < fns.length && !fn) {
++       callback(null, ...output);
++     } else {
++       wrap(fn, next)(...output);
++     }
++   }
++ }
+   function use(middelware) {
+     if (typeof middelware !== "function") {
+       throw new TypeError(

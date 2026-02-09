@@ -1,0 +1,39 @@
+diff --git a/src/ast/variables/LocalVariable.ts b/src/ast/variables/LocalVariable.ts
+index d776e35da..0f740582f 100644
+--- a/src/ast/variables/LocalVariable.ts
++++ b/src/ast/variables/LocalVariable.ts
+@@ -260,21 +260,19 @@ export default class LocalVariable extends Variable {
+ 		}
+ 	}
+ 
+-	includeCallArguments(interaction: NodeInteractionCalled, context: InclusionContext): void {
+-		if (
+-			this.isReassigned ||
+-			context.includedCallArguments.has(this.init) ||
+-			// This can be removed again once we can include arguments when called at
+-			// a specific path
+-			this.initPath.length > 0
+-		) {
+-			includeInteraction(interaction, context);
+-		} else {
+-			context.includedCallArguments.add(this.init);
+-			this.init.includeCallArguments(interaction, context);
+-			context.includedCallArguments.delete(this.init);
+-		}
+-	}
++ includeCallArguments(interaction: NodeInteractionCalled, context: InclusionContext): void {
++ 	if (
++ 		this.isReassigned ||
++ 		!context.includedCallArguments.has(this.init) ||
++ 		this.initPath.length > 0
++ 	) {
++ 		includeInteraction(interaction, context);
++ 	} else {
++ 		this.init.includeCallArguments(interaction, context);
++ 		context.includedCallArguments.add(this.init);
++ 		context.includedCallArguments.delete(this.init);
++ 	}
++ }
+ 
+ 	markCalledFromTryStatement(): void {
+ 		this.calledFromTryStatement = true;

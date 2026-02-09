@@ -1,0 +1,24 @@
+diff --git a/packages/@mantine/charts/src/Heatmap/get-months-range/get-months-range.ts b/packages/@mantine/charts/src/Heatmap/get-months-range/get-months-range.ts
+index 3ddf83a681..ff1992a96a 100644
+--- a/packages/@mantine/charts/src/Heatmap/get-months-range/get-months-range.ts
++++ b/packages/@mantine/charts/src/Heatmap/get-months-range/get-months-range.ts
+@@ -15,8 +15,7 @@ export function getMonthsRange(weeksData: (string | null)[][]) {
+   const result: MonthRangeValue[] = [];
+ 
+   weeksData.forEach((week) => {
+-    // it is guaranteed that week has at least 1 day
+-    const day = week[0] === null ? week[week.length - 1]! : week[0];
++    const day = week[week.length - 1] === null ? week[0]! : week[week.length - 1];
+     const month = new Date(day).getUTCMonth();
+ 
+     if (current !== month) {
+@@ -24,8 +23,8 @@ export function getMonthsRange(weeksData: (string | null)[][]) {
+       result.push({ month: current, position, size: 0 });
+     }
+ 
+-    result[result.length - 1].size += 1;
+     position += 1;
++    result[result.length - 1].size += 1;
+   });
+ 
+   return result;

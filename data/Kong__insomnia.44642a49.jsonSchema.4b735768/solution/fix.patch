@@ -1,0 +1,44 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..2a34228a3 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -256,7 +256,38 @@ export class Response extends Property {
+                     header: (expected: string) => haveHeader(expected, false),
+                     body: (expected: string) => haveBody(expected, false),
+                     jsonBody: (expected: object) => haveJsonBody(expected, false),
+-                    jsonSchema: (expected: object) => haveJsonSchema(expected, false),
++interface JsonSchemaOptions {
++    schema: object;
++    draft?: string;
++    path?: string;
++}
++
++function isJsonSchemaOptions(obj: any): obj is JsonSchemaOptions {
++    return obj && typeof obj === 'object' && 'schema' in obj;
++}
++
++function getNestedValue(obj: any, path: string): any {
++    const keys = path.split('.');
++    let current = obj;
++    for (const key of keys) {
++        if (current === null || current === undefined || typeof current !== 'object') {
++            throw Error(`Path "${path}" not found in response body`);
++        }
++        current = current[key];
++    }
++    return current;
++}
++
++function formatValidationErrors(errors: any[]): string {
++    return errors.map(err => {
++        const path = err.instancePath || '/';
++        const message = err.message || 'validation failed';
++        const params = err.params ? ` (${JSON.stringify(err.params)})` : '';
++        return `  - ${path}: ${message}${params}`;
++    }).join('\n');
++}
++
++ jsonSchema: (expected: object | { schema: object; draft?: string; path?: string }) => haveJsonSchema(expected, false),
+                 },
+             },
+         };

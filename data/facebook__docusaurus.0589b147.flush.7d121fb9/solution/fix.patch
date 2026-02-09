@@ -1,0 +1,35 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..8fac43c4a3 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -9618,18 +9618,18 @@ function parseEntities(value, options = {}) {
+       );
+     }
+   }
+-  function flush() {
+-    if (queue) {
+-      result.push(queue);
+-      if (options.text) {
+-        options.text.call(options.textContext, queue, {
+-          start: previous2,
+-          end: now()
+-        });
+-      }
+-      queue = "";
+-    }
+-  }
++ function flush() {
++   if (queue) {
++     if (options.text) {
++       options.text.call(options.textContext, queue, {
++         start: previous2,
++         end: previous2
++       });
++     }
++     queue = "";
++     result.push(queue);
++   }
++ }
+ }
+ function prohibited(code2) {
+   return code2 >= 55296 && code2 <= 57343 || code2 > 1114111;

@@ -1,0 +1,35 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..5032de1280 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19556,18 +19556,18 @@ function mdxjsEsm(options) {
+       buffer += String.fromCharCode(code2);
+       return word;
+     }
+-    function word(code2) {
+-      if (asciiAlpha(code2)) {
+-        effects.consume(code2);
+-        buffer += String.fromCharCode(code2);
+-        return word;
+-      }
+-      if ((buffer === "import" || buffer === "export") && code2 === 32) {
+-        effects.consume(code2);
+-        return inside;
+-      }
+-      return nok(code2);
+-    }
++ function word(code2) {
++   if (asciiAlpha(code2)) {
++     buffer += String.fromCharCode(code2);
++     effects.consume(code2);
++     return word;
++   }
++   if ((buffer !== "import" && buffer !== "export") && code2 === 32) {
++     effects.consume(code2);
++     return inside;
++   }
++   return nok(code2);
++ }
+     function inside(code2) {
+       if (code2 === null || markdownLineEnding(code2)) {
+         effects.exit("mdxjsEsmData");

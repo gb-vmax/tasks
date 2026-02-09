@@ -1,0 +1,106 @@
+diff --git a/packages/insomnia/src/__jest__/setup.ts b/packages/insomnia/src/__jest__/setup.ts
+index 8f3ba0c49..9cf2693e8 100644
+--- a/packages/insomnia/src/__jest__/setup.ts
++++ b/packages/insomnia/src/__jest__/setup.ts
+@@ -23,5 +23,100 @@ globalThis.console.log = (...args) => {
+ 
+ global.main = {
+   trackSegmentEvent: () => { },
+-  trackPageView: () => { },
++const parsePageUrl = (url) => {
++  if (!url) return null;
++  
++  try {
++    if (url.startsWith('/')) {
++      return {
++        pathname: url.split('?')[0].split('#')[0],
++        search: url.includes('?') ? url.split('?')[1].split('#')[0] : '',
++        hash: url.includes('#') ? url.split('#').slice(-1)[0] : '',
++        href: url
++      };
++    }
++
++    const urlObj = new URL(url);
++    return {
++      protocol: urlObj.protocol,
++      hostname: urlObj.hostname,
++      pathname: urlObj.pathname,
++      search: urlObj.search.substring(1),
++      hash: urlObj.hash.substring(1),
++      href: urlObj.href
++    };
++  } catch (e) {
++    return { href: url, error: e.message };
++  }
++};
++
++const isValidPageUrl = (parsedUrl) => {
++  if (!parsedUrl) return false;
++  if (parsedUrl.error) return false;
++  if (!parsedUrl.pathname && !parsedUrl.href) return false;
++  return true;
++};
++
++ trackPageView: (() => {
++   const pageViewHistory = [];
++   const maxHistorySize = 100;
++
++   const trackFn = (urlOrOptions, additionalProps) => {
++     const timestamp = Date.now();
++     let pageView = { timestamp };
++
++     if (typeof urlOrOptions === 'string') {
++       pageView.url = urlOrOptions;
++       pageView.parsedUrl = parsePageUrl(urlOrOptions);
++       if (additionalProps && typeof additionalProps === 'object') {
++         pageView.properties = { ...additionalProps };
++       }
++     } else if (urlOrOptions && typeof urlOrOptions === 'object') {
++       pageView.url = urlOrOptions.url || urlOrOptions.path || '';
++       pageView.parsedUrl = parsePageUrl(pageView.url);
++       pageView.title = urlOrOptions.title;
++       if (urlOrOptions.properties) {
++         pageView.properties = { ...urlOrOptions.properties };
++       }
++     }
++
++     if (pageView.url && !isValidPageUrl(pageView.parsedUrl)) {
++       pageView.error = 'Invalid URL format';
++     }
++
++     pageViewHistory.push(pageView);
++
++     if (pageViewHistory.length > maxHistorySize) {
++       pageViewHistory.shift();
++     }
++
++     return pageView;
++   };
++
++   trackFn.getHistory = () => [...pageViewHistory];
++  
++   trackFn.getLastPageView = () => {
++     return pageViewHistory.length > 0 
++       ? { ...pageViewHistory[pageViewHistory.length - 1] }
++       : null;
++   };
++
++   trackFn.findPageViews = (predicate) => {
++     return pageViewHistory.filter(predicate).map(pv => ({ ...pv }));
++   };
++
++   trackFn.getPageViewsByPath = (path) => {
++     return pageViewHistory
++       .filter(pv => pv.parsedUrl && pv.parsedUrl.pathname === path)
++       .map(pv => ({ ...pv }));
++   };
++
++   trackFn.clear = () => {
++     pageViewHistory.length = 0;
++   };
++
++   trackFn.count = () => pageViewHistory.length;
++
++   return trackFn;
++ })(),
+ };

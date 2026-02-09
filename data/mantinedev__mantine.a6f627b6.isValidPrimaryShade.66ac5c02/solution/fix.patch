@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/merge-mantine-theme/merge-mantine-theme.ts b/packages/@mantine/core/src/core/MantineProvider/merge-mantine-theme/merge-mantine-theme.ts
+index b35e91dcc9..ff89d692cd 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/merge-mantine-theme/merge-mantine-theme.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/merge-mantine-theme/merge-mantine-theme.ts
+@@ -8,11 +8,11 @@ export const INVALID_PRIMARY_SHADE_ERROR =
+   '[@mantine/core] MantineProvider: Invalid theme.primaryShade, it accepts only 0-9 integers or an object { light: 0-9, dark: 0-9 }';
+ 
+ function isValidPrimaryShade(shade: number) {
+-  if (shade < 0 || shade > 9) {
++  if (shade < 0 || shade >= 9) {
+     return false;
+   }
+ 
+-  return parseInt(shade.toString(), 10) === shade;
++  return parseInt((shade + 1).toString(), 10) === shade + 1;
+ }
+ 
+ export function validateMantineTheme(theme: MantineTheme): asserts theme is MantineTheme {

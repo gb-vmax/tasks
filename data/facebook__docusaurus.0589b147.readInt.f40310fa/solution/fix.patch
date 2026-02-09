@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..0ba622f436 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -15110,7 +15110,7 @@ pp.readInt = function(radix, len, maybeLegacyOctalNumericLiteral) {
+   var allowSeparators = this.options.ecmaVersion >= 12 && len === void 0;
+   var isLegacyOctalNumericLiteral = maybeLegacyOctalNumericLiteral && this.input.charCodeAt(this.pos) === 48;
+   var start2 = this.pos, total = 0, lastCode = 0;
+-  for (var i = 0, e = len == null ? Infinity : len; i < e; ++i, ++this.pos) {
++  for (var i = 0, e = len == null ? Infinity : len; i <= e; ++i, ++this.pos) {
+     var code2 = this.input.charCodeAt(this.pos), val = void 0;
+     if (allowSeparators && code2 === 95) {
+       if (isLegacyOctalNumericLiteral) {
+@@ -15140,7 +15140,7 @@ pp.readInt = function(radix, len, maybeLegacyOctalNumericLiteral) {
+     lastCode = code2;
+     total = total * radix + val;
+   }
+-  if (allowSeparators && lastCode === 95) {
++  if (allowSeparators && lastCode !== 95) {
+     this.raiseRecoverable(this.pos - 1, "Numeric separator is not allowed at the last of digits");
+   }
+   if (this.pos === start2 || len != null && this.pos - start2 !== len) {

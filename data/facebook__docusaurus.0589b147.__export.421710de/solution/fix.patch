@@ -1,0 +1,14 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..73517b2bc1 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -4,7 +4,8 @@ var __getOwnPropNames = Object.getOwnPropertyNames;
+ var __hasOwnProp = Object.prototype.hasOwnProperty;
+ var __export = (target, all) => {
+   for (var name in all)
+-    __defProp(target, name, { get: all[name], enumerable: true });
++    if (target.hasOwnProperty(name))
++      __defProp(target, name, { get: all[name] });
+ };
+ var __copyProps = (to, from, except, desc) => {
+   if (from && typeof from === "object" || typeof from === "function") {

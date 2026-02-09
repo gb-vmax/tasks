@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..04257f9475 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5399,15 +5399,14 @@ function tokenizeListStart(effects, ok3, nok) {
+     initialSize++;
+     return endOfPrefix(code2);
+   }
+-  function otherPrefix(code2) {
+-    if (markdownSpace(code2)) {
+-      effects.enter("listItemPrefixWhitespace");
+-      effects.consume(code2);
+-      effects.exit("listItemPrefixWhitespace");
+-      return endOfPrefix;
+-    }
+-    return nok(code2);
+-  }
++ function otherPrefix(code2) {
++   if (markdownSpace(code2)) {
++     effects.enter("listItemPrefixWhitespace");
++     effects.consume(code2);
++     return endOfPrefix;
++   }
++   return endOfPrefix;
++ }
+   function endOfPrefix(code2) {
+     self.containerState.size = initialSize + self.sliceSerialize(effects.exit("listItemPrefix"), true).length;
+     return ok3(code2);

@@ -1,0 +1,229 @@
+diff --git a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+index b71e59989..a1edbbd52 100644
+--- a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+@@ -40,8 +40,222 @@ export interface PromptModalOptions {
+   onDeleteHint?: (arg0?: string) => void;
+ }
+ export interface PromptModalHandle {
+-  show: (options: PromptModalOptions) => void;
+-  hide: () => void;
++ export const PromptModal = forwardRef<PromptModalHandle, ModalProps>((_, ref) => {
++   const modalRef = useRef<ModalHandle>(null);
++   const inputRef = useRef<HTMLInputElement>(null);
++   const historyRef = useRef<Map<string, string[]>>(new Map());
++   const historyIndexRef = useRef<number>(-1);
++   const currentInputRef = useRef<string>('');
++
++   const [state, setState] = useState<State>({
++     title: 'Not Set',
++     hints: [],
++     defaultValue: '',
++     submitName: '',
++     selectText: false,
++     upperCase: false,
++     validate: null,
++     hint: '',
++     label: '',
++     placeholder: '',
++     inputType: '',
++     onComplete: undefined,
++     onDeleteHint: undefined,
++     onHide: undefined,
++     loading: false,
++   });
++
++   const getHistoryKey = () => {
++     return `${state.title}:${state.label || ''}`;
++   };
++
++   const addToHistory = (value: string) => {
++     if (!value || value.trim() === '') return;
++    
++     const key = getHistoryKey();
++     const history = historyRef.current.get(key) || [];
++    
++     const filteredHistory = history.filter(item => item !== value);
++     const newHistory = [...filteredHistory, value].slice(-10);
++    
++     historyRef.current.set(key, newHistory);
++   };
++
++   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
++     if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
++       return;
++     }
++
++     const key = getHistoryKey();
++     const history = historyRef.current.get(key) || [];
++    
++     if (history.length === 0) return;
++
++     event.preventDefault();
++
++     if (event.key === 'ArrowUp') {
++       if (historyIndexRef.current === -1) {
++         currentInputRef.current = inputRef.current?.value || '';
++       }
++      
++       const newIndex = historyIndexRef.current === -1 
++         ? history.length - 1 
++         : Math.max(0, historyIndexRef.current - 1);
++      
++       historyIndexRef.current = newIndex;
++      
++       if (inputRef.current) {
++         inputRef.current.value = history[newIndex];
++       }
++     } else if (event.key === 'ArrowDown') {
++       if (historyIndexRef.current === -1) return;
++      
++       const newIndex = historyIndexRef.current + 1;
++      
++       if (newIndex >= history.length) {
++         historyIndexRef.current = -1;
++         if (inputRef.current) {
++           inputRef.current.value = currentInputRef.current;
++         }
++       } else {
++         historyIndexRef.current = newIndex;
++         if (inputRef.current) {
++           inputRef.current.value = history[newIndex];
++         }
++       }
++     }
++   };
++
++   const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement | HTMLButtonElement>) => {
++     event.preventDefault();
++     if (inputRef.current) {
++       const result = inputRef.current.type === 'checkbox' ? inputRef.current.checked.toString() : inputRef.current.value;
++       if (result || inputRef.current?.type === 'text') {
++         const finalValue = state.upperCase ? result?.toUpperCase() : result;
++         addToHistory(finalValue);
++         state.onComplete?.(finalValue);
++       }
++       modalRef.current?.hide();
++     }
++   };
++
++   useImperativeHandle(ref, () => ({
++     hide: () => {
++       modalRef.current?.hide();
++     },
++     show: options => {
++       setState({
++         ...options,
++         loading: false,
++       });
++       historyIndexRef.current = -1;
++       currentInputRef.current = '';
++       modalRef.current?.show();
++     },
++   }), []);
++
++   const {
++     submitName,
++     title,
++     hint,
++     inputType,
++     placeholder,
++     label,
++     upperCase,
++     hints,
++   } = state;
++   const input = (
++     <input
++       ref={inputRef}
++       onChange={event => {
++         if (state.validate) {
++           const errorMessage = state.validate(event.target.value);
++           event.target.setCustomValidity(errorMessage);
++         }
++       }}
++       onKeyDown={handleKeyDown}
++       autoFocus
++       defaultValue={state.defaultValue || ''}
++       id="prompt-input"
++       type={inputType === 'decimal' ? 'number' : inputType || 'text'}
++       step={inputType === 'decimal' ? '0.1' : undefined}
++       min={inputType === 'decimal' ? '0.5' : undefined}
++       style={{
++         textTransform: upperCase ? 'uppercase' : 'none',
++       }}
++       placeholder={placeholder || ''}
++     />
++   );
++   let sanitizedHints: ReactNode[] = [];
++
++   if (Array.isArray(hints)) {
++     sanitizedHints = hints.slice(0, 15).map(hint =>
++     (<div key={hint} className="btn btn--outlined btn--super-super-compact margin-right-sm margin-top-sm inline-block">
++         <button
++           className="tall"
++           onClick={() => {
++             if (hint) {
++               state.onComplete?.(state.upperCase ? hint?.toUpperCase() : hint);
++             }
++             modalRef.current?.hide();
++           }}
++         >
++           {hint}
++         </button>
++         <PromptButton
++           confirmMessage=""
++           className="tall space-left icon"
++           onClick={() => {
++             state.onDeleteHint?.(hint);
++             const hints = state.hints?.filter(h => h !== hint);
++             setState(state => ({
++               ...state,
++               hints,
++             }));
++           }}
++         >
++           <i className="fa fa-close faint" />
++         </PromptButton>
++       </div>));
++   }
++
++   let field = input;
++
++   if (label) {
++     const labelClasses = classnames({
++       'inline-block': inputType === 'checkbox',
++     });
++     field = (
++       <label htmlFor="prompt-input" className={labelClasses}>
++         {label} {input}
++       </label>
++     );
++   }
++
++   const divClassnames = classnames('form-control form-control--wide', {
++     'form-control--outlined': inputType !== 'checkbox',
++   });
++   return (
++     <Modal
++       ref={modalRef}
++       onHide={state.onHide}
++     >
++       <ModalHeader>{title}</ModalHeader>
++       <ModalBody className="wide">
++         <form onSubmit={handleSubmit} className="wide pad">
++           <div className={divClassnames}>{field}</div>
++           {sanitizedHints}
++         </form>
++       </ModalBody>
++       <ModalFooter>
++         <div className="margin-left faint italic txt-sm">{hint ? `* ${hint}` : ''}</div>
++         <button className="btn" onClick={handleSubmit}>
++           {submitName || 'Submit'}
++         </button>
++       </ModalFooter>
++     </Modal>
++   );
++ });
+ }
+ export const PromptModal = forwardRef<PromptModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

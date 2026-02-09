@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..14dc00c82 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -349,9 +349,66 @@ export function fromPreRequestAuth(auth: RequestAuth): RequestAuthentication {
+         }
+ 
+         for (const kv of kvs) {
+-            if (typeof kv.value === 'string' && kv.key === targetKey) {
++const findNestedValue = (
++    targetKey: string,
++    kvs: Array<{ key: string; value: string; enabled?: boolean; send_as?: string }>
++): string => {
++    const keyParts = targetKey.split('.');
++    const currentKey = keyParts[0];
++    const normalizedCurrentKey = currentKey.toLowerCase();
++    
++    for (const kv of kvs) {
++        const normalizedKey = kv.key.toLowerCase();
++        
++        if (kv.key === currentKey || normalizedKey === normalizedCurrentKey) {
++            if (keyParts.length === 1) {
+                 return kv.value;
+-            } else if (Array.isArray(kv.value)) {
++            }
++        }
++    }
++    
++    return '';
++};
++
++ const findValueInOauth2Options = (
++     targetKey: string,
++     kvs?: { key: string; value: string }[] | OAuth2AuthOption[]
++ ) => {
++     if (!kvs) {
++         return '';
++     }
++
++     const keyParts = targetKey.split('.');
++     const primaryKey = keyParts[0];
++     const normalizedPrimaryKey = primaryKey.toLowerCase();
++     const hasNestedPath = keyParts.length > 1;
++
++     for (const kv of kvs) {
++         const normalizedKey = kv.key.toLowerCase();
++        
++         if (typeof kv.value === 'string' && (kv.key === targetKey || normalizedKey === normalizedPrimaryKey)) {
++             return kv.value;
++         } else if (Array.isArray(kv.value)) {
++             if (hasNestedPath && (kv.key === primaryKey || normalizedKey === normalizedPrimaryKey)) {
++                 const nestedKey = keyParts.slice(1).join('.');
++                 const nestedResult = findNestedValue(nestedKey, kv.value);
++                 if (nestedResult !== '') {
++                     return nestedResult;
++                 }
++             }
++            
++             const matched = kv.value.find(subKv => {
++                 const normalizedSubKey = subKv.key.toLowerCase();
++                 return subKv.key === targetKey || normalizedSubKey === normalizedPrimaryKey;
++             });
++             if (matched != null) {
++                 return matched.value;
++             }
++         }
++     }
++
++     return '';
++ };
+                 const matched = kv.value.find(subKv => subKv.key === targetKey);
+                 if (matched != null) {
+                     return matched.value;

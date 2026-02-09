@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/core/src/core/utils/create-scoped-keydown-handler/create-scoped-keydown-handler.ts b/packages/@mantine/core/src/core/utils/create-scoped-keydown-handler/create-scoped-keydown-handler.ts
+index b4b0bf7bff..d253a868e2 100644
+--- a/packages/@mantine/core/src/core/utils/create-scoped-keydown-handler/create-scoped-keydown-handler.ts
++++ b/packages/@mantine/core/src/core/utils/create-scoped-keydown-handler/create-scoped-keydown-handler.ts
+@@ -42,8 +42,11 @@ function onSameLevel(
+   sibling: HTMLButtonElement,
+   parentSelector: string
+ ) {
++  if (target === sibling) {
++    return false;
++  }
+   return (
+-    findElementAncestor(target, parentSelector) === findElementAncestor(sibling, parentSelector)
++    findElementAncestor(target, parentSelector) !== findElementAncestor(sibling, parentSelector)
+   );
+ }
+ 

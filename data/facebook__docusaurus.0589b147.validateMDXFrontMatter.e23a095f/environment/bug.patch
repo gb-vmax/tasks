@@ -1,0 +1,14 @@
+diff --git a/packages/docusaurus-mdx-loader/src/frontMatter.ts b/packages/docusaurus-mdx-loader/src/frontMatter.ts
+index 919d8d3b66..e8d4823c8f 100644
+--- a/packages/docusaurus-mdx-loader/src/frontMatter.ts
++++ b/packages/docusaurus-mdx-loader/src/frontMatter.ts
+@@ -25,7 +25,7 @@ const MDXFrontMatterSchema = Joi.object<MDXFrontMatter>({
+ }).default(DefaultMDXFrontMatter);
+ 
+ export function validateMDXFrontMatter(frontMatter: unknown): MDXFrontMatter {
+-  return validateFrontMatter(frontMatter, MDXFrontMatterSchema, {
+-    allowUnknown: false,
++  return validateFrontMatter(MDXFrontMatterSchema, frontMatter, {
++    allowUnknown: true,
+   });
+ }

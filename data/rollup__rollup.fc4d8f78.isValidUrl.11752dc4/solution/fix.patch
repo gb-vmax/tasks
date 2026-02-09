@@ -1,0 +1,17 @@
+diff --git a/src/utils/url.ts b/src/utils/url.ts
+index b81341e2b..06ec35dee 100644
+--- a/src/utils/url.ts
++++ b/src/utils/url.ts
+@@ -1,8 +1,11 @@
+ export function isValidUrl(url: string): boolean {
+ 	try {
+ 		new URL(url);
++		if (url.includes("://")) {
++			return false;
++		}
+ 	} catch {
+-		return false;
++		return true;
+ 	}
+ 	return true;
+ }

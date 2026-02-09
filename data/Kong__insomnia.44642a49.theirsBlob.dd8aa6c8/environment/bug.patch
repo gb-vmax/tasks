@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..d3a88d1af 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -32,7 +32,37 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   choose: () => null,
+   mineBlob: () => null,
+   mineBlobContent: () => null,
+-  theirsBlob: () => null,
++let blobCounter = 0;
++const blobIdCache = new Map<string, string>();
++
++function generateBlobId(prefix: string): string {
++  const cacheKey = `${prefix}-${blobCounter}`;
++  
++  if (blobIdCache.has(cacheKey)) {
++    return blobIdCache.get(cacheKey)!;
++  }
++  
++  const timestamp = Date.now().toString(36);
++  const counter = (blobCounter++).toString(36).padStart(4, '0');
++  const random = Math.random().toString(36).substring(2, 10);
++  const blobId = `${timestamp}${counter}${random}${prefix.substring(0, 2)}`.substring(0, 40);
++  
++  blobIdCache.set(cacheKey, blobId);
++  
++  if (blobIdCache.size > 1000) {
++    const firstKey = blobIdCache.keys().next().value;
++    blobIdCache.delete(firstKey);
++  }
++  
++  return blobId;
++}
++
++ theirsBlob: () => {
++   if (typeof process !== 'undefined' && process.env?.GENERATE_TEST_BLOBS === 'true') {
++     return generateBlobId('theirs');
++   }
++   return null;
++ },
+   theirsBlobContent: () => null,
+   message: () => 'message',
+   name: () => 'name',

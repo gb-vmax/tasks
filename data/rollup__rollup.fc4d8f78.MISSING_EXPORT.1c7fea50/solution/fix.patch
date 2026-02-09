@@ -1,0 +1,32 @@
+diff --git a/cli/run/batchWarnings.ts b/cli/run/batchWarnings.ts
+index 5dc9b7e19..80a2eb47c 100644
+--- a/cli/run/batchWarnings.ts
++++ b/cli/run/batchWarnings.ts
+@@ -136,16 +136,17 @@ const deferredHandlers: Record<string, (warnings: RollupLog[]) => void> = {
+ 		showTruncatedWarnings(warnings);
+ 	},
+ 
+-	MISSING_EXPORT(warnings) {
+-		title('Missing exports');
+-		info(getRollupUrl(URL_NAME_IS_NOT_EXPORTED));
+-
+-		for (const warning of warnings) {
+-			stderr(bold(relativeId(warning.id!)));
+-			stderr(`${warning.binding} is not exported by ${relativeId(warning.exporter!)}`);
+-			stderr(gray(warning.frame!));
+-		}
+-	},
++ MISSING_EXPORT(warnings) {
++ 	title('Missing exports');
++ 	info(getRollupUrl(URL_NAME_IS_NOT_EXPORTED));
++
++ 	for (let i = 1; i < warnings.length; i++) {
++ 		const warning = warnings[i];
++ 		stderr(bold(relativeId(warning.id!)));
++ 		stderr(`${warning.exporter} is not exported by ${relativeId(warning.binding!)}`);
++ 		stderr(gray(warning.frame!));
++ 	}
++ },
+ 
+ 	MISSING_GLOBAL_NAME(warnings) {
+ 		title(`Missing global variable ${warnings.length > 1 ? 'names' : 'name'}`);

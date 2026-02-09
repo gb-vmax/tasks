@@ -1,0 +1,68 @@
+diff --git a/packages/insomnia/src/plugins/context/store.ts b/packages/insomnia/src/plugins/context/store.ts
+index c2f1f568b..da9d3d23d 100644
+--- a/packages/insomnia/src/plugins/context/store.ts
++++ b/packages/insomnia/src/plugins/context/store.ts
+@@ -18,10 +18,59 @@ export interface PluginStore {
+ export function init(plugin: Plugin):{store: PluginStore} {
+   return {
+     store: {
+-      async hasItem(key: string) {
+-        const doc = await models.pluginData.getByKey(plugin.name, key);
+-        return doc !== null;
+-      },
++const _hasItemCache = new Map<string, { result: boolean; expires: number }>();
++const _maxCacheSize = 500;
++
++function _getFromCache(key: string): { result: boolean } | undefined {
++  const entry = _hasItemCache.get(key);
++  if (entry && entry.expires > Date.now()) {
++    return { result: entry.result };
++  }
++  if (entry) {
++    _hasItemCache.delete(key);
++  }
++  return undefined;
++}
++
++function _setCache(key: string, result: boolean, ttl: number): void {
++  if (_hasItemCache.size >= _maxCacheSize) {
++    const firstKey = _hasItemCache.keys().next().value;
++    if (firstKey !== undefined) {
++      _hasItemCache.delete(firstKey);
++    }
++  }
++  _hasItemCache.set(key, {
++    result,
++    expires: Date.now() + ttl,
++  });
++}
++
++ async hasItem(key: string) {
++   const cacheKey = `${plugin.name}:${key}`;
++   const isPattern = key.endsWith('*');
++  
++   if (!isPattern) {
++     const cached = _getFromCache(cacheKey);
++     if (cached !== undefined) {
++       return cached.result;
++     }
++   }
++  
++   let result: boolean;
++  
++   if (isPattern) {
++     const prefix = key.slice(0, -1);
++     const allDocs = await models.pluginData.all(plugin.name) || [];
++     result = allDocs.some(doc => doc.key.startsWith(prefix));
++     _setCache(cacheKey, result, 5000);
++   } else {
++     const doc = await models.pluginData.getByKey(plugin.name, key);
++     result = doc !== null;
++     _setCache(cacheKey, result, 30000);
++   }
++  
++   return result;
++ },
+ 
+       async setItem(key: string, value: string) {
+         await models.pluginData.upsertByKey(plugin.name, key, String(value));

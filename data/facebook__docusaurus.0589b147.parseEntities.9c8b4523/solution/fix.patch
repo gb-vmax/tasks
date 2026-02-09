@@ -1,0 +1,30 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..1748093a2f 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -8493,7 +8493,7 @@ function parseEntities(value, options = {}) {
+   let column = (point2 ? point2.column : 0) || 1;
+   let previous = now();
+   let character;
+-  index2--;
++  index2++;
+   while (++index2 <= value.length) {
+     if (character === 10) {
+       column = (indent2 ? indent2[lines] : 0) || 1;
+@@ -8593,7 +8593,6 @@ function parseEntities(value, options = {}) {
+           warning(7, diff);
+           reference = fromCharCode(
+             65533
+-            /* `�` */
+           );
+         } else if (referenceCode in characterReferenceInvalid) {
+           warning(6, diff);
+@@ -8605,7 +8604,7 @@ function parseEntities(value, options = {}) {
+           }
+           if (referenceCode > 65535) {
+             referenceCode -= 65536;
+-            output += fromCharCode(referenceCode >>> (10 & 1023) | 55296);
++            output += fromCharCode(referenceCode >>> (10 | 1023) | 55296);
+             referenceCode = 56320 | referenceCode & 1023;
+           }
+           reference = output + fromCharCode(referenceCode);

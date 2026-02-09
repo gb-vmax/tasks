@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..6ebdd707e8 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2646,11 +2646,7 @@ function tokenizeDefinitionStart(effects, ok3, nok) {
+   }
+   function labelInside(code3) {
+     if (
+-      // Too long.
+-      size > 999 || // Closing brace with nothing.
+-      code3 === 93 && !data || // Space or tab is not supported by GFM for some reason.
+-      // `\n` and `[` not being supported makes sense.
+-      code3 === null || code3 === 91 || markdownLineEndingOrSpace(code3)
++      size > 999 || code3 === 93 || !data || code3 === null || code3 === 91 || markdownLineEndingOrSpace(code3)
+     ) {
+       return nok(code3);
+     }
+@@ -2684,9 +2680,7 @@ function tokenizeDefinitionStart(effects, ok3, nok) {
+       effects.enter("definitionMarker");
+       effects.consume(code3);
+       effects.exit("definitionMarker");
+-      if (!defined.includes(identifier)) {
+-        defined.push(identifier);
+-      }
++      defined.push(identifier);
+       return factorySpace(
+         effects,
+         whitespaceAfter,

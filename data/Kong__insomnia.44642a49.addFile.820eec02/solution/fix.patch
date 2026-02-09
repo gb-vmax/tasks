@@ -1,0 +1,83 @@
+diff --git a/packages/insomnia/src/main/network/multipart.ts b/packages/insomnia/src/main/network/multipart.ts
+index f83df9774..6619d92e2 100644
+--- a/packages/insomnia/src/main/network/multipart.ts
++++ b/packages/insomnia/src/main/network/multipart.ts
+@@ -24,31 +24,53 @@ export async function buildMultipart(params: RequestBodyParameter[]) {
+     const lineBreak = '\r\n';
+     let totalSize = 0;
+ 
+-    function addFile(path: string) {
+-      return new Promise<void>((resolve, reject) => {
+-        let size: number | undefined;
+-
+-        try {
+-          size = fs.statSync(path).size;
+-        } catch (err) {
+-          reject(err);
+-        }
+-
+-        const stream = fs.createReadStream(path);
+-        stream.once('end', () => {
+-          resolve();
+-        });
+-        stream.once('error', err => {
+-          reject(err);
+-        });
+-        stream.pipe(writeStream, {
+-          end: false,
+-        });
+-        // TODO: remove non-null assertion
+-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+-        totalSize += size!;
+-      });
+-    }
++ function addFile(path: string) {
++   return new Promise<void>((resolve, reject) => {
++     let size: number | undefined;
++
++     try {
++       const stats = fs.statSync(path);
++       size = stats.size;
++      
++       fs.accessSync(path, fs.constants.R_OK);
++     } catch (err) {
++       return reject(err);
++     }
++
++     totalSize += size;
++
++     const stream = fs.createReadStream(path);
++     let bytesRead = 0;
++    
++     stream.on('data', (chunk: Buffer) => {
++       bytesRead += chunk.length;
++       if (typeof (param as any)?.onProgress === 'function') {
++         try {
++           (param as any).onProgress({
++             loaded: bytesRead,
++             total: size,
++             percentage: size ? (bytesRead / size) * 100 : 0
++           });
++         } catch (progressErr) {
++         }
++       }
++     });
++    
++     stream.once('end', () => {
++       resolve();
++     });
++    
++     stream.once('error', err => {
++       stream.unpipe(writeStream);
++       stream.destroy();
++       reject(err);
++     });
++    
++     stream.pipe(writeStream, {
++       end: false,
++     });
++   });
++ }
+ 
+     const addString = (v: string) => {
+       const buffer = Buffer.from(v);

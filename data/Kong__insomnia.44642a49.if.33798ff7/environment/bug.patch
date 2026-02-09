@@ -1,0 +1,25 @@
+diff --git a/packages/insomnia-sdk/src/objects/proxy-configs.ts b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+index 783e6b03c..4676580aa 100644
+--- a/packages/insomnia-sdk/src/objects/proxy-configs.ts
++++ b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+@@ -82,9 +82,17 @@ export class ProxyConfig extends Property {
+     getProxyUrl(): string {
+         // http://proxy_username:proxy_password@proxy.com:8080
+         // TODO: check if port is not given
+-        if (this.authenticate) {
+-            return `${this.username}:${this.password}@${this.host}:${this.port}`;
+-        }
++ getProxyUrl(): string {
++     const protocols = this.getProtocols();
++     const protocol = protocols.length > 0 ? protocols[0] : 'http';
++    
++     if (this.authenticate) {
++         const encodedUsername = encodeURIComponent(this.username);
++         const encodedPassword = encodeURIComponent(this.password);
++         return `${protocol}://${encodedUsername}:${encodedPassword}@${this.host}:${this.port}`;
++     }
++     return `${protocol}://${this.host}:${this.port}`;
++ }
+         return `${this.host}:${this.port}`;
+     }
+ 

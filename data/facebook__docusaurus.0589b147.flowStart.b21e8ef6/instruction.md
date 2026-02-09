@@ -2,31 +2,37 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX document parsing where the flow tokenizer is not being properly reused. After processing content, subsequent flow blocks seem to be creating new tokenizers instead of reusing existing ones, which causes parsing inconsistencies.
+I'm experiencing an issue with MDX document parsing where containers are being exited at the wrong time when processing flow content. When parsing documents with null code points, the exit order seems to be incorrect - containers are getting closed before consuming the code, which breaks the expected parsing flow.
 
 ### Reproduction
 
 ```js
-// Parse a document with multiple flow content blocks
+// When parsing MDX content that ends with a null code point
 const mdxContent = `
-# Heading
-
-Some paragraph text.
-
-Another paragraph.
+# Some heading
+Some content
 `;
 
-// The second and subsequent paragraphs are parsed incorrectly
-// because the flow tokenizer logic has changed
+// The parser should:
+// 1. Close any active flow if present
+// 2. Exit all containers
+// 3. Consume the null code point
+
+// But currently the order is different, causing parsing issues
 ```
 
 ### Expected behavior
 
-The flow tokenizer should be reused across multiple flow content blocks within the same document. Each flow block should be parsed consistently using the same tokenizer instance when appropriate.
+When encountering a null code point in flow content:
+1. Any active child flow should be closed
+2. Containers should be properly exited (with count 0)
+3. The null code point should be consumed
+
+The order of these operations matters for maintaining proper parser state.
 
 ### Additional context
 
-This seems to affect documents with multiple paragraphs or flow content blocks. The first block parses fine, but subsequent blocks behave unexpectedly. Also noticed that the order of operations when handling null codes might be affecting the container exit sequence.
+This appears to affect how the document structure is finalized when parsing completes. The container exit and code consumption sequence needs to happen in the correct order to maintain parsing integrity.
 
 ---
 Repository: /testbed

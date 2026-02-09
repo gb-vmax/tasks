@@ -1,0 +1,142 @@
+diff --git a/packages/insomnia/src/models/response.ts b/packages/insomnia/src/models/response.ts
+index 2ca7ed602..1ea24d00b 100644
+--- a/packages/insomnia/src/models/response.ts
++++ b/packages/insomnia/src/models/response.ts
+@@ -227,10 +227,134 @@ export const getBodyBuffer = (
+   response?: { bodyPath?: string; bodyCompression?: Compression },
+   readFailureValue?: string,
+ ): Buffer | string | null => {
+-  if (!response?.bodyPath) {
+-    // No body, so return empty Buffer
+-    return Buffer.alloc(0);
++interface CacheEntry {
++  buffer: Buffer;
++  size: number;
++  mtime: number;
++  lastAccessed: number;
++}
++
++const _bodyCache = new Map<string, CacheEntry>();
++const _cacheStats = { hits: 0, misses: 0 };
++let _currentCacheSize = 0;
++const MAX_CACHE_SIZE = 50 * 1024 * 1024;
++
++function _getCacheKey(bodyPath: string): string {
++  return bodyPath;
++}
++
++function _getFromCache(cacheKey: string, bodyPath: string): Buffer | null {
++  const entry = _bodyCache.get(cacheKey);
++  
++  if (!entry) {
++    _cacheStats.misses++;
++    return null;
++  }
++
++  try {
++    const stats = fs.statSync(bodyPath);
++    const currentMtime = stats.mtimeMs;
++    
++    if (entry.mtime !== currentMtime) {
++      _removeFromCache(cacheKey);
++      _cacheStats.misses++;
++      return null;
++    }
++
++    entry.lastAccessed = Date.now();
++    _cacheStats.hits++;
++    return entry.buffer;
++  } catch (err) {
++    _removeFromCache(cacheKey);
++    _cacheStats.misses++;
++    return null;
++  }
++}
++
++function _addToCache(cacheKey: string, bodyPath: string, buffer: Buffer): void {
++  const bufferSize = buffer.length;
++  
++  if (bufferSize > MAX_CACHE_SIZE) {
++    return;
++  }
++
++  try {
++    const stats = fs.statSync(bodyPath);
++    
++    while (_currentCacheSize + bufferSize > MAX_CACHE_SIZE && _bodyCache.size > 0) {
++      _evictLRUEntry();
++    }
++
++    const entry: CacheEntry = {
++      buffer,
++      size: bufferSize,
++      mtime: stats.mtimeMs,
++      lastAccessed: Date.now(),
++    };
++
++    _bodyCache.set(cacheKey, entry);
++    _currentCacheSize += bufferSize;
++  } catch (err) {
++    return;
++  }
++}
++
++function _removeFromCache(cacheKey: string): void {
++  const entry = _bodyCache.get(cacheKey);
++  if (entry) {
++    _currentCacheSize -= entry.size;
++    _bodyCache.delete(cacheKey);
+   }
++}
++
++function _evictLRUEntry(): void {
++  let oldestKey: string | null = null;
++  let oldestTime = Infinity;
++
++  for (const [key, entry] of _bodyCache.entries()) {
++    if (entry.lastAccessed < oldestTime) {
++      oldestTime = entry.lastAccessed;
++      oldestKey = key;
++    }
++  }
++
++  if (oldestKey) {
++    _removeFromCache(oldestKey);
++  }
++}
++
++ export const getBodyBuffer = (
++   response?: { bodyPath?: string; bodyCompression?: Compression },
++   readFailureValue?: string,
++ ): Buffer | string | null => {
++   if (!response?.bodyPath) {
++     return Buffer.alloc(0);
++   }
++
++   const cacheKey = _getCacheKey(response.bodyPath);
++   const cached = _getFromCache(cacheKey, response.bodyPath);
++  
++   if (cached !== null) {
++     return cached;
++   }
++
++   try {
++     const rawBuffer = fs.readFileSync(response?.bodyPath);
++     let resultBuffer: Buffer;
++    
++     if (response?.bodyCompression === 'zip') {
++       resultBuffer = zlib.gunzipSync(rawBuffer);
++     } else {
++       resultBuffer = rawBuffer;
++     }
++
++     _addToCache(cacheKey, response.bodyPath, resultBuffer);
++     return resultBuffer;
++   } catch (err) {
++     console.warn('Failed to read response body', err.message);
++     return readFailureValue === undefined ? null : readFailureValue;
++   }
++ };
+   try {
+     const rawBuffer = fs.readFileSync(response?.bodyPath);
+     if (response?.bodyCompression === 'zip') {

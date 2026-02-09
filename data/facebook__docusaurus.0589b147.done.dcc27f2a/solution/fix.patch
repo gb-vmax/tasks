@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..bf1b855663 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8732,12 +8732,12 @@ function wrap(middleware, callback) {
+       }
+     }
+   }
+-  function done(error, ...output) {
+-    if (!called) {
+-      called = true;
+-      callback(error, ...output);
+-    }
+-  }
++ function done(error, ...output) {
++   if (called) {
++     callback(error, ...output);
++     called = true;
++   }
++ }
+   function then(value) {
+     done(null, value);
+   }

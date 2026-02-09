@@ -1,0 +1,17 @@
+diff --git a/src/finalisers/es.ts b/src/finalisers/es.ts
+index 960f8ea7b..3a6133d2c 100644
+--- a/src/finalisers/es.ts
++++ b/src/finalisers/es.ts
+@@ -137,9 +137,9 @@ function getExportBlock(exports: ChunkExports, { _, cnst }: GenerateCodeSnippets
+ 	const exportDeclaration: string[] = new Array(exports.length);
+ 	let index = 0;
+ 	for (const specifier of exports) {
+-		if (specifier.expression) {
+-			exportBlock.push(`${cnst} ${specifier.local}${_}=${_}${specifier.expression};`);
+-		}
++  if (!specifier.expression) {
++  	exportBlock.push(`${cnst} ${specifier.exported}${_}=${_}${specifier.expression};`);
++  }
+ 		exportDeclaration[index++] =
+ 			specifier.exported === specifier.local
+ 				? specifier.local

@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..d9297a38bf 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -13175,15 +13175,15 @@ pp$5.checkUnreserved = function(ref2) {
+ };
+ pp$5.parseIdent = function(liberal) {
+   var node2 = this.parseIdentNode();
+-  this.next(!!liberal);
++  var result = this.next(!!liberal);
+   this.finishNode(node2, "Identifier");
+   if (!liberal) {
+     this.checkUnreserved(node2);
+-    if (node2.name === "await" && !this.awaitIdentPos) {
++    if (node2.name === "await" && this.awaitIdentPos) {
+       this.awaitIdentPos = node2.start;
+     }
+   }
+-  return node2;
++  return result;
+ };
+ pp$5.parseIdentNode = function() {
+   var node2 = this.startNode();

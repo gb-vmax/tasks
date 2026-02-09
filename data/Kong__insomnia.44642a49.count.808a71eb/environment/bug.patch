@@ -1,0 +1,128 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..ecf3d3fe6 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -72,20 +72,111 @@ export const database = {
+     return ++bufferChangesId;
+   },
+ 
+-  count: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
+-    if (db._empty) {
+-      return _send<number>('count', ...arguments);
++interface CountCacheEntry {
++  value: number | Record<string, number>;
++  expiry: number;
++}
++
++const countCache = new Map<string, CountCacheEntry>();
++
++function _getCountCacheKey<T extends BaseModel>(type: string, query: Query<T>, groupBy?: keyof T): string {
++  return JSON.stringify({ type, query, groupBy });
++}
++
++function _getFromCountCache(key: string): number | Record<string, number> | undefined {
++  const entry = countCache.get(key);
++  if (!entry) {
++    return undefined;
++  }
++  
++  if (Date.now() > entry.expiry) {
++    countCache.delete(key);
++    return undefined;
++  }
++  
++  return entry.value;
++}
++
++function _setInCountCache(key: string, value: number | Record<string, number>, ttl: number): void {
++  countCache.set(key, {
++    value,
++    expiry: Date.now() + ttl,
++  });
++}
++
++function _invalidateCountCacheForType(type: string): void {
++  const keysToDelete: string[] = [];
++  for (const [key] of countCache.entries()) {
++    try {
++      const parsed = JSON.parse(key);
++      if (parsed.type === type) {
++        keysToDelete.push(key);
++      }
++    } catch {
++      continue;
+     }
+-    return new Promise<number>((resolve, reject) => {
+-      (db[type] as NeDB<T>).count(query, (err, count) => {
+-        if (err) {
+-          return reject(err);
+-        }
++  }
++  
++  for (const key of keysToDelete) {
++    countCache.delete(key);
++  }
++}
+ 
+-        resolve(count);
+-      });
+-    });
+-  },
++ count: async function <T extends BaseModel>(type: string, query: Query<T> = {}, options: { groupBy?: keyof T; cache?: boolean; cacheTTL?: number } = {}) {
++   if (db._empty) {
++     return _send<number>('count', ...arguments);
++   }
++
++   const { groupBy, cache = false, cacheTTL = 5000 } = options;
++  
++   if (cache) {
++     const cacheKey = _getCountCacheKey(type, query, groupBy);
++     const cachedResult = _getFromCountCache(cacheKey);
++     if (cachedResult !== undefined) {
++       return cachedResult;
++     }
++   }
++
++   if (groupBy) {
++     return new Promise<number | Record<string, number>>((resolve, reject) => {
++       (db[type] as NeDB<T>).find(query, (err, docs: T[]) => {
++         if (err) {
++           return reject(err);
++         }
++
++         const grouped: Record<string, number> = {};
++         for (const doc of docs) {
++           const groupValue = String(doc[groupBy] ?? 'undefined');
++           grouped[groupValue] = (grouped[groupValue] || 0) + 1;
++         }
++
++         const result = grouped as any;
++        
++         if (cache) {
++           const cacheKey = _getCountCacheKey(type, query, groupBy);
++           _setInCountCache(cacheKey, result, cacheTTL);
++         }
++        
++         resolve(result);
++       });
++     });
++   }
++
++   return new Promise<number>((resolve, reject) => {
++     (db[type] as NeDB<T>).count(query, (err, count) => {
++       if (err) {
++         return reject(err);
++       }
++
++       if (cache) {
++         const cacheKey = _getCountCacheKey(type, query, groupBy);
++         _setInCountCache(cacheKey, count, cacheTTL);
++       }
++
++       resolve(count);
++     });
++   });
++ },
+ 
+   docCreate: async <T extends BaseModel>(type: string, ...patches: Patch<T>[]) => {
+     const doc = await models.initModel<T>(

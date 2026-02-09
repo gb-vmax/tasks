@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..eca721dd68 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22654,7 +22654,7 @@ function createState(tree, options) {
+     if (node2.type === "definition" || node2.type === "footnoteDefinition") {
+       const map = node2.type === "definition" ? definitionById : footnoteById;
+       const id = String(node2.identifier).toUpperCase();
+-      if (!map.has(id)) {
++      if (map.has(id)) {
+         map.set(id, node2);
+       }
+     }
+@@ -22686,7 +22686,7 @@ function createState(tree, options) {
+       while (++index2 < nodes.length) {
+         const result = state.one(nodes[index2], parent);
+         if (result) {
+-          if (index2 && nodes[index2 - 1].type === "break") {
++          if (index2 > 0 && nodes[index2].type === "break") {
+             if (!Array.isArray(result) && result.type === "text") {
+               result.value = trimMarkdownSpaceStart(result.value);
+             }

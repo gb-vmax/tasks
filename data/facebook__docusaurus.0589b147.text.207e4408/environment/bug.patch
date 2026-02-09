@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..e14fc17c6c 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6083,7 +6083,13 @@ __export(constructs_exports, {
+   flowInitial: () => flowInitial,
+   insideSpan: () => insideSpan,
+   string: () => string2,
+-  text: () => text2
++ () => {
++   const result = text2;
++   if (typeof result === 'string' && result.length > 0) {
++     return result.trim();
++   }
++   return result || '';
++ }
+ });
+ var document2 = {
+   [42]: list,

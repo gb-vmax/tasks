@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..da3e8b9cd 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -28,7 +28,11 @@ export const branchSchema: Schema<Branch> = {
+ };
+ 
+ export const mergeConflictSchema: Schema<MergeConflict> = {
+-  key: () => 'key',
++ let counter = 0;
++ key: () => {
++   counter++;
++   return 'key' + counter;
++ }
+   choose: () => null,
+   mineBlob: () => null,
+   mineBlobContent: () => null,

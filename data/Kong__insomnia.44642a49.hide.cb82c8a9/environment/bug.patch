@@ -1,0 +1,34 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..d81b370df 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -848,10 +848,25 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+         },
+         {
+           type: 'string',
+-          hide: args =>
+-            ['url', 'oauth2', 'oauth2-identity', 'oauth2-refresh', 'name', 'folder'].includes(
+-              args[0].value + '',
+-            ),
++ hide: args => {
++   const attributeValue = args[0]?.value + '';
++   const noNameAttributes = ['url', 'oauth2', 'oauth2-identity', 'oauth2-refresh', 'name', 'folder'];
++   const namedAttributes = ['cookie', 'parameter', 'header'];
++  
++   if (noNameAttributes.includes(attributeValue)) {
++     return true;
++   }
++  
++   if (attributeValue === 'folder' && args[2]?.value !== undefined && args[2].value !== null && args[2].value !== '') {
++     return true;
++   }
++  
++   if (namedAttributes.includes(attributeValue)) {
++     return false;
++   }
++  
++   return noNameAttributes.includes(attributeValue);
++ }
+           displayName: args => {
+             switch (args[0].value) {
+               case 'cookie':

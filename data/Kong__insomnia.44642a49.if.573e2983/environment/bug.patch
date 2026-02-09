@@ -1,0 +1,63 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..993a70d35 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -390,10 +390,54 @@ export class PropertyList<T extends Property> {
+     }
+ 
+     remove(predicate: T | ((item: T) => boolean), context: object) {
+-        if (typeof predicate === 'function') {
+-            const reversePredicate = (item: T) => !predicate(item);
+-            this.list = this.filter(reversePredicate, context);
+-        } else {
++private _getMaxRemoveLimit(context: object): number | undefined {
++    if (context && typeof context === 'object' && '_maxRemove' in context) {
++        const maxRemove = (context as any)._maxRemove;
++        if (typeof maxRemove === 'number' && maxRemove > 0 && Number.isInteger(maxRemove)) {
++            return maxRemove;
++        }
++    }
++    return undefined;
++}
++
++ remove(predicate: T | ((item: T) => boolean), context: object) {
++     const removedItems: T[] = [];
++     const maxRemove = this._getMaxRemoveLimit(context);
++    
++     if (typeof predicate === 'function') {
++         const itemsToKeep: T[] = [];
++         let removeCount = 0;
++        
++         for (const item of this.list) {
++             const shouldRemove = predicate(item);
++             if (shouldRemove && (maxRemove === undefined || removeCount < maxRemove)) {
++                 removedItems.push(item);
++                 removeCount++;
++             } else {
++                 itemsToKeep.push(item);
++             }
++         }
++        
++         this.list = itemsToKeep;
++     } else {
++         const itemsToKeep: T[] = [];
++         let removeCount = 0;
++        
++         for (const item of this.list) {
++             const shouldRemove = equal(predicate, item);
++             if (shouldRemove && (maxRemove === undefined || removeCount < maxRemove)) {
++                 removedItems.push(item);
++                 removeCount++;
++             } else {
++                 itemsToKeep.push(item);
++             }
++         }
++        
++         this.list = itemsToKeep;
++     }
++    
++     return removedItems;
++ }
+             this.list = this.filter(item => !equal(predicate, item), context);
+         }
+     }

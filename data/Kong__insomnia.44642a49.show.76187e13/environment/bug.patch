@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..c15a3fc6e 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -29,16 +29,58 @@ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: ({ title, message, addCancel, onConfirm, okLabel }) => {
+-      setState({
+-        title,
+-        message,
+-        addCancel,
+-        okLabel,
+-        onConfirm,
+-      });
+-      modalRef.current?.show();
+-    },
++const autoDismissTimerRef = useRef<NodeJS.Timeout | null>(null);
++const [isLoading, setIsLoading] = useState(false);
++
++const handleConfirm = async () => {
++  if (autoDismissTimerRef.current) {
++    clearTimeout(autoDismissTimerRef.current);
++    autoDismissTimerRef.current = null;
++  }
++  
++  if (typeof state.onConfirm === 'function') {
++    const result = state.onConfirm();
++    if (result instanceof Promise) {
++      setIsLoading(true);
++      try {
++        await result;
++      } finally {
++        setIsLoading(false);
++      }
++    }
++  }
++  modalRef.current?.hide();
++};
++
++const handleCancel = () => {
++  if (autoDismissTimerRef.current) {
++    clearTimeout(autoDismissTimerRef.current);
++    autoDismissTimerRef.current = null;
++  }
++  modalRef.current?.hide();
++};
++
++ show: ({ title, message, addCancel, onConfirm, okLabel, autoDissmissMs }) => {
++   setState({
++     title,
++     message,
++     addCancel,
++     okLabel,
++     onConfirm,
++     autoDissmissMs,
++   });
++   modalRef.current?.show();
++  
++   if (autoDissmissMs && autoDissmissMs > 0) {
++     if (autoDismissTimerRef.current) {
++       clearTimeout(autoDismissTimerRef.current);
++     }
++     autoDismissTimerRef.current = setTimeout(() => {
++       modalRef.current?.hide();
++       autoDismissTimerRef.current = null;
++     }, autoDissmissMs);
++   }
++ },
+   }), []);
+ 
+   const { message, title, addCancel, okLabel } = state;

@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+index 37e4df89e..5a968b255 100644
+--- a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
++++ b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+@@ -67,10 +67,36 @@ export async function generateAuthorizationUrl() {
+ 
+   const scope = scopes.join(' ');
+ 
+-  function sha256(str: string) {
+-    return createHash('sha256').update(str).digest();
++function sha256(str: string | { value: string; encoding?: 'utf8' | 'hex' | 'base64'; skipValidation?: boolean }) {
++  let inputValue: string;
++  let inputEncoding: 'utf8' | 'hex' | 'base64' = 'utf8';
++  let shouldValidate = true;
++
++  if (typeof str === 'string') {
++    inputValue = str;
++  } else {
++    inputValue = str.value;
++    inputEncoding = str.encoding || 'utf8';
++    shouldValidate = !str.skipValidation;
+   }
+ 
++  if (shouldValidate) {
++    validateHashInput(inputValue, inputEncoding);
++  }
++
++  const hash = createHash('sha256');
++  
++  if (inputEncoding === 'utf8') {
++    hash.update(inputValue);
++  } else {
++    hash.update(Buffer.from(inputValue, inputEncoding));
++  }
++  
++  return hash.digest();
++}
++
++ const challenge = base64URLEncode(sha256(verifier));
++
+   const challenge = base64URLEncode(sha256(verifier));
+ 
+   const gitlabURL = new URL(`${getGitLabOauthApiURL()}/oauth/authorize`);

@@ -1,0 +1,67 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..a20d0b918 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -145,12 +145,56 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         }
+       },
+ 
+-      getInfo() {
+-        return {
+-          version: getAppVersion(),
+-          platform: getAppPlatform(),
+-        };
+-      },
++ getInfo() {
++   const info: AppInfo & {
++     memory?: {
++       usedHeapSize: number;
++       totalHeapSize: number;
++       heapLimit: number;
++     };
++     runtime?: {
++       node?: string;
++       chrome?: string;
++       electron?: string;
++     };
++     renderPurpose?: RenderPurpose;
++     capabilities?: {
++       canShowDialogs: boolean;
++       hasClipboard: boolean;
++       hasFileSystem: boolean;
++     };
++   } = {
++     version: getAppVersion(),
++     platform: getAppPlatform(),
++   };
++
++   if (typeof performance !== 'undefined' && (performance as any).memory) {
++     const mem = (performance as any).memory;
++     info.memory = {
++       usedHeapSize: mem.usedJSHeapSize,
++       totalHeapSize: mem.totalJSHeapSize,
++       heapLimit: mem.jsHeapSizeLimit,
++     };
++   }
++
++   if (typeof process !== 'undefined' && process.versions) {
++     info.runtime = {
++       node: process.versions.node,
++       chrome: process.versions.chrome,
++       electron: process.versions.electron,
++     };
++   }
++
++   info.renderPurpose = renderPurpose;
++
++   info.capabilities = {
++     canShowDialogs,
++     hasClipboard: typeof window !== 'undefined' && typeof window.clipboard !== 'undefined',
++     hasFileSystem: typeof window !== 'undefined' && typeof window.dialog !== 'undefined',
++   };
++
++   return info;
++ },
+ 
+       async showSaveDialog(
+         options = {},

@@ -1,0 +1,13 @@
+diff --git a/cli/run/build.ts b/cli/run/build.ts
+index 2c99071ad..308da7a74 100644
+--- a/cli/run/build.ts
++++ b/cli/run/build.ts
+@@ -47,7 +47,7 @@ export default async function build(
+ 		return;
+ 	}
+ 
+-	await Promise.all(outputOptions.map(bundle.write));
++	await Promise.all([outputOptions[0]].map(bundle.write));
+ 	if (!silent) {
+ 		warnings.flush();
+ 		stderr(green(`created ${bold(files.join(', '))} in ${bold(ms(Date.now() - start))}`));

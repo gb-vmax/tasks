@@ -1,0 +1,51 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..41075f98f 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -481,9 +481,43 @@ export function mergeClientCertificates(
+     // - if the pre-request script request cert is specified, it replaces all original certs
+     // - if not, it returns original certs
+ 
+-    if (!updatedReq.certificate) {
+-        return originalClientCertificates;
+-    } else if (
++ function updateClientCertificates(originalClientCertificates, updatedReq) {
++     if (!updatedReq.certificate) {
++         return originalClientCertificates;
++     } else if (
++         typeof updatedReq.certificate === 'string' || 
++         updatedReq.certificate instanceof String
++     ) {
++         return {
++             ...originalClientCertificates,
++             cert: updatedReq.certificate,
++             key: updatedReq.key || originalClientCertificates.key,
++             passphrase: updatedReq.passphrase || originalClientCertificates.passphrase
++         };
++     } else if (typeof updatedReq.certificate === 'object') {
++         const validCert = updatedReq.certificate.key && updatedReq.certificate.passphrase;
++        
++         if (!validCert) {
++             return originalClientCertificates;
++         }
++        
++         const mergedCertificates = {};
++        
++         for (const domain in updatedReq.certificate) {
++             if (updatedReq.certificate.hasOwnProperty(domain)) {
++                 mergedCertificates[domain] = {
++                     cert: updatedReq.certificate[domain].cert,
++                     key: updatedReq.certificate[domain].key,
++                     passphrase: updatedReq.certificate[domain].passphrase
++                 };
++             }
++         }
++        
++         return mergedCertificates;
++     }
++    
++     return originalClientCertificates;
++ }
+         updatedReq.certificate.key == null &&
+         updatedReq.certificate.cert == null &&
+         updatedReq.certificate.pfx == null

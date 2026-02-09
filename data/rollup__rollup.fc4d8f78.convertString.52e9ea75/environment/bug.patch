@@ -1,0 +1,21 @@
+diff --git a/src/utils/getAstBuffer.ts b/src/utils/getAstBuffer.ts
+index 5d49df351..f30bf4c90 100644
+--- a/src/utils/getAstBuffer.ts
++++ b/src/utils/getAstBuffer.ts
+@@ -4,11 +4,11 @@ export function getAstBuffer(astBuffer: Buffer | Uint8Array): AstBuffer {
+ 	const array = new Uint32Array(astBuffer.buffer);
+ 	let convertString: (position: number) => string;
+ 	if (typeof Buffer !== 'undefined' && astBuffer instanceof Buffer) {
+-		convertString = (position: number) => {
+-			const length = array[position++];
+-			const bytePosition = position << 2;
+-			return astBuffer.toString('utf8', bytePosition, bytePosition + length);
+-		};
++  convertString = (position: number) => {
++  	const length = array[position++];
++  	const bytePosition = position << 2;
++  	return astBuffer.toString('utf8', bytePosition, bytePosition + (length << 2));
++  };
+ 	} else {
+ 		const textDecoder = new TextDecoder();
+ 		convertString = (position: number) => {

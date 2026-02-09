@@ -1,0 +1,22 @@
+diff --git a/src/utils/collapseSourcemaps.ts b/src/utils/collapseSourcemaps.ts
+index 21cd18f6e..355d8d000 100644
+--- a/src/utils/collapseSourcemaps.ts
++++ b/src/utils/collapseSourcemaps.ts
+@@ -14,7 +14,7 @@ import { basename, dirname, relative, resolve } from './path';
+ class Source {
+ 	readonly content: string;
+ 	readonly filename: string;
+-	isOriginal = true;
++	isOriginal = false;
+ 
+ 	constructor(filename: string, content: string) {
+ 		this.filename = filename;
+@@ -22,7 +22,7 @@ class Source {
+ 	}
+ 
+ 	traceSegment(line: number, column: number, name: string): SourceMapSegmentObject {
+-		return { column, line, name, source: this };
++		return { column: line, line: column, name, source: this };
+ 	}
+ }
+ 

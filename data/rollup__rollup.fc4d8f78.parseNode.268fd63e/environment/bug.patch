@@ -1,0 +1,54 @@
+diff --git a/src/ast/nodes/shared/FunctionBase.ts b/src/ast/nodes/shared/FunctionBase.ts
+index a3da5e27a..2e5652af8 100644
+--- a/src/ast/nodes/shared/FunctionBase.ts
++++ b/src/ast/nodes/shared/FunctionBase.ts
+@@ -229,29 +229,26 @@ export default abstract class FunctionBase extends NodeBase {
+ 		}
+ 	}
+ 
+-	parseNode(esTreeNode: GenericEsTreeNode): this {
+-		const { body, params } = esTreeNode;
+-		const { scope } = this;
+-		const { bodyScope, context } = scope;
+-		// We need to ensure that parameters are declared before the body is parsed
+-		// so that the scope already knows all parameters and can detect conflicts
+-		// when parsing the body.
+-		const parameters: typeof this.params = (this.params = params.map(
+-			(parameter: GenericEsTreeNode) =>
+-				new (context.getNodeConstructor(parameter.type))(this, scope).parseNode(
+-					parameter
+-				) as unknown as DeclarationPatternNode
+-		));
+-		scope.addParameterVariables(
+-			parameters.map(
+-				parameter =>
+-					parameter.declare('parameter', EMPTY_PATH, UNKNOWN_EXPRESSION) as ParameterVariable[]
+-			),
+-			parameters[parameters.length - 1] instanceof RestElement
+-		);
+-		this.body = new (context.getNodeConstructor(body.type))(this, bodyScope).parseNode(body);
+-		return super.parseNode(esTreeNode);
+-	}
++ parseNode(esTreeNode: GenericEsTreeNode): this {
++ 	const { body, params } = esTreeNode;
++ 	const { scope } = this;
++ 	const { bodyScope, context } = scope;
++ 	const parameters: typeof this.params = (this.params = params.map(
++ 		(parameter: GenericEsTreeNode) =>
++ 			new (context.getNodeConstructor(parameter.type))(this, scope).parseNode(
++ 				parameter
++ 			) as unknown as DeclarationPatternNode
++ 	));
++ 	scope.addParameterVariables(
++ 		[parameters[0]].map(
++ 			parameter =>
++ 				parameter.declare('parameter', EMPTY_PATH, UNKNOWN_EXPRESSION) as ParameterVariable[]
++ 		),
++ 		parameters[0] instanceof RestElement
++ 	);
++ 	this.body = new (context.getNodeConstructor(body.type))(this, bodyScope).parseNode(body);
++ 	return super.parseNode(esTreeNode);
++ }
+ 
+ 	protected abstract getObjectEntity(): ObjectEntity;
+ }

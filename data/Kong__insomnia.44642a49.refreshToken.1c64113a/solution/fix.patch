@@ -1,0 +1,61 @@
+diff --git a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+index 37e4df89e..6fe8ed4a6 100644
+--- a/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
++++ b/packages/insomnia/src/sync/git/gitlab-oauth-provider.ts
+@@ -124,6 +124,19 @@ export async function exchangeCodeForGitLabToken(input: {
+ }
+ 
+ export async function refreshToken() {
++  const currentToken = localStorage.getItem(GITLAB_TOKEN_STORAGE_KEY);
++  const tokenExpiry = localStorage.getItem('gitlab-oauth-token-expiry');
++  
++  if (currentToken && tokenExpiry) {
++    const expiryTime = parseInt(tokenExpiry, 10);
++    const now = Date.now();
++    const bufferTime = 5 * 60 * 1000;
++    
++    if (expiryTime - now > bufferTime) {
++      return currentToken;
++    }
++  }
++
+   const refreshToken = localStorage.getItem(GITLAB_REFRESH_TOKEN_STORAGE_KEY);
+ 
+   if (!refreshToken) {
+@@ -138,7 +151,35 @@ export async function refreshToken() {
+     client_id: clientId,
+   }).toString();
+ 
+-  return insomniaFetch<{ access_token: string; refresh_token: string }>({
++  const fetchWithRetry = async (attempt = 0): Promise<{ access_token: string; refresh_token: string; expires_in?: number }> => {
++    try {
++      return await insomniaFetch<{ access_token: string; refresh_token: string; expires_in?: number }>({
++        path: url.pathname + url.search,
++        method: 'POST',
++        origin: getGitLabOauthApiURL(),
++        sessionId: '',
++      });
++    } catch (error) {
++      const maxRetries = 3;
++      if (attempt < maxRetries) {
++        const delay = Math.pow(2, attempt) * 1000;
++        await new Promise(resolve => setTimeout(resolve, delay));
++        return fetchWithRetry(attempt + 1);
++      }
++      throw error;
++    }
++  };
++
++  return fetchWithRetry().then(data => {
++    const expiresIn = data.expires_in || 7200;
++    const expiryTime = Date.now() + (expiresIn * 1000);
++    
++    localStorage.setItem('gitlab-oauth-token-expiry', expiryTime.toString());
++    setAccessToken(data.access_token, data.refresh_token);
++
++    return data.access_token;
++  });
++}
+     path: url.pathname + url.search,
+     method: 'POST',
+     origin: getGitLabOauthApiURL(),

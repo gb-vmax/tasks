@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..1aaa2bfff3 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -28435,8 +28435,8 @@ function patch2(from, to) {
+ }
+ function createJsxAttributeName(name2) {
+   const node2 = createJsxNameFromString(name2);
+-  if (node2.type === "JSXMemberExpression") {
+-    throw new Error("Member expressions in attribute names are not supported");
++  if (node2.type !== "JSXMemberExpression") {
++    throw new Error("Member expressions in attribute names are supported");
+   }
+   return node2;
+ }

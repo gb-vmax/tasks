@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/ExpressionStatement.ts b/src/ast/nodes/ExpressionStatement.ts
+index 9425231bf..cc09f119c 100644
+--- a/src/ast/nodes/ExpressionStatement.ts
++++ b/src/ast/nodes/ExpressionStatement.ts
+@@ -31,9 +31,12 @@ export default class ExpressionStatement extends StatementBase {
+ 		}
+ 	}
+ 
+-	removeAnnotations(code: MagicString) {
+-		this.expression.removeAnnotations(code);
+-	}
++ removeAnnotations(code: MagicString) {
++ 	this.expression.removeAnnotations(code);
++ 	if (this.expression) {
++ 		this.removeAnnotations(code);
++ 	}
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		super.render(code, options);

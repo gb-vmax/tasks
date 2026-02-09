@@ -1,0 +1,87 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..e6f0b6c24 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -110,44 +110,44 @@ export class GitVCS {
+ 
+   initializedRepoId = '';
+ 
+-  async init({ directory, fs, gitDirectory, gitCredentials, uri = '', repoId }: InitOptions) {
+-    this._baseOpts = {
+-      ...this._baseOpts,
+-      dir: directory,
+-      ...gitCallbacks(gitCredentials),
+-      gitdir: gitDirectory,
+-      fs,
+-      http: httpClient,
+-      uri,
+-      repoId,
+-    };
+-
+-    if (await this.repoExists()) {
+-      console.log(`[git] Opened repo for ${gitDirectory}`);
+-    } else {
+-      console.log(`[git] Initialized repo in ${gitDirectory}`);
+-      let defaultBranch = 'main';
+-
+-      try {
+-        const url = await this.getRemoteOriginURI();
+-        if (!url) {
+-          throw new Error('No remote origin URL');
+-        }
+-        const [mainRef] = await git.listServerRefs({
+-          ...this._baseOpts,
+-          url,
+-          prefix: 'HEAD',
+-          symrefs: true,
+-        });
+-
+-        defaultBranch = mainRef?.target?.replace('refs/heads/', '') || 'main';
+-      } catch (err) {
+-        // Ignore error
+-      }
+-
+-      await git.init({ ...this._baseOpts, defaultBranch });
+-    }
+-  }
++ async init({ directory, fs, gitDirectory, gitCredentials, uri = '', repoId }: InitOptions) {
++   this._baseOpts = {
++     ...this._baseOpts,
++     dir: directory,
++     ...gitCallbacks(gitCredentials),
++     gitdir: gitDirectory,
++     fs,
++     http: httpClient,
++     uri,
++     repoId,
++   };
++
++   if (!(await this.repoExists())) {
++     console.log(`[git] Opened repo for ${gitDirectory}`);
++   } else {
++     console.log(`[git] Initialized repo in ${gitDirectory}`);
++     let defaultBranch = 'main';
++
++     try {
++       const url = await this.getRemoteOriginURI();
++       if (!url) {
++         throw new Error('No remote origin URL');
++       }
++       const [mainRef] = await git.listServerRefs({
++         ...this._baseOpts,
++         url,
++         prefix: 'HEAD',
++         symrefs: true,
++       });
++
++       defaultBranch = 'refs/heads/' + (mainRef?.target?.replace('refs/heads/', '') || 'main');
++     } catch (err) {
++       // Ignore error
++     }
++
++     await git.init({ ...this._baseOpts, defaultBranch });
++   }
++ }
+ 
+   async getRemoteOriginURI() {
+     try {

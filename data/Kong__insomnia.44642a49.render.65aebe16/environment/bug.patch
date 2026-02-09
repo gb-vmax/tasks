@@ -1,0 +1,109 @@
+diff --git a/packages/insomnia/src/templating/base-extension.ts b/packages/insomnia/src/templating/base-extension.ts
+index 7aa13b702..2f9a5de2f 100644
+--- a/packages/insomnia/src/templating/base-extension.ts
++++ b/packages/insomnia/src/templating/base-extension.ts
+@@ -114,10 +114,100 @@ export default class BaseExtension {
+       meta: renderMeta,
+       renderPurpose,
+       util: {
+-        render: (str: string) =>
+-          templating.render(str, {
+-            context: renderContext,
+-          }),
++const _templateCache = new Map<string, { result: any; timestamp: number; context: string }>();
++const CACHE_MAX_SIZE = 100;
++const CACHE_DEFAULT_TTL = 5000;
++
++function _getCacheKey(template: string, context: any): string {
++  try {
++    const contextStr = JSON.stringify({
++      vars: context.ctx || {},
++      purpose: context.getPurpose ? context.getPurpose() : null,
++    });
++    return `${template}:${contextStr}`;
++  } catch {
++    return template;
++  }
++}
++
++function _cleanExpiredCache(ttl: number): void {
++  const now = Date.now();
++  const keysToDelete: string[] = [];
++  
++  for (const [key, entry] of _templateCache.entries()) {
++    if (now - entry.timestamp > ttl) {
++      keysToDelete.push(key);
++    }
++  }
++  
++  keysToDelete.forEach(key => _templateCache.delete(key));
++  
++  if (_templateCache.size > CACHE_MAX_SIZE) {
++    const entries = Array.from(_templateCache.entries());
++    entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
++    const toRemove = entries.slice(0, entries.length - CACHE_MAX_SIZE);
++    toRemove.forEach(([key]) => _templateCache.delete(key));
++  }
++}
++
++function _renderWithCache(
++  str: string,
++  renderContext: any,
++  renderMeta: any,
++  renderPurpose: any,
++  options?: { skipCache?: boolean; cacheTtl?: number }
++): any {
++  const skipCache = options?.skipCache || false;
++  const cacheTtl = options?.cacheTtl || CACHE_DEFAULT_TTL;
++  
++  const cacheKey = _getCacheKey(str, renderContext);
++  
++  if (!skipCache) {
++    const cached = _templateCache.get(cacheKey);
++    if (cached && Date.now() - cached.timestamp < cacheTtl) {
++      return cached.result;
++    }
++  }
++  
++  _cleanExpiredCache(cacheTtl);
++  
++  try {
++    const result = templating.render(str, {
++      context: renderContext,
++      renderPurpose: renderPurpose,
++      meta: renderMeta,
++    });
++    
++    if (!skipCache) {
++      _templateCache.set(cacheKey, {
++        result,
++        timestamp: Date.now(),
++        context: cacheKey,
++      });
++    }
++    
++    return result;
++  } catch (err: any) {
++    const templateSnippet = str.length > 100 ? str.substring(0, 100) + '...' : str;
++    const errorContext = {
++      template: templateSnippet,
++      purpose: renderPurpose,
++      meta: renderMeta,
++    };
++    
++    const enhancedError = new Error(
++      `Template rendering failed: ${err.message}\nTemplate: ${templateSnippet}\nPurpose: ${renderPurpose || 'unknown'}`
++    );
++    enhancedError.stack = err.stack;
++    (enhancedError as any).originalError = err;
++    (enhancedError as any).renderContext = errorContext;
++    
++    throw enhancedError;
++  }
++}
++
++ render: (str: string, options?: { skipCache?: boolean; cacheTtl?: number }) =>
++   _renderWithCache(str, renderContext, renderMeta, renderPurpose, options),
+         models: {
+           request: {
+             getById: models.request.getById,

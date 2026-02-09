@@ -2,30 +2,25 @@
 
 ### Describe the bug
 
-I've noticed that directive text attributes are not being tokenized in the correct order. When parsing markdown directives with attributes, the token types appear to be processed in an unexpected sequence, which may affect how the directive syntax is interpreted.
+I'm experiencing an issue with directive text attributes where the tokenization order seems to be causing problems. When using directives with various attribute types (IDs, classes, and regular attributes), the parsing doesn't work as expected.
 
 ### Reproduction
 
 ```js
-// Example markdown with directive attributes
-const markdown = ':directive[text]{#id .class attr="value"}'
-
-// Parse the markdown with remark-directive
-// The tokenization order for attributes seems off
+// Example directive with mixed attributes
+:directive[text]{#id .class attr=value}
 ```
 
-When processing directives with multiple attribute types (IDs, classes, and named attributes), the internal tokenization sequence doesn't follow the expected pattern. This could potentially lead to parsing issues or unexpected behavior when attributes are combined in certain ways.
+When parsing directives that contain a combination of ID selectors, class selectors, and regular attributes, the attributes are not being recognized in the correct order. This affects how the directive is processed and can lead to incorrect attribute assignment.
 
 ### Expected behavior
 
-The tokenizer should process directive text attributes in the logical order:
-1. Attribute markers
-2. Attribute names
-3. Initializer markers
-4. IDs and classes
-5. Value markers and data
+All attribute types (IDs, classes, and name-value pairs) should be parsed correctly regardless of their order in the directive declaration. The tokenizer should handle:
+- ID attributes (`#id`)
+- Class attributes (`.class`)
+- Regular attributes with values (`attr=value`)
 
-The current implementation seems to have these token types in a different order than expected.
+in the proper sequence.
 
 ### System Info
 - remark-directive version: 3.0.0

@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..5f41bab77 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -12,9 +12,58 @@ interface InsomniaExport {
+ type HarExport = Omit<InsomniaExport, 'format'>;
+ 
+ const getWorkspaces = (activeProjectId?: string) => {
+-  if (activeProjectId) {
+-    return models.workspace.findByParentId(activeProjectId);
+-  } else {
++const CACHE_TTL = 5000;
++
++const workspaceCache = new Map<string, { data: Workspace[]; timestamp: number }>();
++
++const sortWorkspaces = (workspaces: Workspace[], sortBy?: 'name' | 'created') => {
++  if (!sortBy) {
++    return workspaces;
++  }
++  
++  const sorted = [...workspaces];
++  
++  if (sortBy === 'name') {
++    sorted.sort((a, b) => {
++      const nameA = (a.name || '').toLowerCase();
++      const nameB = (b.name || '').toLowerCase();
++      return nameA.localeCompare(nameB);
++    });
++  } else if (sortBy === 'created') {
++    sorted.sort((a, b) => {
++      const idA = a._id || '';
++      const idB = b._id || '';
++      return idA.localeCompare(idB);
++    });
++  }
++  
++  return sorted;
++};
++
++ const getWorkspaces = (activeProjectId?: string, options?: { sortBy?: 'name' | 'created' } = {}) => {
++   const cacheKey = activeProjectId || 'all';
++   const now = Date.now();
++  
++   const cached = workspaceCache.get(cacheKey);
++   if (cached && (now - cached.timestamp) < CACHE_TTL) {
++     return sortWorkspaces(cached.data, options?.sortBy);
++   }
++  
++   let workspacesPromise;
++   if (activeProjectId) {
++     workspacesPromise = models.workspace.findByParentId(activeProjectId);
++   } else {
++     workspacesPromise = models.workspace.all();
++   }
++  
++   return workspacesPromise.then(workspaces => {
++     workspaceCache.set(cacheKey, {
++       data: workspaces,
++       timestamp: now,
++     });
++     return sortWorkspaces(workspaces, options?.sortBy);
++   });
++ };
+     // This code path was kept in case there was ever a time when the app wouldn't have an active project.
+     // In over 5 months of monitoring in production, we never saw this happen.
+     // Keeping it for defensive purposes, but it's not clear if it's necessary.

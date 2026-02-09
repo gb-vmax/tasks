@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/models/plugin-data.ts b/packages/insomnia/src/models/plugin-data.ts
+index 4c7bdb368..f7b6e1d3f 100644
+--- a/packages/insomnia/src/models/plugin-data.ts
++++ b/packages/insomnia/src/models/plugin-data.ts
+@@ -68,6 +68,59 @@ export async function removeAll(plugin: string) {
+   return db.removeWhere<PluginData>(type, { plugin });
+ }
+ 
+-export async function getByKey(plugin: string, key: string) {
+-  return db.getWhere<PluginData>(type, { plugin, key });
++interface CacheEntry {
++  data: PluginData;
++  timestamp: number;
++}
++
++const pluginDataCache = new Map<string, CacheEntry>();
++const CACHE_TTL = 5 * 60 * 1000;
++const MAX_CACHE_SIZE = 1000;
++
++function invalidateCache(plugin: string, key: string) {
++  const cacheKey = `${plugin}:${key}`;
++  pluginDataCache.delete(cacheKey);
++}
++
++function invalidatePluginCache(plugin: string) {
++  for (const key of pluginDataCache.keys()) {
++    if (key.startsWith(`${plugin}:`)) {
++      pluginDataCache.delete(key);
++    }
++  }
++}
++
++export async function getByKey(plugin: string, key: string, defaultValue?: string) {
++  const cacheKey = `${plugin}:${key}`;
++  const cached = pluginDataCache.get(cacheKey);
++  
++  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
++    return cached.data;
++  }
++  
++  let doc = await db.getWhere<PluginData>(type, { plugin, key });
++  
++  if (!doc && defaultValue !== undefined) {
++    doc = await create({
++      plugin,
++      key,
++      value: defaultValue,
++    });
++  }
++  
++  if (doc) {
++    pluginDataCache.set(cacheKey, {
++      data: doc,
++      timestamp: Date.now(),
++    });
++    
++    if (pluginDataCache.size > MAX_CACHE_SIZE) {
++      const firstKey = pluginDataCache.keys().next().value;
++      if (firstKey) {
++        pluginDataCache.delete(firstKey);
++      }
++    }
++  }
++  
++  return doc;
+ }

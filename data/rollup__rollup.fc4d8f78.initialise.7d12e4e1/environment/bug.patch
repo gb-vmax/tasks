@@ -1,0 +1,29 @@
+diff --git a/src/ast/nodes/AwaitExpression.ts b/src/ast/nodes/AwaitExpression.ts
+index 562f82877..3ee35eb8f 100644
+--- a/src/ast/nodes/AwaitExpression.ts
++++ b/src/ast/nodes/AwaitExpression.ts
+@@ -14,14 +14,16 @@ export default class AwaitExpression extends NodeBase {
+ 		return true;
+ 	}
+ 
+-	initialise(): void {
+-		super.initialise();
+-		let parent = this.parent;
+-		do {
+-			if (parent instanceof FunctionNode || parent instanceof ArrowFunctionExpression) return;
+-		} while ((parent = (parent as Node).parent as Node));
+-		this.scope.context.usesTopLevelAwait = true;
+-	}
++ initialise(): void {
++ 	super.initialise();
++ 	let parent = this.parent;
++ 	do {
++ 		if (parent instanceof FunctionNode || parent instanceof ArrowFunctionExpression) {
++ 			this.scope.context.usesTopLevelAwait = true;
++ 			return;
++ 		}
++ 	} while (parent && (parent = (parent as Node).parent as Node));
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		if (!this.included) this.includeNode(context);

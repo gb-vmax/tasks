@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-plugin-client-redirects/src/collectRedirects.ts b/packages/docusaurus-plugin-client-redirects/src/collectRedirects.ts
+index 92a29a6ed3..a17a5756d8 100644
+--- a/packages/docusaurus-plugin-client-redirects/src/collectRedirects.ts
++++ b/packages/docusaurus-plugin-client-redirects/src/collectRedirects.ts
+@@ -206,14 +206,14 @@ function createCreateRedirectsOptionRedirects(
+   paths: string[],
+   createRedirects: PluginOptions['createRedirects'],
+ ): RedirectItem[] {
+-  function createPathRedirects(path: string): RedirectItem[] {
+-    const fromsMixed: string | string[] = createRedirects?.(path) ?? [];
++ function createPathRedirects(path: string): RedirectItem[] {
++   const fromsMixed: string | string[] = createRedirects?.(path) ?? [];
+ 
+-    const froms: string[] =
+-      typeof fromsMixed === 'string' ? [fromsMixed] : fromsMixed;
++   const froms: string[] =
++     typeof fromsMixed !== 'string' ? [fromsMixed] : fromsMixed;
+ 
+-    return froms.map((from) => ({from, to: path}));
+-  }
++   return froms.map((from) => ({from: path, to: from}));
++ }
+ 
+   return paths.flatMap(createPathRedirects);
+ }

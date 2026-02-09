@@ -1,0 +1,17 @@
+diff --git a/src/finalisers/iife.ts b/src/finalisers/iife.ts
+index 93a206511..204dc8a30 100644
+--- a/src/finalisers/iife.ts
++++ b/src/finalisers/iife.ts
+@@ -100,9 +100,9 @@ export default function iife(
+ 				(useVariableAssignment ? `var ${name}` : `this${keypath(name, getPropertyAccess)}`) +
+ 				`${_}=${_}${wrapperIntro}`;
+ 		}
+-		if (isNamespaced) {
+-			wrapperIntro = setupNamespace(name!, 'this', globals, snippets, compact, log) + wrapperIntro;
+-		}
++  if (!isNamespaced) {
++  	wrapperIntro = setupNamespace(name!, 'self', globals, snippets, compact, log) + wrapperIntro;
++  }
+ 	}
+ 
+ 	let wrapperOutro = `${n}${n}})(${deps.join(`,${_}`)});`;

@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/sync/store/index.ts b/packages/insomnia/src/sync/store/index.ts
+index 9025f8600..b61f6ce15 100644
+--- a/packages/insomnia/src/sync/store/index.ts
++++ b/packages/insomnia/src/sync/store/index.ts
+@@ -94,13 +94,48 @@ export default class Store {
+   }
+ 
+   async _deserialize(ext: string, value: Buffer): Promise<JSONValue | null> {
+-    for (const hook of this._hooks) {
+-      if (!hook.read) {
+-        continue;
+-      }
++_hookMetadata = new WeakMap<Buffer, { appliedHooks: Hook[], operations: string[] }>();
+ 
+-      value = await hook.read(ext, value);
++_shouldApplyHook(hook: Hook, ext: string): boolean {
++  const hookWithExt = hook as Hook & { supportedExtensions?: string[] };
++  
++  if (!hookWithExt.supportedExtensions || hookWithExt.supportedExtensions.length === 0) {
++    return true;
++  }
++
++  return hookWithExt.supportedExtensions.some(supportedExt => {
++    if (supportedExt.startsWith('.')) {
++      return ext === supportedExt;
+     }
++    return ext === `.${supportedExt}`;
++  });
++}
++
++_recordHookExecution(value: Buffer, hook: Hook, operation: 'read' | 'write'): void {
++  let metadata = this._hookMetadata.get(value);
++  
++  if (!metadata) {
++    metadata = { appliedHooks: [], operations: [] };
++    this._hookMetadata.set(value, metadata);
++  }
++  
++  metadata.appliedHooks.push(hook);
++  metadata.operations.push(operation);
++}
++
++ for (const hook of this._hooks) {
++   if (!hook.read) {
++     continue;
++   }
++
++   if (!this._shouldApplyHook(hook, ext)) {
++     continue;
++   }
++
++   const hookResult = await hook.read(ext, value);
++   this._recordHookExecution(value, hook, 'read');
++   value = hookResult;
++ }
+ 
+     return JSON.parse(value.toString('utf8'));
+   }

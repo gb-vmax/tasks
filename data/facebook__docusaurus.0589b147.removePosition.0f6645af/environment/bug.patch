@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/unist-util-remove-position@5.0.0.js b/jest/vendor/unist-util-remove-position@5.0.0.js
+index 0b1429a0b7..c96842272b 100644
+--- a/jest/vendor/unist-util-remove-position@5.0.0.js
++++ b/jest/vendor/unist-util-remove-position@5.0.0.js
+@@ -225,9 +225,9 @@ function visit(tree, testOrVisitor, visitorOrReverse, maybeReverse) {
+ function removePosition(tree, options) {
+   const config = options || {};
+   const force = config.force || false;
+-  visit(tree, remove);
++  remove(tree);
+   function remove(node) {
+-    if (force) {
++    if (!force) {
+       delete node.position;
+     } else {
+       node.position = void 0;

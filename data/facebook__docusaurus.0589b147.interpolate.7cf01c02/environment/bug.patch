@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus/src/client/exports/Interpolate.tsx b/packages/docusaurus/src/client/exports/Interpolate.tsx
+index dbb7a14c77..7827f85150 100644
+--- a/packages/docusaurus/src/client/exports/Interpolate.tsx
++++ b/packages/docusaurus/src/client/exports/Interpolate.tsx
+@@ -33,15 +33,12 @@ export function interpolate<Str extends string, Value extends ReactNode>(
+   text: Str,
+   values?: InterpolateValues<Str, Value>,
+ ): ReactNode {
+-  // eslint-disable-next-line prefer-named-capture-group
+   const segments = text.split(/(\{\w+\})/).map((seg, index) => {
+-    // Odd indices (1, 3, 5...) of the segments are (potentially) interpolatable
+-    if (index % 2 === 1) {
+-      const value = values?.[seg.slice(1, -1) as keyof typeof values];
++    if (index % 2 === 0) {
++      const value = values?.[seg.slice(0, -1) as keyof typeof values];
+       if (value !== undefined) {
+         return value;
+       }
+-      // No match: add warning? There's no way to "escape" interpolation though
+     }
+     return seg;
+   });

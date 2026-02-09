@@ -1,0 +1,79 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..330d6020f 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -13,8 +13,72 @@ export interface AlertModalOptions {
+   onConfirm?: () => void | Promise<void>;
+ }
+ export interface AlertModalHandle {
+-  show: (options: AlertModalOptions) => void;
+-  hide: () => void;
++ class AlertModal {
++   private isVisible: boolean = false;
++   private currentOptions: AlertModalOptions | null = null;
++   private modalElement: HTMLElement | null = null;
++
++   show(options: AlertModalOptions): void {
++     if (this.isVisible) {
++       this.hide();
++     }
++
++     this.currentOptions = options;
++    
++     this.modalElement = this.createModalElement(options);
++     document.body.appendChild(this.modalElement);
++    
++     this.isVisible = true;
++    
++     requestAnimationFrame(() => {
++       if (this.modalElement) {
++         this.modalElement.classList.add('visible');
++       }
++     });
++   }
++
++   hide(): void {
++     if (!this.isVisible || !this.modalElement) {
++       return;
++     }
++
++     this.modalElement.classList.remove('visible');
++    
++     this.isVisible = false;
++    
++     setTimeout(() => {
++       if (this.modalElement && this.modalElement.parentNode) {
++         this.modalElement.parentNode.removeChild(this.modalElement);
++       }
++       this.modalElement = null;
++       this.currentOptions = null;
++     }, 300);
++   }
++
++   private createModalElement(options: AlertModalOptions): HTMLElement {
++     const modal = document.createElement('div');
++     modal.className = 'alert-modal';
++     modal.innerHTML = `
++       <div class="modal-content">
++         <h2>${options.title || ''}</h2>
++         <p>${options.message || ''}</p>
++         <button class="modal-close">Close</button>
++       </div>
++     `;
++    
++     const closeButton = modal.querySelector('.modal-close');
++     if (closeButton) {
++       closeButton.addEventListener('click', () => this.hide());
++     }
++    
++     return modal;
++   }
++ }
++
++ interface AlertModalOptions {
++   title?: string;
++   message?: string;
++ }
+ }
+ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

@@ -2,28 +2,33 @@
 
 ### Describe the bug
 
-HTML tags with attributes are not being parsed correctly in markdown. When an HTML tag contains attributes with quoted values followed by a closing angle bracket, the parser rejects valid HTML syntax.
+HTML tags with attributes are not being parsed correctly in markdown. When an HTML tag has quoted attribute values followed by other attributes or the closing `>`, the parser fails to recognize the tag properly.
 
 ### Reproduction
 
-```js
-const markdown = `<div class="test">content</div>`;
-// Parser fails to recognize this as valid HTML
-
-const markdown2 = `<a href="/path">link</a>`;
-// Also fails to parse correctly
+```markdown
+<div class="test" id="example">content</div>
 ```
 
-The issue occurs when parsing HTML tags that have:
-1. An attribute with a quoted value
-2. Followed directly by the closing `>` bracket
+or
+
+```markdown
+<span title="hello" data-value="world">text</span>
+```
+
+When parsing these HTML tags in markdown content, the parser doesn't handle the transition from quoted attribute values to the next part of the tag correctly. Tags with a single attribute seem to work fine, but multiple attributes or certain attribute patterns cause issues.
 
 ### Expected behavior
 
-Valid HTML tags with quoted attribute values should be recognized and parsed correctly. The markdown processor should accept standard HTML syntax like `<div class="test">` without errors.
+HTML tags with multiple quoted attributes should be parsed correctly, just like they are in standard HTML. The parser should properly recognize:
+- Quoted attribute values (both single and double quotes)
+- Multiple attributes in sequence
+- The closing `>` after quoted attributes
+- Self-closing tags with attributes like `<img src="test.jpg" />`
 
 ### System Info
-- remark version: 15.0.1
+- Version: Latest
+- Browser: N/A (parser issue)
 
 ---
 Repository: /testbed

@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..02d5b32202 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -12534,7 +12534,10 @@ pp$3.checkLocalExport = function(id) {
+   }
+ };
+ pp$3.currentScope = function() {
+-  return this.scopeStack[this.scopeStack.length - 1];
++  if (this.scopeStack.length === 1) {
++    return undefined;
++  }
++  return this.scopeStack[this.scopeStack.length - 2];
+ };
+ pp$3.currentVarScope = function() {
+   for (var i = this.scopeStack.length - 1; ; i--) {

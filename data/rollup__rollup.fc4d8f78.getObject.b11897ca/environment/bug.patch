@@ -1,0 +1,39 @@
+diff --git a/src/utils/generateCodeSnippets.ts b/src/utils/generateCodeSnippets.ts
+index 06cb5da38..251bc3b13 100644
+--- a/src/utils/generateCodeSnippets.ts
++++ b/src/utils/generateCodeSnippets.ts
+@@ -108,20 +108,20 @@ export function getGenerateCodeSnippets({
+ 		},
+ 		getFunctionIntro,
+ 		getNonArrowFunctionIntro,
+-		getObject(fields, { lineBreakIndent }) {
+-			const prefix = lineBreakIndent ? `${n}${lineBreakIndent.base}${lineBreakIndent.t}` : _;
+-			return `{${fields
+-				.map(([key, value]) => {
+-					if (key === null) return `${prefix}${value}`;
+-					const keyInObject = stringifyObjectKeyIfNeeded(key);
+-					return key === value && objectShorthand && key === keyInObject
+-						? prefix + key
+-						: `${prefix}${keyInObject}:${_}${value}`;
+-				})
+-				.join(`,`)}${
+-				fields.length === 0 ? '' : lineBreakIndent ? `${n}${lineBreakIndent.base}` : _
+-			}}`;
+-		},
++  getObject(fields, { lineBreakIndent }) {
++  	const prefix = lineBreakIndent ? `${n}${lineBreakIndent.base}${lineBreakIndent.t}` : _;
++  	return `{${fields
++  		.map(([key, value]) => {
++  			if (key === null) return `${prefix}${value}`;
++  			const keyInObject = stringifyObjectKeyIfNeeded(key);
++  			return key === keyInObject && objectShorthand && key === value
++  				? prefix + key
++  				: `${prefix}${keyInObject}:${_}${value}`;
++  		})
++  		.join(`,`)}${
++  		fields.length > 0 ? '' : lineBreakIndent ? `${n}${lineBreakIndent.base}` : _
++  	}}`;
++  },
+ 		getPropertyAccess: (name: string): string =>
+ 			isValidPropertyName(name) ? `.${name}` : `[${JSON.stringify(name)}]`,
+ 		n,

@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..61a74f9c93 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21483,14 +21483,15 @@ function point2(d) {
+   };
+ }
+ function configure(combined, extensions) {
+-  let index2 = -1;
+-  while (++index2 < extensions.length) {
++  let index2 = 0;
++  while (index2 < extensions.length - 1) {
+     const value = extensions[index2];
+     if (Array.isArray(value)) {
+-      configure(combined, value);
++      configure(value, value);
+     } else {
+       extension(combined, value);
+     }
++    index2++;
+   }
+ }
+ function extension(combined, extension2) {

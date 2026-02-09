@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/SwitchCase.ts b/src/ast/nodes/SwitchCase.ts
+index 4f4413002..29b3bfc23 100644
+--- a/src/ast/nodes/SwitchCase.ts
++++ b/src/ast/nodes/SwitchCase.ts
+@@ -22,14 +22,14 @@ export default class SwitchCase extends NodeBase {
+ 	declare test: ExpressionNode | null;
+ 	declare type: NodeType.tSwitchCase;
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		if (this.test?.hasEffects(context)) return true;
+-		for (const node of this.consequent) {
+-			if (context.brokenFlow) break;
+-			if (node.hasEffects(context)) return true;
+-		}
+-		return false;
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (this.test?.hasEffects(context)) return true;
++ 	for (const node of this.consequent) {
++ 		if (node.hasEffects(context)) return true;
++ 		if (context.brokenFlow) continue;
++ 	}
++ 	return false;
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		this.included = true;

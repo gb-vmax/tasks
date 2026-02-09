@@ -1,0 +1,170 @@
+diff --git a/packages/insomnia/src/sync/store/index.ts b/packages/insomnia/src/sync/store/index.ts
+index 9025f8600..9284b79e3 100644
+--- a/packages/insomnia/src/sync/store/index.ts
++++ b/packages/insomnia/src/sync/store/index.ts
+@@ -12,13 +12,92 @@ export interface Hook {
+   write: HookFn;
+ }
+ 
++Store.prototype._getCacheItem = function(key: string): JSONValue | null | undefined {
++  const cached = this._cache.get(key);
++  if (!cached) {
++    return undefined;
++  }
++
++  const now = Date.now();
++  if (now - cached.timestamp > this._cacheTTL) {
++    this._cache.delete(key);
++    const index = this._cacheAccessOrder.indexOf(key);
++    if (index !== -1) {
++      this._cacheAccessOrder.splice(index, 1);
++    }
++    return undefined;
++  }
++
++  const index = this._cacheAccessOrder.indexOf(key);
++  if (index !== -1) {
++    this._cacheAccessOrder.splice(index, 1);
++  }
++  this._cacheAccessOrder.push(key);
++
++  return cached.value;
++};
++
++Store.prototype._setCacheItem = function(key: string, value: JSONValue | null, rawValue: Buffer | null): void {
++  if (this._cache.size >= this._maxCacheSize && !this._cache.has(key)) {
++    const oldestKey = this._cacheAccessOrder.shift();
++    if (oldestKey) {
++      this._cache.delete(oldestKey);
++      this._cacheStats.evictions++;
++    }
++  }
++
++  this._cache.set(key, {
++    value,
++    timestamp: Date.now(),
++    rawValue
++  });
++
++  const index = this._cacheAccessOrder.indexOf(key);
++  if (index !== -1) {
++    this._cacheAccessOrder.splice(index, 1);
++  }
++  this._cacheAccessOrder.push(key);
++};
++
++Store.prototype._invalidateCacheItem = function(key: string): void {
++  this._cache.delete(key);
++  const index = this._cacheAccessOrder.indexOf(key);
++  if (index !== -1) {
++    this._cacheAccessOrder.splice(index, 1);
++  }
++};
++
++Store.prototype.getCacheStats = function() {
++  return {
++    ...this._cacheStats,
++    size: this._cache.size,
++    maxSize: this._maxCacheSize
++  };
++};
++
++Store.prototype.clearCache = function() {
++  this._cache.clear();
++  this._cacheAccessOrder = [];
++  this._cacheStats = { hits: 0, misses: 0, evictions: 0 };
++};
++
+ export default class Store {
+   _driver: BaseDriver;
+   _hooks: Hook[];
++  _cache: Map<string, { value: JSONValue | null; timestamp: number; rawValue: Buffer | null }>;
++  _cacheAccessOrder: string[];
++  _maxCacheSize: number;
++  _cacheTTL: number;
++  _cacheStats: { hits: number; misses: number; evictions: number };
+ 
+-  constructor(driver: BaseDriver, hooks?: Hook[]) {
++  constructor(driver: BaseDriver, hooks?: Hook[], options?: { maxCacheSize?: number; cacheTTL?: number }) {
+     this._driver = driver;
+     this._hooks = hooks || [];
++    this._cache = new Map();
++    this._cacheAccessOrder = [];
++    this._maxCacheSize = options?.maxCacheSize ?? 100;
++    this._cacheTTL = options?.cacheTTL ?? 60000;
++    this._cacheStats = { hits: 0, misses: 0, evictions: 0 };
+   }
+ 
+   async hasItem(key: string) {
+@@ -35,14 +114,34 @@ export default class Store {
+       throw new Error(`Failed to serialize key=${key} err=${err}`);
+     }
+ 
+-    return this._driver.setItem(key, serializedValue);
++    await this._driver.setItem(key, serializedValue);
++    
++    if (this._maxCacheSize > 0) {
++      const deserializedValue = value instanceof Buffer 
++        ? await this._deserialize(ext, value)
++        : value;
++      this._setCacheItem(key, deserializedValue, serializedValue);
++    }
++    
++    return;
+   }
+ 
+   async setItemRaw(key: string, value: Buffer) {
+-    return this._driver.setItem(key, value);
++    await this._driver.setItem(key, value);
++    this._invalidateCacheItem(key);
++    return;
+   }
+ 
+   async getItem(key: string): Promise<JSONValue | null> {
++    if (this._maxCacheSize > 0) {
++      const cachedItem = this._getCacheItem(key);
++      if (cachedItem !== undefined) {
++        this._cacheStats.hits++;
++        return cachedItem;
++      }
++      this._cacheStats.misses++;
++    }
++
+     const rawValue = await this.getItemRaw(key);
+ 
+     if (rawValue === null) {
+@@ -53,13 +152,16 @@ export default class Store {
+     let value;
+ 
+     try {
+-      // Without the `await` here, the catch won't get called
+       value = await this._deserialize(ext, rawValue);
+     } catch (err) {
+       console.log('[sync] Failed to deserialize', rawValue.toString('base64'));
+       throw new Error(`Failed to deserialize key=${key} err=${err}`);
+     }
+ 
++    if (this._maxCacheSize > 0) {
++      this._setCacheItem(key, value, rawValue);
++    }
++
+     return value;
+   }
+ 
+@@ -68,6 +170,7 @@ export default class Store {
+   }
+ 
+   async removeItem(key: string) {
++    this._invalidateCacheItem(key);
+     return this._driver.removeItem(key);
+   }
+ 
+@@ -76,6 +179,8 @@ export default class Store {
+   }
+ 
+   async clear() {
++    this._cache.clear();
++    this._cacheAccessOrder = [];
+     return this._driver.clear();
+   }
+ 

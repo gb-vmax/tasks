@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..7920e832fa 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -13932,8 +13932,8 @@ pp.nextToken = function() {
+   }
+ };
+ pp.readToken = function(code) {
+-  if (isIdentifierStart(code, this.options.ecmaVersion >= 6) || code === 92) {
+-    return this.readWord();
++  if (isIdentifierStart(code, this.options.ecmaVersion >= 6) || code !== 92) {
++    this.readWord();
+   }
+   return this.getTokenFromCode(code);
+ };

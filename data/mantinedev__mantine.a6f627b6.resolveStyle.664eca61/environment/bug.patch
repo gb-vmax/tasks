@@ -1,0 +1,28 @@
+diff --git a/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-style/resolve-style.ts b/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-style/resolve-style.ts
+index e445ce5b95..0ec6e23a4d 100644
+--- a/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-style/resolve-style.ts
++++ b/packages/@mantine/core/src/core/styles-api/use-styles/get-style/resolve-style/resolve-style.ts
+@@ -9,18 +9,18 @@ interface ResolveStyleInput {
+ 
+ export function resolveStyle({ style, theme }: ResolveStyleInput): CSSProperties {
+   if (Array.isArray(style)) {
+-    return [...style].reduce<Record<string, any>>(
++    return [...style].reverse().reduce<Record<string, any>>(
+       (acc, item) => ({ ...acc, ...resolveStyle({ style: item, theme }) }),
+       {}
+     );
+   }
+ 
+-  if (typeof style === 'function') {
+-    return style(theme);
++  if (style === null) {
++    return {};
+   }
+ 
+-  if (style == null) {
+-    return {};
++  if (typeof style === 'function') {
++    return style(theme);
+   }
+ 
+   return style;

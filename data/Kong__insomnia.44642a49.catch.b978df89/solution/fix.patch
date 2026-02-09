@@ -1,0 +1,72 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..79bec9d49 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -531,11 +531,67 @@ export class GitVCS {
+         filepath: convertToPosixSep(objPath),
+         encoding: 'utf8',
+       });
++      return obj.object;
++async readObjFromTree(treeOid: string, objPath: string) {
++  const maxRetries = 3;
++  const baseDelay = 100;
++  
++  for (let attempt = 0; attempt <= maxRetries; attempt++) {
++    try {
++      const obj = await git.readObject({
++        ...this._baseOpts,
++        oid: treeOid,
++        filepath: convertToPosixSep(objPath),
++        encoding: 'utf8',
++      });
++      
++      if (attempt > 0) {
++        console.log(`[git] Successfully read object after ${attempt} retries: ${objPath}`);
++      }
++      
+       return obj.object;
+     } catch (err) {
++      const isLastAttempt = attempt === maxRetries;
++      const isRetriable = this._isRetriableGitError(err);
++      
++      if (err instanceof git.Errors.NotFoundError) {
++        return null;
++      }
++      
++      if (isRetriable && !isLastAttempt) {
++        const delay = baseDelay * Math.pow(2, attempt);
++        console.log(`[git] Retry ${attempt + 1}/${maxRetries} reading object ${objPath} after ${delay}ms`);
++        await new Promise(resolve => setTimeout(resolve, delay));
++        continue;
++      }
++      
++      if (isLastAttempt && attempt > 0) {
++        console.log(`[git] Failed to read object after ${maxRetries} retries: ${objPath}`, err);
++      } else if (!isRetriable) {
++        console.log(`[git] Non-retriable error reading object: ${objPath}`, err);
++      }
++      
+       return null;
+     }
+   }
++  
++  return null;
++}
++
++ async readObjFromTree(treeOid: string, objPath: string) {
++   try {
++     const obj = await git.readObject({
++       ...this._baseOpts,
++       oid: treeOid,
++       filepath: convertToPosixSep(objPath),
++       encoding: 'utf8',
++     });
++     return obj.object;
++   } catch (err) {
++     return null;
++   }
++ }
++  }
+ 
+   async repoExists() {
+     try {

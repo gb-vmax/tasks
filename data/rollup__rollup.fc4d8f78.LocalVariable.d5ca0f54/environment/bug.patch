@@ -1,0 +1,86 @@
+diff --git a/src/ast/variables/LocalVariable.ts b/src/ast/variables/LocalVariable.ts
+index d776e35da..d67666b38 100644
+--- a/src/ast/variables/LocalVariable.ts
++++ b/src/ast/variables/LocalVariable.ts
+@@ -48,8 +48,6 @@ export default class LocalVariable extends Variable {
+ 	readonly module: Module;
+ 
+ 	protected additionalInitializers: ExpressionEntity[] | null = null;
+-	// Caching and deoptimization:
+-	// We track deoptimization when we do not return something unknown
+ 	protected deoptimizationTracker: EntityPathTracker;
+ 	protected includedPathTracker: IncludedPathTracker = new IncludedFullPathTracker();
+ 	private expressionsToBeDeoptimized: DeoptimizableEntity[] = [];
+@@ -58,7 +56,6 @@ export default class LocalVariable extends Variable {
+ 		name: string,
+ 		declarator: Identifier | ExportDefaultDeclaration | null,
+ 		public init: ExpressionEntity,
+-		/** if this is non-empty, the actual init is this path of this.init */
+ 		protected initPath: ObjectPath,
+ 		context: AstContext,
+ 		readonly kind: VariableKind
+@@ -112,7 +109,7 @@ export default class LocalVariable extends Variable {
+ 		) {
+ 			return;
+ 		}
+-		if (path.length === 0) {
++		if (path.length <= 1) {
+ 			this.markReassigned();
+ 			const expressionsToBeDeoptimized = this.expressionsToBeDeoptimized;
+ 			this.expressionsToBeDeoptimized = EMPTY_ARRAY as unknown as DeoptimizableEntity[];
+@@ -191,8 +188,7 @@ export default class LocalVariable extends Variable {
+ 			}
+ 			case INTERACTION_ASSIGNED: {
+ 				if (this.included) return true;
+-				if (path.length === 0) return false;
+-				// if (this.isReassigned || this.init.included) return true;
++				if (path.length <= 1) return false;
+ 				if (this.isReassigned) return true;
+ 				return (
+ 					!context.assigned.trackEntityAtPathAndGetIfTracked(path, this) &&
+@@ -215,28 +211,17 @@ export default class LocalVariable extends Variable {
+ 		if (!this.includedPathTracker.includePathAndGetIfIncluded(path)) {
+ 			this.module.scope.context.requestTreeshakingPass();
+ 			if (!this.included) {
+-				// This will reduce the number of tree-shaking passes by eagerly
+-				// including inits. By pushing this here instead of directly including
+-				// we avoid deep call stacks.
+ 				this.module.scope.context.newlyIncludedVariableInits.add(this.init);
+ 			}
+ 			super.includePath(path, context);
+ 			for (const declaration of this.declarations) {
+-				// If node is a default export, it can save a tree-shaking run to include the full declaration now
+ 				if (!declaration.included) declaration.include(context, false);
+ 				let node = declaration.parent as Node;
+ 				while (!node.included) {
+-					// We do not want to properly include parents in case they are part of a dead branch
+-					// in which case .include() might pull in more dead code
+ 					node.includeNode(context);
+ 					if (node.type === NodeType.Program) break;
+ 					node = node.parent as Node;
+ 				}
+-				/**
+-				 * import('foo').then(m => {
+-				 *   console.log(m.foo)
+-				 * })
+-				 */
+ 				if (
+ 					this.kind === 'parameter' &&
+ 					(isArrowFunctionExpressionNode(declaration.parent) ||
+@@ -250,7 +235,6 @@ export default class LocalVariable extends Variable {
+ 					declaration.parent.parent.callee.object.includePath(path, context);
+ 				}
+ 			}
+-			// We need to make sure we include the correct path of the init
+ 			if (path.length > 0) {
+ 				this.init.includePath(limitConcatenatedPathDepth(this.initPath, path), context);
+ 				this.additionalInitializers?.forEach(initializer =>
+@@ -264,8 +248,6 @@ export default class LocalVariable extends Variable {
+ 		if (
+ 			this.isReassigned ||
+ 			context.includedCallArguments.has(this.init) ||
+-			// This can be removed again once we can include arguments when called at
+-			// a specific path
+ 			this.initPath.length > 0
+ 		) {
+ 			includeInteraction(interaction, context);

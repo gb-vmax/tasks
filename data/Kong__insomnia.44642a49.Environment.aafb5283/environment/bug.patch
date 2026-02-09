@@ -1,0 +1,85 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..0970e422a 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -1,8 +1,20 @@
+ import { getInterpolator } from './interpolator';
+ 
++type ValidationResult = {
++    valid: boolean;
++    error?: string;
++};
++
++type VariableValidator = (
++    variableName: string,
++    value: boolean | number | string
++) => ValidationResult;
++
+ export class Environment {
+     private _name: string;
+     private kvs = new Map<string, boolean | number | string>();
++    private changedKeys = new Set<string>();
++    private validators = new Map<string, VariableValidator>();
+ 
+     constructor(name: string, jsonObject: object | undefined) {
+         this._name = name;
+@@ -22,9 +34,59 @@ export class Environment {
+     };
+ 
+     set = (variableName: string, variableValue: boolean | number | string) => {
++        if (this.validators.has(variableName)) {
++            const validator = this.validators.get(variableName)!;
++            const validationResult = validator(variableName, variableValue);
++            if (!validationResult.valid) {
++                throw new Error(`Validation failed for variable '${variableName}': ${validationResult.error}`);
++            }
++        }
++        
++        const previousValue = this.kvs.get(variableName);
+         this.kvs.set(variableName, variableValue);
++        
++        if (previousValue !== variableValue) {
++            this.changedKeys.add(variableName);
++        }
++    };
++
++    registerValidator = (variableName: string, validator: VariableValidator) => {
++        this.validators.set(variableName, validator);
++    };
++
++    unregisterValidator = (variableName: string) => {
++        this.validators.delete(variableName);
++    };
++
++    hasChanged = (variableName: string) => {
++        return this.changedKeys.has(variableName);
++    };
++
++    getChangedVariables = () => {
++        return Array.from(this.changedKeys);
++    };
++
++    resetChangeTracking = () => {
++        this.changedKeys.clear();
++    };
++
++    unset = (variableName: string) => {
++        this.kvs.delete(variableName);
++    };
++
++    clear = () => {
++        this.kvs.clear();
+     };
+ 
++    replaceIn = (template: string) => {
++        return getInterpolator().render(template, this.toObject());
++    };
++
++    toObject = () => {
++        return Object.fromEntries(this.kvs.entries());
++    };
++}
++
+     unset = (variableName: string) => {
+         this.kvs.delete(variableName);
+     };

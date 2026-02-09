@@ -1,0 +1,53 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..951b502c5 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -453,7 +453,47 @@ const generateParameterExample = (
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,
+     number_float: () => 0.0,
+-    number_double: () => 0.0,
++const calculateNumericExample = (
++  min: number | undefined,
++  max: number | undefined,
++): number => {
++  if (min !== undefined && max !== undefined) {
++    return (min + max) / 2;
++  }
++  
++  if (min !== undefined) {
++    return min > 0 ? min * 1.5 : min + 10.0;
++  }
++  
++  if (max !== undefined) {
++    return max < 0 ? max * 1.5 : max - 10.0;
++  }
++  
++  return 0.0;
++};
++
++ number_double: (parameter: OpenAPIV2.Parameter) => {
++   const min = parameter.minimum;
++   const max = parameter.maximum;
++   const exclusiveMin = parameter.exclusiveMinimum;
++   const exclusiveMax = parameter.exclusiveMaximum;
++   const multipleOf = parameter.multipleOf;
++
++   const effectiveMin = min !== undefined 
++     ? (exclusiveMin ? min + Number.EPSILON : min)
++     : undefined;
++   const effectiveMax = max !== undefined
++     ? (exclusiveMax ? max - Number.EPSILON : max)
++     : undefined;
++
++   const baseValue = calculateNumericExample(effectiveMin, effectiveMax);
++  
++   if (multipleOf !== undefined && multipleOf > 0) {
++     return Math.round(baseValue / multipleOf) * multipleOf;
++   }
++
++   return baseValue;
++ }
+     integer: () => 0,
+     boolean: () => true,
+     object: (parameter: OpenAPIV2.Parameter) => {

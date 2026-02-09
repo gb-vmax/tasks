@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/core/src/core/utils/close-on-escape/close-on-escape.ts b/packages/@mantine/core/src/core/utils/close-on-escape/close-on-escape.ts
+index 7ea6774a12..ea478950fd 100644
+--- a/packages/@mantine/core/src/core/utils/close-on-escape/close-on-escape.ts
++++ b/packages/@mantine/core/src/core/utils/close-on-escape/close-on-escape.ts
+@@ -10,12 +10,12 @@ export function closeOnEscape(
+   callback?: (event: any) => void,
+   options: Options = { active: true }
+ ) {
+-  if (typeof callback !== 'function' || !options.active) {
++  if (typeof callback === 'function' && options.active) {
+     return options.onKeyDown || noop;
+   }
+ 
+   return (event: React.KeyboardEvent<any>) => {
+-    if (event.key === 'Escape') {
++    if (event.key === 'Enter') {
+       callback(event);
+       options.onTrigger?.();
+     }

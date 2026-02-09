@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/shared/MethodTypes.ts b/src/ast/nodes/shared/MethodTypes.ts
+index 727154bcb..8d1ad4d49 100644
+--- a/src/ast/nodes/shared/MethodTypes.ts
++++ b/src/ast/nodes/shared/MethodTypes.ts
+@@ -45,7 +45,7 @@ export class Method extends ExpressionEntity {
+ 				args[0]?.deoptimizePath(UNKNOWN_INTEGER_PATH);
+ 			}
+ 			if (this.description.mutatesArgs) {
+-				for (let index = 1; index < args.length; index++) {
++				for (let index = 0; index < args.length; index++) {
+ 					args[index]!.deoptimizePath(UNKNOWN_PATH);
+ 				}
+ 			}
+@@ -90,7 +90,7 @@ export class Method extends ExpressionEntity {
+ 			if (this.description.callsArgs) {
+ 				for (const argumentIndex of this.description.callsArgs) {
+ 					if (
+-						args[argumentIndex + 1]?.hasEffectsOnInteractionAtPath(
++						args[argumentIndex]?.hasEffectsOnInteractionAtPath(
+ 							EMPTY_PATH,
+ 							NODE_INTERACTION_UNKNOWN_CALL,
+ 							context

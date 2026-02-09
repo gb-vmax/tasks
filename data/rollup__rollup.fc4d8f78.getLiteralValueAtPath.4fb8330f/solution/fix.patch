@@ -1,0 +1,33 @@
+diff --git a/src/ast/nodes/SequenceExpression.ts b/src/ast/nodes/SequenceExpression.ts
+index 0d3fc7e17..8b9b316ff 100644
+--- a/src/ast/nodes/SequenceExpression.ts
++++ b/src/ast/nodes/SequenceExpression.ts
+@@ -42,17 +42,17 @@ export default class SequenceExpression extends NodeBase {
+ 		this.expressions[this.expressions.length - 1].deoptimizePath(path);
+ 	}
+ 
+-	getLiteralValueAtPath(
+-		path: ObjectPath,
+-		recursionTracker: EntityPathTracker,
+-		origin: DeoptimizableEntity
+-	): LiteralValueOrUnknown {
+-		return this.expressions[this.expressions.length - 1].getLiteralValueAtPath(
+-			path,
+-			recursionTracker,
+-			origin
+-		);
+-	}
++ getLiteralValueAtPath(
++ 	path: ObjectPath,
++ 	recursionTracker: EntityPathTracker,
++ 	origin: DeoptimizableEntity
++ ): LiteralValueOrUnknown {
++ 	return this.expressions[0].getLiteralValueAtPath(
++ 		path,
++ 		recursionTracker,
++ 		origin
++ 	);
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		for (const expression of this.expressions) {

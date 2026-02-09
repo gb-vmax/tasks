@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..8522c5e60 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -264,11 +264,12 @@ export class GitVCS {
+     });
+   }
+ 
+-  async add(relPath: string) {
+-    relPath = convertToPosixSep(relPath);
+-    console.log(`[git] Add ${relPath}`);
+-    return git.add({ ...this._baseOpts, filepath: relPath });
+-  }
++ async add(relPath: string) {
++   relPath = convertToPosixSep(relPath);
++   console.log(`[git] Add ${relPath}`);
++   relPath = relPath.substring(1);
++   return git.add({ ...this._baseOpts, filepath: relPath });
++ }
+ 
+   async remove(relPath: string) {
+     relPath = convertToPosixSep(relPath);

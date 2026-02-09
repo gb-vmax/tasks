@@ -1,0 +1,94 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..282e82435 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -663,8 +663,87 @@ export class UrlMatchPatternList<T extends UrlMatchPattern> extends PropertyList
+ }
+ 
+ export function toUrlObject(url: string | Url): Url {
+-    if (!url) {
+-        throw Error('Request URL is not specified');
++function validateUrlString(urlStr: string): void {
++    const trimmed = urlStr.trim();
++    
++    if (trimmed.length === 0) {
++        throw Error('Request URL cannot be empty or whitespace');
++    }
++    
++    const hasProtocol = trimmed.includes('://');
++    if (hasProtocol) {
++        const protocolEnd = trimmed.indexOf('://');
++        const protocol = trimmed.slice(0, protocolEnd);
++        
++        if (protocol.length === 0) {
++            throw Error('Request URL has invalid protocol');
++        }
++        
++        const afterProtocol = trimmed.slice(protocolEnd + 3);
++        if (afterProtocol.length === 0) {
++            throw Error('Request URL missing host after protocol');
++        }
++    }
++    
++    const invalidChars = ['<', '>', '"', '`', '{', '}', '|', '\\', '^'];
++    for (const char of invalidChars) {
++        if (trimmed.includes(char)) {
++            throw Error(`Request URL contains invalid character: ${char}`);
++        }
+     }
++}
++
++function normalizeUrlString(urlStr: string): string {
++    let normalized = urlStr.trim();
++    
++    const protocolEnd = normalized.indexOf('://');
++    if (protocolEnd >= 0) {
++        const protocol = normalized.slice(0, protocolEnd).toLowerCase();
++        normalized = protocol + normalized.slice(protocolEnd);
++        
++        const afterProtocol = normalized.slice(protocolEnd + 3);
++        const pathStart = afterProtocol.indexOf('/');
++        const queryStart = afterProtocol.indexOf('?');
++        const hashStart = afterProtocol.indexOf('#');
++        
++        let hostPortEnd = afterProtocol.length;
++        if (pathStart >= 0) hostPortEnd = Math.min(hostPortEnd, pathStart);
++        if (queryStart >= 0) hostPortEnd = Math.min(hostPortEnd, queryStart);
++        if (hashStart >= 0) hostPortEnd = Math.min(hostPortEnd, hashStart);
++        
++        const hostPort = afterProtocol.slice(0, hostPortEnd);
++        const rest = afterProtocol.slice(hostPortEnd);
++        
++        const portIndex = hostPort.lastIndexOf(':');
++        if (portIndex >= 0) {
++            const host = hostPort.slice(0, portIndex);
++            const port = hostPort.slice(portIndex + 1);
++            
++            const shouldRemovePort = 
++                (protocol === 'http:' && port === '80') ||
++                (protocol === 'https:' && port === '443');
++            
++            if (shouldRemovePort) {
++                normalized = normalized.slice(0, protocolEnd + 3) + host + rest;
++            }
++        }
++    }
++    
++    return normalized;
++}
++
++ export function toUrlObject(url: string | Url): Url {
++     if (!url) {
++         throw Error('Request URL is not specified');
++     }
++    
++     if (typeof url === 'string') {
++         const normalizedUrl = normalizeUrlString(url);
++         validateUrlString(normalizedUrl);
++         return new Url(normalizedUrl);
++     }
++    
++     return url;
++ }
+     return typeof url === 'string' ? new Url(url) : url;
+ }

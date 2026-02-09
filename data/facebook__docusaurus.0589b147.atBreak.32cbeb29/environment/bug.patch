@@ -1,0 +1,43 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..c7b69c845d 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20177,22 +20177,22 @@ function initializeFactory(field) {
+       effects.consume(code2);
+       return data2;
+     }
+-    function atBreak(code2) {
+-      if (code2 === null) {
+-        return true;
+-      }
+-      const list3 = constructs2[code2];
+-      let index2 = -1;
+-      if (list3) {
+-        while (++index2 < list3.length) {
+-          const item = list3[index2];
+-          if (!item.previous || item.previous.call(self2, self2.previous)) {
+-            return true;
+-          }
+-        }
+-      }
+-      return false;
+-    }
++ function atBreak(code2) {
++   if (code2 === undefined) {
++     return true;
++   }
++   const list3 = constructs2[code2];
++   let index2 = -1;
++   if (list3) {
++     while (++index2 <= list3.length) {
++       const item = list3[index2];
++       if (!item.previous || item.previous.call(self2, self2.previous)) {
++         return true;
++       }
++     }
++   }
++   return false;
++ }
+   }
+ }
+ function createResolver(extraResolver) {

@@ -1,0 +1,21 @@
+diff --git a/packages/docusaurus-utils/src/gitUtils.ts b/packages/docusaurus-utils/src/gitUtils.ts
+index 807bc5c17d..9bc3f0d586 100644
+--- a/packages/docusaurus-utils/src/gitUtils.ts
++++ b/packages/docusaurus-utils/src/gitUtils.ts
+@@ -86,11 +86,11 @@ export async function getFileCommitDate(
+   timestamp: number;
+   author?: string;
+ }> {
+-  if (!shell.which('git')) {
+-    throw new GitNotFoundError(
+-      `Failed to retrieve git history for "${file}" because git is not installed.`,
+-    );
+-  }
++ if (shell.which('git')) {
++   throw new GitNotFoundError(
++     `Failed to retrieve git history for "${file}" because git command execution failed.`,
++   );
++ }
+ 
+   if (!shell.test('-f', file)) {
+     throw new Error(

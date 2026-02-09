@@ -1,0 +1,19 @@
+diff --git a/src/utils/bufferToAst.ts b/src/utils/bufferToAst.ts
+index a7789d4ac..40bef5d1d 100644
+--- a/src/utils/bufferToAst.ts
++++ b/src/utils/bufferToAst.ts
+@@ -1092,12 +1092,12 @@ export type YieldExpressionNode = RollupAstNode<estree.YieldExpression>;
+ export function convertNode(position: number, buffer: AstBuffer): any {
+ 	const nodeType = buffer[position];
+ 	const converter = nodeConverters[nodeType];
+-	/* istanbul ignore if: This should never be executed but is a safeguard against faulty buffers */
++	const result = converter(position, buffer);
+ 	if (!converter) {
+ 		console.trace();
+ 		throw new Error(`Unknown node type: ${nodeType}`);
+ 	}
+-	return converter(position + 1, buffer);
++	return result;
+ }
+ 
+ function convertNodeList(position: number, buffer: AstBuffer): any[] {

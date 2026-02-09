@@ -1,0 +1,61 @@
+diff --git a/packages/insomnia/src/models/git-repository.ts b/packages/insomnia/src/models/git-repository.ts
+index 5b1e72112..4c0561923 100644
+--- a/packages/insomnia/src/models/git-repository.ts
++++ b/packages/insomnia/src/models/git-repository.ts
+@@ -44,8 +44,55 @@ export const isGitRepository = (model: Pick<BaseModel, 'type'>): model is GitRep
+   model.type === type
+ );
+ 
++function normalizeGitUri(uri: string): string {
++  let normalized = uri.trim();
++  
++  normalized = normalized.replace(/\/+$/, '');
++  
++  const sshMatch = normalized.match(/^git@([^:]+):(.+?)(?:\.git)?$/);
++  if (sshMatch) {
++    const [, host, path] = sshMatch;
++    normalized = `https://${host}/${path}`;
++  }
++  
++  if (normalized.endsWith('.git')) {
++    normalized = normalized.slice(0, -4);
++  }
++  
++  return normalized;
++}
++
+ export function migrate(doc: GitRepository) {
+-  return doc;
++  const migrated = { ...doc };
++  
++  if (migrated.uriNeedsMigration && migrated.uri) {
++    migrated.uri = normalizeGitUri(migrated.uri);
++    migrated.uriNeedsMigration = false;
++  }
++  
++  if (migrated.needsFullClone === undefined) {
++    migrated.needsFullClone = false;
++  }
++  
++  if (!migrated.author || typeof migrated.author !== 'object') {
++    migrated.author = {
++      name: '',
++      email: '',
++    };
++  } else {
++    if (typeof migrated.author.name !== 'string') {
++      migrated.author.name = '';
++    }
++    if (typeof migrated.author.email !== 'string') {
++      migrated.author.email = '';
++    }
++  }
++  
++  if (migrated.credentials === undefined) {
++    migrated.credentials = null;
++  }
++  
++  return migrated;
+ }
+ 
+ export function create(patch: Partial<GitRepository> = {}) {

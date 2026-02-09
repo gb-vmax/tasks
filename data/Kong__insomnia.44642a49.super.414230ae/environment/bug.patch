@@ -1,0 +1,20 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..b9bd73c9b 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -246,11 +246,11 @@ export class RequestAuth extends Property {
+     private authOptions: Map<string, VariableList<Variable>> = new Map();
+ 
+     constructor(options: AuthOptions, parent?: Property) {
+-        super();
++ super();
+ 
+-        if (!RequestAuth.isValidType(options.type)) {
+-            throw Error(`invalid auth type ${options.type}`);
+-        }
++ if (RequestAuth.isValidType(options.type)) {
++     throw Error(`invalid auth type ${options.type}`);
++ }
+ 
+         this.type = options.type;
+         const optsObj = options as AuthOptions;

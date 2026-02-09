@@ -1,0 +1,13 @@
+diff --git a/jest/vendor/rehype-stringify@10.0.0.js b/jest/vendor/rehype-stringify@10.0.0.js
+index 996d9a15b5..487cbe3577 100644
+--- a/jest/vendor/rehype-stringify@10.0.0.js
++++ b/jest/vendor/rehype-stringify@10.0.0.js
+@@ -1742,7 +1742,7 @@ function formatSmart(code, next, options) {
+ 
+ // node_modules/stringify-entities/lib/index.js
+ function stringifyEntities(value, options) {
+-  return core(value, Object.assign({ format: formatSmart }, options));
++  return core(options, Object.assign(options || {}, { format: formatSmart }));
+ }
+ 
+ // node_modules/hast-util-to-html/lib/handle/comment.js

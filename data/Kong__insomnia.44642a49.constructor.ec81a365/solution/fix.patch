@@ -1,0 +1,152 @@
+diff --git a/packages/insomnia-testing/src/run/javascript-reporter.ts b/packages/insomnia-testing/src/run/javascript-reporter.ts
+index 275c39ebf..9aab65d93 100644
+--- a/packages/insomnia-testing/src/run/javascript-reporter.ts
++++ b/packages/insomnia-testing/src/run/javascript-reporter.ts
+@@ -10,45 +10,108 @@ import type { TestResult, TestResults } from './entities';
+ export class JavaScriptReporter extends reporters.Base {
+   description = 'single JS object';
+ 
+-  constructor(runner: Runner & { testResults?: TestResults }, options: MochaOptions) {
+-    super(runner, options);
+-
+-    Mocha.reporters.Base.call(this, runner, options);
+-    // eslint-disable-next-line @typescript-eslint/no-this-alias
+-    const self = this;
+-    const tests: Test[] = [];
+-    const pending: Test[] = [];
+-    const failures: Test[] = [];
+-    const passes: Test[] = [];
+-
+-    runner.on(Mocha.Runner.constants.EVENT_TEST_END, test => {
+-      tests.push(test);
+-    });
+-
+-    runner.on(Mocha.Runner.constants.EVENT_TEST_PASS, test => {
+-      passes.push(test);
+-    });
+-
+-    runner.on(Mocha.Runner.constants.EVENT_TEST_FAIL, test => {
+-      failures.push(test);
+-    });
+-
+-    runner.on(Mocha.Runner.constants.EVENT_TEST_PENDING, test => {
+-      pending.push(test);
+-    });
+-
+-    runner.once(Mocha.Runner.constants.EVENT_RUN_END, () => {
+-      runner.testResults = {
+-        stats: self.stats,
+-        tests: tests.map(clean),
+-        pending: pending.map(clean),
+-        failures: failures.map(clean),
+-        passes: passes.map(clean),
+-      };
+-      // This is the main change from the original JSONReporter
+-      // process.stdout.write(JSON.stringify(obj, null, 2));
+-    });
+-  }
++interface SuiteInfo {
++  id: string;
++  title: string;
++  fullTitle: string;
++  file?: string;
++  tests: string[];
++  suites: string[];
++  duration: number;
++}
++
++const buildSuiteHierarchy = (suites: Map<string, SuiteInfo>) => {
++  return Array.from(suites.values()).map(suite => ({
++    id: suite.id,
++    title: suite.title,
++    fullTitle: suite.fullTitle,
++    file: suite.file,
++    testCount: suite.tests.length,
++    suiteCount: suite.suites.length,
++    duration: suite.duration,
++  }));
++};
++
++ constructor(runner: Runner & { testResults?: TestResults }, options: MochaOptions) {
++   super(runner, options);
++
++   Mocha.reporters.Base.call(this, runner, options);
++   const self = this;
++   const tests: Test[] = [];
++   const pending: Test[] = [];
++   const failures: Test[] = [];
++   const passes: Test[] = [];
++   const suites: Map<string, SuiteInfo> = new Map();
++   const slowTests: Test[] = [];
++   const slowThreshold = (options.reporterOptions?.slow as number) || 75;
++
++   runner.on(Mocha.Runner.constants.EVENT_SUITE_BEGIN, suite => {
++     if (suite.title) {
++       const suiteId = suite.fullTitle();
++       suites.set(suiteId, {
++         id: suiteId,
++         title: suite.title,
++         fullTitle: suite.fullTitle(),
++         file: suite.file,
++         tests: [],
++         suites: [],
++         duration: 0,
++       });
++     }
++   });
++
++   runner.on(Mocha.Runner.constants.EVENT_TEST_END, test => {
++     tests.push(test);
++    
++     if (test.duration && test.duration > slowThreshold) {
++       slowTests.push(test);
++     }
++
++     const parentSuiteId = test.parent?.fullTitle();
++     if (parentSuiteId && suites.has(parentSuiteId)) {
++       const suiteInfo = suites.get(parentSuiteId)!;
++       suiteInfo.tests.push(test.fullTitle());
++       suiteInfo.duration = (suiteInfo.duration || 0) + (test.duration || 0);
++     }
++   });
++
++   runner.on(Mocha.Runner.constants.EVENT_TEST_PASS, test => {
++     passes.push(test);
++   });
++
++   runner.on(Mocha.Runner.constants.EVENT_TEST_FAIL, test => {
++     failures.push(test);
++   });
++
++   runner.on(Mocha.Runner.constants.EVENT_TEST_PENDING, test => {
++     pending.push(test);
++   });
++
++   runner.on(Mocha.Runner.constants.EVENT_SUITE_END, suite => {
++     if (suite.title && suite.parent) {
++       const suiteId = suite.fullTitle();
++       const parentSuiteId = suite.parent.fullTitle();
++      
++       if (parentSuiteId && suites.has(parentSuiteId) && suites.has(suiteId)) {
++         const parentSuite = suites.get(parentSuiteId)!;
++         parentSuite.suites.push(suiteId);
++         parentSuite.duration = (parentSuite.duration || 0) + (suites.get(suiteId)!.duration || 0);
++       }
++     }
++   });
++
++   runner.once(Mocha.Runner.constants.EVENT_RUN_END, () => {
++     runner.testResults = {
++       stats: self.stats,
++       tests: tests.map(clean),
++       pending: pending.map(clean),
++       failures: failures.map(clean),
++       passes: passes.map(clean),
++       suites: buildSuiteHierarchy(suites),
++       slowTests: slowTests.map(clean),
++     };
++   });
++ }
+ }
+ 
+ /**

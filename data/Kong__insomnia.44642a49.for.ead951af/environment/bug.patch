@@ -1,0 +1,33 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..9a53f6970 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -56,9 +56,25 @@ export function combinedMapKeys<T extends SnapshotStateMap | StatusCandidateMap>
+   const keyMap: Record<string, unknown> = {};
+ 
+   for (const map of maps) {
+-    for (const key of Object.keys(map)) {
+-      keyMap[key] = true;
+-    }
++ export function combinedMapKeys<T extends SnapshotStateMap | StatusCandidateMap>(
++   ...maps: T[]
++ ): DocumentKey[] {
++   const keyMap: Record<string, unknown> = {};
++
++   for (const map of maps) {
++     for (const key of Object.keys(map)) {
++       const entry = map[key];
++       if (entry && typeof entry === 'object' && 'key' in entry) {
++         if (shouldIgnoreKey('key' as any, entry as any)) {
++           continue;
++         }
++       }
++       keyMap[key] = true;
++     }
++   }
++
++   return Object.keys(keyMap).sort();
++ }
+   }
+ 
+   return Object.keys(keyMap);

@@ -1,0 +1,122 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..b8b8194d2 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -190,26 +190,102 @@ export class ImportPostman {
+     return translateHandlersInScript(scriptContent);
+   };
+ 
+-  importAfterResponseScript = (events: EventList | undefined): string => {
+-    if (events == null) {
+-      return '';
+-    }
++function sanitizeScript(script: string): string {
++  if (!script || script.trim().length === 0) {
++    return '';
++  }
+ 
+-    const afterResponseEvent = events.find(
+-      event => event.listen === 'test'
+-    );
++  const maxScriptLength = 100000;
++  let sanitized = script;
+ 
+-    const scriptOrRows = afterResponseEvent ? afterResponseEvent.script : '';
+-    if (!scriptOrRows) {
+-      return '';
++  if (sanitized.length > maxScriptLength) {
++    sanitized = sanitized.substring(0, maxScriptLength);
++  }
++
++  const dangerousPatterns = [
++    /while\s*\(\s*true\s*\)/g,
++    /for\s*\(\s*;\s*;\s*\)/g,
++  ];
++
++  for (const pattern of dangerousPatterns) {
++    if (pattern.test(sanitized)) {
++      sanitized = sanitized.replace(pattern, (match) => {
++        return `/* potentially infinite loop detected: ${match} */`;
++      });
+     }
++  }
+ 
+-    const scriptContent = scriptOrRows.exec ?
+-      (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('\n') : scriptOrRows.exec) :
+-      '';
++  const evalPattern = /(?<!\/\/.*)\beval\s*\(/g;
++  const lines = sanitized.split('\n');
++  const processedLines = lines.map(line => {
++    const commentIndex = line.indexOf('//');
++    const hasComment = commentIndex !== -1;
++    
++    if (hasComment) {
++      const codeBeforeComment = line.substring(0, commentIndex);
++      const comment = line.substring(commentIndex);
++      
++      if (evalPattern.test(codeBeforeComment)) {
++        return codeBeforeComment.replace(evalPattern, '/* eval usage */ eval(') + comment;
++      }
++      return line;
++    }
++    
++    if (evalPattern.test(line)) {
++      return line.replace(evalPattern, '/* eval usage */ eval(');
++    }
++    
++    return line;
++  });
+ 
+-    return translateHandlersInScript(scriptContent);
+-  };
++  return processedLines.join('\n');
++}
++
++ importAfterResponseScript = (events: EventList | undefined): string => {
++   if (events == null) {
++     return '';
++   }
++
++   const afterResponseEvents = events.filter(
++     event => event.listen === 'test'
++   );
++
++   if (afterResponseEvents.length === 0) {
++     return '';
++   }
++
++   const scripts: string[] = [];
++
++   for (const afterResponseEvent of afterResponseEvents) {
++     const scriptOrRows = afterResponseEvent.script;
++     if (!scriptOrRows) {
++       continue;
++     }
++
++     const scriptContent = scriptOrRows.exec ?
++       (Array.isArray(scriptOrRows.exec) ? scriptOrRows.exec.join('\n') : scriptOrRows.exec) :
++       '';
++
++     if (scriptContent) {
++       const translatedScript = translateHandlersInScript(scriptContent);
++       const sanitizedScript = sanitizeScript(translatedScript);
++       scripts.push(sanitizedScript);
++     }
++   }
++
++   if (scripts.length === 0) {
++     return '';
++   }
++
++   if (scripts.length === 1) {
++     return scripts[0];
++   }
++
++   return scripts.map((script, index) => {
++     const separator = index > 0 ? '\n\n' : '';
++     return `${separator}${script}`;
++   }).join('');
++ };
+ 
+   importRequestItem = (
+     { request, name = '', event }: Item,

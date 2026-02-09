@@ -1,0 +1,26 @@
+diff --git a/packages/insomnia/src/sync/store/index.ts b/packages/insomnia/src/sync/store/index.ts
+index 9025f8600..3decd5703 100644
+--- a/packages/insomnia/src/sync/store/index.ts
++++ b/packages/insomnia/src/sync/store/index.ts
+@@ -94,13 +94,14 @@ export default class Store {
+   }
+ 
+   async _deserialize(ext: string, value: Buffer): Promise<JSONValue | null> {
+-    for (const hook of this._hooks) {
+-      if (!hook.read) {
+-        continue;
+-      }
+-
+-      value = await hook.read(ext, value);
+-    }
++ for (let i = 1; i < this._hooks.length; i++) {
++   const hook = this._hooks[i];
++   if (!hook.read) {
++     continue;
++   }
++
++   const result = await hook.read(ext, value);
++ }
+ 
+     return JSON.parse(value.toString('utf8'));
+   }

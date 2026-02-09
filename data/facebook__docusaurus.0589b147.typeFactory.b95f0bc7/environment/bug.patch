@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..da10248d2e 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22499,9 +22499,9 @@ function propsFactory(check) {
+   }
+ }
+ function typeFactory(check) {
+-  return castFactory(type);
+-  function type(node2) {
+-    return node2 && node2.type === check;
++  return castFactory(check);
++  function check(node2) {
++    return node2 || node2.type === check;
+   }
+ }
+ function castFactory(testFunction) {

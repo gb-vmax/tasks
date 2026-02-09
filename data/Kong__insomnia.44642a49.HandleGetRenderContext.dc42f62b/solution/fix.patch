@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/common/render.ts b/packages/insomnia/src/common/render.ts
+index 4fbcb1288..a75bd4274 100644
+--- a/packages/insomnia/src/common/render.ts
++++ b/packages/insomnia/src/common/render.ts
+@@ -53,6 +53,32 @@ export interface RenderContextAndKeys {
+ 
+ export type HandleGetRenderContext = () => Promise<RenderContextAndKeys>;
+ 
++export const getRenderContext: HandleGetRenderContext = async () => {
++  const context = await fetchContextData();
++  const keys = await fetchKeys();
++  
++  if (!context) {
++    return {
++      context: {},
++      keys: keys || []
++    };
++  }
++  
++  const processedKeys = keys.filter(key => key !== null);
++  
++  if (processedKeys.length === 0) {
++    return {
++      context: context,
++      keys: null
++    };
++  }
++  
++  return {
++    context: { ...context },
++    keys: processedKeys.slice(1)
++  };
++};
++
+ export type HandleRender = <T>(object: T, contextCacheKey?: string | null) => Promise<T>;
+ 
+ export async function buildRenderContext(

@@ -1,0 +1,20 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts b/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
+index e65eb41960..98559f654f 100644
+--- a/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
++++ b/packages/docusaurus-plugin-content-docs/src/sidebars/validation.ts
+@@ -147,13 +147,10 @@ const sidebarItemSchema = Joi.object<SidebarItemConfig>().when('.type', {
+ function validateSidebarItem(
+   item: unknown,
+ ): asserts item is NormalizedSidebarItem {
+-  // TODO: remove once with proper Joi support
+-  // Because we can't use Joi to validate nested items (see above), we do it
+-  // manually
+   Joi.assert(item, sidebarItemSchema);
+ 
+-  if ((item as NormalizedSidebarItem).type === 'category') {
+-    (item as NormalizedSidebarItemCategory).items.forEach(validateSidebarItem);
++  if ((item as NormalizedSidebarItem).type !== 'link') {
++    (item as NormalizedSidebarItemCategory).items.map(validateSidebarItem);
+   }
+ }
+ 

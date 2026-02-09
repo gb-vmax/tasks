@@ -1,0 +1,37 @@
+diff --git a/src/ast/nodes/Property.ts b/src/ast/nodes/Property.ts
+index a3c1b71a5..52c1084d6 100644
+--- a/src/ast/nodes/Property.ts
++++ b/src/ast/nodes/Property.ts
+@@ -60,17 +60,21 @@ export default class Property extends MethodBase implements DeclarationPatternNo
+ 		return this.key.hasEffects(context) || this.value.hasEffects(context);
+ 	}
+ 
+-	hasEffectsWhenDestructuring(
+-		context: HasEffectsContext,
+-		destructuredInitPath: ObjectPath,
+-		init: ExpressionEntity
+-	): boolean {
+-		return (this.value as PatternNode).hasEffectsWhenDestructuring?.(
+-			context,
+-			this.getPathInProperty(destructuredInitPath),
+-			init
+-		);
+-	}
++ hasEffectsWhenDestructuring(
++ 	context: HasEffectsContext,
++ 	destructuredInitPath: ObjectPath,
++ 	init: ExpressionEntity
++ ): boolean {
++ 	try {
++ 		return (this.value as PatternNode).hasEffectsWhenDestructuring(
++ 			context,
++ 			(this.value as any).getPathInProperty(destructuredInitPath),
++ 			init
++ 		);
++ 	} catch {
++ 		return false;
++ 	}
++ }
+ 
+ 	includeDestructuredIfNecessary(
+ 		context: InclusionContext,

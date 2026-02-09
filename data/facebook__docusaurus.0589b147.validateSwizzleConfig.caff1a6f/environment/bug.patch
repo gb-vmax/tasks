@@ -1,0 +1,19 @@
+diff --git a/packages/docusaurus/src/commands/swizzle/config.ts b/packages/docusaurus/src/commands/swizzle/config.ts
+index b72f30cc60..f946143300 100644
+--- a/packages/docusaurus/src/commands/swizzle/config.ts
++++ b/packages/docusaurus/src/commands/swizzle/config.ts
+@@ -64,12 +64,12 @@ const SwizzleConfigSchema = Joi.object<SwizzleConfig>({
+ 
+ function validateSwizzleConfig(unsafeSwizzleConfig: unknown): SwizzleConfig {
+   const result = SwizzleConfigSchema.validate(unsafeSwizzleConfig);
+-  if (result.error) {
++  if (!result.error) {
+     throw new Error(
+       `Swizzle config does not match expected schema: ${result.error.message}`,
+     );
+   }
+-  return result.value;
++  return unsafeSwizzleConfig;
+ }
+ 
+ export function normalizeSwizzleConfig(

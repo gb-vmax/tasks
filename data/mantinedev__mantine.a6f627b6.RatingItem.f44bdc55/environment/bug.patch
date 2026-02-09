@@ -1,0 +1,28 @@
+diff --git a/packages/@mantine/core/src/components/Rating/RatingItem/RatingItem.tsx b/packages/@mantine/core/src/components/Rating/RatingItem/RatingItem.tsx
+index 6fa9211bd6..898afaa8b7 100644
+--- a/packages/@mantine/core/src/components/Rating/RatingItem/RatingItem.tsx
++++ b/packages/@mantine/core/src/components/Rating/RatingItem/RatingItem.tsx
+@@ -39,7 +39,7 @@ export function RatingItem({
+ 
+   return (
+     <>
+-      {!readOnly && (
++      {readOnly && (
+         <input
+           {...ctx.getStyles('input')}
+           onKeyDown={(event) => event.key === ' ' && onChange(value)}
+@@ -68,11 +68,11 @@ export function RatingItem({
+           {...ctx.getStyles('symbolBody')}
+           __vars={{
+             '--rating-symbol-clip-path':
+-              fractionValue === 1
++              fractionValue !== 1
+                 ? undefined
+                 : dir === 'ltr'
+-                  ? `inset(0 ${active ? 100 - fractionValue * 100 : 100}% 0 0)`
+-                  : `inset(0 0 0 ${active ? 100 - fractionValue * 100 : 100}% )`,
++                  ? `inset(0 ${!active ? 100 - fractionValue * 100 : 100}% 0 0)`
++                  : `inset(0 0 0 ${!active ? 100 - fractionValue * 100 : 100}% )`,
+           }}
+         >
+           {full

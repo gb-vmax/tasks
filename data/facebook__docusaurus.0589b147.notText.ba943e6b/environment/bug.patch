@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..551928a327 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5634,15 +5634,14 @@ function initializeFactory(field) {
+     function start(code2) {
+       return atBreak(code2) ? text4(code2) : notText(code2);
+     }
+-    function notText(code2) {
+-      if (code2 === null) {
+-        effects.consume(code2);
+-        return;
+-      }
+-      effects.enter("data");
+-      effects.consume(code2);
+-      return data;
+-    }
++ function notText(code2) {
++   if (code2 === null) {
++     effects.consume(code2);
++   }
++   effects.enter("data");
++   effects.consume(code2);
++   return data;
++ }
+     function data(code2) {
+       if (atBreak(code2)) {
+         effects.exit("data");

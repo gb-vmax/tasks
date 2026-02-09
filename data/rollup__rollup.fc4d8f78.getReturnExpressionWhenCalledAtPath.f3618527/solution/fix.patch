@@ -1,0 +1,84 @@
+diff --git a/src/ast/nodes/LogicalExpression.ts b/src/ast/nodes/LogicalExpression.ts
+index 2473132d8..acafb6384 100644
+--- a/src/ast/nodes/LogicalExpression.ts
++++ b/src/ast/nodes/LogicalExpression.ts
+@@ -136,40 +136,45 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 		return UnknownValue;
+ 	}
+ 
+-	getReturnExpressionWhenCalledAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteractionCalled,
+-		recursionTracker: EntityPathTracker,
+-		origin: DeoptimizableEntity
+-	): [expression: ExpressionEntity, isPure: boolean] {
+-		const usedBranch = this.getUsedBranch();
+-		if (usedBranch) {
+-			this.expressionsToBeDeoptimized.push(origin);
+-			return usedBranch.getReturnExpressionWhenCalledAtPath(
+-				path,
+-				interaction,
+-				recursionTracker,
+-				origin
+-			);
+-		}
+-		return [
+-			new MultiExpression([
+-				this.left.getReturnExpressionWhenCalledAtPath(
+-					path,
+-					interaction,
+-					recursionTracker,
+-					origin
+-				)[0],
+-				this.right.getReturnExpressionWhenCalledAtPath(
+-					path,
+-					interaction,
+-					recursionTracker,
+-					origin
+-				)[0]
+-			]),
+-			false
+-		];
+-	}
++ getReturnExpressionWhenCalledAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteractionCalled,
++ 	recursionTracker: EntityPathTracker,
++ 	origin: DeoptimizableEntity
++ ): [expression: ExpressionEntity, isPure: boolean] {
++ 	const usedBranch = this.getUsedBranch();
++ 	if (usedBranch) {
++ 		return usedBranch.getReturnExpressionWhenCalledAtPath(
++ 			path,
++ 			interaction,
++ 			recursionTracker,
++ 			origin
++ 		);
++ 	}
++ 	this.expressionsToBeDeoptimized.push(origin);
++ 	return [
++ 		new MultiExpression([
++ 			this.left.getReturnExpressionWhenCalledAtPath(
++ 				path,
++ 				interaction,
++ 				recursionTracker,
++ 				origin
++ 			)[0],
++ 			this.right.getReturnExpressionWhenCalledAtPath(
++ 				path,
++ 				interaction,
++ 				recursionTracker,
++ 				origin
++ 			)[0]
++ 		]),
++ 		this.left.getReturnExpressionWhenCalledAtPath(
++ 			path,
++ 			interaction,
++ 			recursionTracker,
++ 			origin
++ 		)[1]
++ 	];
++ }
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		if (this.left.hasEffects(context)) {

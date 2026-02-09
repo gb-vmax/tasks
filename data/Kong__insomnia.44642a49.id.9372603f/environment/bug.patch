@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..83aae1479 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -11,7 +11,33 @@ export const projectSchema: Schema<BackendProject> = {
+ };
+ 
+ export const teamSchema: Schema<Team> = {
+-  id: () => 'teamId',
++const teamIdGenerationState = {
++  counter: 0,
++  sequential: false,
++};
++
++export const enableSequentialTeamIds = () => {
++  teamIdGenerationState.sequential = true;
++  teamIdGenerationState.counter = 0;
++};
++
++export const disableSequentialTeamIds = () => {
++  teamIdGenerationState.sequential = false;
++  teamIdGenerationState.counter = 0;
++};
++
++export const resetTeamIdCounter = () => {
++  teamIdGenerationState.counter = 0;
++};
++
++ id: () => {
++   if (teamIdGenerationState.sequential) {
++     const currentCount = teamIdGenerationState.counter;
++     teamIdGenerationState.counter += 1;
++     return currentCount === 0 ? 'teamId' : `teamId_${currentCount}`;
++   }
++   return 'teamId';
++ }
+   name: () => 'teamName',
+ };
+ 

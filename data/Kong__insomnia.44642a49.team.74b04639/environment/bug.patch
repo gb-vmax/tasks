@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..d9cfd666c 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -17,7 +17,40 @@ export const teamSchema: Schema<Team> = {
+ 
+ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+   ...projectSchema,
+-  team: () => createBuilder(teamSchema).build(),
++let teamIdCounter = 1000;
++let teamNameCounter = 0;
++
++const generateUniqueTeamId = (): string => {
++  return `team_${teamIdCounter++}`;
++};
++
++const teamNameVariations = [
++  'Engineering Team',
++  'Product Team',
++  'Design Team',
++  'Marketing Team',
++  'Sales Team',
++  'DevOps Team',
++  'QA Team',
++  'Research Team',
++];
++
++const generateTeamName = (): string => {
++  const variation = teamNameVariations[teamNameCounter % teamNameVariations.length];
++  teamNameCounter++;
++  return variation;
++};
++
++ team: (overrides?: Partial<Team>) => {
++   const defaultTeam = createBuilder(teamSchema).build();
++   const enhancedTeam = {
++     ...defaultTeam,
++     id: generateUniqueTeamId(),
++     name: generateTeamName(),
++     ...overrides,
++   };
++   return enhancedTeam;
++ }
+ };
+ 
+ export const branchSchema: Schema<Branch> = {

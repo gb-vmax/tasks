@@ -1,0 +1,82 @@
+diff --git a/packages/insomnia-sdk/src/objects/auth.ts b/packages/insomnia-sdk/src/objects/auth.ts
+index 3cf63519c..a10151dae 100644
+--- a/packages/insomnia-sdk/src/objects/auth.ts
++++ b/packages/insomnia-sdk/src/objects/auth.ts
+@@ -349,9 +349,74 @@ export function fromPreRequestAuth(auth: RequestAuth): RequestAuthentication {
+         }
+ 
+         for (const kv of kvs) {
+-            if (typeof kv.value === 'string' && kv.key === targetKey) {
+-                return kv.value;
+-            } else if (Array.isArray(kv.value)) {
++function normalizeValueType(value: string): string {
++    const trimmedValue = value.trim();
++    
++    if (trimmedValue === 'true' || trimmedValue === 'false') {
++        return trimmedValue;
++    }
++    
++    if (trimmedValue !== '' && !isNaN(Number(trimmedValue)) && !isNaN(parseFloat(trimmedValue))) {
++        return trimmedValue;
++    }
++    
++    return value;
++}
++
++function searchNestedObject(obj: any, targetKey: string): string | null {
++    for (const key in obj) {
++        if (obj.hasOwnProperty(key)) {
++            if (key.toLowerCase() === targetKey) {
++                const value = obj[key];
++                return typeof value === 'string' ? value : String(value);
++            }
++            
++            if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
++                const nestedResult = searchNestedObject(obj[key], targetKey);
++                if (nestedResult !== null) {
++                    return nestedResult;
++                }
++            }
++        }
++    }
++    
++    return null;
++}
++
++ const findValueInOauth2Options = (
++     targetKey: string,
++     kvs?: { key: string; value: string }[] | OAuth2AuthOption[]
++ ) => {
++     if (!kvs) {
++         return '';
++     }
++
++     const normalizedTargetKey = targetKey.toLowerCase();
++
++     for (const kv of kvs) {
++         const normalizedKey = kv.key.toLowerCase();
++        
++         if (typeof kv.value === 'string' && normalizedKey === normalizedTargetKey) {
++             return normalizeValueType(kv.value);
++         } else if (Array.isArray(kv.value)) {
++             const matched = kv.value.find(subKv => subKv.key.toLowerCase() === normalizedTargetKey);
++             if (matched != null) {
++                 return normalizeValueType(matched.value);
++             }
++         } else if (typeof kv.value === 'object' && kv.value !== null) {
++             if (normalizedKey === normalizedTargetKey) {
++                 return String(kv.value);
++             }
++            
++             const nestedResult = searchNestedObject(kv.value, normalizedTargetKey);
++             if (nestedResult !== null) {
++                 return normalizeValueType(nestedResult);
++             }
++         }
++     }
++
++     return '';
++ };
+                 const matched = kv.value.find(subKv => subKv.key === targetKey);
+                 if (matched != null) {
+                     return matched.value;

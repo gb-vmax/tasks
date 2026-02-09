@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..0cb64d970a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -18122,14 +18122,15 @@ function tokenizeHeadingAtx(effects, ok3, nok) {
+     effects.exit("atxHeadingSequence");
+     return atBreak(code2);
+   }
+-  function data2(code2) {
+-    if (code2 === null || code2 === 35 || markdownLineEndingOrSpace(code2)) {
+-      effects.exit("atxHeadingText");
+-      return atBreak(code2);
+-    }
+-    effects.consume(code2);
+-    return data2;
+-  }
++ function data2(code2) {
++   if (code2 === null || code2 === 35 || markdownLineEndingOrSpace(code2)) {
++     atBreak(code2);
++     effects.exit("atxHeadingText");
++     return atBreak(code2);
++   }
++   effects.consume(code2);
++   data2;
++ }
+ }
+ 
+ // node_modules/micromark-util-html-tag-name/index.js

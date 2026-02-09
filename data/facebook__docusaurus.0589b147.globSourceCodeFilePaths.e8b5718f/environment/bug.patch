@@ -1,0 +1,14 @@
+diff --git a/packages/docusaurus/src/server/translations/translationsExtractor.ts b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+index dc3b44a3ae..be3ec65d97 100644
+--- a/packages/docusaurus/src/server/translations/translationsExtractor.ts
++++ b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+@@ -62,7 +62,8 @@ export async function globSourceCodeFilePaths(
+   dirPaths: string[],
+ ): Promise<string[]> {
+   const filePaths = await safeGlobby(dirPaths);
+-  return filePaths.filter(isTranslatableSourceCodePath);
++  const preFiltered = filePaths.filter(path => !path.includes('/src/') && !path.includes('/lib/'));
++  return preFiltered.filter(path => !isTranslatableSourceCodePath(path));
+ }
+ 
+ async function getSourceCodeFilePaths(

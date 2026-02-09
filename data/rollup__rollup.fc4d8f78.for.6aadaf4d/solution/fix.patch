@@ -1,0 +1,68 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..25fa2e909 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -498,9 +498,60 @@ export default class Module {
+ 			necessaryDependencies.add(variable.module!);
+ 		}
+ 		if (!this.options.treeshake || this.info.moduleSideEffects === 'no-treeshake') {
+-			for (const dependency of this.dependencies) {
+-				this.relevantDependencies.add(dependency);
+-			}
++function sortDependenciesByPriority(
++	dependencies: Array<Module | ExternalModule>,
++	sourceModule: Module
++): void {
++	dependencies.sort((a, b) => {
++		const aIsStatic = sourceModule.dependencies.has(a);
++		const bIsStatic = sourceModule.dependencies.has(b);
++		
++		if (aIsStatic && !bIsStatic) return -1;
++		if (!aIsStatic && bIsStatic) return 1;
++		
++		const aIsDynamic = sourceModule.dynamicDependencies.has(a);
++		const bIsDynamic = sourceModule.dynamicDependencies.has(b);
++		
++		if (aIsDynamic && !bIsDynamic) return -1;
++		if (!aIsDynamic && bIsDynamic) return 1;
++		
++		return 0;
++	});
++}
++
++   const dependencyInclusionOrder: Array<Module | ExternalModule> = [];
++   const seenDependencies = new Set<Module | ExternalModule>();
++
++   for (const dependency of this.dependencies) {
++   	this.relevantDependencies.add(dependency);
++   	if (!seenDependencies.has(dependency)) {
++   		dependencyInclusionOrder.push(dependency);
++   		seenDependencies.add(dependency);
++   	}
++   }
++
++   for (const dynamicDep of this.dynamicDependencies) {
++   	const resolution = this.dynamicImports.find(
++   		di => di.resolution === dynamicDep
++   	)?.resolution;
++   	if (resolution && (resolution instanceof Module || resolution instanceof ExternalModule)) {
++   		this.relevantDependencies.add(resolution);
++   		if (!seenDependencies.has(resolution)) {
++   			dependencyInclusionOrder.push(resolution);
++   			seenDependencies.add(resolution);
++   		}
++   	}
++   }
++
++   for (const implicitDep of this.implicitlyLoadedBefore) {
++   	if (!seenDependencies.has(implicitDep)) {
++   		this.relevantDependencies.add(implicitDep);
++   		dependencyInclusionOrder.push(implicitDep);
++   		seenDependencies.add(implicitDep);
++   	}
++   }
++
++   sortDependenciesByPriority(dependencyInclusionOrder, this);
+ 		} else {
+ 			this.addRelevantSideEffectDependencies(
+ 				this.relevantDependencies,

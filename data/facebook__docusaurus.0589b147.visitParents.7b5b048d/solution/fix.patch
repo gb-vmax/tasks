@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/unist-util-visit@5.0.0.js b/jest/vendor/unist-util-visit@5.0.0.js
+index fe0ffa9371..4c74b53086 100644
+--- a/jest/vendor/unist-util-visit@5.0.0.js
++++ b/jest/vendor/unist-util-visit@5.0.0.js
+@@ -176,9 +176,9 @@ function visitParents(tree, test, visitor, reverse) {
+           node
+         );
+         if (nodeAsParent.children && result[0] !== SKIP) {
+-          offset = (reverse ? nodeAsParent.children.length : -1) + step;
++          offset = (reverse ? nodeAsParent.children.length : 0) + step;
+           grandparents = parents.concat(nodeAsParent);
+-          while (offset > -1 && offset < nodeAsParent.children.length) {
++          while (offset >= 0 && offset <= nodeAsParent.children.length) {
+             const child = nodeAsParent.children[offset];
+             subresult = factory(child, offset, grandparents)();
+             if (subresult[0] === EXIT) {

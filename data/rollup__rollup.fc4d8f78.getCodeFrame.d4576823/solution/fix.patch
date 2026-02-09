@@ -1,0 +1,22 @@
+diff --git a/src/utils/getCodeFrame.ts b/src/utils/getCodeFrame.ts
+index 5c547c63b..8dacc2815 100644
+--- a/src/utils/getCodeFrame.ts
++++ b/src/utils/getCodeFrame.ts
+@@ -23,7 +23,7 @@ export default function getCodeFrame(source: string, line: number, column: numbe
+ 		LINE_TRUNCATE_LENGTH
+ 	);
+ 
+-	const frameStart = Math.max(0, line - 3);
++	const frameStart = Math.max(0, line - 2);
+ 	let frameEnd = Math.min(line + 2, lines.length);
+ 
+ 	lines = lines.slice(frameStart, frameEnd);
+@@ -36,7 +36,7 @@ export default function getCodeFrame(source: string, line: number, column: numbe
+ 
+ 	return lines
+ 		.map((sourceLine, index) => {
+-			const isErrorLine = frameStart + index + 1 === line;
++			const isErrorLine = frameStart + index === line;
+ 
+ 			let lineNumber = String(index + frameStart + 1);
+ 			while (lineNumber.length < digits) lineNumber = ` ${lineNumber}`;

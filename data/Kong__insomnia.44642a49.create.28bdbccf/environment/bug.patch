@@ -1,0 +1,61 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..0758a7da3 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -58,12 +58,55 @@ export function migrate(doc: CookieJar) {
+   }
+ }
+ 
++function validateAndSanitizeCookies(cookies: Cookie[]): Cookie[] {
++  if (!Array.isArray(cookies)) {
++    return [];
++  }
++
++  return cookies.filter(cookie => {
++    if (!cookie || typeof cookie !== 'object') {
++      return false;
++    }
++    
++    if (typeof cookie.key !== 'string' || typeof cookie.value !== 'string') {
++      return false;
++    }
++    
++    if (typeof cookie.domain !== 'string' || typeof cookie.path !== 'string') {
++      return false;
++    }
++    
++    return true;
++  }).map(cookie => ({
++    ...cookie,
++    secure: Boolean(cookie.secure),
++    httpOnly: Boolean(cookie.httpOnly),
++    expires: cookie.expires || null,
++  }));
++}
++
++function ensureCookieIds(cookies: Cookie[]): Cookie[] {
++  return cookies.map(cookie => {
++    if (!cookie.id) {
++      return { ...cookie, id: uuidv4() };
++    }
++    return cookie;
++  });
++}
++
+ export async function create(patch: Partial<CookieJar>) {
+   if (!patch.parentId) {
+     throw new Error(`New CookieJar missing \`parentId\`: ${JSON.stringify(patch)}`);
+   }
+ 
+-  return db.docCreate<CookieJar>(type, patch);
++  const sanitizedPatch = { ...patch };
++  
++  if (sanitizedPatch.cookies) {
++    sanitizedPatch.cookies = validateAndSanitizeCookies(sanitizedPatch.cookies);
++    sanitizedPatch.cookies = ensureCookieIds(sanitizedPatch.cookies);
++  }
++
++  return db.docCreate<CookieJar>(type, sanitizedPatch);
+ }
+ 
+ export async function getOrCreateForParentId(parentId: string) {

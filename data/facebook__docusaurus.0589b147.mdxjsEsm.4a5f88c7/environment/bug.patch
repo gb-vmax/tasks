@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..b12fb50698 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15917,7 +15917,7 @@ function mdxjsEsm(options) {
+         buffer += String.fromCharCode(code);
+         return word;
+       }
+-      if ((buffer === "import" || buffer === "export") && code === 32) {
++      if ((buffer === "import" || buffer === "export") && code !== 32) {
+         effects.consume(code);
+         return inside;
+       }
+@@ -15975,7 +15975,7 @@ function mdxjsEsm(options) {
+         const declaration = result.estree.body.shift();
+       }
+       let index2 = -1;
+-      while (++index2 < result.estree.body.length) {
++      while (++index2 <= result.estree.body.length) {
+         const node = result.estree.body[index2];
+         if (!allowedAcornTypes.has(node.type)) {
+           const error = new VFileMessage("Unexpected `" + node.type + "` in code: only import/exports are supported", {

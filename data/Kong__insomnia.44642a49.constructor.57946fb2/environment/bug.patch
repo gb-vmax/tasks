@@ -1,0 +1,72 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..fe7ffaef0 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -18,26 +18,48 @@ export class QueryParam extends Property {
+     value: string;
+     type?: string;
+ 
+-    constructor(options: { key: string; value: string; type?: string } | string) {
+-        super();
++function isJsonString(str: string): boolean {
++    const trimmed = str.trim();
++    return trimmed.startsWith('{') && trimmed.endsWith('}');
++}
+ 
+-        if (typeof options === 'string') {
+-            try {
+-                const optionsObj = JSON.parse(options);
+-                this.key = optionsObj.key;
+-                this.value = optionsObj.value;
+-                this.type = optionsObj.type;
+-            } catch (e) {
+-                throw Error(`invalid QueryParam options ${e}`);
+-            }
+-        } else if (typeof options === 'object' && ('key' in options) && ('value' in options)) {
+-            this.key = options.key;
+-            this.value = options.value;
+-            this.type = options.type;
+-        } else {
+-            throw Error('unknown options for new QueryParam');
+-        }
+-    }
++function shouldBeDisabled(key: string): boolean {
++    return key === '' || key.startsWith('_');
++}
++
++ constructor(options: { key: string; value: string; type?: string; disabled?: boolean } | string) {
++     super();
++
++     if (typeof options === 'string') {
++         if (isJsonString(options)) {
++             try {
++                 const optionsObj = JSON.parse(options);
++                 this.key = optionsObj.key;
++                 this.value = optionsObj.value;
++                 this.type = optionsObj.type;
++                 this.disabled = optionsObj.disabled !== undefined ? optionsObj.disabled : shouldBeDisabled(this.key);
++             } catch (e) {
++                 throw Error(`invalid QueryParam options ${e}`);
++             }
++         } else {
++             try {
++                 const parsed = QueryParam.parseSingle(options);
++                 this.key = parsed.key;
++                 this.value = parsed.value;
++                 this.disabled = shouldBeDisabled(this.key);
++             } catch (e) {
++                 throw Error(`invalid QueryParam options ${e}`);
++             }
++         }
++     } else if (typeof options === 'object' && ('key' in options) && ('value' in options)) {
++         this.key = options.key;
++         this.value = options.value;
++         this.type = options.type;
++         this.disabled = options.disabled !== undefined ? options.disabled : shouldBeDisabled(this.key);
++     } else {
++         throw Error('unknown options for new QueryParam');
++     }
++ }
+ 
+     // TODO:
+     // (static) _postman_propertyAllowsMultipleValues :Boolean

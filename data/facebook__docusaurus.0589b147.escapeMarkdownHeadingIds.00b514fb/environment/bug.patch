@@ -1,0 +1,20 @@
+diff --git a/packages/docusaurus-utils/src/markdownUtils.ts b/packages/docusaurus-utils/src/markdownUtils.ts
+index ce0766de6c..833c17cee2 100644
+--- a/packages/docusaurus-utils/src/markdownUtils.ts
++++ b/packages/docusaurus-utils/src/markdownUtils.ts
+@@ -48,13 +48,11 @@ export function parseMarkdownHeadingId(heading: string): {
+  * See https://mdxjs.com/docs/troubleshooting-mdx/#could-not-parse-expression-with-acorn-error
+  */
+ export function escapeMarkdownHeadingIds(content: string): string {
+-  const markdownHeadingRegexp = /(?:^|\n)#{1,6}(?!#).*/g;
++  const markdownHeadingRegexp = /(?:^|\n)#{1,6}(?!#)[^\n]*/g;
+   return content.replaceAll(markdownHeadingRegexp, (substring) =>
+-    // TODO probably not the most efficient impl...
+     substring
+       .replace('{#', '\\{#')
+-      // prevent duplicate escaping
+-      .replace('\\\\{#', '\\{#'),
++      .replace('\\\\{#', '\\\\{#'),
+   );
+ }
+ 

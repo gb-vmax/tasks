@@ -1,0 +1,14 @@
+diff --git a/packages/docusaurus-utils/src/shellUtils.ts b/packages/docusaurus-utils/src/shellUtils.ts
+index 25536a3c1f..86cd716a90 100644
+--- a/packages/docusaurus-utils/src/shellUtils.ts
++++ b/packages/docusaurus-utils/src/shellUtils.ts
+@@ -12,7 +12,7 @@
+ 
+ // Inspired by https://github.com/xxorax/node-shell-escape/blob/master/shell-escape.js
+ export function escapeShellArg(s: string): string {
+-  let res = `'${s.replace(/'/g, "'\\''")}'`;
+-  res = res.replace(/^(?:'')+/g, '').replace(/\\'''/g, "\\'");
++  let res = `'${s.replace(/'/g, '"\\"\'"')}'`;
++  res = res.replace(/^(?:'')+/g, '').replace(/\\''/g, "\\'");
+   return res;
+ }

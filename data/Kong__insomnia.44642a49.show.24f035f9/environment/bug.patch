@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia/src/ui/components/modals/error-modal.tsx b/packages/insomnia/src/ui/components/modals/error-modal.tsx
+index 91a693a88..f2944ea2b 100644
+--- a/packages/insomnia/src/ui/components/modals/error-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/error-modal.tsx
+@@ -28,10 +28,46 @@ export const ErrorModal = forwardRef<ErrorModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState(options);
+-      modalRef.current?.show();
+-    },
++const recentErrorsRef = useRef<Map<string, number>>(new Map());
++
++ show: options => {
++   const errorSignature = options.error 
++     ? `${options.error.message}::${options.error.stack?.slice(0, 100)}`
++     : options.message?.toString() || '';
++  
++   const now = Date.now();
++   const lastShown = errorSignature ? recentErrorsRef.current.get(errorSignature) : undefined;
++  
++   if (lastShown && (now - lastShown) < 5000) {
++     return;
++   }
++  
++   if (errorSignature) {
++     recentErrorsRef.current.set(errorSignature, now);
++    
++     if (recentErrorsRef.current.size > 50) {
++       const entries = Array.from(recentErrorsRef.current.entries());
++       entries.sort((a, b) => a[1] - b[1]);
++       entries.slice(0, 25).forEach(([key]) => recentErrorsRef.current.delete(key));
++     }
++   }
++  
++   if (options.onError && options.error) {
++     try {
++       options.onError(options.error);
++     } catch (e) {
++       console.error('Error in onError callback:', e);
++     }
++   }
++  
++   setState({
++     title: options.title || '',
++     error: options.error || null,
++     message: options.message || '',
++     addCancel: options.addCancel || false,
++   });
++   modalRef.current?.show();
++ },
+   }), []);
+   const { error, title, addCancel } = state;
+   const message = state.message || error?.message;

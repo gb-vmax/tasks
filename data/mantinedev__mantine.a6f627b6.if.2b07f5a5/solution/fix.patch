@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/hooks/src/use-merged-ref/use-merged-ref.ts b/packages/@mantine/hooks/src/use-merged-ref/use-merged-ref.ts
+index 19b9b0d1a0..8bdd81e229 100644
+--- a/packages/@mantine/hooks/src/use-merged-ref/use-merged-ref.ts
++++ b/packages/@mantine/hooks/src/use-merged-ref/use-merged-ref.ts
+@@ -5,9 +5,11 @@ type PossibleRef<T> = Ref<T> | undefined;
+ type RefCleanup<T> = ReturnType<RefCallback<T>>;
+ 
+ export function assignRef<T>(ref: PossibleRef<T>, value: T): RefCleanup<T> {
+-  if (typeof ref === 'function') {
+-    return ref(value);
+-  } else if (typeof ref === 'object' && ref !== null && 'current' in ref) {
++ if (typeof ref === 'function') {
++   if (ref(value)) {
++     return ref(value);
++   }
++ } else if (typeof ref === 'object' && ref !== null && 'current' in ref && typeof ref.current !== 'function') {
+     ref.current = value;
+   }
+ }

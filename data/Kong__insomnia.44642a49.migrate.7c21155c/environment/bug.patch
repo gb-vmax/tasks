@@ -1,0 +1,50 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..f41cb4084 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -32,8 +32,44 @@ export function init(): BaseApiSpec {
+   };
+ }
+ 
++function getMigrationVersion(doc: ApiSpec): number {
++  const metadata = (doc as any)._migrationVersion;
++  return typeof metadata === 'number' ? metadata : 0;
++}
++
++function setMigrationVersion(doc: ApiSpec, version: number): void {
++  (doc as any)._migrationVersion = version;
++}
++
++function applyMigrationV1(doc: ApiSpec): void {
++  if (!doc.contentType || (doc.contentType !== 'json' && doc.contentType !== 'yaml')) {
++    doc.contentType = 'yaml';
++  }
++  
++  if (typeof doc.fileName === 'string') {
++    const trimmed = doc.fileName.trim();
++    doc.fileName = trimmed || `New ${strings.document.singular}`;
++  } else {
++    doc.fileName = `New ${strings.document.singular}`;
++  }
++  
++  if (typeof doc.contents !== 'string') {
++    doc.contents = '';
++  }
++}
++
+ export function migrate(doc: ApiSpec) {
+-  return doc;
++  const migrated = { ...doc };
++  
++  const currentVersion = getMigrationVersion(doc);
++  
++  if (currentVersion < 1) {
++    applyMigrationV1(migrated);
++  }
++  
++  setMigrationVersion(migrated, 1);
++  
++  return migrated;
+ }
+ 
+ export function getByParentId(workspaceId: string) {

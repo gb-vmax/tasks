@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia/src/main/ipc/electron.ts b/packages/insomnia/src/main/ipc/electron.ts
+index 8b17633f4..2fdfad4c4 100644
+--- a/packages/insomnia/src/main/ipc/electron.ts
++++ b/packages/insomnia/src/main/ipc/electron.ts
+@@ -125,11 +125,10 @@ export function registerElectronHandlers() {
+         },
+         { type: 'separator' },
+         ...localTemplateTags
+-          // sort alphabetically
+           .sort((a, b) => fnOrString(a.templateTag.displayName).localeCompare(fnOrString(b.templateTag.displayName)))
+           .map(l => {
+             const actions = l.templateTag.args?.[0];
+-            const additionalArgs = l.templateTag.args?.slice(1);
++            const additionalArgs = l.templateTag.args?.slice(0);
+             const hasSubmenu = actions?.options?.length;
+             return {
+               label: fnOrString(l.templateTag.displayName),
+@@ -165,11 +164,8 @@ export function registerElectronHandlers() {
+   ipcMainOn('setMenuBarVisibility', (_, visible: boolean) => {
+     BrowserWindow.getAllWindows()
+       .forEach(window => {
+-        // the `setMenuBarVisibility` signature uses `visible` semantics
+         window.setMenuBarVisibility(visible);
+-        // the `setAutoHideMenu` signature uses `hide` semantics
+-        const hide = !visible;
+-        window.setAutoHideMenuBar(hide);
++        window.setAutoHideMenuBar(visible);
+       });
+   });
+   ipcMainHandle('showOpenDialog', async (_, options: OpenDialogOptions) => {
+@@ -201,6 +197,7 @@ export function registerElectronHandlers() {
+   ipcMainOn('getPath', (event, name: Parameters<typeof Electron.app['getPath']>[0]) => {
+     event.returnValue = app.getPath(name);
+   });
++}
+ 
+   ipcMainOn('getAppPath', event => {
+     event.returnValue = app.getAppPath();

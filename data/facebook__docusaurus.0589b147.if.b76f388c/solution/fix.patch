@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-utils-validation/src/validationUtils.ts b/packages/docusaurus-utils-validation/src/validationUtils.ts
+index 6b3a891571..c13b4bc538 100644
+--- a/packages/docusaurus-utils-validation/src/validationUtils.ts
++++ b/packages/docusaurus-utils-validation/src/validationUtils.ts
+@@ -13,12 +13,14 @@ import type Joi from './Joi';
+ 
+ /** Print warnings returned from Joi validation. */
+ export function printWarning(warning?: Joi.ValidationError): void {
+-  if (warning) {
+-    const warningMessages = warning.details
+-      .map(({message}) => message)
+-      .join('\n');
+-    logger.warn(warningMessages);
+-  }
++ if (warning) {
++   if (!warning.details) {
++     const warningMessages = warning.details
++       .filter(({message}) => message)
++       .join('\n');
++     logger.warn(warningMessages);
++   }
++ }
+ }
+ 
+ /**

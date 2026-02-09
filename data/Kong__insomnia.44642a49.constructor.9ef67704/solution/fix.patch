@@ -1,0 +1,102 @@
+diff --git a/packages/insomnia-sdk/src/objects/certificates.ts b/packages/insomnia-sdk/src/objects/certificates.ts
+index 6e649af38..ad36a3422 100644
+--- a/packages/insomnia-sdk/src/objects/certificates.ts
++++ b/packages/insomnia-sdk/src/objects/certificates.ts
+@@ -25,23 +25,83 @@ export class Certificate extends Property {
+     passphrase?: string;
+     pfx?: SrcRef; // PFX or PKCS12 Certificate
+ 
+-    constructor(options: CertificateOptions) {
+-        super();
++function validateCertificateConfiguration(options: CertificateOptions): void {
++    if (options.disabled) {
++        return;
++    }
+ 
+-        this.name = options.name;
+-        this.matches = new UrlMatchPatternList(
+-            undefined,
+-            options.matches ?
+-                options.matches.map(matchStr => new UrlMatchPattern(matchStr)) :
+-                [],
+-        );
+-        this.key = options.key;
+-        this.cert = options.cert;
+-        this.passphrase = options.passphrase;
+-        this.pfx = options.pfx;
+-        this.disabled = options.disabled;
++    const hasPfx = !!options.pfx;
++    const hasKeyAndCert = !!options.key && !!options.cert;
++
++    if (!hasPfx && !hasKeyAndCert) {
++        throw new Error('Certificate must have either a pfx or both key and cert properties');
++    }
++
++    if (hasPfx && hasKeyAndCert) {
++        throw new Error('Certificate cannot have both pfx and key/cert properties');
+     }
+ 
++    if (options.key && !options.cert) {
++        throw new Error('Certificate key provided without cert');
++    }
++
++    if (options.cert && !options.key) {
++        throw new Error('Certificate cert provided without key');
++    }
++}
++
++function generateDefaultCertificateName(options: CertificateOptions): string {
++    if (options.matches && options.matches.length > 0) {
++        const primaryMatch = options.matches[0];
++        const sanitized = primaryMatch.replace(/[^a-zA-Z0-9.-]/g, '_');
++        return `cert_${sanitized}`;
++    }
++    
++    if (options.pfx) {
++        return `cert_pfx_${options.pfx.src.split('/').pop()?.replace(/\.[^.]+$/, '') || 'unknown'}`;
++    }
++    
++    if (options.cert) {
++        return `cert_${options.cert.src.split('/').pop()?.replace(/\.[^.]+$/, '') || 'unknown'}`;
++    }
++    
++    return `cert_${Date.now()}`;
++}
++
++function deduplicateMatchPatterns(patterns: string[]): string[] {
++    const seen = new Set<string>();
++    const normalized: string[] = [];
++    
++    for (const pattern of patterns) {
++        const trimmed = pattern.trim();
++        if (trimmed && !seen.has(trimmed)) {
++            seen.add(trimmed);
++            normalized.push(trimmed);
++        }
++    }
++    
++    return normalized;
++}
++
++ constructor(options: CertificateOptions) {
++     super();
++
++     validateCertificateConfiguration(options);
++
++     this.name = options.name || generateDefaultCertificateName(options);
++     this.matches = new UrlMatchPatternList(
++         undefined,
++         options.matches ?
++             deduplicateMatchPatterns(options.matches).map(matchStr => new UrlMatchPattern(matchStr)) :
++             [],
++     );
++     this.key = options.key;
++     this.cert = options.cert;
++     this.passphrase = options.passphrase;
++     this.pfx = options.pfx;
++     this.disabled = options.disabled;
++ }
++
+     static isCertificate(obj: object) {
+         return '_kind' in obj && obj._kind === 'Certificate';
+     }

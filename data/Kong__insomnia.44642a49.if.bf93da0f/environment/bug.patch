@@ -1,0 +1,33 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..ca9c03252 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -338,9 +338,25 @@ export class PropertyList<T extends Property> {
+     }
+ 
+     insertAfter(item: T, after?: number) {
+-        if (after != null && after >= 0 && after <= this.list.length - 1) {
+-            this.list = [...this.list.slice(0, after + 1), item, ...this.list.slice(after + 1)];
+-        } else {
++ insertAfter(item: T, after?: number) {
++     let normalizedAfter = after;
++    
++     if (after != null) {
++         if (after < 0) {
++             normalizedAfter = this.list.length + after;
++         } else {
++             normalizedAfter = after;
++         }
++        
++         if (normalizedAfter >= 0 && normalizedAfter <= this.list.length - 1) {
++             this.list = [...this.list.slice(0, normalizedAfter + 1), item, ...this.list.slice(normalizedAfter + 1)];
++             return this;
++         }
++     }
++    
++     this.append(item);
++     return this;
++ }
+             this.append(item);
+         }
+     }

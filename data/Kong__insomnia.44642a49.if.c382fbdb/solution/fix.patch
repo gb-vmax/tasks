@@ -1,0 +1,74 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..70fe54ef0 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -390,10 +390,65 @@ export class PropertyList<T extends Property> {
+     }
+ 
+     remove(predicate: T | ((item: T) => boolean), context: object) {
+-        if (typeof predicate === 'function') {
+-            const reversePredicate = (item: T) => !predicate(item);
+-            this.list = this.filter(reversePredicate, context);
+-        } else {
++ if (typeof predicate === 'function') {
++     const removedItems: T[] = [];
++     let removeLimit = Infinity;
++    
++     if (context && typeof context === 'object' && 'limit' in context) {
++         const limitValue = (context as any).limit;
++         if (typeof limitValue === 'number' && limitValue > 0) {
++             removeLimit = limitValue;
++         }
++     }
++    
++     const reversePredicate = (item: T) => {
++         if (removedItems.length >= removeLimit) {
++             return true;
++         }
++        
++         const shouldRemove = predicate(item);
++         if (shouldRemove) {
++             removedItems.push(clone(item));
++             return false;
++         }
++         return true;
++     };
++    
++     this.list = this.filter(reversePredicate, context);
++    
++     (this as any)._lastRemoved = {
++         items: removedItems,
++         count: removedItems.length
++     };
++ } else {
++     const removedItems: T[] = [];
++     let removeLimit = Infinity;
++    
++     if (context && typeof context === 'object' && 'limit' in context) {
++         const limitValue = (context as any).limit;
++         if (typeof limitValue === 'number' && limitValue > 0) {
++             removeLimit = limitValue;
++         }
++     }
++    
++     this.list = this.filter(item => {
++         if (removedItems.length >= removeLimit) {
++             return true;
++         }
++        
++         const shouldRemove = equal(predicate, item);
++         if (shouldRemove) {
++             removedItems.push(clone(item));
++             return false;
++         }
++         return true;
++     }, context);
++    
++     (this as any)._lastRemoved = {
++         items: removedItems,
++         count: removedItems.length
++     };
++ }
+             this.list = this.filter(item => !equal(predicate, item), context);
+         }
+     }

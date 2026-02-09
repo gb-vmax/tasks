@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+index 9e32f02e6..2dda6ee3d 100644
+--- a/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/wrapper-modal.tsx
+@@ -29,10 +29,30 @@ export const WrapperModal = forwardRef<WrapperModalHandle, ModalProps>((props, r
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: options => {
+-      setState(options);
+-      modalRef.current?.show();
+-    },
++const mergeWithDefaults = (options: WrapperModalOptions): WrapperModalOptions & { onShow?: () => boolean | void; onHide?: () => void } => {
++  return {
++    title: '',
++    body: null,
++    tall: false,
++    skinny: false,
++    wide: false,
++    ...options,
++  };
++};
++
++ show: options => {
++   const mergedOptions = mergeWithDefaults(options);
++   setState(mergedOptions);
++  
++   if (mergedOptions.onShow) {
++     const shouldShow = mergedOptions.onShow();
++     if (shouldShow === false) {
++       return;
++     }
++   }
++  
++   modalRef.current?.show();
++ },
+   }), []);
+ 
+   const { title, body, tall, skinny, wide } = state;

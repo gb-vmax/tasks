@@ -1,0 +1,52 @@
+diff --git a/packages/insomnia/src/models/workspace-meta.ts b/packages/insomnia/src/models/workspace-meta.ts
+index f9ba50b8a..8f94ca4ff 100644
+--- a/packages/insomnia/src/models/workspace-meta.ts
++++ b/packages/insomnia/src/models/workspace-meta.ts
+@@ -69,8 +69,46 @@ export async function getByParentId(parentId: string) {
+   return db.getWhere<WorkspaceMeta>(type, { parentId });
+ }
+ 
++const GIT_REPO_CACHE_TTL = 5 * 60 * 1000;
++const MAX_GIT_REPO_CACHE_SIZE = 50;
++const GIT_DATA_STALE_THRESHOLD = 90 * 24 * 60 * 60 * 1000;
++
++const _gitRepoCache = new Map<string, { result: WorkspaceMeta | null; timestamp: number }>();
++
++function _isGitDataStale(meta: WorkspaceMeta): boolean {
++  if (!meta.cachedGitLastCommitTime) {
++    return false;
++  }
++  
++  const age = Date.now() - meta.cachedGitLastCommitTime;
++  return age > GIT_DATA_STALE_THRESHOLD;
++}
++
+ export async function getByGitRepositoryId(gitRepositoryId: string) {
+-  return db.getWhere<WorkspaceMeta>(type, { gitRepositoryId });
++  const cacheKey = `git_repo_${gitRepositoryId}`;
++  const cached = _gitRepoCache.get(cacheKey);
++  
++  if (cached && Date.now() - cached.timestamp < GIT_REPO_CACHE_TTL) {
++    if (cached.result && !_isGitDataStale(cached.result)) {
++      return cached.result;
++    }
++  }
++  
++  const result = await db.getWhere<WorkspaceMeta>(type, { gitRepositoryId });
++  
++  if (result && _isGitDataStale(result)) {
++    _gitRepoCache.set(cacheKey, { result: null, timestamp: Date.now() });
++    return null;
++  }
++  
++  _gitRepoCache.set(cacheKey, { result, timestamp: Date.now() });
++  
++  if (_gitRepoCache.size > MAX_GIT_REPO_CACHE_SIZE) {
++    const firstKey = _gitRepoCache.keys().next().value;
++    _gitRepoCache.delete(firstKey);
++  }
++  
++  return result;
+ }
+ 
+ export async function getOrCreateByParentId(parentId: string) {

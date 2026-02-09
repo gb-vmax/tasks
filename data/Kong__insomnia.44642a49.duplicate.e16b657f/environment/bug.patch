@@ -1,0 +1,121 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..1cf6316be 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -114,49 +114,76 @@ export const database = {
+     return database.update<T>(doc);
+   },
+ 
+-  duplicate: async function<T extends BaseModel>(originalDoc: T, patch: Patch<T> = {}) {
+-    if (db._empty) {
+-      return _send<T>('duplicate', ...arguments);
+-    }
+-    const flushId = await database.bufferChanges();
+-
+-    async function next<T extends BaseModel>(docToCopy: T, patch: Patch<T>) {
+-      const model = mustGetModel(docToCopy.type);
+-      const overrides = {
+-        _id: generateId(model.prefix),
+-        modified: Date.now(),
+-        created: Date.now(),
+-        type: docToCopy.type, // Ensure this is not overwritten by the patch
+-      };
+-
+-      // 1. Copy the doc
+-      const newDoc = Object.assign({}, docToCopy, patch, overrides);
+-
+-      // Don't initialize the model during insert, and simply duplicate
+-      const createdDoc = await database.insert(newDoc, false, false);
+-
+-      // 2. Get all the children
+-      for (const type of allTypes()) {
+-        // Note: We never want to duplicate a response
+-        if (!models.canDuplicate(type)) {
+-          continue;
+-        }
+-
+-        const parentId = docToCopy._id;
+-        const children = await database.find(type, { parentId });
++interface DuplicateOptions {
++  maxDepth: number;
++  allowedTypes: string[] | null;
++}
+ 
+-        for (const doc of children) {
+-          await next(doc, { parentId: createdDoc._id });
+-        }
+-      }
++function extractDuplicateOptions<T>(patch: Patch<T>): DuplicateOptions {
++  const maxDepth = (patch as any)._duplicateDepth ?? Infinity;
++  const allowedTypes = (patch as any)._duplicateTypes ?? null;
++  
++  return {
++    maxDepth: typeof maxDepth === 'number' && maxDepth >= 0 ? maxDepth : Infinity,
++    allowedTypes: Array.isArray(allowedTypes) ? allowedTypes : null,
++  };
++}
+ 
+-      return createdDoc;
+-    }
++function removeDuplicateOptions<T>(patch: Patch<T>): Patch<T> {
++  const cleaned = { ...patch };
++  delete (cleaned as any)._duplicateDepth;
++  delete (cleaned as any)._duplicateTypes;
++  return cleaned;
++}
+ 
+-    const createdDoc = await next(originalDoc, patch);
+-    await database.flushChanges(flushId);
+-    return createdDoc;
+-  },
++ duplicate: async function<T extends BaseModel>(originalDoc: T, patch: Patch<T> = {}) {
++   if (db._empty) {
++     return _send<T>('duplicate', ...arguments);
++   }
++   const flushId = await database.bufferChanges();
++
++   const duplicateOptions = extractDuplicateOptions(patch);
++   const cleanedPatch = removeDuplicateOptions(patch);
++
++   async function next<T extends BaseModel>(docToCopy: T, patch: Patch<T>, currentDepth: number = 0) {
++     const model = mustGetModel(docToCopy.type);
++     const overrides = {
++       _id: generateId(model.prefix),
++       modified: Date.now(),
++       created: Date.now(),
++       type: docToCopy.type,
++     };
++
++     const newDoc = Object.assign({}, docToCopy, patch, overrides);
++
++     const createdDoc = await database.insert(newDoc, false, false);
++
++     if (currentDepth < duplicateOptions.maxDepth) {
++       for (const type of allTypes()) {
++         if (!models.canDuplicate(type)) {
++           continue;
++         }
++
++         if (duplicateOptions.allowedTypes !== null && !duplicateOptions.allowedTypes.includes(type)) {
++           continue;
++         }
++
++         const parentId = docToCopy._id;
++         const children = await database.find(type, { parentId });
++
++         for (const doc of children) {
++           await next(doc, { parentId: createdDoc._id }, currentDepth + 1);
++         }
++       }
++     }
++
++     return createdDoc;
++   }
++
++   const createdDoc = await next(originalDoc, cleanedPatch, 0);
++   await database.flushChanges(flushId);
++   return createdDoc;
++ },
+ 
+   find: async function<T extends BaseModel>(
+     type: string,

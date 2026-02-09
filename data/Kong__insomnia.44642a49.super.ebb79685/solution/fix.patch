@@ -1,0 +1,135 @@
+diff --git a/packages/insomnia-sdk/src/objects/cookies.ts b/packages/insomnia-sdk/src/objects/cookies.ts
+index e0cb65207..280de0435 100644
+--- a/packages/insomnia-sdk/src/objects/cookies.ts
++++ b/packages/insomnia-sdk/src/objects/cookies.ts
+@@ -33,15 +33,122 @@ export class Cookie extends Property {
+     private insoExtensions: InsomniaCookieExtensions = {};
+ 
+     constructor(cookieDef: CookieOptions | string) {
+-        super();
++static _sanitizeValue(value: string): string {
++    let sanitized = value.replace(/[\x00-\x1F\x7F]/g, '');
++    
++    if (sanitized.includes(';') || sanitized.includes(',')) {
++        sanitized = sanitized.replace(/[;,]/g, '');
++    }
++    
++    sanitized = sanitized.trim();
++    
++    if (sanitized.startsWith('"') && sanitized.endsWith('"') && sanitized.length >= 2) {
++        return sanitized;
++    }
++    
++    return sanitized;
++}
+ 
+-        if (typeof cookieDef === 'string') {
+-            const cookieDefParsed = Cookie.parse(cookieDef);
+-            if (!cookieDefParsed) {
+-                throw Error('failed to parse cookie, the cookie string seems invalid');
+-            }
+-            cookieDef = cookieDefParsed;
+-        }
++static _extractTemplate(cookieStr: string): { cookieStr: string; templateName: string | null } {
++    const templatePattern = /\{\{template:([a-zA-Z0-9_-]+)\}\}/;
++    const match = cookieStr.match(templatePattern);
++    
++    if (match) {
++        return {
++            cookieStr: cookieStr.replace(templatePattern, '').trim(),
++            templateName: match[1],
++        };
++    }
++    
++    return {
++        cookieStr: cookieStr,
++        templateName: null,
++    };
++}
++
++static _applyTemplate(cookieDef: CookieOptions, templateName: string): CookieOptions {
++    const templates: Record<string, Partial<CookieOptions>> = {
++        'secure': {
++            secure: true,
++            httpOnly: true,
++            path: '/',
++        },
++        'session': {
++            session: true,
++            path: '/',
++            secure: false,
++        },
++        'strict': {
++            secure: true,
++            httpOnly: true,
++            path: '/',
++            extensions: [{ key: 'SameSite', value: 'Strict' }],
++        },
++    };
++    
++    const template = templates[templateName];
++    if (!template) {
++        return cookieDef;
++    }
++    
++    const merged: CookieOptions = { ...cookieDef };
++    
++    if (template.secure !== undefined && merged.secure === undefined) {
++        merged.secure = template.secure;
++    }
++    if (template.httpOnly !== undefined && merged.httpOnly === undefined) {
++        merged.httpOnly = template.httpOnly;
++    }
++    if (template.path !== undefined && merged.path === undefined) {
++        merged.path = template.path;
++    }
++    if (template.session !== undefined && merged.session === undefined) {
++        merged.session = template.session;
++    }
++    if (template.extensions && (!merged.extensions || merged.extensions.length === 0)) {
++        merged.extensions = [...template.extensions];
++    }
++    
++    return merged;
++}
++
++ super();
++
++ if (typeof cookieDef === 'string') {
++     const templateInfo = Cookie._extractTemplate(cookieDef);
++     let cookieDefParsed = Cookie.parse(templateInfo.cookieStr);
++     if (!cookieDefParsed) {
++         throw Error('failed to parse cookie, the cookie string seems invalid');
++     }
++    
++     if (templateInfo.templateName) {
++         cookieDefParsed = Cookie._applyTemplate(cookieDefParsed, templateInfo.templateName);
++     }
++    
++     cookieDef = cookieDefParsed;
++ }
++
++ if (typeof cookieDef !== 'string' && cookieDef.value) {
++     cookieDef.value = Cookie._sanitizeValue(cookieDef.value);
++ }
++
++ const def = { ...cookieDef };
++ this.extensions = def.extensions ? [...def.extensions] : [];
++ def.extensions = [];
++
++ const cookie = ToughCookie.fromJSON(def);
++ if (!cookie) {
++     throw Error('failed to parse cookie, the cookie string seems invalid');
++ }
++
++ this.id = cookieDef.id || '';
++ this.cookie = cookie;
++ this.insoExtensions = {
++     creation: cookieDef.creation,
++     creationIndex: cookieDef.creationIndex,
++     lastAccessed: cookieDef.lastAccessed,
++     pathIsDefault: cookieDef.pathIsDefault,
++ };
+ 
+         const def = { ...cookieDef };
+         this.extensions = def.extensions ? [...def.extensions] : [];

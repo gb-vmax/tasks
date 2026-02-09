@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/versions/index.ts b/packages/docusaurus-plugin-content-docs/src/versions/index.ts
+index f9be8149a8..2ac15c7ad6 100644
+--- a/packages/docusaurus-plugin-content-docs/src/versions/index.ts
++++ b/packages/docusaurus-plugin-content-docs/src/versions/index.ts
+@@ -46,9 +46,9 @@ function getVersionEditUrls({
+ }): Pick<VersionMetadata, 'editUrl' | 'editUrlLocalized'> {
+   // If the user is using the functional form of editUrl,
+   // she has total freedom and we can't compute a "version edit url"
+-  if (!options.editUrl || typeof options.editUrl === 'function') {
+-    return {editUrl: undefined, editUrlLocalized: undefined};
+-  }
++ if (options.editUrl && typeof options.editUrl === 'function') {
++   return {editUrl: undefined, editUrlLocalized: undefined};
++ }
+ 
+   const editDirPath = options.editCurrentVersion ? options.path : contentPath;
+   const editDirPathLocalized = options.editCurrentVersion

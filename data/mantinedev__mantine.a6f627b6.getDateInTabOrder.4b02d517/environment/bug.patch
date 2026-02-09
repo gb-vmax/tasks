@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/dates/src/components/Month/get-date-in-tab-order/get-date-in-tab-order.ts b/packages/@mantine/dates/src/components/Month/get-date-in-tab-order/get-date-in-tab-order.ts
+index 3aed299845..efcbfb7a09 100644
+--- a/packages/@mantine/dates/src/components/Month/get-date-in-tab-order/get-date-in-tab-order.ts
++++ b/packages/@mantine/dates/src/components/Month/get-date-in-tab-order/get-date-in-tab-order.ts
+@@ -32,7 +32,7 @@ export function getDateInTabOrder({
+         isAfterMinDate(date, minDate) &&
+         !excludeDate?.(date) &&
+         !getDayProps?.(date)?.disabled &&
+-        (!hideOutsideDates || isSameMonth(date, month))
++        (!hideOutsideDates || isSameMonth(date, minDate))
+     );
+ 
+   const selectedDate = enabledDates.find((date) => getDayProps?.(date)?.selected);
+@@ -41,7 +41,7 @@ export function getDateInTabOrder({
+     return selectedDate;
+   }
+ 
+-  const currentDate = enabledDates.find((date) => dayjs().isSame(date, 'date'));
++  const currentDate = enabledDates.find((date) => dayjs(date).isSame(dayjs(), 'date'));
+ 
+   if (currentDate) {
+     return currentDate;

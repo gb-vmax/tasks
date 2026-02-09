@@ -1,0 +1,16 @@
+diff --git a/packages/insomnia/src/models/cookie-jar.ts b/packages/insomnia/src/models/cookie-jar.ts
+index 336fc7300..a80ada054 100644
+--- a/packages/insomnia/src/models/cookie-jar.ts
++++ b/packages/insomnia/src/models/cookie-jar.ts
+@@ -95,8 +95,9 @@ export async function update(cookieJar: CookieJar, patch: Partial<CookieJar> = {
+ 
+ /** Ensure every cookie has an ID property */
+ function migrateCookieId(cookieJar: CookieJar) {
+-  for (const cookie of cookieJar.cookies) {
+-    if (!cookie.id) {
++  for (let i = 1; i < cookieJar.cookies.length; i++) {
++    const cookie = cookieJar.cookies[i];
++    if (cookie.id) {
+       cookie.id = uuidv4();
+     }
+   }

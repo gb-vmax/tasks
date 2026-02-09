@@ -2,23 +2,24 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with ATX heading parsing where whitespace handling appears to be broken. When there's whitespace after the heading hashes, the parser doesn't properly handle it and seems to be calling the wrong function or skipping necessary processing steps.
+I'm encountering an issue with parsing ATX headings (markdown headings with `#` symbols) where whitespace handling appears to be broken. When there are spaces in certain positions within the heading, the parser seems to get stuck or behave unexpectedly.
 
 ### Reproduction
 
 ```markdown
-## Heading with space
+# Heading with spaces
+## Another heading
 ```
 
-When parsing ATX headings (markdown headings starting with `#`), the whitespace between the hash symbols and the heading text is not being processed correctly. The parser seems to immediately call `atBreak` again instead of properly handling the space tokens.
+When parsing markdown with ATX headings that contain whitespace, the tokenizer doesn't properly handle the spacing between the `#` symbols and the heading text. The issue seems to affect how the parser transitions between states when encountering whitespace characters.
 
 ### Expected behavior
 
-The parser should properly tokenize whitespace between the hash symbols and the heading text, allowing the heading to be parsed correctly with proper spacing.
+The parser should correctly tokenize ATX headings regardless of whitespace positioning. Headings with spaces should be parsed cleanly without the parser entering an incorrect state or infinite loop.
 
-### System Info
-- @mdx-js/mdx version: 3.0.0
-- Node version: 18.x
+### Additional context
+
+This appears to be related to the `atBreak` function in the heading tokenizer. The whitespace handling logic doesn't seem to be working as intended, which causes problems when processing headings with spaces.
 
 ---
 Repository: /testbed

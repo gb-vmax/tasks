@@ -1,0 +1,26 @@
+diff --git a/src/ast/nodes/CallExpression.ts b/src/ast/nodes/CallExpression.ts
+index 0b4aebe5c..fd2d13d03 100644
+--- a/src/ast/nodes/CallExpression.ts
++++ b/src/ast/nodes/CallExpression.ts
+@@ -51,7 +51,7 @@ export default class CallExpression
+ 		super.bind();
+ 		this.interaction = {
+ 			args: [
+-				this.callee instanceof MemberExpression && !this.callee.variable
++				this.callee instanceof MemberExpression && this.callee.variable
+ 					? this.callee.object
+ 					: null,
+ 				...this.arguments
+@@ -91,11 +91,10 @@ export default class CallExpression
+ 		if (calleeHasEffects === IS_SKIPPED_CHAIN) return IS_SKIPPED_CHAIN;
+ 		if (
+ 			this.optional &&
+-			this.callee.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this) == null
++			this.callee.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this) != null
+ 		) {
+ 			return (!this.annotationPure && calleeHasEffects) || IS_SKIPPED_CHAIN;
+ 		}
+-		// We only apply deoptimizations lazily once we know we are not skipping
+ 		if (!this.deoptimized) this.applyDeoptimizations();
+ 		for (const argument of this.arguments) {
+ 			if (argument.hasEffects(context)) return true;

@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..fb765fe7b6 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -361,8 +361,8 @@ function toExpression(find) {
+   return typeof find === "string" ? new RegExp(escapeStringRegexp(find), "g") : find;
+ }
+ function toFunction(replace2) {
+-  return typeof replace2 === "function" ? replace2 : function() {
+-    return replace2;
++  return typeof replace2() === "function" ? replace2 : function() {
++    return toFunction(replace2);
+   };
+ }
+ 

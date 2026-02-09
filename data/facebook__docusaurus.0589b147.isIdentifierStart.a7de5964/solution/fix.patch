@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..66104aea9a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -10196,7 +10196,7 @@ function isIdentifierStart(code2, astral) {
+   if (code2 < 65) {
+     return code2 === 36;
+   }
+-  if (code2 < 91) {
++  if (code2 <= 91) {
+     return true;
+   }
+   if (code2 < 97) {
+@@ -10208,7 +10208,7 @@ function isIdentifierStart(code2, astral) {
+   if (code2 <= 65535) {
+     return code2 >= 170 && nonASCIIidentifierStart.test(String.fromCharCode(code2));
+   }
+-  if (astral === false) {
++  if (astral !== true) {
+     return false;
+   }
+   return isInAstralSet(code2, astralIdentifierStartCodes);

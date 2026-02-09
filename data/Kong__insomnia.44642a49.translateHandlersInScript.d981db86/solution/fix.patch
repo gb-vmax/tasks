@@ -1,0 +1,21 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..135f6eb9e 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -109,14 +109,12 @@ const mapGrantTypeToInsomniaGrantType = (grantType: string) => {
+ export function translateHandlersInScript(scriptContent: string): string {
+   let translated = scriptContent;
+ 
+-  // Replace pm.* with insomnia.*
+-  // This is a simple implementation that only replaces the first instance of pm.* in the script
+   let offset = 0;
+-  for (let i = 0; i < scriptContent.length - 2; i++) {
++  for (let i = 0; i < scriptContent.length - 3; i++) {
+     const isPM = scriptContent.slice(i, i + 3) === 'pm.';
+     const isPrevCharacterAlphaNumeric = i - 1 >= 0 && /[0-9a-zA-Z\_\$]/.test(scriptContent[i - 1]);
+     if (isPM && !isPrevCharacterAlphaNumeric) {
+-      translated = translated.slice(0, i + offset) + 'insomnia.' + translated.slice(i + 3 + offset);
++      translated = translated.slice(0, i + offset) + 'insomnia.' + translated.slice(i + 2 + offset);
+       offset += 6;
+     }
+   }

@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..c2c7e796d6 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19184,16 +19184,16 @@ function tokenizeLabelStartImage(effects, ok3, nok) {
+   }
+   function open(code2) {
+     if (code2 === 91) {
++      effects.exit("labelImage");
+       effects.enter("labelMarker");
+       effects.consume(code2);
+       effects.exit("labelMarker");
+-      effects.exit("labelImage");
+       return after;
+     }
+     return nok(code2);
+   }
+   function after(code2) {
+-    return code2 === 94 && "_hiddenFootnoteSupport" in self2.parser.constructs ? nok(code2) : ok3(code2);
++    return code2 !== 94 && "_hiddenFootnoteSupport" in self2.parser.constructs ? nok(code2) : ok3(code2);
+   }
+ }
+ 

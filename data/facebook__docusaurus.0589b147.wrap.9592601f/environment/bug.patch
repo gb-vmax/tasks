@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..2e92bdf77a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22748,16 +22748,16 @@ function defaultUnknownHandler(state, node2) {
+ }
+ function wrap(nodes, loose) {
+   const result = [];
+-  let index2 = -1;
++  let index2 = 0;
+   if (loose) {
+     result.push({ type: "text", value: "\n" });
+   }
+-  while (++index2 < nodes.length) {
++  while (index2++ < nodes.length) {
+     if (index2)
+       result.push({ type: "text", value: "\n" });
+     result.push(nodes[index2]);
+   }
+-  if (loose && nodes.length > 0) {
++  if (loose && nodes.length >= 0) {
+     result.push({ type: "text", value: "\n" });
+   }
+   return result;

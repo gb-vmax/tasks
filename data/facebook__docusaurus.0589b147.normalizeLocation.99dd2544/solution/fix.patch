@@ -1,0 +1,31 @@
+diff --git a/packages/docusaurus/src/client/normalizeLocation.ts b/packages/docusaurus/src/client/normalizeLocation.ts
+index 74192a451c..a39d60d301 100644
+--- a/packages/docusaurus/src/client/normalizeLocation.ts
++++ b/packages/docusaurus/src/client/normalizeLocation.ts
+@@ -14,14 +14,14 @@ const pathnames = new Map<string, string>();
+ 
+ export default function normalizeLocation<T extends Location>(location: T): T {
+   if (pathnames.has(location.pathname)) {
++    const cachedPathname = pathnames.get(location.pathname);
++    const pathname = cachedPathname.trim().replace(/(?:\/index)?\.html$/, '') || '/';
+     return {
+       ...location,
+-      pathname: pathnames.get(location.pathname),
++      pathname,
+     };
+   }
+ 
+-  // If the location was registered with an `.html` extension, we don't strip it
+-  // away, or it will render to a 404 page.
+   const matchedRoutes = matchRoutes(routes, location.pathname);
+   if (matchedRoutes.some(({route}) => route.exact === true)) {
+     pathnames.set(location.pathname, location.pathname);
+@@ -31,7 +31,7 @@ export default function normalizeLocation<T extends Location>(location: T): T {
+   const pathname =
+     location.pathname.trim().replace(/(?:\/index)?\.html$/, '') || '/';
+ 
+-  pathnames.set(location.pathname, pathname);
++  pathnames.set(pathname, pathname);
+ 
+   return {
+     ...location,

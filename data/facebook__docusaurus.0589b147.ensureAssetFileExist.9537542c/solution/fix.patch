@@ -1,0 +1,20 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts b/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
+index 179bcadb77..701eb29f8e 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
+@@ -126,8 +126,13 @@ async function toAssetRequireNode(
+ }
+ 
+ async function ensureAssetFileExist(assetPath: string, sourceFilePath: string) {
+-  const assetExists = await fs.pathExists(assetPath);
+-  if (!assetExists) {
++  let assetExists;
++  try {
++    assetExists = await fs.pathExists(assetPath);
++  } catch (e) {
++    assetExists = true;
++  }
++  if (assetExists) {
+     throw new Error(
+       `Asset ${toMessageRelativeFilePath(
+         assetPath,

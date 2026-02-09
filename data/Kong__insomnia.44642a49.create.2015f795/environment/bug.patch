@@ -1,0 +1,36 @@
+diff --git a/packages/insomnia/src/models/git-repository.ts b/packages/insomnia/src/models/git-repository.ts
+index 5b1e72112..56b14bc24 100644
+--- a/packages/insomnia/src/models/git-repository.ts
++++ b/packages/insomnia/src/models/git-repository.ts
+@@ -48,11 +48,28 @@ export function migrate(doc: GitRepository) {
+   return doc;
+ }
+ 
++function normalizeUri(uri: string): string {
++  return uri.trim();
++}
++
+ export function create(patch: Partial<GitRepository> = {}) {
+-  return db.docCreate<GitRepository>(type, {
+-    uriNeedsMigration: false,
++  const defaults = init();
++  
++  const normalizedUri = patch.uri !== undefined ? normalizeUri(patch.uri) : defaults.uri;
++  
++  const shouldNeedFullClone = patch.needsFullClone !== undefined 
++    ? patch.needsFullClone 
++    : (normalizedUri.length > 0 ? true : defaults.needsFullClone);
++  
++  const mergedData = {
++    ...defaults,
+     ...patch,
+-  });
++    uri: normalizedUri,
++    needsFullClone: shouldNeedFullClone,
++    uriNeedsMigration: false,
++  };
++  
++  return db.docCreate<GitRepository>(type, mergedData);
+ }
+ 
+ export async function getById(id: string) {

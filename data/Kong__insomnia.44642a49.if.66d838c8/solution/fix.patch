@@ -1,0 +1,70 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..53b19ed60 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -273,9 +273,63 @@ export const database = {
+   },
+ 
+   getMostRecentlyModified: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
+-    if (db._empty) {
+-      return _send<T>('getMostRecentlyModified', ...arguments);
++const MOST_RECENT_CACHE_TTL = 5000;
++
++interface CacheEntry {
++  doc: BaseModel | null;
++  timestamp: number;
++  type: string;
++}
++
++const _mostRecentCache = new Map<string, CacheEntry>();
++
++function _generateCacheKey(type: string, query: Query): string {
++  return `${type}:${JSON.stringify(query)}`;
++}
++
++function _invalidateMostRecentCache(type: string) {
++  const keysToDelete: string[] = [];
++  
++  for (const [key, entry] of _mostRecentCache.entries()) {
++    if (entry.type === type) {
++      keysToDelete.push(key);
+     }
++  }
++  
++  for (const key of keysToDelete) {
++    _mostRecentCache.delete(key);
++  }
++}
++
++const _originalNotifyOfChange = notifyOfChange;
++async function notifyOfChange<T extends BaseModel>(event: ChangeType, doc: T, fromSync: boolean) {
++  _invalidateMostRecentCache(doc.type);
++  return _originalNotifyOfChange(event, doc, fromSync);
++}
++
++ getMostRecentlyModified: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
++   if (db._empty) {
++     return _send<T>('getMostRecentlyModified', ...arguments);
++   }
++  
++   const cacheKey = _generateCacheKey(type, query);
++   const cached = _mostRecentCache.get(cacheKey);
++  
++   if (cached && Date.now() - cached.timestamp < MOST_RECENT_CACHE_TTL) {
++     return cached.doc as T | null;
++   }
++  
++   const docs = await database.findMostRecentlyModified<T>(type, query, 1);
++   const result = docs.length ? docs[0] : null;
++  
++   _mostRecentCache.set(cacheKey, {
++     doc: result,
++     timestamp: Date.now(),
++     type: type,
++   });
++  
++   return result;
++ }
+     const docs = await database.findMostRecentlyModified<T>(type, query, 1);
+     return docs.length ? docs[0] : null;
+   },

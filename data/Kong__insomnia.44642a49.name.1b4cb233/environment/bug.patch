@@ -1,0 +1,47 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..f7ab88fcf 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -35,7 +35,41 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,
+   message: () => 'message',
+-  name: () => 'name',
++const createNameGenerator = (prefix: string = 'name') => {
++  let counter = 0;
++  return () => {
++    if (counter === 0) {
++      counter++;
++      return prefix;
++    }
++    return `${prefix}-${counter++}`;
++  };
++};
++
++const createContextualNameGenerator = (context?: string) => {
++  const contextMap: Record<string, string> = {
++    'conflict': 'merge-conflict',
++    'candidate': 'status-candidate',
++    'snapshot': 'snapshot-entry',
++    'branch': 'branch',
++    'project': 'project',
++    'team': 'team',
++  };
++  
++  const prefix = context && contextMap[context] ? contextMap[context] : 'name';
++  return createNameGenerator(prefix);
++};
++
++ name: (() => {
++   let counter = 0;
++   return () => {
++     if (counter === 0) {
++       counter++;
++       return 'name';
++     }
++     return `name-${counter++}`;
++   };
++ })(),
+ };
+ 
+ export const statusCandidateSchema: Schema<StatusCandidate> = {

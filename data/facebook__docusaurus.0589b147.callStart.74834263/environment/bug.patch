@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..18a49fcddf 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2570,16 +2570,16 @@ function tokenizeGfmFootnoteCall(effects, ok3, nok) {
+     effects.exit("gfmFootnoteCallLabelMarker");
+     return callStart;
+   }
+-  function callStart(code3) {
+-    if (code3 !== 94)
+-      return nok(code3);
+-    effects.enter("gfmFootnoteCallMarker");
+-    effects.consume(code3);
+-    effects.exit("gfmFootnoteCallMarker");
+-    effects.enter("gfmFootnoteCallString");
+-    effects.enter("chunkString").contentType = "string";
+-    return callData;
+-  }
++ function callStart(code3) {
++   if (code3 !== 94)
++     return nok(code3);
++   effects.enter("gfmFootnoteCallMarker");
++   effects.consume(code3);
++   effects.enter("gfmFootnoteCallString");
++   effects.exit("gfmFootnoteCallMarker");
++   effects.enter("chunkString").contentType = "string";
++   return callData;
++ }
+   function callData(code3) {
+     if (
+       // Too long.

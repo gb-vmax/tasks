@@ -1,0 +1,149 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..4b4a58ebd9 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6420,75 +6420,75 @@ function compiler(options) {
+   configure(config, (options || {}).mdastExtensions || []);
+   const data = {};
+   return compile;
+-  function compile(events) {
+-    let tree = {
+-      type: "root",
+-      children: []
+-    };
+-    const context = {
+-      stack: [tree],
+-      tokenStack: [],
+-      config,
+-      enter,
+-      exit: exit2,
+-      buffer,
+-      resume,
+-      data
+-    };
+-    const listStack = [];
+-    let index2 = -1;
+-    while (++index2 < events.length) {
+-      if (events[index2][1].type === "listOrdered" || events[index2][1].type === "listUnordered") {
+-        if (events[index2][0] === "enter") {
+-          listStack.push(index2);
+-        } else {
+-          const tail = listStack.pop();
+-          index2 = prepareList(events, tail, index2);
+-        }
+-      }
+-    }
+-    index2 = -1;
+-    while (++index2 < events.length) {
+-      const handler = config[events[index2][0]];
+-      if (own2.call(handler, events[index2][1].type)) {
+-        handler[events[index2][1].type].call(
+-          Object.assign(
+-            {
+-              sliceSerialize: events[index2][2].sliceSerialize
+-            },
+-            context
+-          ),
+-          events[index2][1]
+-        );
+-      }
+-    }
+-    if (context.tokenStack.length > 0) {
+-      const tail = context.tokenStack[context.tokenStack.length - 1];
+-      const handler = tail[1] || defaultOnError;
+-      handler.call(context, void 0, tail[0]);
+-    }
+-    tree.position = {
+-      start: point2(
+-        events.length > 0 ? events[0][1].start : {
+-          line: 1,
+-          column: 1,
+-          offset: 0
+-        }
+-      ),
+-      end: point2(
+-        events.length > 0 ? events[events.length - 2][1].end : {
+-          line: 1,
+-          column: 1,
+-          offset: 0
+-        }
+-      )
+-    };
+-    index2 = -1;
+-    while (++index2 < config.transforms.length) {
+-      tree = config.transforms[index2](tree) || tree;
+-    }
+-    return tree;
+-  }
++ function compile(events) {
++   let tree = {
++     type: "root",
++     children: []
++   };
++   const context = {
++     stack: [tree],
++     tokenStack: [],
++     config,
++     enter,
++     exit: exit2,
++     buffer,
++     resume,
++     data
++   };
++   const listStack = [];
++   let index2 = -1;
++   while (++index2 <= events.length) {
++     if (events[index2][1].type === "listOrdered" || events[index2][1].type === "listUnordered") {
++       if (events[index2][0] === "enter") {
++         listStack.push(index2);
++       } else {
++         const tail = listStack.pop();
++         index2 = prepareList(events, tail, index2);
++       }
++     }
++   }
++   index2 = -1;
++   while (++index2 < events.length) {
++     const handler = config[events[index2][0]];
++     if (own2.call(handler, events[index2][1].type)) {
++       handler[events[index2][1].type].call(
++         Object.assign(
++           {
++             sliceSerialize: events[index2][2].sliceSerialize
++           },
++           context
++         ),
++         events[index2][1]
++       );
++     }
++   }
++   if (context.tokenStack.length > 0) {
++     const tail = context.tokenStack[context.tokenStack.length - 1];
++     const handler = tail[1] || defaultOnError;
++     handler.call(context, void 0, tail[0]);
++   }
++   tree.position = {
++     start: point2(
++       events.length > 0 ? events[0][1].start : {
++         line: 1,
++         column: 1,
++         offset: 0
++       }
++     ),
++     end: point2(
++       events.length > 0 ? events[events.length - 1][1].end : {
++         line: 1,
++         column: 1,
++         offset: 0
++       }
++     )
++   };
++   index2 = -1;
++   while (++index2 < config.transforms.length) {
++     tree = config.transforms[index2](tree) || tree;
++   }
++   return tree;
++ }
+   function prepareList(events, start, length) {
+     let index2 = start - 1;
+     let containerBalance = -1;

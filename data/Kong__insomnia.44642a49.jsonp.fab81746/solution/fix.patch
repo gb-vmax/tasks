@@ -1,0 +1,88 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..8942acb26 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -171,10 +171,81 @@ export class Response extends Property {
+     }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+-    jsonp(_reviver?: (key: string, value: any) => any, _strict?: boolean) {
+-        throw unsupportedError('jsonp');
++function extractJsonpPayload(bodyStr: string): { callbackName: string; jsonPayload: string } | null {
++    const trimmed = bodyStr.trim();
++    
++    const parenStart = trimmed.indexOf('(');
++    if (parenStart === -1) {
++        return null;
+     }
+ 
++    const callbackName = trimmed.substring(0, parenStart).trim();
++    if (!callbackName) {
++        return null;
++    }
++
++    let parenCount = 0;
++    let jsonStart = -1;
++    let jsonEnd = -1;
++
++    for (let i = parenStart; i < trimmed.length; i++) {
++        const char = trimmed[i];
++        
++        if (char === '(') {
++            parenCount++;
++            if (jsonStart === -1) {
++                jsonStart = i + 1;
++            }
++        } else if (char === ')') {
++            parenCount--;
++            if (parenCount === 0) {
++                jsonEnd = i;
++                break;
++            }
++        }
++    }
++
++    if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
++        return null;
++    }
++
++    const jsonPayload = trimmed.substring(jsonStart, jsonEnd).trim();
++    
++    if (!jsonPayload) {
++        return null;
++    }
++
++    return { callbackName, jsonPayload };
++}
++
++ jsonp(reviver?: (key: string, value: any) => any, strict: boolean = false) {
++     const bodyStr = this.body.toString().trim();
++    
++     if (!bodyStr) {
++         throw Error('jsonp: response body is empty');
++     }
++
++     const extracted = extractJsonpPayload(bodyStr);
++    
++     if (!extracted) {
++         throw Error('jsonp: failed to extract JSONP payload from response body');
++     }
++
++     const { callbackName, jsonPayload } = extracted;
++
++     if (strict) {
++         if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*)*$/.test(callbackName)) {
++             throw Error(`jsonp: invalid callback name in strict mode: "${callbackName}"`);
++         }
++     }
++
++     try {
++         return JSON.parse(jsonPayload, reviver);
++     } catch (e) {
++         throw Error(`jsonp: failed to parse JSON payload: ${e}`);
++     }
++ }
++
+     reason() {
+         return this.status;
+     }

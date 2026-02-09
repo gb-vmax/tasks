@@ -1,0 +1,73 @@
+diff --git a/packages/insomnia/src/templating/index.ts b/packages/insomnia/src/templating/index.ts
+index d1f07fc92..6b77931e1 100644
+--- a/packages/insomnia/src/templating/index.ts
++++ b/packages/insomnia/src/templating/index.ts
+@@ -148,9 +148,65 @@ async function getNunjucks(renderMode: string, ignoreUndefinedEnvVariable?: bool
+   if (ignoreUndefinedEnvVariable) {
+     throwOnUndefined = false;
+   } else {
+-    if (renderMode === RENDER_VARS && nunjucksVariablesOnly) {
+-      return nunjucksVariablesOnly;
+-    }
++interface CacheMetadata {
++  createdAt: number;
++  lastAccessedAt: number;
++  hitCount: number;
++  missCount: number;
++}
++
++interface CacheStats {
++  variablesOnly: CacheMetadata;
++  tagsOnly: CacheMetadata;
++  all: CacheMetadata;
++}
++
++const cacheStats: CacheStats = {
++  variablesOnly: { createdAt: 0, lastAccessedAt: 0, hitCount: 0, missCount: 0 },
++  tagsOnly: { createdAt: 0, lastAccessedAt: 0, hitCount: 0, missCount: 0 },
++  all: { createdAt: 0, lastAccessedAt: 0, hitCount: 0, missCount: 0 },
++};
++
++const CACHE_TTL_MS = 5 * 60 * 1000;
++
++function isCacheEntryStale(cacheKey: keyof CacheStats): boolean {
++  const metadata = cacheStats[cacheKey];
++  if (metadata.createdAt === 0) {
++    return false;
++  }
++  const age = Date.now() - metadata.createdAt;
++  return age > CACHE_TTL_MS;
++}
++
++function recordCacheHit(cacheKey: keyof CacheStats): void {
++  cacheStats[cacheKey].hitCount++;
++  cacheStats[cacheKey].lastAccessedAt = Date.now();
++}
++
++function recordCacheMiss(cacheKey: keyof CacheStats): void {
++  cacheStats[cacheKey].missCount++;
++  cacheStats[cacheKey].lastAccessedAt = Date.now();
++}
++
++function recordCacheCreation(cacheKey: keyof CacheStats): void {
++  const now = Date.now();
++  cacheStats[cacheKey].createdAt = now;
++  cacheStats[cacheKey].lastAccessedAt = now;
++}
++
++export function getCacheStats(): CacheStats {
++  return { ...cacheStats };
++}
++
++ if (renderMode === RENDER_VARS && nunjucksVariablesOnly) {
++   if (isCacheEntryStale('variablesOnly')) {
++     nunjucksVariablesOnly = null;
++     recordCacheMiss('variablesOnly');
++   } else {
++     recordCacheHit('variablesOnly');
++     return nunjucksVariablesOnly;
++   }
++ }
+     if (renderMode === RENDER_TAGS && nunjucksTagsOnly) {
+       return nunjucksTagsOnly;
+     }

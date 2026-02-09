@@ -1,0 +1,90 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..ba0da1ca7 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -56,11 +56,83 @@ export function combinedMapKeys<T extends SnapshotStateMap | StatusCandidateMap>
+   const keyMap: Record<string, unknown> = {};
+ 
+   for (const map of maps) {
+-    for (const key of Object.keys(map)) {
+-      keyMap[key] = true;
++function shouldExcludeKey(key: string, excludePatterns?: string[] | RegExp[]): boolean {
++  if (!excludePatterns || excludePatterns.length === 0) {
++    return false;
++  }
++
++  for (const pattern of excludePatterns) {
++    if (pattern instanceof RegExp) {
++      if (pattern.test(key)) {
++        return true;
++      }
++    } else if (typeof pattern === 'string') {
++      if (key.includes(pattern)) {
++        return true;
++      }
+     }
+   }
+ 
++  return false;
++}
++
++function prioritizeKeys(keys: string[], prioritize: string[]): string[] {
++  const prioritySet = new Set(prioritize);
++  const priorityKeys: string[] = [];
++  const regularKeys: string[] = [];
++
++  for (const key of keys) {
++    if (prioritySet.has(key)) {
++      priorityKeys.push(key);
++    } else {
++      regularKeys.push(key);
++    }
++  }
++
++  const orderedPriorityKeys: string[] = [];
++  for (const priorityKey of prioritize) {
++    if (priorityKeys.includes(priorityKey)) {
++      orderedPriorityKeys.push(priorityKey);
++    }
++  }
++
++  return [...orderedPriorityKeys, ...regularKeys];
++}
++
++ export function combinedMapKeys<T extends SnapshotStateMap | StatusCandidateMap>(
++   ...args: (T | { exclude?: string[] | RegExp[]; prioritize?: string[] })[]
++ ): DocumentKey[] {
++   const maps: T[] = [];
++   let options: { exclude?: string[] | RegExp[]; prioritize?: string[] } = {};
++
++   for (const arg of args) {
++     if (arg && typeof arg === 'object' && ('exclude' in arg || 'prioritize' in arg)) {
++       options = arg as { exclude?: string[] | RegExp[]; prioritize?: string[] };
++     } else {
++       maps.push(arg as T);
++     }
++   }
++
++   const keyMap: Record<string, unknown> = {};
++
++   for (const map of maps) {
++     for (const key of Object.keys(map)) {
++       if (!shouldExcludeKey(key, options.exclude)) {
++         keyMap[key] = true;
++       }
++     }
++   }
++
++   const allKeys = Object.keys(keyMap);
++
++   if (options.prioritize && options.prioritize.length > 0) {
++     return prioritizeKeys(allKeys, options.prioritize);
++   }
++
++   return allKeys;
++ }
++  }
++
+   return Object.keys(keyMap);
+ }
+ 

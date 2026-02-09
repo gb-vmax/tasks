@@ -1,0 +1,95 @@
+diff --git a/packages/insomnia/src/models/settings.ts b/packages/insomnia/src/models/settings.ts
+index 68686ad93..36bc54251 100644
+--- a/packages/insomnia/src/models/settings.ts
++++ b/packages/insomnia/src/models/settings.ts
+@@ -127,10 +127,78 @@ export async function get() {
+ /**
+  * Ensure map is updated when new hotkeys are added
+  */
++function cleanInvalidBindings(
++  registry: Settings['hotKeyRegistry'],
++  defaults: Settings['hotKeyRegistry']
++): Settings['hotKeyRegistry'] {
++  const cleaned = {} as Settings['hotKeyRegistry'];
++  
++  for (const key in registry) {
++    const binding = registry[key as KeyboardShortcut];
++    
++    if (typeof binding === 'string' && binding.trim().length > 0 && isValidKeyBinding(binding)) {
++      cleaned[key as KeyboardShortcut] = binding;
++    } else if (key in defaults) {
++      cleaned[key as KeyboardShortcut] = defaults[key as KeyboardShortcut];
++    }
++  }
++  
++  return cleaned;
++}
++
++function isValidKeyBinding(binding: string): boolean {
++  const validModifiers = ['ctrl', 'alt', 'shift', 'meta', 'mod', 'command', 'cmd'];
++  const parts = binding.toLowerCase().split('+').map(p => p.trim());
++  
++  if (parts.length === 0 || parts.some(p => p.length === 0)) {
++    return false;
++  }
++  
++  return true;
++}
++
++function resolveHotKeyConflicts(
++  registry: Settings['hotKeyRegistry'],
++  defaults: Settings['hotKeyRegistry']
++): Settings['hotKeyRegistry'] {
++  const bindingToKeys = new Map<string, KeyboardShortcut[]>();
++  
++  for (const key in registry) {
++    const binding = registry[key as KeyboardShortcut];
++    const normalizedBinding = normalizeKeyBinding(binding);
++    
++    if (!bindingToKeys.has(normalizedBinding)) {
++      bindingToKeys.set(normalizedBinding, []);
++    }
++    bindingToKeys.get(normalizedBinding)!.push(key as KeyboardShortcut);
++  }
++  
++  const resolved = { ...registry };
++  
++  for (const [binding, keys] of bindingToKeys.entries()) {
++    if (keys.length > 1) {
++      for (let i = 1; i < keys.length; i++) {
++        const conflictingKey = keys[i];
++        if (conflictingKey in defaults) {
++          resolved[conflictingKey] = defaults[conflictingKey];
++        }
++      }
++    }
++  }
++  
++  return resolved;
++}
++
++function normalizeKeyBinding(binding: string): string {
++  const parts = binding.toLowerCase().split('+').map(p => p.trim());
++  const modifiers = parts.slice(0, -1).sort();
++  const key = parts[parts.length - 1];
++  return [...modifiers, key].join('+');
++}
++
+ function migrateEnsureHotKeys(settings: Settings): Settings {
+   const defaultHotKeyRegistry = hotkeys.newDefaultRegistry();
+ 
+-  // Remove any hotkeys that are no longer in the default registry
+   const hotKeyRegistry = (Object.keys(settings.hotKeyRegistry) as KeyboardShortcut[]).reduce((newHotKeyRegistry, key) => {
+     if (key in defaultHotKeyRegistry) {
+       newHotKeyRegistry[key] = settings.hotKeyRegistry[key];
+@@ -139,6 +207,9 @@ function migrateEnsureHotKeys(settings: Settings): Settings {
+     return newHotKeyRegistry;
+   }, {} as Settings['hotKeyRegistry']);
+ 
+-  settings.hotKeyRegistry = { ...defaultHotKeyRegistry, ...hotKeyRegistry };
++  const cleanedRegistry = cleanInvalidBindings(hotKeyRegistry, defaultHotKeyRegistry);
++  const deduplicatedRegistry = resolveHotKeyConflicts(cleanedRegistry, defaultHotKeyRegistry);
++
++  settings.hotKeyRegistry = { ...defaultHotKeyRegistry, ...deduplicatedRegistry };
+   return settings;
+ }

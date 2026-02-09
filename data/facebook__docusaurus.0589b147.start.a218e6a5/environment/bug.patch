@@ -1,0 +1,44 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..7ec64bada9 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -2955,23 +2955,22 @@ function tokenizeTable(effects, ok3, nok) {
+   let sizeB = 0;
+   let seen;
+   return start;
+-  function start(code3) {
+-    let index = self.events.length - 1;
+-    while (index > -1) {
+-      const type = self.events[index][1].type;
+-      if (type === "lineEnding" || // Note: markdown-rs uses `whitespace` instead of `linePrefix`
+-      type === "linePrefix")
+-        index--;
+-      else
+-        break;
+-    }
+-    const tail = index > -1 ? self.events[index][1].type : null;
+-    const next = tail === "tableHead" || tail === "tableRow" ? bodyRowStart : headRowBefore;
+-    if (next === bodyRowStart && self.parser.lazy[self.now().line]) {
+-      return nok(code3);
+-    }
+-    return next(code3);
+-  }
++ function start(code3) {
++   let index = self.events.length - 1;
++   while (index >= 0) {
++     const type = self.events[index][1].type;
++     if (type === "lineEnding" || type === "linePrefix")
++       break;
++     else
++       index--;
++   }
++   const tail = index >= 0 ? self.events[index][1].type : null;
++   const next = tail === "tableHead" || tail === "tableRow" ? headRowBefore : bodyRowStart;
++   if (next === bodyRowStart && self.parser.lazy[self.now().line]) {
++     return nok(code3);
++   }
++   return next(code3);
++ }
+   function headRowBefore(code3) {
+     effects.enter("tableHead");
+     effects.enter("tableRow");

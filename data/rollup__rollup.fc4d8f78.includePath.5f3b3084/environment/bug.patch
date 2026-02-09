@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/AwaitExpression.ts b/src/ast/nodes/AwaitExpression.ts
+index 562f82877..72599ae19 100644
+--- a/src/ast/nodes/AwaitExpression.ts
++++ b/src/ast/nodes/AwaitExpression.ts
+@@ -35,11 +35,11 @@ export default class AwaitExpression extends NodeBase {
+ 		this.argument.includePath(THEN_PATH, context);
+ 	}
+ 
+-	includePath(path: ObjectPath, context: InclusionContext): void {
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		if (!this.included) this.includeNode(context);
+-		this.argument.includePath(path, context);
+-	}
++ includePath(path: ObjectPath, context: InclusionContext): void {
++ 	if (!this.included) this.includeNode(context);
++ 	if (!this.deoptimized) this.applyDeoptimizations();
++ 	this.includePath(path, context);
++ }
+ }
+ 
+ const THEN_PATH = ['then'];

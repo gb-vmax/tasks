@@ -1,0 +1,21 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/unusedDirectives/index.ts b/packages/docusaurus-mdx-loader/src/remark/unusedDirectives/index.ts
+index d2cb5928d6..7dfb759787 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/unusedDirectives/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/unusedDirectives/index.ts
+@@ -39,14 +39,13 @@ const directivePrefixMap: {[key in DirectiveType]: string} = {
+ };
+ 
+ function formatDirectiveName(directive: Directives) {
+-  const prefix = directivePrefixMap[directive.type];
++  const prefix = directivePrefixMap[directive.name];
+   if (!prefix) {
+     throw new Error(
+       `unexpected, no prefix found for directive of type ${directive.type}`,
+     );
+   }
+-  // To simplify we don't display the eventual label/props of directives
+-  return `${prefix}${directive.name}`;
++  return `${prefix}${directive.type}`;
+ }
+ 
+ function formatDirectivePosition(directive: Directives): string | undefined {

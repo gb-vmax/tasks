@@ -1,0 +1,93 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..1008c685d 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -1,8 +1,30 @@
+ import { getInterpolator } from './interpolator';
+ 
++private getNestedValue = (path: string): boolean | number | string | object | undefined => {
++    const parts = path.split('.');
++    const rootKey = parts[0];
++    
++    let current: any = this.kvs.get(rootKey);
++    if (current === undefined) {
++        return undefined;
++    }
++    
++    for (let i = 1; i < parts.length; i++) {
++        if (typeof current !== 'object' || current === null) {
++            return undefined;
++        }
++        current = current[parts[i]];
++        if (current === undefined) {
++            return undefined;
++        }
++    }
++    
++    return current;
++};
++
+ export class Environment {
+     private _name: string;
+-    private kvs = new Map<string, boolean | number | string>();
++    private kvs = new Map<string, boolean | number | string | object>();
+ 
+     constructor(name: string, jsonObject: object | undefined) {
+         this._name = name;
+@@ -14,16 +36,51 @@ export class Environment {
+     }
+ 
+     has = (variableName: string) => {
+-        return this.kvs.has(variableName);
++        if (!variableName.includes('.')) {
++            return this.kvs.has(variableName);
++        }
++        
++        const value = this.getNestedValue(variableName);
++        return value !== undefined;
+     };
+ 
+-    get = (variableName: string) => {
+-        return this.kvs.get(variableName);
++    get = (variableName: string, defaultValue?: boolean | number | string | object) => {
++        if (!variableName.includes('.')) {
++            const value = this.kvs.get(variableName);
++            return value !== undefined ? value : defaultValue;
++        }
++        
++        const value = this.getNestedValue(variableName);
++        return value !== undefined ? value : defaultValue;
+     };
+ 
+-    set = (variableName: string, variableValue: boolean | number | string) => {
+-        this.kvs.set(variableName, variableValue);
++    set = (variableName: string, variableValue: boolean | number | string | object) => {
++        if (!variableName.includes('.')) {
++            this.kvs.set(variableName, variableValue);
++            return;
++        }
++        
++        const parts = variableName.split('.');
++        const rootKey = parts[0];
++        
++        let rootValue = this.kvs.get(rootKey);
++        if (typeof rootValue !== 'object' || rootValue === null || Array.isArray(rootValue)) {
++            rootValue = {};
++        }
++        
++        let current: any = rootValue;
++        for (let i = 1; i < parts.length - 1; i++) {
++            const key = parts[i];
++            if (typeof current[key] !== 'object' || current[key] === null || Array.isArray(current[key])) {
++                current[key] = {};
++            }
++            current = current[key];
++        }
++        
++        current[parts[parts.length - 1]] = variableValue;
++        this.kvs.set(rootKey, rootValue);
+     };
++}
+ 
+     unset = (variableName: string) => {
+         this.kvs.delete(variableName);

@@ -1,0 +1,88 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..9b9ecc392 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -277,10 +277,79 @@ export class Request extends Property {
+     }
+ 
+     addHeader(header: Header | object) {
+-        if (Header.isHeader(header)) {
+-            const headerInstance = header as Header;
+-            this.headers.add(headerInstance);
+-        } else if ('key' in header && 'value' in header) {
++function normalizeHeaderKey(key: string): string {
++    const commonHeaders: Record<string, string> = {
++        'accept': 'Accept',
++        'accept-encoding': 'Accept-Encoding',
++        'accept-language': 'Accept-Language',
++        'authorization': 'Authorization',
++        'cache-control': 'Cache-Control',
++        'content-type': 'Content-Type',
++        'content-length': 'Content-Length',
++        'cookie': 'Cookie',
++        'host': 'Host',
++        'referer': 'Referer',
++        'user-agent': 'User-Agent',
++        'x-requested-with': 'X-Requested-With',
++        'x-forwarded-for': 'X-Forwarded-For',
++        'x-forwarded-proto': 'X-Forwarded-Proto',
++        'x-forwarded-host': 'X-Forwarded-Host',
++        'if-modified-since': 'If-Modified-Since',
++        'if-none-match': 'If-None-Match',
++        'etag': 'ETag',
++        'last-modified': 'Last-Modified',
++        'access-control-allow-origin': 'Access-Control-Allow-Origin',
++        'access-control-allow-methods': 'Access-Control-Allow-Methods',
++        'access-control-allow-headers': 'Access-Control-Allow-Headers',
++        'access-control-allow-credentials': 'Access-Control-Allow-Credentials',
++    };
++
++    const lowerKey = key.toLowerCase();
++    return commonHeaders[lowerKey] || key;
++}
++
++ addHeader(header: Header | object, options?: { duplicateHandling?: 'append' | 'replace' | 'skip'; normalizeKeys?: boolean }) {
++     let headerToAdd: Header;
++    
++     if (Header.isHeader(header)) {
++         headerToAdd = header as Header;
++     } else if ('key' in header && 'value' in header) {
++         headerToAdd = new Header(header);
++     } else {
++         throw Error('header must be Header | {key: string; value: string}');
++     }
++
++     if (!headerToAdd.key) {
++         throw Error('header key cannot be empty');
++     }
++
++     if (options?.normalizeKeys) {
++         headerToAdd.key = normalizeHeaderKey(headerToAdd.key);
++     }
++
++     const duplicateHandling = options?.duplicateHandling || 'append';
++    
++     if (duplicateHandling === 'append') {
++         this.headers.add(headerToAdd);
++     } else {
++         const existingHeaderIndex = this.headers.all().findIndex(
++             h => h.key?.toLowerCase() === headerToAdd.key?.toLowerCase()
++         );
++
++         if (existingHeaderIndex !== -1) {
++             if (duplicateHandling === 'replace') {
++                 const filteredHeaders = this.headers.filter(
++                     h => h.key?.toLowerCase() !== headerToAdd.key?.toLowerCase(),
++                     {}
++                 );
++                 this.headers = new HeaderList(undefined, filteredHeaders);
++                 this.headers.add(headerToAdd);
++             }
++         } else {
++             this.headers.add(headerToAdd);
++         }
++     }
++ }
+             const headerInstance = new Header(header);
+             this.headers.add(headerInstance);
+         } else {

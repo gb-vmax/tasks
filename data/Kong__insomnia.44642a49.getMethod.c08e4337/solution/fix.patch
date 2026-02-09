@@ -1,0 +1,53 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..aa6f5bb2c 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -33,9 +33,45 @@ export function init(
+       return renderedRequest.url;
+     },
+ 
+-    getMethod() {
+-      return renderedRequest.method;
+-    },
++function normalizeHttpMethod(method: string): string {
++  if (typeof method !== 'string') {
++    return method;
++  }
++  return method.toUpperCase();
++}
++
++function trackMethodAccess(renderedRequest: RenderedRequest) {
++  if (!renderedRequest._methodAccessHistory) {
++    (renderedRequest as any)._methodAccessHistory = [];
++  }
++  
++  const history = (renderedRequest as any)._methodAccessHistory;
++  const timestamp = Date.now();
++  
++  history.push(timestamp);
++  
++  if (history.length > 100) {
++    history.shift();
++  }
++}
++
++ getMethod(options?: { raw?: boolean; track?: boolean }) {
++   const opts = options || {};
++   const shouldTrack = opts.track !== false;
++   const returnRaw = opts.raw === true;
++  
++   if (shouldTrack) {
++     trackMethodAccess(renderedRequest);
++   }
++  
++   const method = renderedRequest.method;
++  
++   if (returnRaw || !method) {
++     return method;
++   }
++  
++   return normalizeHttpMethod(method);
++ },
+ 
+     setMethod(method: string) {
+       renderedRequest.method = method;

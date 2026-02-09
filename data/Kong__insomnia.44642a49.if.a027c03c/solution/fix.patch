@@ -1,0 +1,100 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..2b633ae0c 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -101,10 +101,91 @@ export class PropertyBase {
+                 // no op
+             } else {
+                 if (customizer) {
+-                    if (customizer(cloned)) {
+-                        // continue until customizer returns a truthy value
+-                        return cloned;
+-                    }
++private _findCache?: Map<string, PropertyBase | undefined>;
++
++private _generateFindCacheKey(property: string, hasCustomizer: boolean, maxDepth?: number): string {
++    const depthStr = maxDepth !== undefined ? maxDepth.toString() : 'unlimited';
++    const customizerStr = hasCustomizer ? 'with-customizer' : 'no-customizer';
++    return `${property}:${customizerStr}:${depthStr}`;
++}
++
++clearFindCache(): void {
++    if (this._findCache) {
++        this._findCache.clear();
++    }
++}
++
++ findInParents(
++     property: string,
++     customizer?: (ancester: PropertyBase) => boolean,
++     options?: { maxDepth?: number },
++ ): PropertyBase | undefined {
++     const maxDepth = options?.maxDepth;
++     const cacheKey = this._generateFindCacheKey(property, !!customizer, maxDepth);
++    
++     if (this._findCache && this._findCache.has(cacheKey)) {
++         const cached = this._findCache.get(cacheKey);
++         return cached ? clone(cached) : undefined;
++     }
++
++     const currentParent = this.parent();
++     if (!currentParent) {
++         if (!this._findCache) {
++             this._findCache = new Map();
++         }
++         this._findCache.set(cacheKey, undefined);
++         return;
++     }
++
++     const queue: PropertyBase[] = [currentParent];
++     let currentDepth = 0;
++
++     while (queue.length > 0) {
++         const ancester = queue.shift();
++         if (!ancester) {
++             continue;
++         }
++
++         if (maxDepth !== undefined && currentDepth >= maxDepth) {
++             break;
++         }
++
++         const cloned = clone(ancester);
++         const hasProperty = Object.keys(cloned.meta()).includes(property);
++         if (!hasProperty) {
++             // keep traversing until parent has the property
++             // no op
++         } else {
++             if (customizer) {
++                 if (customizer(cloned)) {
++                     if (!this._findCache) {
++                         this._findCache = new Map();
++                     }
++                     this._findCache.set(cacheKey, cloned);
++                     return cloned;
++                 }
++             } else {
++                 if (!this._findCache) {
++                     this._findCache = new Map();
++                 }
++                 this._findCache.set(cacheKey, cloned);
++                 return cloned;
++             }
++         }
++
++         const olderAncester = ancester.parent();
++         if (olderAncester) {
++             queue.push(olderAncester);
++             currentDepth++;
++         }
++     }
++
++     if (!this._findCache) {
++         this._findCache = new Map();
++     }
++     this._findCache.set(cacheKey, undefined);
++     return undefined;
++ }
+                 } else {
+                     // customizer is not specified
+                     // stop at the first parent that contains the property

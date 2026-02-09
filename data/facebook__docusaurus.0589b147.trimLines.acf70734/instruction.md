@@ -2,29 +2,38 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with line trimming in MDX content. When processing text with newlines, the first line appears to be getting trimmed incorrectly. The trimming logic seems to be applying start trimming rules when it shouldn't.
+I'm experiencing an issue with whitespace handling in MDX content. When processing MDX files with specific line break patterns, the output has incorrect whitespace trimming at the beginning of the content.
 
 ### Reproduction
 
 ```js
-const mdxContent = `
-  Some text on first line
-  Another line here
+const mdx = `
+some content here
+with multiple lines
 `;
 
-// Process the content through MDX
-// Expected: First line should be trimmed correctly
-// Actual: First line is being over-trimmed or trimmed with wrong rules
+// Process the MDX content
+const result = compile(mdx);
+
+// The first line's whitespace is not being trimmed correctly
+// Expected: content starts without extra whitespace
+// Actual: unexpected whitespace at the beginning
 ```
 
-The issue seems to affect content where the very first line needs to be processed. It's like the trimming function is checking the wrong condition for whether there was previous content.
+### Steps to reproduce:
+1. Create an MDX file with content that starts with a newline
+2. Process the file through the MDX compiler
+3. Check the output - the initial whitespace handling is incorrect
 
 ### Expected behavior
 
-The first line of content should be trimmed according to the rules for a starting line (no previous content), not as if there was content before it.
+The whitespace at the start of the MDX content should be trimmed consistently with how it handles whitespace at other positions. The first line should be processed with the same trimming logic as subsequent lines.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0
+- Node version: 18.x
+
+This seems to have started happening recently. The trimming logic appears to be checking line positions in the wrong order, causing the first line to be handled differently than intended.
 
 ---
 Repository: /testbed

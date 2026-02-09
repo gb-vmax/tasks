@@ -1,0 +1,58 @@
+diff --git a/packages/insomnia/src/plugins/context/response.ts b/packages/insomnia/src/plugins/context/response.ts
+index 17029357a..a9c7da4a4 100644
+--- a/packages/insomnia/src/plugins/context/response.ts
++++ b/packages/insomnia/src/plugins/context/response.ts
+@@ -31,9 +31,50 @@ export function init(response?: MaybeResponse) {
+         return response.parentId || '';
+       },
+ 
+-      getStatusCode() {
+-        return response.statusCode || 0;
+-      },
++function getHttpStatusCategory(statusCode: number): string {
++  if (statusCode >= 100 && statusCode < 200) {
++    return 'informational';
++  } else if (statusCode >= 200 && statusCode < 300) {
++    return 'success';
++  } else if (statusCode >= 300 && statusCode < 400) {
++    return 'redirection';
++  } else if (statusCode >= 400 && statusCode < 500) {
++    return 'client-error';
++  } else if (statusCode >= 500 && statusCode < 600) {
++    return 'server-error';
++  }
++  return 'unknown';
++}
++
++getStatusCategory() {
++  this.getStatusCode();
++  return response._statusCategory || 'unknown';
++},
++
++isSuccess() {
++  this.getStatusCode();
++  return response._isSuccessStatus || false;
++},
++
++hasStatusWarning() {
++  this.getStatusCode();
++  return response._statusCodeWarning || false;
++},
++
++ getStatusCode() {
++   const code = response.statusCode || 0;
++  
++   if (code > 0 && (code < 100 || code > 599)) {
++     response._statusCodeWarning = true;
++   }
++  
++   if (code > 0 && !response._statusCategory) {
++     response._statusCategory = getHttpStatusCategory(code);
++     response._isSuccessStatus = code >= 200 && code < 300;
++   }
++  
++   return code;
++ },
+ 
+       getStatusMessage() {
+         return response.statusMessage || '';

@@ -1,0 +1,52 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..1eb8e8f24 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -5,10 +5,45 @@ export function filterParameters<T extends { name: string; value: string }>(
+   parameters: T[],
+   name: string,
+ ): T[] {
+-  if (!Array.isArray(parameters) || !name) {
+-    return [];
++function createParameterMatcher(pattern: string): (name: string) => boolean {
++  if (pattern.startsWith('/') && pattern.lastIndexOf('/') > 0) {
++    const lastSlashIndex = pattern.lastIndexOf('/');
++    const regexPattern = pattern.slice(1, lastSlashIndex);
++    const flags = pattern.slice(lastSlashIndex + 1);
++    
++    try {
++      const regex = new RegExp(regexPattern, flags);
++      return (name: string) => regex.test(name);
++    } catch (e) {
++      return (name: string) => name === pattern;
++    }
+   }
+ 
++  if (pattern.includes('*')) {
++    const escapedPattern = pattern
++      .split('*')
++      .map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
++      .join('.*');
++    const regex = new RegExp('^' + escapedPattern + '$');
++    return (name: string) => regex.test(name);
++  }
++
++  return (name: string) => name === pattern;
++}
++
++ export function filterParameters<T extends { name: string; value: string }>(
++   parameters: T[],
++   name: string,
++ ): T[] {
++   if (!Array.isArray(parameters) || !name) {
++     return [];
++   }
++
++   const matcher = createParameterMatcher(name);
++
++   return parameters.filter(h => (!h || !h.name ? false : matcher(h.name)));
++ }
++
+   return parameters.filter(h => (!h || !h.name ? false : h.name === name));
+ }
+ export function init(

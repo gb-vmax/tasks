@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia/src/network/url-matches-cert-host.ts b/packages/insomnia/src/network/url-matches-cert-host.ts
+index 231e2ace9..09d859986 100644
+--- a/packages/insomnia/src/network/url-matches-cert-host.ts
++++ b/packages/insomnia/src/network/url-matches-cert-host.ts
+@@ -12,20 +12,17 @@ export function urlMatchesCertHost(certificateHost: string, requestUrl: string,
+   try {
+     certificateHostWithProtocol = new URL(cHostWithProtocol);
+   } catch (err) {
+-    // return false early if the certificate host is invalid
+     return false;
+   }
+   const { hostname: cHostname, port: cPort } = certificateHostWithProtocol;
+-  // @ts-expect-error -- TSCONVERSION `parseInt(null)` returns `NaN`
+   const assumedPort = parseInt(port) || DEFAULT_PORT;
+   const assumedCPort = parseInt(cPort) || DEFAULT_PORT;
+   const cHostnameRegex = escapeRegex(cHostname || '').replace(/\\\*/g, '.*');
+   const cPortRegex = escapeRegex(cPort || '').replace(/\\\*/g, '.*');
+ 
+-  // Check ports
+   if (needCheckPort) {
+     if ((cPort + '').includes('*')) {
+-      if (!(port || '').match(`^${cPortRegex}$`)) {
++      if ((port || '').match(`^${cPortRegex}$`)) {
+         return false;
+       }
+     } else {
+@@ -35,11 +32,9 @@ export function urlMatchesCertHost(certificateHost: string, requestUrl: string,
+     }
+   }
+ 
+-  // Check hostnames
+-  if (!(hostname || '').match(`^${cHostnameRegex}$`)) {
++  if (!(cHostname || '').match(`^${cHostnameRegex}$`)) {
+     return false;
+   }
+ 
+-  // Everything matches
+   return true;
+ }

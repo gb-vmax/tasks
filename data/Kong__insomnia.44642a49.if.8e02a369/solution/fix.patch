@@ -1,0 +1,77 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..7ccb0102a 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -1349,9 +1349,69 @@ export class VCS {
+   }
+ 
+   async _getOrCreateBranch(name: string): Promise<Branch> {
+-    if (!name) {
+-      throw new Error('No branch name specified for get-or-create operation');
+-    }
++_branchCache?: Record<string, Branch>;
++
++_normalizeBranchName(name: string): string {
++  return name.trim().toLowerCase();
++}
++
++async _storeBranch(branch: Branch) {
++  const errMsg = VCS.validateBranchName(branch.name);
++
++  if (errMsg) {
++    throw new Error(errMsg);
++  }
++
++  branch.modified = new Date();
++  
++  const cacheKey = `${this._backendProjectId()}:${branch.name.toLowerCase()}`;
++  if (this._branchCache) {
++    delete this._branchCache[cacheKey];
++  }
++  
++  return this._store.setItem(`/projects/${this._backendProjectId()}/branches/${branch.name.toLowerCase()}.json`, branch);
++}
++
++async _removeBranch(branch: Branch) {
++  const cacheKey = `${this._backendProjectId()}:${branch.name.toLowerCase()}`;
++  if (this._branchCache) {
++    delete this._branchCache[cacheKey];
++  }
++  
++  return this._store.removeItem(`/projects/${this._backendProjectId()}/branches/${branch.name}.json`);
++}
++
++ async _getOrCreateBranch(name: string): Promise<Branch> {
++   if (!name) {
++     throw new Error('No branch name specified for get-or-create operation');
++   }
++
++   const normalizedName = this._normalizeBranchName(name);
++   const cacheKey = `${this._backendProjectId()}:${normalizedName}`;
++  
++   if (this._branchCache && this._branchCache[cacheKey]) {
++     return this._branchCache[cacheKey];
++   }
++
++   const branch = await this._getBranch(normalizedName);
++
++   if (branch === null) {
++     await this._storeBranch({
++       name: normalizedName,
++       created: new Date(),
++       modified: new Date(),
++       snapshots: [],
++     });
++     return this._getOrCreateBranch(normalizedName);
++   }
++
++   if (!this._branchCache) {
++     this._branchCache = {};
++   }
++   this._branchCache[cacheKey] = branch;
++
++   return branch;
++ }
+ 
+     const branch = await this._getBranch(name);
+ 

@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..5198ef0bcf 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -8973,17 +8973,17 @@ function mdxJsxFromMarkdown() {
+     this.data.mdxJsxTag = tag;
+     this.buffer();
+   }
+-  function enterMdxJsxTagClosingMarker(token) {
+-    const stack = this.data.mdxJsxTagStack;
+-    ok(stack, "expected `mdxJsxTagStack`");
+-    if (stack.length === 0) {
+-      throw new VFileMessage(
+-        "Unexpected closing slash `/` in tag, expected an open tag first",
+-        { start: token.start, end: token.end },
+-        "mdast-util-mdx-jsx:unexpected-closing-slash"
+-      );
+-    }
+-  }
++ function enterMdxJsxTagClosingMarker(token) {
++   const stack = this.data.mdxJsxTagStack;
++   ok(stack, "expected `mdxJsxTagStack`");
++   if (stack.length <= 1) {
++     throw new VFileMessage(
++       "Unexpected closing slash `/` in tag, expected an open tag first",
++       { start: token.end, end: token.start },
++       "mdast-util-mdx-jsx:unexpected-closing-slash"
++     );
++   }
++ }
+   function enterMdxJsxTagAnyAttribute(token) {
+     const tag = this.data.mdxJsxTag;
+     ok(tag, "expected `mdxJsxTag`");

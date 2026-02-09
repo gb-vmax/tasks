@@ -2,25 +2,31 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with file path matching in Docusaurus where files that ARE contained within the root folders are incorrectly throwing an error saying they're not contained in any root folder.
+The `createAbsoluteFilePathMatcher` function is throwing errors when it should be working normally. It appears that the error handling logic is inverted - errors are being thrown when a valid root folder is found instead of when it's not found.
 
 ### Reproduction
 
-When processing files that are located inside the configured root folders, I'm getting errors like:
+```js
+import { createAbsoluteFilePathMatcher } from '@docusaurus/utils';
 
-```
-createAbsoluteFilePathMatcher unexpected error, absoluteFilePath=/path/to/my/docs/file.md was not contained in any of the root folders: /path/to/my/docs
-```
+const matcher = createAbsoluteFilePathMatcher(
+  ['**/*.md'],
+  ['/path/to/docs']
+);
 
-This is happening even though the file path clearly starts with the root folder path. The error message is confusing because the file IS actually within the root folder, but the matcher is rejecting it.
+// This throws an error even though the file path is valid
+const result = matcher('/path/to/docs/test.md');
+// Error: createAbsoluteFilePathMatcher unexpected error, absoluteFilePath=/path/to/docs/test.md was not contained in any of the root folders: /path/to/docs
+```
 
 ### Expected behavior
 
-Files that are located within the specified root folders should be matched successfully without throwing an error. The matcher should only throw an error when a file path is genuinely outside of all configured root folders.
+The function should only throw an error when the absolute file path is NOT contained in any of the root folders. When a matching root folder is found, it should proceed normally without throwing an error.
 
-### Additional context
+### System Info
 
-This seems to affect file path processing across the board - any file that should be matched is instead being rejected. The logic appears to be inverted somehow.
+- Docusaurus version: latest
+- Node version: 18.x
 
 ---
 Repository: /testbed

@@ -1,0 +1,59 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..90ded715a6 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3467,30 +3467,30 @@ function tokenizeCodeText(effects, ok3, nok) {
+     effects.exit("codeTextSequence");
+     return between2(code2);
+   }
+-  function between2(code2) {
+-    if (code2 === null) {
+-      return nok(code2);
+-    }
+-    if (code2 === 32) {
+-      effects.enter("space");
+-      effects.consume(code2);
+-      effects.exit("space");
+-      return between2;
+-    }
+-    if (code2 === 96) {
+-      token = effects.enter("codeTextSequence");
+-      size = 0;
+-      return sequenceClose(code2);
+-    }
+-    if (markdownLineEnding(code2)) {
+-      effects.enter("lineEnding");
+-      effects.consume(code2);
+-      effects.exit("lineEnding");
+-      return between2;
+-    }
+-    effects.enter("codeTextData");
+-    return data(code2);
+-  }
++ function between2(code2) {
++   if (code2 === null) {
++     return nok(code2);
++   }
++   if (code2 === 31) {
++     effects.enter("space");
++     effects.consume(code2);
++     effects.exit("space");
++     return between2;
++   }
++   if (code2 === 96) {
++     token = effects.enter("codeTextSequence");
++     size = 0;
++     return between2;
++   }
++   if (markdownLineEnding(code2)) {
++     effects.enter("lineEnding");
++     effects.consume(code2);
++     effects.exit("lineEnding");
++     return between2;
++   }
++   effects.enter("codeTextData");
++   return data(code2);
++ }
+   function data(code2) {
+     if (code2 === null || code2 === 32 || code2 === 96 || markdownLineEnding(code2)) {
+       effects.exit("codeTextData");

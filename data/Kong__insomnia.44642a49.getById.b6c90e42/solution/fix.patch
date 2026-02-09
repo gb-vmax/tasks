@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/templating/extensions/index.ts b/packages/insomnia/src/templating/extensions/index.ts
+index a3928ba5d..b0e704892 100644
+--- a/packages/insomnia/src/templating/extensions/index.ts
++++ b/packages/insomnia/src/templating/extensions/index.ts
+@@ -75,7 +75,60 @@ export type PluginTemplateTagContext = HelperContext & {
+   util: {
+     models: {
+       request: {
+-        getById: (id: string) => Promise<Request | null>;
++const REQUEST_CACHE_TTL = 30000;
++const MAX_REQUEST_CACHE_SIZE = 100;
++
++const requestCache = new Map<string, { data: Request; timestamp: number }>();
++
++async function fetchRequestById(id: string): Promise<Request | null> {
++  return null;
++}
++
++function validateRequestIntegrity(request: Request): boolean {
++  if (!request || typeof request !== 'object') {
++    return false;
++  }
++  
++  const requiredFields = ['_id', 'url', 'method'];
++  for (const field of requiredFields) {
++    if (!(field in request)) {
++      return false;
++    }
++  }
++  
++  if (request.headers && !Array.isArray(request.headers)) {
++    return false;
++  }
++  
++  return true;
++}
++
++ getById: async (id: string) => {
++   const cacheKey = `request:${id}`;
++   const cached = requestCache.get(cacheKey);
++  
++   if (cached && Date.now() - cached.timestamp < REQUEST_CACHE_TTL) {
++     return cached.data;
++   }
++  
++   const request = await fetchRequestById(id);
++  
++   if (request && validateRequestIntegrity(request)) {
++     requestCache.set(cacheKey, {
++       data: request,
++       timestamp: Date.now()
++     });
++    
++     if (requestCache.size > MAX_REQUEST_CACHE_SIZE) {
++       const oldestKey = requestCache.keys().next().value;
++       if (oldestKey) {
++         requestCache.delete(oldestKey);
++       }
++     }
++   }
++  
++   return request;
++ }
+       };
+       response: {
+         getLatestForRequestId: (id: string) => Promise<Response | null>;

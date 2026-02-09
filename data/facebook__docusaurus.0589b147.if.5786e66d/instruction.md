@@ -2,28 +2,26 @@
 
 ### Describe the bug
 
-When validation warnings are printed, nothing appears in the console even though there are validation errors present. The warning messages seem to be silently ignored.
+Validation warnings are not being displayed correctly. When there are validation errors/warnings from the schema validation, nothing appears in the console output even though warnings should be logged.
 
 ### Reproduction
 
 ```js
-// When Joi validation returns a warning with details
-const validationResult = someSchema.validate(data, { warnings: true });
+// When validation returns warnings with error details
+const validationResult = schema.validate(data, { warnings: true });
 
-// Calling printWarning with the error
-printWarning(validationResult.error);
-
-// Expected: Warning messages to be logged
-// Actual: Nothing is logged to console
+// Expected: Warning messages should be logged to console
+// Actual: No warning messages appear
+printWarning(validationResult.warning);
 ```
 
 ### Expected behavior
 
-Validation warning messages should be displayed in the console when `printWarning()` is called with a validation error that contains details.
+The validation warning messages should be printed to the console when `printWarning()` is called with a validation error object containing warning details.
 
-### Additional context
-
-This seems to have broken recently. Previously, validation warnings were being displayed correctly, but now they're completely silent even when validation issues are present. The function is being called but no output appears.
+### System Info
+- Docusaurus version: latest
+- Node version: 18.x
 
 ---
 Repository: /testbed

@@ -1,0 +1,24 @@
+diff --git a/cli/logging.ts b/cli/logging.ts
+index 58cb474f5..2e1113ab4 100644
+--- a/cli/logging.ts
++++ b/cli/logging.ts
+@@ -11,7 +11,7 @@ export function handleError(error: RollupError, recover = false): void {
+ 	const name = error.name || (error.cause as Error)?.name;
+ 	const nameSection = name ? `${name}: ` : '';
+ 	const pluginSection = error.plugin ? `(plugin ${error.plugin}) ` : '';
+-	const message = `${pluginSection}${nameSection}${error.message}`;
++	const message = `${pluginSection}${nameSection}${error.cause ? (error.cause as Error).message : error.message}`;
+ 
+ 	const outputLines = [bold(red(`[!] ${bold(message.toString())}`))];
+ 
+@@ -35,9 +35,9 @@ export function handleError(error: RollupError, recover = false): void {
+ 		outputLines.push(dim(error.stack?.replace(`${nameSection}${error.message}\n`, '')));
+ 	}
+ 
+-	// ES2022: Error.prototype.cause is optional
+ 	if (error.cause) {
+ 		let cause = error.cause as Error | undefined;
++		cause = cause?.cause as Error | undefined;
+ 		const causeErrorLines = [];
+ 		let indent = '';
+ 

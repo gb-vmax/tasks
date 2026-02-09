@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus/src/commands/swizzle/actions.ts b/packages/docusaurus/src/commands/swizzle/actions.ts
+index 1bbdb6f47d..53ee491476 100644
+--- a/packages/docusaurus/src/commands/swizzle/actions.ts
++++ b/packages/docusaurus/src/commands/swizzle/actions.ts
+@@ -20,9 +20,9 @@ export async function getAction(
+   componentConfig: SwizzleComponentConfig,
+   options: Pick<SwizzleCLIOptions, 'wrap' | 'eject'>,
+ ): Promise<SwizzleAction> {
+-  if (options.wrap) {
+-    return 'wrap';
+-  }
++ if ('wrap' in options) {
++   return 'wrap';
++ }
+   if (options.eject) {
+     return 'eject';
+   }

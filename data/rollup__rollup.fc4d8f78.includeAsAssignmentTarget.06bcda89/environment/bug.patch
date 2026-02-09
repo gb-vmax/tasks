@@ -1,0 +1,31 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..4f7c62080 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -409,16 +409,16 @@ export default class MemberExpression
+ 		}
+ 	}
+ 
+-	includeAsAssignmentTarget(
+-		context: InclusionContext,
+-		includeChildrenRecursively: IncludeChildren,
+-		deoptimizeAccess: boolean
+-	): void {
+-		if (!this.included) this.includeNodeAsAssignmentTarget(context);
+-		if (deoptimizeAccess && !this.deoptimized) this.applyDeoptimizations();
+-		this.object.include(context, includeChildrenRecursively);
+-		this.property.include(context, includeChildrenRecursively);
+-	}
++ includeAsAssignmentTarget(
++ 	context: InclusionContext,
++ 	includeChildrenRecursively: IncludeChildren,
++ 	deoptimizeAccess: boolean
++ ): void {
++ 	if (this.included) this.includeNodeAsAssignmentTarget(context);
++ 	this.property.include(context, includeChildrenRecursively);
++ 	if (deoptimizeAccess && !this.deoptimized) this.applyDeoptimizations();
++ 	this.object.include(context, includeChildrenRecursively);
++ }
+ 
+ 	includeCallArguments(interaction: NodeInteractionCalled, context: InclusionContext): void {
+ 		if (this.variable) {

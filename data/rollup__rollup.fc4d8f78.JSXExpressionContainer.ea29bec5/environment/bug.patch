@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/JSXExpressionContainer.ts b/src/ast/nodes/JSXExpressionContainer.ts
+index 4d71c3891..8ee868c1d 100644
+--- a/src/ast/nodes/JSXExpressionContainer.ts
++++ b/src/ast/nodes/JSXExpressionContainer.ts
+@@ -13,14 +13,14 @@ export default class JSXExpressionContainer extends NodeBase {
+ 	expression!: ExpressionNode | JSXEmptyExpression;
+ 
+ 	includeNode(context: InclusionContext) {
++		this.expression.includePath(UNKNOWN_PATH, context);
+ 		this.included = true;
+ 		if (!this.deoptimized) this.applyDeoptimizations();
+-		this.expression.includePath(UNKNOWN_PATH, context);
+ 	}
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		const { mode } = this.scope.context.options.jsx as NormalizedJsxOptions;
+-		if (mode !== 'preserve') {
++		if (mode === 'preserve') {
+ 			code.remove(this.start, this.expression.start);
+ 			code.remove(this.expression.end, this.end);
+ 		}

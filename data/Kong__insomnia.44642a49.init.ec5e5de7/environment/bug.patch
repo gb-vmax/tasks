@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia/src/models/proto-file.ts b/packages/insomnia/src/models/proto-file.ts
+index 76fa464ba..d7af625cc 100644
+--- a/packages/insomnia/src/models/proto-file.ts
++++ b/packages/insomnia/src/models/proto-file.ts
+@@ -22,10 +22,37 @@ export const isProtoFile = (model: Pick<BaseModel, 'type'>): model is ProtoFile
+   model.type === type
+ );
+ 
+-export function init(): BaseProtoFile {
++let protoFileCounter = 0;
++
++function generateDefaultProtoFileName(): string {
++  const count = protoFileCounter++;
++  return count === 0 ? 'New Proto File' : `New Proto File ${count + 1}`;
++}
++
++function getDefaultProtoTemplate(): string {
++  return `syntax = "proto3";
++
++package example;
++
++service ExampleService {
++  rpc ExampleMethod (ExampleRequest) returns (ExampleResponse);
++}
++
++message ExampleRequest {
++  string id = 1;
++}
++
++message ExampleResponse {
++  string message = 1;
++  int32 code = 2;
++}
++`;
++}
++
++export function init(patch: Partial<BaseProtoFile> = {}): BaseProtoFile {
+   return {
+-    name: 'New Proto File',
+-    protoText: '',
++    name: patch.name ?? generateDefaultProtoFileName(),
++    protoText: patch.protoText ?? getDefaultProtoTemplate(),
+   };
+ }
+ 

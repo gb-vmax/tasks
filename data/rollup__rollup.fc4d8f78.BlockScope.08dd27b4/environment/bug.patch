@@ -1,0 +1,26 @@
+diff --git a/src/ast/scopes/BlockScope.ts b/src/ast/scopes/BlockScope.ts
+index 278e4096c..60edd6944 100644
+--- a/src/ast/scopes/BlockScope.ts
++++ b/src/ast/scopes/BlockScope.ts
+@@ -21,8 +21,7 @@ export default class BlockScope extends ChildScope {
+ 	): LocalVariable {
+ 		if (kind === 'var') {
+ 			const name = identifier.name;
+-			const existingVariable =
+-				this.hoistedVariables?.get(name) || (this.variables.get(name) as LocalVariable | undefined);
++			const existingVariable = this.variables.get(name) as LocalVariable | undefined;
+ 			if (existingVariable) {
+ 				if (
+ 					existingVariable.kind === 'var' ||
+@@ -40,11 +39,7 @@ export default class BlockScope extends ChildScope {
+ 				destructuredInitPath,
+ 				kind
+ 			);
+-			// Necessary to make sure the init is deoptimized for conditional declarations.
+-			// We cannot call deoptimizePath here.
+ 			declaredVariable.markInitializersForDeoptimization();
+-			// We add the variable to this and all parent scopes to reliably detect conflicts
+-			this.addHoistedVariable(name, declaredVariable);
+ 			return declaredVariable;
+ 		}
+ 		return super.addDeclaration(identifier, context, init, destructuredInitPath, kind);

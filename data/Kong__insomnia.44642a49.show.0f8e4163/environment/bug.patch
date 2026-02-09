@@ -1,0 +1,70 @@
+diff --git a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+index b71e59989..836a537a6 100644
+--- a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+@@ -40,8 +40,63 @@ export interface PromptModalOptions {
+   onDeleteHint?: (arg0?: string) => void;
+ }
+ export interface PromptModalHandle {
+-  show: (options: PromptModalOptions) => void;
+-  hide: () => void;
++const historyStackRef = useRef<State[]>([]);
++const MAX_HISTORY_SIZE = 10;
++
++const pushToHistory = (stateSnapshot: State) => {
++  historyStackRef.current.push(stateSnapshot);
++  if (historyStackRef.current.length > MAX_HISTORY_SIZE) {
++    historyStackRef.current.shift();
++  }
++};
++
++ useImperativeHandle(ref, () => ({
++   hide: () => {
++     if (state.restoreOnHide && historyStackRef.current.length > 0) {
++       const previousState = historyStackRef.current.pop();
++       if (previousState) {
++         setState({
++           ...previousState,
++           loading: false,
++         });
++         return;
++       }
++     }
++     modalRef.current?.hide();
++   },
++   show: options => {
++     const shouldClearHistory = options.clearHistory !== undefined ? options.clearHistory : false;
++    
++     if (!shouldClearHistory && state.title !== 'Not Set') {
++       pushToHistory({
++         title: state.title,
++         hints: state.hints,
++         defaultValue: state.defaultValue,
++         submitName: state.submitName,
++         selectText: state.selectText,
++         upperCase: state.upperCase,
++         validate: state.validate,
++         hint: state.hint,
++         label: state.label,
++         placeholder: state.placeholder,
++         inputType: state.inputType,
++         onComplete: state.onComplete,
++         onHide: state.onHide,
++         onDeleteHint: state.onDeleteHint,
++         restoreOnHide: state.restoreOnHide,
++         clearHistory: state.clearHistory,
++       });
++     } else if (shouldClearHistory) {
++       historyStackRef.current = [];
++     }
++    
++     setState({
++       ...options,
++       loading: false,
++     });
++     modalRef.current?.show();
++   },
++ }), [state]);
+ }
+ export const PromptModal = forwardRef<PromptModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

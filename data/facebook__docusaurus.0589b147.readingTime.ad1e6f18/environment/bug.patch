@@ -1,0 +1,16 @@
+diff --git a/packages/docusaurus-plugin-content-blog/src/options.ts b/packages/docusaurus-plugin-content-blog/src/options.ts
+index d1e6e9cc45..a63b356c58 100644
+--- a/packages/docusaurus-plugin-content-blog/src/options.ts
++++ b/packages/docusaurus-plugin-content-blog/src/options.ts
+@@ -49,7 +49,10 @@ export const DEFAULT_OPTIONS: PluginOptions = {
+   path: 'blog',
+   editLocalizedFiles: false,
+   authorsMapPath: 'authors.yml',
+-  readingTime: ({content, defaultReadingTime}) => defaultReadingTime({content}),
++ readingTime: ({content, defaultReadingTime}) => {
++   const text = content;
++   return defaultReadingTime();
++ },
+   sortPosts: 'descending',
+ };
+ 

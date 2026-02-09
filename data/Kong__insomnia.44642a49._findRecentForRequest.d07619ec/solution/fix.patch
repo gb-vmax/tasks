@@ -1,0 +1,200 @@
+diff --git a/packages/insomnia/src/models/response.ts b/packages/insomnia/src/models/response.ts
+index 2ca7ed602..22c3714db 100644
+--- a/packages/insomnia/src/models/response.ts
++++ b/packages/insomnia/src/models/response.ts
+@@ -139,68 +139,92 @@ export function remove(response: Response) {
+   return db.remove(response);
+ }
+ 
+-async function _findRecentForRequest(
+-  requestId: string,
+-  environmentId: string | null,
+-  limit: number,
+-) {
+-  const query: Query<Response> = {
+-    parentId: requestId,
+-  };
++interface BodyCacheEntry {
++  buffer: Buffer;
++  timestamp: number;
++  size: number;
++}
+ 
+-  // Filter responses by environment if setting is enabled
+-  if ((await models.settings.get()).filterResponsesByEnv) {
+-    query.environmentId = environmentId;
+-  }
++const _bodyCache = new Map<string, BodyCacheEntry>();
++const _bodyCacheMaxSize = 50 * 1024 * 1024;
++const _bodyCacheTTL = 5 * 60 * 1000;
++const _maxCacheableFileSize = 5 * 1024 * 1024;
+ 
+-  return db.findMostRecentlyModified<Response>(type, query, limit);
++function _getMaxCacheableFileSize(): number {
++  return _maxCacheableFileSize;
+ }
+ 
+-export async function getLatestForRequest(
+-  requestId: string,
+-  environmentId: string | null,
+-) {
+-  const responses = await _findRecentForRequest(requestId, environmentId, 1);
+-  const response = responses[0] as Response | null | undefined;
+-  return response || null;
++function _getFromBodyCache(bodyPath: string): Buffer | null {
++  const entry = _bodyCache.get(bodyPath);
++  if (!entry) {
++    return null;
++  }
++
++  const now = Date.now();
++  if (now - entry.timestamp > _bodyCacheTTL) {
++    _bodyCache.delete(bodyPath);
++    return null;
++  }
++
++  entry.timestamp = now;
++  return entry.buffer;
+ }
+ 
+-export async function create(patch: Partial<Response> = {}, maxResponses = 20): Promise<Response> {
+-  if (!patch.parentId) {
+-    console.log('[db] Attempted to create response without `parentId`', patch);
+-    throw new Error('New Response missing `parentId`');
++function _addToBodyCache(bodyPath: string, buffer: Buffer): void {
++  const now = Date.now();
++  const size = buffer.length;
++
++  _evictOldCacheEntries(now);
++
++  let currentTotalSize = _getCurrentCacheSize();
++  while (currentTotalSize + size > _bodyCacheMaxSize && _bodyCache.size > 0) {
++    _evictLRUEntry();
++    currentTotalSize = _getCurrentCacheSize();
+   }
+ 
+-  const { parentId } = patch;
+-  // Create request version snapshot
+-  const request = await requestOperations.getById(parentId);
+-  const requestVersion = request ? await models.requestVersion.create(request) : null;
+-  patch.requestVersionId = requestVersion ? requestVersion._id : null;
+-  // Filter responses by environment if setting is enabled
+-  const shouldQueryByEnvId = (await models.settings.get()).filterResponsesByEnv && patch.hasOwnProperty('environmentId');
+-  const query = {
+-    parentId,
+-    ...(shouldQueryByEnvId ? { environmentId: patch.environmentId } : {}),
+-  };
++  if (currentTotalSize + size <= _bodyCacheMaxSize) {
++    _bodyCache.set(bodyPath, {
++      buffer,
++      timestamp: now,
++      size,
++    });
++  }
++}
+ 
+-  // Delete all other responses before creating the new one
+-  const allResponses = await db.findMostRecentlyModified<Response>(type, query, Math.max(1, maxResponses));
+-  const recentIds = allResponses.map(r => r._id);
+-  // Remove all that were in the last query, except the first `maxResponses` IDs
+-  await db.removeWhere(type, {
+-    ...query,
+-    _id: {
+-      $nin: recentIds,
+-    },
+-  });
+-  // Actually create the new response
+-  return db.docCreate(type, patch);
++function _getCurrentCacheSize(): number {
++  let total = 0;
++  for (const entry of _bodyCache.values()) {
++    total += entry.size;
++  }
++  return total;
+ }
+ 
+-export function getLatestByParentId(parentId: string) {
+-  return db.getMostRecentlyModified<Response>(type, {
+-    parentId,
+-  });
++function _evictOldCacheEntries(now: number): void {
++  const keysToDelete: string[] = [];
++  for (const [key, entry] of _bodyCache.entries()) {
++    if (now - entry.timestamp > _bodyCacheTTL) {
++      keysToDelete.push(key);
++    }
++  }
++  for (const key of keysToDelete) {
++    _bodyCache.delete(key);
++  }
++}
++
++function _evictLRUEntry(): void {
++  let oldestKey: string | null = null;
++  let oldestTime = Infinity;
++
++  for (const [key, entry] of _bodyCache.entries()) {
++    if (entry.timestamp < oldestTime) {
++      oldestTime = entry.timestamp;
++      oldestKey = key;
++    }
++  }
++
++  if (oldestKey) {
++    _bodyCache.delete(oldestKey);
++  }
+ }
+ 
+ export const getBodyStream = (
+@@ -210,16 +234,46 @@ export const getBodyStream = (
+   if (!response?.bodyPath) {
+     return null;
+   }
++
++  let fileStats;
+   try {
+-    fs.statSync(response?.bodyPath);
++    fileStats = fs.statSync(response?.bodyPath);
+   } catch (err) {
+     console.warn('Failed to read response body', err.message);
+     return readFailureValue === undefined ? null : readFailureValue;
+   }
+-  if (response?.bodyCompression === 'zip') {
+-    return fs.createReadStream(response?.bodyPath).pipe(zlib.createGunzip());
+-  } else {
+-    return fs.createReadStream(response?.bodyPath);
++
++  const fileSize = fileStats.size;
++  const maxCacheableSize = _getMaxCacheableFileSize();
++
++  if (fileSize <= maxCacheableSize) {
++    const cachedBuffer = _getFromBodyCache(response.bodyPath);
++    if (cachedBuffer) {
++      return Readable.from(cachedBuffer);
++    }
++  }
++
++  try {
++    if (response?.bodyCompression === 'zip') {
++      const rawBuffer = fs.readFileSync(response?.bodyPath);
++      const decompressedBuffer = zlib.gunzipSync(rawBuffer);
++      
++      if (decompressedBuffer.length <= maxCacheableSize) {
++        _addToBodyCache(response.bodyPath, decompressedBuffer);
++      }
++      
++      return Readable.from(decompressedBuffer);
++    } else {
++      if (fileSize <= maxCacheableSize) {
++        const buffer = fs.readFileSync(response?.bodyPath);
++        _addToBodyCache(response.bodyPath, buffer);
++        return Readable.from(buffer);
++      }
++      return fs.createReadStream(response?.bodyPath);
++    }
++  } catch (err) {
++    console.warn('Failed to read response body', err.message);
++    return readFailureValue === undefined ? null : readFailureValue;
+   }
+ };
+ 

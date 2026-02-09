@@ -2,29 +2,26 @@
 
 ### Describe the bug
 
-When using front matter with numeric values in Docusaurus, the values are not being converted to strings as expected. This causes validation issues when the schema expects string types but receives numbers.
+I'm experiencing an issue with front matter validation where numeric values in YAML front matter are not being converted to strings as expected. When I have a numeric value in my front matter that should be treated as a string, it's remaining as a number instead of being converted.
 
 ### Reproduction
 
 ```yaml
 ---
-title: My Page
-version: 1.5
-port: 8080
+title: My Post
+id: 12345
 ---
 ```
 
-When processing this front matter, numeric values like `version` and `port` should be automatically converted to strings if the schema expects strings, but they remain as numbers instead.
+In this case, the `id` field with value `12345` should be converted to the string `"12345"`, but it's staying as a number. This is causing issues downstream where string values are expected.
 
 ### Expected behavior
 
-Numeric values in front matter should be automatically converted to strings when needed, similar to how YAML parsers handle type coercion. The `version: 1.5` should become `"1.5"` and `port: 8080` should become `"8080"` when the validation schema expects string types.
+Numeric values in front matter should be automatically converted to strings when the schema expects a string type. This was working correctly before and the conversion should happen transparently.
 
 ### System Info
 - Docusaurus version: latest
 - Node version: 18.x
-
-This is blocking our migration since we have many existing markdown files with numeric values in front matter that need to be treated as strings.
 
 ---
 Repository: /testbed

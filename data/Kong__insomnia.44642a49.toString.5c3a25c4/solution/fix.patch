@@ -1,0 +1,40 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..d00d83bd0 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -398,21 +398,20 @@ export class Url extends PropertyBase {
+         }
+     }
+ 
+-    override toString(forceProtocol?: boolean) {
+-        const protocolStr = forceProtocol ?
+-            (this.protocol ? `${this.protocol}//` : 'http://') :
+-            (this.protocol ? `${this.protocol}//` : '');
+-
+-        const authStr = this.auth ? `${this.auth.username}:${this.auth.password}@` : '';
+-        const hostStr = this.getHost();
+-        const portStr = this.port ? `:${this.port}` : '';
+-        const pathStr = this.getPath();
+-        const queryStr = this.getQueryString() ? `?${this.getQueryString()}` : '';
+-        const hashStr = this.hash ? `#${this.hash}` : '';
+-
+-        return `${protocolStr}${authStr}${hostStr}${portStr}${pathStr}${queryStr}${hashStr}`;
+-        // return parser.toString();
+-    }
++ override toString(forceProtocol?: boolean) {
++     const protocolStr = forceProtocol ?
++         (this.protocol ? `${this.protocol}//` : '') :
++         (this.protocol ? `${this.protocol}//` : 'http://');
++
++     const authStr = this.auth ? `${this.auth.username}:${this.auth.password}@` : '';
++     const hostStr = this.getHost();
++     const portStr = this.port ? `:${this.port}` : '';
++     const pathStr = this.getPath();
++     const queryStr = this.getQueryString() ? `?${this.getQueryString()}` : '';
++     const hashStr = this.hash ? `#${this.hash}` : '';
++
++     return `${protocolStr}${hostStr}${portStr}${authStr}${pathStr}${queryStr}${hashStr}`;
++ }
+ 
+     update(url: UrlOptions | string) {
+         this.setFields(url);

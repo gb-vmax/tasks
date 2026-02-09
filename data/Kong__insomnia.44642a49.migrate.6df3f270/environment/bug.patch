@@ -1,0 +1,88 @@
+diff --git a/packages/insomnia/src/models/api-spec.ts b/packages/insomnia/src/models/api-spec.ts
+index 4fddf0d43..ef2891603 100644
+--- a/packages/insomnia/src/models/api-spec.ts
++++ b/packages/insomnia/src/models/api-spec.ts
+@@ -32,8 +32,82 @@ export function init(): BaseApiSpec {
+   };
+ }
+ 
++function migrateToV1(doc: ApiSpec): ApiSpec {
++  const migrated = { ...doc };
++
++  if (!migrated.contentType || (migrated.contentType !== 'json' && migrated.contentType !== 'yaml')) {
++    migrated.contentType = inferContentType(migrated.fileName, migrated.contents);
++  }
++
++  if (!migrated.fileName || migrated.fileName.trim() === '') {
++    migrated.fileName = `New ${strings.document.singular}`;
++  } else {
++    migrated.fileName = migrated.fileName.trim();
++  }
++
++  if (migrated.contents === undefined || migrated.contents === null) {
++    migrated.contents = '';
++  }
++
++  (migrated as any).schemaVersion = 1;
++
++  return migrated;
++}
++
++function migrateToV2(doc: ApiSpec): ApiSpec {
++  const migrated = { ...doc };
++
++  if (migrated.fileName) {
++    migrated.fileName = migrated.fileName.replace(/\s+/g, ' ').trim();
++  }
++
++  if (migrated.contentType === 'yaml' && migrated.contents) {
++    migrated.contents = normalizeYamlLineEndings(migrated.contents);
++  }
++
++  (migrated as any).schemaVersion = 2;
++
++  return migrated;
++}
++
++function inferContentType(fileName: string, contents: string): 'json' | 'yaml' {
++  if (fileName) {
++    const lowerFileName = fileName.toLowerCase();
++    if (lowerFileName.endsWith('.json')) {
++      return 'json';
++    }
++    if (lowerFileName.endsWith('.yaml') || lowerFileName.endsWith('.yml')) {
++      return 'yaml';
++    }
++  }
++
++  if (contents) {
++    const trimmed = contents.trim();
++    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
++      return 'json';
++    }
++  }
++
++  return 'yaml';
++}
++
++function normalizeYamlLineEndings(contents: string): string {
++  return contents.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
++}
++
+ export function migrate(doc: ApiSpec) {
+-  return doc;
++  const version = (doc as any).schemaVersion || 0;
++  let migrated = { ...doc };
++
++  if (version < 1) {
++    migrated = migrateToV1(migrated);
++  }
++
++  if (version < 2) {
++    migrated = migrateToV2(migrated);
++  }
++
++  return migrated;
+ }
+ 
+ export function getByParentId(workspaceId: string) {

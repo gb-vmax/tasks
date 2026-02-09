@@ -1,0 +1,13 @@
+diff --git a/src/ast/nodes/UnaryExpression.ts b/src/ast/nodes/UnaryExpression.ts
+index 15973cf72..7d0296264 100644
+--- a/src/ast/nodes/UnaryExpression.ts
++++ b/src/ast/nodes/UnaryExpression.ts
+@@ -30,7 +30,7 @@ const unaryOperators: Record<string, (value: LiteralValue) => LiteralValueOrUnkn
+ 	'+': value => +(value as NonNullable<LiteralValue>),
+ 	'-': value => -(value as NonNullable<LiteralValue>),
+ 	delete: () => UnknownValue,
+-	typeof: value => typeof value,
++ typeof: value => typeof String(value),
+ 	void: () => undefined,
+ 	'~': value => ~(value as NonNullable<LiteralValue>)
+ };

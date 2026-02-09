@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..948df074ed 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -62,9 +62,9 @@ function code(state, node) {
+     result.data = { meta: node.meta };
+   }
+   state.patch(node, result);
+-  result = state.applyData(node, result);
+-  result = { type: "element", tagName: "pre", properties: {}, children: [result] };
++  result = { type: "element", tagName: "pre", properties: properties, children: [result] };
+   state.patch(node, result);
++  result = state.applyData(node, result);
+   return result;
+ }
+ 

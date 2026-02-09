@@ -1,0 +1,108 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..5d07d6807 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -247,7 +247,102 @@ export class Response extends Property {
+                 status: (expected: number | string) => haveStatus(expected, true),
+                 header: (expected: string) => haveHeader(expected, true),
+                 body: (expected: string) => haveBody(expected, true),
+-                jsonBody: (expected: object) => haveJsonBody(expected, true),
++const extractValueByPath = (obj: any, path: string): any => {
++    const keys = path.split('.').filter(k => k.length > 0);
++    let current = obj;
++    
++    for (const key of keys) {
++        const arrayMatch = key.match(/^(.+?)\[(\d+)\]$/);
++        if (arrayMatch) {
++            const arrayKey = arrayMatch[1];
++            const index = parseInt(arrayMatch[2], 10);
++            if (current[arrayKey] === undefined || current[arrayKey] === null) {
++                return undefined;
++            }
++            current = current[arrayKey][index];
++        } else {
++            if (current === null || current === undefined || typeof current !== 'object') {
++                return undefined;
++            }
++            current = current[key];
++        }
++        
++        if (current === undefined) {
++            return undefined;
++        }
++    }
++    
++    return current;
++};
++
++const partialDeepEqual = (actual: any, expected: any): boolean => {
++    if (expected === null || expected === undefined) {
++        return actual === expected;
++    }
++    
++    if (typeof expected !== 'object') {
++        return actual === expected;
++    }
++    
++    if (Array.isArray(expected)) {
++        if (!Array.isArray(actual) || actual.length < expected.length) {
++            return false;
++        }
++        return expected.every((expectedItem, index) => 
++            partialDeepEqual(actual[index], expectedItem)
++        );
++    }
++    
++    if (typeof actual !== 'object' || actual === null) {
++        return false;
++    }
++    
++    return Object.keys(expected).every(key => {
++        if (!(key in actual)) {
++            return false;
++        }
++        return partialDeepEqual(actual[key], expected[key]);
++    });
++};
++
++const haveJsonBody = (expected: object | string, checkEquality: boolean, options?: { partial?: boolean; path?: string }) => {
++    let actualValue: any;
++    
++    try {
++        actualValue = JSON.parse(this.body);
++    } catch (e) {
++        throw Error(`Failed to parse response body as JSON: ${e}`);
++    }
++    
++    if (options?.path) {
++        actualValue = extractValueByPath(actualValue, options.path);
++        if (actualValue === undefined) {
++            throw Error(`Path "${options.path}" not found in response JSON`);
++        }
++    }
++    
++    if (typeof expected === 'string' && options?.path) {
++        verify(actualValue, expected, checkEquality);
++        return;
++    }
++    
++    if (options?.partial && typeof expected === 'object') {
++        const matches = partialDeepEqual(actualValue, expected);
++        if ((matches && checkEquality) || (!matches && !checkEquality)) {
++            return;
++        }
++        throw Error(`Response JSON does not ${checkEquality ? '' : 'not '}partially match the expected value`);
++    }
++    
++    verify(actualValue, expected, checkEquality);
++}
++
++ jsonBody: (expected: object | string, options?: { partial?: boolean; path?: string }) => {
++     if (typeof expected === 'string') {
++         return haveJsonBody(expected, true, { path: expected });
++     }
++     return haveJsonBody(expected, true, options);
++ }
+                 jsonSchema: (expected: object) => haveJsonSchema(expected, true),
+             },
+             not: {

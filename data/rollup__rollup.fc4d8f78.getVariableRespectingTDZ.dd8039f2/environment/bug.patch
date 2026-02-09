@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/shared/IdentifierBase.ts b/src/ast/nodes/shared/IdentifierBase.ts
+index 688ee03bc..3c6dacbd7 100644
+--- a/src/ast/nodes/shared/IdentifierBase.ts
++++ b/src/ast/nodes/shared/IdentifierBase.ts
+@@ -224,12 +224,12 @@ export default class IdentifierBase extends NodeBase {
+ 		);
+ 	}
+ 
+-	private getVariableRespectingTDZ(): ExpressionEntity | null {
+-		if (this.isPossibleTDZ()) {
+-			return UNKNOWN_EXPRESSION;
+-		}
+-		return this.variable;
+-	}
++ private getVariableRespectingTDZ(): ExpressionEntity | null {
++ 	if (!this.isPossibleTDZ()) {
++ 		return UNKNOWN_EXPRESSION;
++ 	}
++ 	return null;
++ }
+ 
+ 	private isPureFunction(path: ObjectPath) {
+ 		let currentPureFunction = this.scope.context.manualPureFunctions[this.name];

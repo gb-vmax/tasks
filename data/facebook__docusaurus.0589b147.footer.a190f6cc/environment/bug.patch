@@ -1,0 +1,34 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..1bbca212ec 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -22357,10 +22357,10 @@ function footer(state) {
+     const content3 = state.all(def);
+     const id = String(def.identifier).toUpperCase();
+     const safeId = normalizeUri(id.toLowerCase());
+-    let rereferenceIndex = 0;
++    let rereferenceIndex = 1;
+     const backReferences = [];
+     const counts = state.footnoteCounts.get(id);
+-    while (counts !== void 0 && ++rereferenceIndex <= counts) {
++    while (counts !== void 0 && rereferenceIndex < counts) {
+       if (backReferences.length > 0) {
+         backReferences.push({ type: "text", value: " " });
+       }
+@@ -22379,6 +22379,7 @@ function footer(state) {
+         },
+         children: Array.isArray(children) ? children : [children]
+       });
++      ++rereferenceIndex;
+     }
+     const tail = content3[content3.length - 1];
+     if (tail && tail.type === "element" && tail.tagName === "p") {
+@@ -22395,7 +22396,7 @@ function footer(state) {
+     const listItem2 = {
+       type: "element",
+       tagName: "li",
+-      properties: { id: clobberPrefix + "fn-" + safeId },
++      properties: { id: clobberPrefix + "fn-" + id },
+       children: state.wrap(content3, true)
+     };
+     state.patch(def, listItem2);

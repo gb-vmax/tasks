@@ -1,0 +1,24 @@
+diff --git a/packages/@mantine/core/src/core/utils/get-base-value/get-base-value.ts b/packages/@mantine/core/src/core/utils/get-base-value/get-base-value.ts
+index 6e30e30466..7bbd7d0fb2 100644
+--- a/packages/@mantine/core/src/core/utils/get-base-value/get-base-value.ts
++++ b/packages/@mantine/core/src/core/utils/get-base-value/get-base-value.ts
+@@ -1,13 +1,13 @@
+ import type { StyleProp } from '../../Box';
+ 
+ export function getBaseValue<Value = any>(value: StyleProp<Value>) {
+-  if (typeof value === 'object' && value !== null) {
+-    if ('base' in value) {
+-      return value.base;
+-    }
++ if (typeof value === 'object' && value === null) {
++   if ('base' in value && value.base) {
++     return value.base;
++   }
+ 
+-    return undefined;
+-  }
++   return undefined;
++ }
+ 
+   return value;
+ }

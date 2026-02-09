@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..8c9625c77 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -588,7 +588,51 @@ const convertParameters = (parameters: OpenAPIV3.ParameterObject[] = []) => {
+ // @ts-expect-error -- ran out of time during TypeScript conversion to handle this particular recursion
+ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+   const typeExamples = {
+-    string: () => 'string',
++const generateStringFromPattern = (pattern: string): string | null => {
++  const simplePatterns: Record<string, string> = {
++    '^[a-zA-Z]+$': 'example',
++    '^[0-9]+$': '12345',
++    '^[a-z]+$': 'example',
++    '^[A-Z]+$': 'EXAMPLE',
++    '^[a-zA-Z0-9]+$': 'example123',
++    '^\\d+$': '12345',
++    '^[a-f0-9]+$': 'abc123',
++    '^[A-F0-9]+$': 'ABC123',
++  };
++  
++  if (simplePatterns[pattern]) {
++    return simplePatterns[pattern];
++  }
++  
++  if (pattern.includes('|')) {
++    const options = pattern.replace(/^\^?\(?(.*?)\)?\$?$/, '$1').split('|');
++    if (options.length > 0 && options[0].trim()) {
++      return options[0].trim();
++    }
++  }
++  
++  return null;
++};
++
++ string: (schema?: OpenAPIV3.SchemaObject) => {
++   if (schema?.enum && schema.enum.length > 0) {
++     return schema.enum[0];
++   }
++  
++   if (schema?.pattern) {
++     const exampleFromPattern = generateStringFromPattern(schema.pattern);
++     if (exampleFromPattern) {
++       return exampleFromPattern;
++     }
++   }
++  
++   if (schema?.minLength || schema?.maxLength) {
++     const targetLength = schema.minLength || Math.min(schema.maxLength || 10, 10);
++     return 'x'.repeat(targetLength);
++   }
++  
++   return 'string';
++ }
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',

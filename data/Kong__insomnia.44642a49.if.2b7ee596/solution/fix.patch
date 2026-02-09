@@ -1,0 +1,77 @@
+diff --git a/packages/insomnia-sdk/src/objects/variables.ts b/packages/insomnia-sdk/src/objects/variables.ts
+index 4c72b17f3..b6f390305 100644
+--- a/packages/insomnia-sdk/src/objects/variables.ts
++++ b/packages/insomnia-sdk/src/objects/variables.ts
+@@ -36,9 +36,70 @@ export class Variable extends Property {
+ 
+     // cast typecasts a value to the Variable.types of this Variable.
+     cast(value: any) {
+-        if ('_kind' in value && value._kind === 'Variable') {
+-            return value.value;
++private _extractFromVariableList(variableList: any): any[] {
++    const values: any[] = [];
++    if (variableList.members && Array.isArray(variableList.members)) {
++        for (const member of variableList.members) {
++            if (member && !member.disabled && member.value !== undefined) {
++                values.push(member.value);
++            }
+         }
++    }
++    return values;
++}
++
++private _coerceToType(value: any): any {
++    if (this.type === 'number') {
++        if (Array.isArray(value)) {
++            return value.map(v => {
++                const num = Number(v);
++                return isNaN(num) ? v : num;
++            });
++        }
++        const num = Number(value);
++        return isNaN(num) ? value : num;
++    } else if (this.type === 'boolean') {
++        if (Array.isArray(value)) {
++            return value.map(v => this._toBoolean(v));
++        }
++        return this._toBoolean(value);
++    } else if (this.type === 'string') {
++        if (Array.isArray(value)) {
++            return value.map(v => String(v));
++        }
++        return String(value);
++    }
++    return value;
++}
++
++private _toBoolean(value: any): boolean {
++    if (typeof value === 'boolean') {
++        return value;
++    }
++    if (typeof value === 'string') {
++        const lower = value.toLowerCase().trim();
++        return lower === 'true' || lower === '1' || lower === 'yes';
++    }
++    return Boolean(value);
++}
++
++ cast(value: any) {
++     let extractedValue: any;
++
++     if ('_kind' in value && value._kind === 'Variable') {
++         extractedValue = value.value;
++     } else if ('_kind' in value && value._kind === 'VariableList') {
++         extractedValue = this._extractFromVariableList(value);
++     } else {
++         extractedValue = value;
++     }
++
++     if (extractedValue === undefined) {
++         return undefined;
++     }
++
++     return this._coerceToType(extractedValue);
++ }
+         return undefined;
+     }
+ 

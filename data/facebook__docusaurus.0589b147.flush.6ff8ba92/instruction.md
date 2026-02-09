@@ -1,27 +1,30 @@
 # Bug Report
 
-### Issue with entity parsing - text content not being captured correctly
+### Describe the bug
 
-I'm encountering a problem with the entity parser where text content seems to be getting lost or not properly captured in the result array. 
+I'm encountering an issue with entity parsing where the output seems to be missing content. When parsing text with HTML entities, the result array doesn't contain the expected text segments.
 
 ### Reproduction
-When parsing text with entities, the parsed content is not appearing in the final output as expected:
 
 ```js
-const parsed = parseEntities('Hello &amp; world', {
+const result = parseEntities('Hello &amp; world', {
   text: (value, position) => {
-    console.log('Text:', value); // This logs correctly
+    console.log('Text:', value);
   }
 });
 
-console.log(parsed); // Expected to contain text segments, but they're missing or empty
+console.log(result); // Expected: ['Hello ', '&', ' world'] but getting empty strings
 ```
 
-### Expected behavior
-The `result` array should contain all the text segments that were parsed, including the content that was passed to the `text` callback. Currently it seems like the text is being processed but not actually added to the results.
+The text callback is being called correctly with the right values, but the final result array is not being populated as expected. It looks like the queue is being cleared before it's added to the result.
 
-### Additional context
-This appears to affect any text content that goes through the flush mechanism. The text callback is being invoked with the correct values, but those values aren't making it into the final parsed result array.
+### Expected behavior
+
+The `result` array should contain all the text segments that were processed, including the content that was passed to the text callback.
+
+### System Info
+- @mdx-js/mdx version: 3.0.0
+- Node version: 18.x
 
 ---
 Repository: /testbed

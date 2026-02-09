@@ -2,36 +2,32 @@
 
 ### Describe the bug
 
-Redirect pages are not working correctly after a recent change. The redirect metadata and functionality seem to be broken - the page doesn't include the proper delay or search/anchor forwarding configuration.
+After a recent update, redirect pages are not working correctly. The redirect metadata like `delay` and `searchAnchorForwarding` seems to be ignored, and only the `toUrl` is being used. This breaks the redirect behavior for pages that need custom delay times or anchor forwarding.
 
 ### Reproduction
 
-Create a redirect configuration with custom delay and search/anchor forwarding:
-
 ```js
-{
-  redirects: [
-    {
-      from: '/old-page',
-      to: '/new-page',
-    }
-  ],
-  createRedirects(existingPath) {
-    // ...
-  }
+// Create a redirect with custom settings
+const redirectData = {
+  toUrl: '/new-page',
+  delay: 5,
+  searchAnchorForwarding: true
 }
-```
 
-When navigating to the old URL, the redirect page is generated but it doesn't respect the delay setting or properly forward search parameters and anchors from the original URL.
+// Generate redirect page
+const pageContent = renderRedirectPageTemplate(redirectData)
+
+// The generated page only uses toUrl, ignoring delay and searchAnchorForwarding
+```
 
 ### Expected behavior
 
-The redirect page should:
-1. Include the configured delay before redirecting
-2. Forward search parameters (e.g., `?foo=bar`)
-3. Forward URL anchors (e.g., `#section`)
+The redirect page should respect all provided configuration options including:
+- `toUrl` - the destination URL
+- `delay` - custom delay before redirect
+- `searchAnchorForwarding` - whether to forward URL anchors and search params
 
-All of this configuration data should be passed to the redirect page template so it can function properly.
+All these properties should be passed to the template and rendered in the final redirect page HTML.
 
 ### System Info
 - Docusaurus version: latest

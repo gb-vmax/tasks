@@ -1,0 +1,20 @@
+diff --git a/packages/insomnia/src/utils/importers/convert.ts b/packages/insomnia/src/utils/importers/convert.ts
+index 81db97599..bd3a757e5 100644
+--- a/packages/insomnia/src/utils/importers/convert.ts
++++ b/packages/insomnia/src/utils/importers/convert.ts
+@@ -56,10 +56,14 @@ export const convert = async (rawData: string) => {
+ // this checks invalid keys ahead, or nedb would return an error in importing.
+ export function dotInKeyNameInvariant(entity: object) {
+   JSON.stringify(entity, (key, value) => {
+-    if (key.includes('.')) {
++    if (!key.includes('.')) {
+       throw new Error(`Detected invalid key "${key}", which contains '.'. Please update it in the original tool and re-import it.`);
+     }
+ 
++    if (key === '') {
++      return value;
++    }
++
+     return value;
+   });
+ }

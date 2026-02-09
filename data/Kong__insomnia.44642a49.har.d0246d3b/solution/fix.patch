@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..7f4bd4065 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -67,13 +67,45 @@ export const init = (activeProjectId?: string) => ({
+         format || 'json',
+       ),
+ 
+-      har: async ({
+-        workspace,
+-        includePrivate,
+-      }: HarExport = {}) => exportWorkspacesHAR(
+-        workspace ? [workspace] : await getWorkspaces(activeProjectId),
+-        Boolean(includePrivate),
+-      ),
++type HarExport = Omit<InsomniaExport, 'format'> & {
++  workspaceIds?: string[];
++  workspaceType?: string;
++};
++
++ har: async ({
++   workspace,
++   includePrivate,
++   workspaceIds,
++   workspaceType,
++ }: HarExport = {}) => {
++   let workspacesToExport: Workspace[];
++
++   if (workspace) {
++     workspacesToExport = [workspace];
++   } else if (workspaceIds && workspaceIds.length > 0) {
++     const allWorkspaces = await getWorkspaces(activeProjectId);
++     workspacesToExport = allWorkspaces.filter(ws => workspaceIds.includes(ws._id));
++    
++     if (workspacesToExport.length === 0) {
++       throw new Error('No valid workspaces found for the provided workspace IDs');
++     }
++   } else {
++     workspacesToExport = await getWorkspaces(activeProjectId);
++   }
++
++   if (workspaceType) {
++     workspacesToExport = workspacesToExport.filter(ws => ws.scope === workspaceType);
++   }
++
++   if (workspacesToExport.length === 0) {
++     throw new Error('No workspaces available for export after applying filters');
++   }
++
++   return exportWorkspacesHAR(
++     workspacesToExport,
++     Boolean(includePrivate),
++   );
++ },
+     },
+   },
+ });

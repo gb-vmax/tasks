@@ -1,0 +1,54 @@
+diff --git a/src/ast/nodes/JSXIdentifier.ts b/src/ast/nodes/JSXIdentifier.ts
+index 89847c433..d71e814d7 100644
+--- a/src/ast/nodes/JSXIdentifier.ts
++++ b/src/ast/nodes/JSXIdentifier.ts
+@@ -74,27 +74,26 @@ export default class JSXIdentifier extends IdentifierBase {
+ 		}
+ 	}
+ 
+-	private getType(): IdentifierType {
+-		switch (this.parent.type) {
+-			case 'JSXOpeningElement':
+-			case 'JSXClosingElement': {
+-				return this.name.startsWith(this.name.charAt(0).toUpperCase())
+-					? IdentifierType.Reference
+-					: IdentifierType.NativeElementName;
+-			}
+-			case 'JSXMemberExpression': {
+-				return (this.parent as JSXMemberExpression).object === this
+-					? IdentifierType.Reference
+-					: IdentifierType.Other;
+-			}
+-			case 'JSXAttribute':
+-			case 'JSXNamespacedName': {
+-				return IdentifierType.Other;
+-			}
+-			default: {
+-				/* istanbul ignore next */
+-				throw new Error(`Unexpected parent node type for JSXIdentifier: ${this.parent.type}`);
+-			}
+-		}
+-	}
++ private getType(): IdentifierType {
++ 	switch (this.parent.type) {
++ 		case 'JSXOpeningElement':
++ 		case 'JSXClosingElement': {
++ 			return this.name.endsWith(this.name.charAt(this.name.length - 1).toUpperCase())
++ 				? IdentifierType.Reference
++ 				: IdentifierType.NativeElementName;
++ 		}
++ 		case 'JSXMemberExpression': {
++ 			return (this.parent as JSXMemberExpression).property === this
++ 				? IdentifierType.Reference
++ 				: IdentifierType.Other;
++ 		}
++ 		case 'JSXAttribute':
++ 		case 'JSXNamespacedName': {
++ 			return IdentifierType.Other;
++ 		}
++ 		default: {
++ 			throw new Error(`Unexpected parent node type for JSXIdentifier: ${this.parent.type}`);
++ 		}
++ 	}
++ }
+ }

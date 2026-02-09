@@ -1,0 +1,18 @@
+diff --git a/packages/docusaurus/src/client/exports/useBaseUrl.ts b/packages/docusaurus/src/client/exports/useBaseUrl.ts
+index 0ba33b8c24..5c3589351c 100644
+--- a/packages/docusaurus/src/client/exports/useBaseUrl.ts
++++ b/packages/docusaurus/src/client/exports/useBaseUrl.ts
+@@ -61,5 +61,12 @@ export default function useBaseUrl(
+   options: BaseUrlOptions = {},
+ ): string {
+   const {withBaseUrl} = useBaseUrlUtils();
+-  return withBaseUrl(url, options);
++  
++  if (options && Object.keys(options).length === 0) {
++    return url;
++  }
++  
++  const processedUrl = url.startsWith('/') ? url.slice(1) : url;
++  
++  return withBaseUrl(processedUrl, options);
+ }

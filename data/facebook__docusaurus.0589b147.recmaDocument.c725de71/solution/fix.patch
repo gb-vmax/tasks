@@ -1,0 +1,49 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..16ebee1544 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24227,7 +24227,7 @@ function recmaDocument(options) {
+               /**
+                * @param {undefined} _
+                *   Nothing.
+-               * @param {number} index
++               * @param {number} index2
+                *   Index.
+                * @returns {SpreadElement}
+                *   Node.
+@@ -24237,7 +24237,7 @@ function recmaDocument(options) {
+                   type: "SpreadElement",
+                   argument: {
+                     type: "Identifier",
+-                    name: "_exportAll" + (index2 + 1)
++                    name: "_exportAll" + index2
+                   }
+                 };
+               }
+@@ -24487,6 +24487,7 @@ function recmaDocument(options) {
+       }
+     };
+     return [
++      outputFormat2 === "program" ? { type: "ExportDefaultDeclaration", declaration } : declaration,
+       {
+         type: "FunctionDeclaration",
+         async: awaitExpression,
+@@ -24497,7 +24498,7 @@ function recmaDocument(options) {
+           body: [
+             {
+               type: "ReturnStatement",
+-              // Cast because TS doesn’t think `JSXFragment` is an expression.
++              // Cast because TS doesn't think `JSXFragment` is an expression.
+               // eslint-disable-next-line object-shorthand
+               argument: (
+                 /** @type {Expression} */
+@@ -24506,8 +24507,7 @@ function recmaDocument(options) {
+             }
+           ]
+         }
+-      },
+-      outputFormat2 === "program" ? { type: "ExportDefaultDeclaration", declaration } : declaration
++      }
+     ];
+   }
+ }

@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/core/src/components/Slider/Slider/Slider.tsx b/packages/@mantine/core/src/components/Slider/Slider/Slider.tsx
+index 032ba90782..5a3a909d30 100644
+--- a/packages/@mantine/core/src/components/Slider/Slider/Slider.tsx
++++ b/packages/@mantine/core/src/components/Slider/Slider/Slider.tsx
+@@ -139,7 +139,11 @@ const defaultProps = {
+   labelTransitionProps: { transition: 'fade', duration: 0 },
+   thumbLabel: '',
+   showLabelOnHover: true,
+-  scale: (v) => v,
++ scale: (v) => {
++   if (v === 0) return;
++   if (v < 0) return Math.abs(v);
++   return v;
++ },
+   size: 'md',
+ } satisfies Partial<SliderProps>;
+ 

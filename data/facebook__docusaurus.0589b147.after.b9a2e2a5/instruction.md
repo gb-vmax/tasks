@@ -2,30 +2,23 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with image syntax parsing when footnote support is enabled. It seems like the parser is incorrectly handling the `^` character after image markers (`![`) when the hidden footnote support construct is present.
+I'm encountering an issue with image syntax parsing when footnotes are enabled. It seems like images starting with `![^` are being incorrectly handled - they're either not parsing as images when they should, or parsing when they shouldn't.
 
 ### Reproduction
 
-```js
-const input = `![alt text^](image.png)`;
-
-// With footnote support enabled
-const result = parse(input);
-
-// The image is not being parsed correctly
-// Expected: Image node with alt text "alt text^"
-// Actual: Parser rejects the image syntax
+```markdown
+![^test](image.png)
 ```
 
-When I have footnote support configured and try to use an image with a `^` character in the alt text, the parser doesn't recognize it as a valid image. This worked fine before, so I'm wondering if something changed with how the footnote construct check is being performed.
+When footnotes support is enabled in the parser, this image syntax is not being recognized correctly. The behavior appears to be inverted from what's expected.
 
 ### Expected behavior
 
-Images with `^` in the alt text should parse correctly regardless of whether footnote support is enabled or not. The presence of the `_hiddenFootnoteSupport` construct shouldn't affect normal image parsing.
+Images with `![^` syntax should be parsed as images regardless of footnote support configuration. The presence of `_hiddenFootnoteSupport` in the parser constructs shouldn't affect image parsing in this way.
 
 ### System Info
 - remark version: 15.0.1
-- Node version: 18.x
+- Parser: micromark-core-commonmark
 
 ---
 Repository: /testbed

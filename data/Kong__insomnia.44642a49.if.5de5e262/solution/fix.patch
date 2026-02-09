@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..929733657 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -27,9 +27,31 @@ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotSta
+ }
+ 
+ export function generateStateMap(state: SnapshotState | null): SnapshotStateMap {
+-  if (!state) {
+-    return {};
+-  }
++ export function generateStateMap(
++   state: SnapshotState | null,
++   options?: { filterIgnored?: boolean; onDuplicateKey?: (key: DocumentKey, existing: SnapshotStateEntry, duplicate: SnapshotStateEntry) => void }
++ ): SnapshotStateMap {
++   if (!state) {
++     return {};
++   }
++
++   const map: SnapshotStateMap = {};
++   const filterIgnored = options?.filterIgnored ?? false;
++
++   for (const entry of state) {
++     if (filterIgnored && shouldIgnoreKey(entry.key, entry)) {
++       continue;
++     }
++
++     if (map[entry.key] && options?.onDuplicateKey) {
++       options.onDuplicateKey(entry.key, map[entry.key], entry);
++     }
++
++     map[entry.key] = entry;
++   }
++
++   return map;
++ }
+ 
+   const map: SnapshotStateMap = {};
+ 

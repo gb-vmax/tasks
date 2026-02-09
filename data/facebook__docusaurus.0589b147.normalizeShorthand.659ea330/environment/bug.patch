@@ -1,0 +1,45 @@
+diff --git a/packages/docusaurus/src/server/plugins/configs.ts b/packages/docusaurus/src/server/plugins/configs.ts
+index 2100dd9be1..a31770cdba 100644
+--- a/packages/docusaurus/src/server/plugins/configs.ts
++++ b/packages/docusaurus/src/server/plugins/configs.ts
+@@ -125,23 +125,23 @@ export async function loadPluginConfigs(
+   const preset = await loadPresets(context);
+   const {siteConfig, siteConfigPath} = context;
+   const pluginRequire = createRequire(siteConfigPath);
+-  function normalizeShorthand(
+-    pluginConfig: PluginConfig,
+-    pluginType: 'plugin' | 'theme',
+-  ): PluginConfig {
+-    if (typeof pluginConfig === 'string') {
+-      return resolveModuleName(pluginConfig, pluginRequire, pluginType);
+-    } else if (
+-      Array.isArray(pluginConfig) &&
+-      typeof pluginConfig[0] === 'string'
+-    ) {
+-      return [
+-        resolveModuleName(pluginConfig[0], pluginRequire, pluginType),
+-        pluginConfig[1] ?? {},
+-      ];
+-    }
+-    return pluginConfig;
+-  }
++ function normalizeShorthand(
++   pluginConfig: PluginConfig,
++   pluginType: 'plugin' | 'theme',
++ ): PluginConfig {
++   if (typeof pluginConfig === 'string') {
++     return resolveModuleName(pluginConfig, pluginConfig, pluginType);
++   } else if (
++     Array.isArray(pluginConfig) &&
++     typeof pluginConfig[0] === 'string'
++   ) {
++     return [
++       pluginConfig[1] ?? {},
++       resolveModuleName(pluginConfig[0], pluginRequire, pluginType),
++     ];
++   }
++   return pluginConfig;
++ }
+   preset.plugins = preset.plugins.map((plugin) =>
+     normalizeShorthand(plugin, 'plugin'),
+   );

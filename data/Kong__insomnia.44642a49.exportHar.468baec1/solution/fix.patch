@@ -1,0 +1,107 @@
+diff --git a/packages/insomnia/src/common/har.ts b/packages/insomnia/src/common/har.ts
+index e2fb3a6c5..b51e6837d 100644
+--- a/packages/insomnia/src/common/har.ts
++++ b/packages/insomnia/src/common/har.ts
+@@ -52,10 +52,45 @@ export async function exportHarCurrentRequest(request: Request, response: Respon
+   ]);
+ }
+ 
++function calculateEnhancedTimings(response: Response | null, harResponse: Har.Response): Har.Timings {
++  if (!response || response.elapsedTime === 0) {
++    return {
++      blocked: -1,
++      dns: -1,
++      connect: -1,
++      send: 0,
++      wait: response ? response.elapsedTime : 0,
++      receive: 0,
++      ssl: -1,
++    };
++  }
++
++  const totalTime = response.elapsedTime;
++  const contentSize = harResponse.content.size;
++  
++  const estimatedSend = Math.min(totalTime * 0.05, 10);
++  const estimatedReceive = contentSize > 0 
++    ? Math.min(totalTime * 0.15, Math.max(contentSize / 100000, 5))
++    : Math.min(totalTime * 0.1, 5);
++  
++  const waitTime = Math.max(0, totalTime - estimatedSend - estimatedReceive);
++
++  return {
++    blocked: -1,
++    dns: -1,
++    connect: -1,
++    send: Math.round(estimatedSend * 100) / 100,
++    wait: Math.round(waitTime * 100) / 100,
++    receive: Math.round(estimatedReceive * 100) / 100,
++    ssl: -1,
++  };
++}
++
+ export async function exportHar(exportRequests: ExportRequest[]) {
+-  // Export HAR entries with the same start time in order to keep their workspace sort order.
+   const startedDateTime = new Date().toISOString();
+   const entries: Har.Entry[] = [];
++  const pageMap = new Map<string, string>();
++  const pages: Har.Page[] = [];
+ 
+   for (const exportRequest of exportRequests) {
+     const request: Request | null = await models.request.getById(exportRequest.requestId);
+@@ -86,22 +121,38 @@ export async function exportHar(exportRequests: ExportRequest[]) {
+       continue;
+     }
+ 
++    let pageref: string | undefined = undefined;
++    if (request.parentId) {
++      const parent = await models.requestGroup.getById(request.parentId);
++      if (parent) {
++        if (!pageMap.has(parent._id)) {
++          const pageId = `page_${pages.length + 1}`;
++          pageMap.set(parent._id, pageId);
++          pages.push({
++            startedDateTime: startedDateTime,
++            id: pageId,
++            title: parent.name,
++            pageTimings: {
++              onContentLoad: -1,
++              onLoad: -1,
++            },
++          });
++        }
++        pageref = pageMap.get(parent._id);
++      }
++    }
++
++    const timings = calculateEnhancedTimings(response, harResponse);
++
+     const entry = {
+       startedDateTime: startedDateTime,
+       time: response ? response.elapsedTime : 0,
+       request: harRequest,
+       response: harResponse,
+       cache: {},
+-      timings: {
+-        blocked: -1,
+-        dns: -1,
+-        connect: -1,
+-        send: 0,
+-        wait: response ? response.elapsedTime : 0,
+-        receive: 0,
+-        ssl: -1,
+-      },
++      timings: timings,
+       comment: request.name,
++      ...(pageref && { pageref }),
+     };
+     entries.push(entry);
+   }
+@@ -113,6 +164,7 @@ export async function exportHar(exportRequests: ExportRequest[]) {
+         name: 'Insomnia REST Client',
+         version: `insomnia.desktop.app:v${getAppVersion()}`,
+       },
++      ...(pages.length > 0 && { pages }),
+       entries: entries,
+     },
+   };

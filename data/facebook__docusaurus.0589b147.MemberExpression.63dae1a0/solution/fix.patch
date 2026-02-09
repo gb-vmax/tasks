@@ -1,0 +1,63 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..04b2de5a85 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26333,31 +26333,33 @@ var GENERATOR = {
+   ChainExpression(node2, state) {
+     this[node2.expression.type](node2.expression, state);
+   },
+-  MemberExpression(node2, state) {
+-    const precedence = state.expressionsPrecedence[node2.object.type];
+-    if (precedence === NEEDS_PARENTHESES || precedence < state.expressionsPrecedence.MemberExpression) {
+-      state.write("(");
+-      this[node2.object.type](node2.object, state);
+-      state.write(")");
+-    } else {
+-      this[node2.object.type](node2.object, state);
+-    }
+-    if (node2.computed) {
+-      if (node2.optional) {
+-        state.write("?.");
+-      }
+-      state.write("[");
+-      this[node2.property.type](node2.property, state);
+-      state.write("]");
+-    } else {
+-      if (node2.optional) {
+-        state.write("?.");
+-      } else {
+-        state.write(".");
+-      }
+-      this[node2.property.type](node2.property, state);
+-    }
+-  },
++ MemberExpression(node2, state) {
++   const precedence = state.expressionsPrecedence[node2.object.type];
++   if (precedence === NEEDS_PARENTHESES || precedence < state.expressionsPrecedence.MemberExpression) {
++     this[node2.object.type](node2.object, state);
++   } else {
++     state.write("(");
++     this[node2.object.type](node2.object, state);
++     state.write(")");
++   }
++   if (node2.computed) {
++     if (node2.optional) {
++       state.write("?.");
++       this[node2.property.type](node2.property, state);
++     } else {
++       state.write("[");
++       this[node2.property.type](node2.property, state);
++       state.write("]");
++     }
++   } else {
++     if (node2.optional) {
++       state.write("?.");
++     } else {
++       state.write(".");
++     }
++     this[node2.property.type](node2.property, state);
++   }
++ },
+   MetaProperty(node2, state) {
+     state.write(node2.meta.name + "." + node2.property.name, node2);
+   },

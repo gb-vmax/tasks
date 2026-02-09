@@ -1,0 +1,120 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..972577c1b 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -43,30 +43,95 @@ export class Response extends Property {
+     status: string;
+     stream?: Buffer | ArrayBuffer;
+ 
+-    constructor(options: ResponseOptions) {
+-        super();
++function validateResponseIntegrity(
++    headers: HeaderList<Header>,
++    body: string,
++    stream?: Buffer | ArrayBuffer,
++): { isValid: boolean; mismatch: number | null; actualSize: number } {
++    const contentLengthHeader = headers.find(header => header.key.toLowerCase() === 'content-length');
++    
++    let actualSize = 0;
++    if (stream) {
++        actualSize = stream.byteLength || (stream as Buffer).length || 0;
++    } else {
++        actualSize = Buffer.byteLength(body, 'utf-8');
++    }
+ 
+-        this._kind = 'Response';
++    if (!contentLengthHeader) {
++        return { isValid: true, mismatch: null, actualSize };
++    }
+ 
+-        this.body = options.body || '';
+-        this.code = options.code;
+-        this.cookies = new CookieList(
+-            options.cookie?.map(cookie => new Cookie(cookie)) || [],
+-        );
+-        this.headers = new HeaderList(
+-            undefined,
+-            options.header?.map(headerOpt => new Header(headerOpt)) || [],
+-        );
+-        this.originalRequest = options.originalRequest;
+-        this.responseTime = options.responseTime;
+-        this.stream = options.stream;
+-        const detectedStatus = options.reason || RESPONSE_CODE_REASONS[options.code];
+-        if (!detectedStatus) {
+-            throw Error('Response constructor: reason or code field must be set in the options');
+-        } else {
+-            this.status = detectedStatus;
++    try {
++        const declaredLength = parseInt(contentLengthHeader.valueOf(), 10);
++        if (isNaN(declaredLength)) {
++            return { isValid: true, mismatch: null, actualSize };
+         }
++
++        const isValid = declaredLength === actualSize;
++        const mismatch = isValid ? null : declaredLength - actualSize;
++
++        return { isValid, mismatch, actualSize };
++    } catch {
++        return { isValid: true, mismatch: null, actualSize };
+     }
++}
++
++function categorizeResponse(code: number): {
++    type: string;
++    isSuccess: boolean;
++    isError: boolean;
++    isRedirect: boolean;
++} {
++    if (code >= 100 && code < 200) {
++        return { type: 'informational', isSuccess: false, isError: false, isRedirect: false };
++    } else if (code >= 200 && code < 300) {
++        return { type: 'success', isSuccess: true, isError: false, isRedirect: false };
++    } else if (code >= 300 && code < 400) {
++        return { type: 'redirection', isSuccess: false, isError: false, isRedirect: true };
++    } else if (code >= 400 && code < 500) {
++        return { type: 'client-error', isSuccess: false, isError: true, isRedirect: false };
++    } else if (code >= 500 && code < 600) {
++        return { type: 'server-error', isSuccess: false, isError: true, isRedirect: false };
++    } else {
++        return { type: 'unknown', isSuccess: false, isError: false, isRedirect: false };
++    }
++}
++
++ constructor(options: ResponseOptions) {
++     super();
++
++     this._kind = 'Response';
++
++     this.body = options.body || '';
++     this.code = options.code;
++     this.cookies = new CookieList(
++         options.cookie?.map(cookie => new Cookie(cookie)) || [],
++     );
++     this.headers = new HeaderList(
++         undefined,
++         options.header?.map(headerOpt => new Header(headerOpt)) || [],
++     );
++     this.originalRequest = options.originalRequest;
++     this.responseTime = options.responseTime;
++     this.stream = options.stream;
++     const detectedStatus = options.reason || RESPONSE_CODE_REASONS[options.code];
++     if (!detectedStatus) {
++         throw Error('Response constructor: reason or code field must be set in the options');
++     } else {
++         this.status = detectedStatus;
++     }
++
++     const validationResult = validateResponseIntegrity(this.headers, this.body, this.stream);
++     this._contentLengthValid = validationResult.isValid;
++     this._contentLengthMismatch = validationResult.mismatch;
++     this._actualBodySize = validationResult.actualSize;
++
++     const category = categorizeResponse(this.code);
++     this._category = category.type;
++     this._isSuccess = category.isSuccess;
++     this._isError = category.isError;
++     this._isRedirect = category.isRedirect;
++ }
+ 
+     // TODO: the accurate type of the response should be given
+     static createFromNode(

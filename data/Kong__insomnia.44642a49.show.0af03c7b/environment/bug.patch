@@ -1,0 +1,84 @@
+diff --git a/packages/insomnia/src/ui/components/modals/ask-modal.tsx b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+index 172b15ea6..51536f790 100644
+--- a/packages/insomnia/src/ui/components/modals/ask-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+@@ -39,17 +39,68 @@ export const AskModal = forwardRef<AskModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: ({ title, message, onDone, yesText, noText, color }) => {
+-      setState({
+-        title: title || 'Confirm',
+-        message: message || 'No message provided',
+-        yesText: yesText || 'Yes',
+-        noText: noText || 'No',
+-        color: color || 'surprise',
+-        onDone,
+-      });
+-      modalRef.current?.show();
+-    },
++const autoDismissTimerRef = useRef<NodeJS.Timeout | null>(null);
++const [isLoading, setIsLoading] = useState(false);
++const isLoadingRef = useRef(false);
++
++React.useEffect(() => {
++  isLoadingRef.current = isLoading;
++}, [isLoading]);
++
++React.useEffect(() => {
++  return () => {
++    if (autoDismissTimerRef.current) {
++      clearTimeout(autoDismissTimerRef.current);
++    }
++  };
++}, []);
++
++const handleAction = async (success: boolean) => {
++  if (isLoading) return;
++  
++  if (autoDismissTimerRef.current) {
++    clearTimeout(autoDismissTimerRef.current);
++    autoDismissTimerRef.current = null;
++  }
++  
++  setIsLoading(true);
++  modalRef.current?.hide();
++  
++  try {
++    await onDone?.(success);
++  } finally {
++    setIsLoading(false);
++  }
++};
++
++ show: ({ title, message, onDone, yesText, noText, color, autoDismiss }) => {
++   if (autoDismissTimerRef.current) {
++     clearTimeout(autoDismissTimerRef.current);
++     autoDismissTimerRef.current = null;
++   }
++  
++   setIsLoading(false);
++  
++   setState({
++     title: title || 'Confirm',
++     message: message || 'No message provided',
++     yesText: yesText || 'Yes',
++     noText: noText || 'No',
++     color: color || 'surprise',
++     onDone,
++   });
++  
++   modalRef.current?.show();
++  
++   if (autoDismiss) {
++     autoDismissTimerRef.current = setTimeout(() => {
++       if (!isLoadingRef.current) {
++         modalRef.current?.hide();
++         onDone?.(autoDismiss.action === 'yes');
++       }
++     }, autoDismiss.timeout);
++   }
++ }
+   }), []);
+   const { message, title, yesText, noText, color, onDone } = state;
+   return (

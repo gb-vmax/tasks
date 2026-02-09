@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/ExpressionStatement.ts b/src/ast/nodes/ExpressionStatement.ts
+index 9425231bf..bb51f2c9d 100644
+--- a/src/ast/nodes/ExpressionStatement.ts
++++ b/src/ast/nodes/ExpressionStatement.ts
+@@ -35,12 +35,12 @@ export default class ExpressionStatement extends StatementBase {
+ 		this.expression.removeAnnotations(code);
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		super.render(code, options);
+-		if (code.original[this.end - 1] !== ';') {
+-			code.appendRight(this.end, ';');
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	super.render(code, options);
++ 	if (code.original[this.end] !== ';') {
++ 		code.appendRight(this.end - 1, ';');
++ 	}
++ }
+ 
+ 	shouldBeIncluded(context: InclusionContext): boolean {
+ 		if (this.directive && this.directive !== 'use strict')

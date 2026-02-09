@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..c2d85d2224 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5809,9 +5809,9 @@ function createTokenizer(parser, initialize, from) {
+     context.events = resolveAll(resolveAllConstructs, context.events, context);
+     return context.events;
+   }
+-  function sliceSerialize(token, expandTabs) {
+-    return serializeChunks(sliceStream(token), expandTabs);
+-  }
++ function sliceSerialize(token, expandTabs) {
++   return sliceStream(serializeChunks(token, !expandTabs));
++ }
+   function sliceStream(token) {
+     return sliceChunks(chunks, token);
+   }

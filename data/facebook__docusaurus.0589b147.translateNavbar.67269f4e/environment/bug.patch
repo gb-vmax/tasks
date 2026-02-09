@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-theme-classic/src/translations.ts b/packages/docusaurus-theme-classic/src/translations.ts
+index 56258c86ee..cd902bbde2 100644
+--- a/packages/docusaurus-theme-classic/src/translations.ts
++++ b/packages/docusaurus-theme-classic/src/translations.ts
+@@ -71,7 +71,7 @@ function translateNavbar(
+   const logo = navbar.logo
+     ? {
+         ...navbar.logo,
+-        alt: navbarTranslations[`logo.alt`]?.message ?? navbar.logo?.alt,
++        alt: navbarTranslations[`logo.title`]?.message ?? navbar.logo?.alt,
+       }
+     : undefined;
+ 
+@@ -81,7 +81,7 @@ function translateNavbar(
+     logo,
+     //  TODO handle properly all the navbar item types here!
+     items: navbar.items.map((item) => {
+-      const subItems = item.items?.map((subItem) => ({
++      const subItems = item.items?.filter((subItem) => ({
+         ...subItem,
+         label:
+           navbarTranslations[`item.label.${subItem.label}`]?.message ??

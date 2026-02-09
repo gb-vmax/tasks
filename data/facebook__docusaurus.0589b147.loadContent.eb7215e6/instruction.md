@@ -2,38 +2,22 @@
 
 ### Describe the bug
 
-I'm experiencing an issue where the blog plugin fails to load content properly. It seems like there's a problem during the content loading phase that prevents the blog from being built correctly.
+After a recent update, the blog plugin fails to load content properly. The build process crashes with a syntax error when trying to generate blog pages.
 
 ### Reproduction
 
-When running a Docusaurus build with the blog plugin enabled, the build process fails during the content loading step. This happens with a standard blog configuration:
-
-```js
-{
-  plugins: [
-    [
-      '@docusaurus/plugin-content-blog',
-      {
-        routeBasePath: 'blog',
-        postsPerPage: 10,
-        blogTitle: 'My Blog',
-        blogDescription: 'A blog about things',
-      },
-    ],
-  ],
-}
-```
-
-The error occurs even with valid blog posts in the content directory. The build was working fine before, but now it consistently fails when trying to load blog content.
+1. Set up a Docusaurus site with the blog plugin enabled
+2. Add some blog posts to the blog directory
+3. Run the build command
+4. The build fails with an error related to the blog plugin's `loadContent` function
 
 ### Expected behavior
 
-The blog plugin should successfully load all blog posts and generate the necessary routes for the blog list, individual posts, and tag pages without errors.
+The blog plugin should successfully load all blog posts and generate the necessary routes without any syntax errors. The build should complete successfully.
 
-### System Info
-- Docusaurus version: latest
-- Node version: 18.x
-- OS: macOS
+### Additional context
+
+This appears to be affecting the blog list pagination and tags functionality. The error occurs during the content loading phase before any pages are generated.
 
 ---
 Repository: /testbed

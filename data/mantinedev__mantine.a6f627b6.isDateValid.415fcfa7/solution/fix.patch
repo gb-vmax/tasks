@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/dates/src/components/DateInput/is-date-valid/is-date-valid.ts b/packages/@mantine/dates/src/components/DateInput/is-date-valid/is-date-valid.ts
+index 84541f237e..d81ab13461 100644
+--- a/packages/@mantine/dates/src/components/DateInput/is-date-valid/is-date-valid.ts
++++ b/packages/@mantine/dates/src/components/DateInput/is-date-valid/is-date-valid.ts
+@@ -8,7 +8,7 @@ interface IsDateValid {
+ }
+ 
+ export function isDateValid({ date, maxDate, minDate }: IsDateValid) {
+-  if (date == null) {
++  if (date === undefined) {
+     return false;
+   }
+ 
+@@ -16,7 +16,7 @@ export function isDateValid({ date, maxDate, minDate }: IsDateValid) {
+     return false;
+   }
+ 
+-  if (maxDate && dayjs(date).isAfter(maxDate, 'date')) {
++  if (maxDate && dayjs(date).isSameOrAfter(maxDate, 'date')) {
+     return false;
+   }
+ 

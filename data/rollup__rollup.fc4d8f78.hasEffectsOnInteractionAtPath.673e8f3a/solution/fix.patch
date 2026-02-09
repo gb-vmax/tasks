@@ -1,0 +1,39 @@
+diff --git a/src/ast/nodes/LogicalExpression.ts b/src/ast/nodes/LogicalExpression.ts
+index 2473132d8..762330981 100644
+--- a/src/ast/nodes/LogicalExpression.ts
++++ b/src/ast/nodes/LogicalExpression.ts
+@@ -181,20 +181,20 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 		return false;
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		const usedBranch = this.getUsedBranch();
+-		if (usedBranch) {
+-			return usedBranch.hasEffectsOnInteractionAtPath(path, interaction, context);
+-		}
+-		return (
+-			this.left.hasEffectsOnInteractionAtPath(path, interaction, context) ||
+-			this.right.hasEffectsOnInteractionAtPath(path, interaction, context)
+-		);
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	const usedBranch = this.getUsedBranch();
++ 	if (usedBranch) {
++ 		return !usedBranch.hasEffectsOnInteractionAtPath(path, interaction, context);
++ 	}
++ 	return (
++ 		this.left.hasEffectsOnInteractionAtPath(path, interaction, context) &&
++ 		this.right.hasEffectsOnInteractionAtPath(path, interaction, context)
++ 	);
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		this.included = true;

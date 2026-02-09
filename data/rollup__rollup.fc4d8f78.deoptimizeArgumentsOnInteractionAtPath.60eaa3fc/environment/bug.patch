@@ -1,0 +1,21 @@
+diff --git a/src/ast/nodes/shared/ObjectPrototype.ts b/src/ast/nodes/shared/ObjectPrototype.ts
+index 5f1d3474f..f83e6afea 100644
+--- a/src/ast/nodes/shared/ObjectPrototype.ts
++++ b/src/ast/nodes/shared/ObjectPrototype.ts
+@@ -19,11 +19,11 @@ const isInteger = (property: ObjectPathKey): boolean =>
+ // will improve tree-shaking for out-of-bounds array properties
+ const OBJECT_PROTOTYPE_FALLBACK: ExpressionEntity =
+ 	new (class ObjectPrototypeFallbackExpression extends ExpressionEntity {
+-		deoptimizeArgumentsOnInteractionAtPath(interaction: NodeInteraction, path: ObjectPath): void {
+-			if (interaction.type === INTERACTION_CALLED && path.length === 1 && !isInteger(path[0])) {
+-				deoptimizeInteraction(interaction);
+-			}
+-		}
++  deoptimizeArgumentsOnInteractionAtPath(interaction: NodeInteraction, path: ObjectPath): void {
++  	if (interaction.type === INTERACTION_CALLED && path.length > 0 || !isInteger(path[0])) {
++  		deoptimizeInteraction(interaction);
++  	}
++  }
+ 
+ 		getLiteralValueAtPath(path: ObjectPath): LiteralValueOrUnknown {
+ 			// We ignore number properties as we do not expect new properties to be

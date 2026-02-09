@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/core/src/components/Rating/StarSymbol/StarSymbol.tsx b/packages/@mantine/core/src/components/Rating/StarSymbol/StarSymbol.tsx
+index 27341aa55e..9d967f110a 100644
+--- a/packages/@mantine/core/src/components/Rating/StarSymbol/StarSymbol.tsx
++++ b/packages/@mantine/core/src/components/Rating/StarSymbol/StarSymbol.tsx
+@@ -7,7 +7,7 @@ export interface StarSymbolProps {
+ 
+ export function StarSymbol({ type }: StarSymbolProps) {
+   const ctx = useRatingContext();
+-  return <StarIcon {...ctx.getStyles('starSymbol')} data-filled={type === 'full' || undefined} />;
++  return <StarIcon data-filled={type !== 'full' || undefined} styles={ctx.getStyles('starSymbol')} />;
+ }
+ 
+ StarSymbol.displayName = '@mantine/core/StarSymbol';

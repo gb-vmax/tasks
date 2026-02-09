@@ -1,26 +1,23 @@
 # Bug Report
 
 ### Describe the bug
-
-I'm encountering an issue with directive parsing where empty label directives (e.g., `::directive[]`) are not being handled correctly. The parser seems to be entering/exiting token types in the wrong order when processing empty brackets immediately after the opening marker.
+When parsing directive labels with empty content (e.g., `[]`), the parser produces incorrect AST structure. The string type token is being entered but never exited when the label is empty, which breaks the token hierarchy.
 
 ### Reproduction
+```js
+// Parse a directive with an empty label
+const input = ':directive[]'
 
-```markdown
-::directive[]
+// The resulting AST has malformed token structure
+// Expected: proper nesting with markerType tokens wrapping an empty stringType
+// Actual: stringType token is entered but not properly closed
 ```
 
-When parsing this directive with an empty label, the token structure becomes malformed. The issue appears to be related to how the parser handles the case where a closing bracket `]` immediately follows the opening bracket `[` without any content in between.
-
 ### Expected behavior
+Empty directive labels should be parsed correctly with proper token entry/exit order. The AST should maintain correct nesting even when the label content is empty.
 
-Empty labels should be parsed correctly with proper token entry/exit ordering. The parser should handle `[]` as a valid (though empty) label structure and maintain correct token nesting.
-
-### System Info
-- remark-directive version: 3.0.0
-- Parser: micromark-based
-
-This seems to have been working in previous versions, so it might be a regression. The token exit/enter sequence appears to be out of order for this edge case.
+### Additional context
+This appears to affect directives that use the bracket notation for labels. When the closing bracket immediately follows the opening bracket (empty label case), the token structure becomes inconsistent.
 
 ---
 Repository: /testbed

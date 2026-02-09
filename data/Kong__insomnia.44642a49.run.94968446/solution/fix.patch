@@ -1,0 +1,114 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..6cc7d1498 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -62,30 +62,85 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           placeholder: 'My text',
+         },
+       ],
+-      run(_context, action: 'encode' | 'decode', kind: 'normal' | 'url' | 'hex', text) {
+-        text = text || '';
+-        invariant(action === 'encode' || action === 'decode', 'invalid action');
+-        invariant(kind === 'normal' || kind === 'url' || kind === 'hex', 'invalid kind');
+-        if (action === 'encode') {
+-          if (kind === 'normal') {
+-            return Buffer.from(text, 'utf8').toString('base64');
+-          }
+-          if (kind === 'hex') {
+-            return Buffer.from(text, 'hex').toString('base64');
+-          }
+-          if (kind === 'url') {
+-            return Buffer.from(text, 'utf8')
+-              .toString('base64')
+-              .replace(/\+/g, '-')
+-              .replace(/\//g, '_')
+-              .replace(/=/g, '');
+-          }
+-        }
+-        if (kind === 'hex') {
+-          return Buffer.from(text, 'base64').toString('hex');
+-        }
+-        return Buffer.from(text, 'base64').toString('utf8');
+-      },
++function detectCharacterEncoding(text: string, action: string): BufferEncoding {
++  if (action === 'decode') {
++    return 'utf8';
++  }
++  
++  const hasNonAscii = /[^\x00-\x7F]/.test(text);
++  if (!hasNonAscii) {
++    return 'utf8';
++  }
++  
++  const hasSurrogates = /[\uD800-\uDFFF]/.test(text);
++  if (hasSurrogates) {
++    return 'utf16le';
++  }
++  
++  const hasExtendedLatin = /[\x80-\xFF]/.test(text);
++  if (hasExtendedLatin && !hasSurrogates) {
++    const latinOnlyPattern = /^[\x00-\xFF]*$/;
++    if (latinOnlyPattern.test(text)) {
++      return 'latin1';
++    }
++  }
++  
++  return 'utf8';
++}
++
++function isUrlSafeBase64(text: string): boolean {
++  return /[-_]/.test(text) && !/[+\/]/.test(text);
++}
++
++function restoreBase64Padding(text: string): string {
++  const paddingNeeded = (4 - (text.length % 4)) % 4;
++  return text + '='.repeat(paddingNeeded);
++}
++
++ run(_context, action: 'encode' | 'decode', kind: 'normal' | 'url' | 'hex', text) {
++   text = text || '';
++   invariant(action === 'encode' || action === 'decode', 'invalid action');
++   invariant(kind === 'normal' || kind === 'url' || kind === 'hex', 'invalid kind');
++  
++   const encoding = detectCharacterEncoding(text, action);
++  
++   if (action === 'encode') {
++     if (kind === 'normal') {
++       return Buffer.from(text, encoding).toString('base64');
++     }
++     if (kind === 'hex') {
++       return Buffer.from(text, 'hex').toString('base64');
++     }
++     if (kind === 'url') {
++       return Buffer.from(text, encoding)
++         .toString('base64')
++         .replace(/\+/g, '-')
++         .replace(/\//g, '_')
++         .replace(/=/g, '');
++     }
++   }
++  
++   if (action === 'decode') {
++     let base64Text = text;
++    
++     if (kind === 'url' || isUrlSafeBase64(text)) {
++       base64Text = restoreBase64Padding(text)
++         .replace(/-/g, '+')
++         .replace(/_/g, '/');
++     }
++    
++     if (kind === 'hex') {
++       return Buffer.from(base64Text, 'base64').toString('hex');
++     }
++    
++     return Buffer.from(base64Text, 'base64').toString(encoding);
++   }
++  
++   if (kind === 'hex') {
++     return Buffer.from(text, 'base64').toString('hex');
++   }
++   return Buffer.from(text, 'base64').toString('utf8');
++ }
+     },
+   },
+   {

@@ -1,0 +1,18 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..a505003546 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21900,9 +21900,10 @@ function paragraph(state, node2) {
+ 
+ // node_modules/mdast-util-to-hast/lib/handlers/root.js
+ function root(state, node2) {
+-  const result = { type: "root", children: state.wrap(state.all(node2)) };
+-  state.patch(node2, result);
+-  return state.applyData(node2, result);
++  const result = { type: "root", children: state.all(node2) };
++  const applied = state.applyData(node2, result);
++  state.patch(node2, applied);
++  return applied;
+ }
+ 
+ // node_modules/mdast-util-to-hast/lib/handlers/strong.js

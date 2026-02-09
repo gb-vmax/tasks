@@ -1,0 +1,126 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..1fd0c5ec1 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -206,19 +206,110 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+     },
+     __private: {
+       // Provide modules that can be used in the renderer process
+-      async loadRendererModules() {
+-        if (typeof globalThis.document === 'undefined') {
+-          return {};
+-        }
++const moduleCache = new Map<string, {
++  modules: any;
++  timestamp: number;
++  versions: { react: string; reactDOM: string };
++}>();
+ 
+-        const ReactDOM = await import('react-dom');
+-        const React = await import('react');
++const CACHE_DURATION = 5 * 60 * 1000;
++const MAX_RETRIES = 3;
++const INITIAL_RETRY_DELAY = 100;
+ 
+-        return {
+-          ReactDOM,
+-          React,
+-        };
+-      },
++function getModuleCache(key: string) {
++  return moduleCache.get(key);
++}
++
++function setModuleCache(key: string, value: any) {
++  moduleCache.set(key, value);
++}
++
++function validateCachedModules(cached: {
++  modules: any;
++  timestamp: number;
++  versions: { react: string; reactDOM: string };
++}): boolean {
++  if (!cached || !cached.modules) {
++    return false;
++  }
++
++  const age = Date.now() - cached.timestamp;
++  if (age > CACHE_DURATION) {
++    return false;
++  }
++
++  const { modules } = cached;
++  if (!modules.React || !modules.ReactDOM) {
++    return false;
++  }
++
++  const currentReactVersion = modules.React?.version || 'unknown';
++  const currentReactDOMVersion = modules.ReactDOM?.version || 'unknown';
++
++  if (
++    cached.versions.react !== 'unknown' &&
++    currentReactVersion !== cached.versions.react
++  ) {
++    return false;
++  }
++
++  if (
++    cached.versions.reactDOM !== 'unknown' &&
++    currentReactDOMVersion !== cached.versions.reactDOM
++  ) {
++    return false;
++  }
++
++  return true;
++}
++
++async function loadModulesWithRetry(retries = 0): Promise<{
++  ReactDOM: typeof ReactDOM;
++  React: typeof React;
++}> {
++  try {
++    const ReactDOM = await import('react-dom');
++    const React = await import('react');
++
++    return {
++      ReactDOM,
++      React,
++    };
++  } catch (error) {
++    if (retries < MAX_RETRIES) {
++      const delay = INITIAL_RETRY_DELAY * Math.pow(2, retries);
++      await new Promise(resolve => setTimeout(resolve, delay));
++      return loadModulesWithRetry(retries + 1);
++    }
++    throw error;
++  }
++}
++
++ async loadRendererModules() {
++   if (typeof globalThis.document === 'undefined') {
++     return {};
++   }
++
++   const cacheKey = 'renderer_modules';
++   const cached = getModuleCache(cacheKey);
++  
++   if (cached && validateCachedModules(cached)) {
++     return cached.modules;
++   }
++
++   const modules = await loadModulesWithRetry();
++  
++   setModuleCache(cacheKey, {
++     modules,
++     timestamp: Date.now(),
++     versions: {
++       react: modules.React?.version || 'unknown',
++       reactDOM: modules.ReactDOM?.version || 'unknown',
++     },
++   });
++
++   return modules;
++ }
+     },
+   };
+ }

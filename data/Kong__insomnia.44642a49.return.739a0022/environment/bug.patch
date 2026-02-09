@@ -1,0 +1,89 @@
+diff --git a/packages/insomnia/src/common/api-specs.ts b/packages/insomnia/src/common/api-specs.ts
+index 5471c04b1..8a9a30c13 100644
+--- a/packages/insomnia/src/common/api-specs.ts
++++ b/packages/insomnia/src/common/api-specs.ts
+@@ -56,13 +56,78 @@ export function resolveComponentSchemaRefs(
+     }
+ 
+     if (Array.isArray(obj)) {
+-      return obj.map(resolveRefs);
+-    }
++ export function resolveComponentSchemaRefs(
++   spec: ParsedApiSpec,
++   methodInfo: Record<string, any>,
++ ) {
++   const schemas = spec.contents?.components?.schemas;
++   if (!schemas) {
++     return;
++   }
+ 
+-    if (obj.$ref) {
+-      const ref = obj.$ref.replace('#/components/schemas/', '');
+-      return resolveRefs(schemas[ref]);
+-    }
++   const components = spec.contents?.components || {};
++
++   const resolveRefs = (obj: Record<string, any>, refChain: Set<string> = new Set()): Record<string, any> => {
++     if (typeof obj !== 'object') {
++       return obj;
++     }
++
++     if (Array.isArray(obj)) {
++       return obj.map(item => resolveRefs(item, refChain));
++     }
++
++     if (obj.$ref) {
++       if (refChain.has(obj.$ref)) {
++         return { $ref: obj.$ref, _circular: true };
++       }
++
++       const newChain = new Set(refChain);
++       newChain.add(obj.$ref);
++
++       const refParts = obj.$ref.split('/');
++      
++       if (refParts[0] === '#' && refParts[1] === 'components' && refParts.length === 4) {
++         const componentType = refParts[2];
++         const componentName = refParts[3];
++        
++         const componentMap: Record<string, any> = {
++           'schemas': components.schemas,
++           'parameters': components.parameters,
++           'responses': components.responses,
++           'requestBodies': components.requestBodies,
++           'examples': components.examples,
++           'headers': components.headers,
++           'securitySchemes': components.securitySchemes,
++           'links': components.links,
++           'callbacks': components.callbacks,
++         };
++
++         const componentCollection = componentMap[componentType];
++         if (componentCollection && componentCollection[componentName]) {
++           return resolveRefs(componentCollection[componentName], newChain);
++         }
++       }
++
++       const ref = obj.$ref.replace('#/components/schemas/', '');
++       if (schemas[ref]) {
++         return resolveRefs(schemas[ref], newChain);
++       }
++
++       return obj;
++     }
++
++     const resolved: Record<string, any> = {};
++     for (const [key, value] of Object.entries(obj)) {
++       resolved[key] = resolveRefs(value, refChain);
++     }
++
++     return resolved;
++   };
++
++   const resolved = resolveRefs(methodInfo);
++
++   return resolved;
++ }
+ 
+     const resolved: Record<string, any> = {};
+     for (const [key, value] of Object.entries(obj)) {

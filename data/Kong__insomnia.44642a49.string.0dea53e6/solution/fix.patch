@@ -1,0 +1,32 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..731079c72 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -447,7 +447,26 @@ const generateParameterExample = (
+       parameter: OpenAPIV2.Parameter
+     ) => null | string | boolean | number | Record<string, unknown>;
+   } = {
+-    string: () => 'string',
++string_password: () => '********',
++string_uuid: () => '3fa85f64-5717-4562-b3fc-2c963f66afa6',
++string_binary: () => '0101010',
++
++ string: (parameter: OpenAPIV2.Parameter) => {
++   if (parameter && typeof parameter === 'object') {
++     if (parameter.enum && parameter.enum.length > 0) {
++       return parameter.enum[0];
++     }
++    
++     const minLength = parameter.minLength || 0;
++     const baseString = 'string';
++    
++     if (minLength > baseString.length) {
++       return baseString.padEnd(minLength, 'x');
++     }
++   }
++  
++   return 'string';
++ },
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',

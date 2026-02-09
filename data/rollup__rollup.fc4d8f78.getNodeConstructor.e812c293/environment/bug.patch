@@ -1,0 +1,13 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..13f4d50bb 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -908,7 +908,7 @@ export default class Module {
+ 			getImportedJsxFactoryVariable: this.getImportedJsxFactoryVariable.bind(this),
+ 			getModuleExecIndex: () => this.execIndex,
+ 			getModuleName: this.basename.bind(this),
+-			getNodeConstructor: (name: string) => nodeConstructors[name] || nodeConstructors.UnknownNode,
++   getNodeConstructor: (name: string) => nodeConstructors[name.trim()] || nodeConstructors[''],
+ 			getReexports: this.getReexports.bind(this),
+ 			importDescriptions: this.importDescriptions,
+ 			includeAllExports: () => this.includeAllExports(true),

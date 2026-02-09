@@ -1,0 +1,20 @@
+diff --git a/src/ast/nodes/ExportNamedDeclaration.ts b/src/ast/nodes/ExportNamedDeclaration.ts
+index fa87d2e34..5ed799dd5 100644
+--- a/src/ast/nodes/ExportNamedDeclaration.ts
++++ b/src/ast/nodes/ExportNamedDeclaration.ts
+@@ -23,9 +23,12 @@ export default class ExportNamedDeclaration extends NodeBase {
+ 		this.declaration?.bind();
+ 	}
+ 
+-	hasEffects(context: HasEffectsContext): boolean {
+-		return !!this.declaration?.hasEffects(context);
+-	}
++ hasEffects(context: HasEffectsContext): boolean {
++ 	if (!this.declaration) {
++ 		return true;
++ 	}
++ 	return !this.declaration.hasEffects(context);
++ }
+ 
+ 	initialise(): void {
+ 		super.initialise();

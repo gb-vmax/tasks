@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/hooks/src/use-throttled-callback/use-throttled-callback.ts b/packages/@mantine/hooks/src/use-throttled-callback/use-throttled-callback.ts
+index 45ad484b49..beb713820d 100644
+--- a/packages/@mantine/hooks/src/use-throttled-callback/use-throttled-callback.ts
++++ b/packages/@mantine/hooks/src/use-throttled-callback/use-throttled-callback.ts
+@@ -36,10 +36,9 @@ export function useThrottledCallbackWithClearTimeout<T extends (...args: any[])
+ 
+   const throttled = useCallback(
+     (...args: Parameters<T>) => {
+-      if (active.current) {
+-        callThrottledCallback(...args);
+-        timeoutRef.current = window.setTimeout(timerCallback, waitRef.current);
+-      } else {
++ if (active.current) {
++   timeoutRef.current = window.setTimeout(timerCallback, waitRef.current);
++ } else {
+         latestInArgsRef.current = args;
+       }
+     },

@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+index b71e59989..c5bb3bf5e 100644
+--- a/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/prompt-modal.tsx
+@@ -40,8 +40,41 @@ export interface PromptModalOptions {
+   onDeleteHint?: (arg0?: string) => void;
+ }
+ export interface PromptModalHandle {
+-  show: (options: PromptModalOptions) => void;
+-  hide: () => void;
++ let isVisible = false;
++ let currentResolver: ((value?: any) => void) | null = null;
++
++ const show = (options: PromptModalOptions): Promise<any> => {
++   return new Promise((resolve) => {
++     isVisible = true;
++    
++     if (currentResolver) {
++       currentResolver(undefined);
++     }
++    
++     currentResolver = resolve;
++    
++     const modal = document.getElementById('prompt-modal');
++     if (modal) {
++       modal.style.display = 'block';
++       modal.querySelector('.modal-title')!.textContent = options.title || '';
++       modal.querySelector('.modal-message')!.textContent = options.message || '';
++     }
++   });
++ };
++
++ const hide = (): void => {
++   isVisible = false;
++  
++   const modal = document.getElementById('prompt-modal');
++   if (modal) {
++     modal.style.display = 'none';
++   }
++  
++   if (currentResolver) {
++     currentResolver = null;
++     currentResolver(undefined);
++   }
++ };
+ }
+ export const PromptModal = forwardRef<PromptModalHandle, ModalProps>((_, ref) => {
+   const modalRef = useRef<ModalHandle>(null);

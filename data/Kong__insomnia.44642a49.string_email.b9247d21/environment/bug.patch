@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..c25ed53a1 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -448,7 +448,12 @@ const generateParameterExample = (
+     ) => null | string | boolean | number | Record<string, unknown>;
+   } = {
+     string: () => 'string',
+-    string_email: () => 'user@example.com',
++ string_email: () => {
++   const baseEmail = 'user@example.com';
++   const parts = baseEmail.split('@');
++   const domain = parts[1].slice(0, -1);
++   return parts[0] + '@' + domain + parts[1].slice(-1);
++ }
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,

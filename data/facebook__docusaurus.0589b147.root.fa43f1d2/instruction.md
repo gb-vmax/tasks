@@ -2,41 +2,32 @@
 
 ### Describe the bug
 
-After a recent update, I'm seeing issues with how root nodes are being transformed in the MDX processing pipeline. The order of operations for wrapping and patching seems to have changed, which is causing unexpected behavior in the output structure.
+After a recent update, MDX root node transformation seems to be applying operations in the wrong order. The wrapping behavior for root-level content appears to have changed, and now the structure of the transformed output is different than expected.
 
 ### Reproduction
 
-When processing MDX content with root-level elements, the transformation doesn't produce the expected structure. Here's a minimal example:
+When processing an MDX document with root-level content:
 
 ```js
-import { compile } from '@mdx-js/mdx'
+const mdx = `
+# Hello
 
-const mdxContent = `
-# Hello World
+This is a paragraph at root level.
+`;
 
-Some content here.
-`
-
-const result = await compile(mdxContent)
-// The resulting AST structure is not wrapped correctly
+// Process the MDX
+const result = await compile(mdx);
 ```
+
+The resulting HAST structure has the wrapping applied at a different level than before. Previously, the children were wrapped first, then the data transformations were applied. Now it seems the order has been reversed, which affects how root-level content is structured in the output.
 
 ### Expected behavior
 
-The root node should be:
-1. Transformed with `state.all(node)`
-2. Have data applied via `state.applyData()`
-3. Be patched with `state.patch()`
-4. Finally wrapped with `state.wrap()`
-
-Instead, it appears the wrapping is happening at the wrong stage, before the data transformation is applied.
+The root node's children should be wrapped before applying data transformations and patching, maintaining the correct nesting structure for root-level content. The transformation pipeline should follow the same order as previous versions to ensure consistent output.
 
 ### System Info
-
 - @mdx-js/mdx version: 3.0.0
 - Node version: 18.x
-
-This is affecting our documentation site where we rely on the correct AST structure for custom transformations. Any help would be appreciated!
 
 ---
 Repository: /testbed

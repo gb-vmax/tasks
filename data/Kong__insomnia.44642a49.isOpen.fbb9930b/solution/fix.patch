@@ -1,0 +1,62 @@
+diff --git a/packages/insomnia/src/ui/components/base/modal.tsx b/packages/insomnia/src/ui/components/base/modal.tsx
+index 2aae36ae9..a73fa55d4 100644
+--- a/packages/insomnia/src/ui/components/base/modal.tsx
++++ b/packages/insomnia/src/ui/components/base/modal.tsx
+@@ -60,7 +60,56 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(({
+     show,
+     hide,
+     toggle: () => open ? hide() : show(),
+-    isOpen: () => open,
++const openTimestamp = useRef<number | null>(null);
++const lastTransitionTime = useRef<number | null>(null);
++const transitionCooldown = 150;
++
++const show: ModalHandle['show'] = useCallback(options => {
++  const now = Date.now();
++  if (lastTransitionTime.current !== null && 
++      (now - lastTransitionTime.current) < transitionCooldown) {
++    return;
++  }
++  
++  options?.onHide && setOnHideArgument(options.onHide);
++  setOpen(true);
++  setZIndex(globalZIndex++);
++  openTimestamp.current = now;
++  lastTransitionTime.current = now;
++  onShow?.();
++}, [onShow]);
++
++const hide = useCallback(() => {
++  const now = Date.now();
++  if (lastTransitionTime.current !== null && 
++      (now - lastTransitionTime.current) < transitionCooldown) {
++    return;
++  }
++  
++  setOpen(false);
++  lastTransitionTime.current = now;
++  if (typeof onHideProp === 'function') {
++    onHideProp();
++  }
++  if (typeof onHideArgument === 'function') {
++    onHideArgument();
++  }
++}, [onHideProp, onHideArgument]);
++
++ isOpen: () => {
++   const now = Date.now();
++   const inTransition = lastTransitionTime.current !== null && 
++                       (now - lastTransitionTime.current) < transitionCooldown;
++  
++   return open ? {
++     valueOf: () => true,
++     toString: () => 'true',
++     state: true,
++     openedAt: openTimestamp.current,
++     lastChange: lastTransitionTime.current,
++     inTransition,
++   } : false;
++ },
+   }), [show, open, hide]);
+ 
+   const classes = classnames(

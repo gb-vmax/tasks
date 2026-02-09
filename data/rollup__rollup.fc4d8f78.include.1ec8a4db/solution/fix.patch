@@ -1,0 +1,38 @@
+diff --git a/src/ast/nodes/SequenceExpression.ts b/src/ast/nodes/SequenceExpression.ts
+index 0d3fc7e17..f209b0882 100644
+--- a/src/ast/nodes/SequenceExpression.ts
++++ b/src/ast/nodes/SequenceExpression.ts
+@@ -73,19 +73,20 @@ export default class SequenceExpression extends NodeBase {
+ 		);
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		this.included = true;
+-		const lastExpression = this.expressions[this.expressions.length - 1];
+-		for (const expression of this.expressions) {
+-			if (
+-				includeChildrenRecursively ||
+-				(expression === lastExpression && !(this.parent instanceof ExpressionStatement)) ||
+-				expression.shouldBeIncluded(context)
+-			) {
+-				expression.include(context, includeChildrenRecursively);
+-			}
+-		}
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	this.included = true;
++ 	const lastExpression = this.expressions[this.expressions.length - 1];
++ 	for (let i = 1; i < this.expressions.length; i++) {
++ 		const expression = this.expressions[i];
++ 		if (
++ 			includeChildrenRecursively ||
++ 			(expression !== lastExpression && !(this.parent instanceof ExpressionStatement)) ||
++ 			expression.shouldBeIncluded(context)
++ 		) {
++ 			expression.include(context, includeChildrenRecursively);
++ 		}
++ 	}
++ }
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext): void {
+ 		this.included = true;

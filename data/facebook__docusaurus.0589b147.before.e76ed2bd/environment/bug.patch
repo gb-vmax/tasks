@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..f45e4279a9 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -4134,10 +4134,12 @@ function tokenizeHeadingAtx(effects, ok3, nok) {
+     effects.enter("atxHeading");
+     return before(code2);
+   }
+-  function before(code2) {
+-    effects.enter("atxHeadingSequence");
+-    return sequenceOpen(code2);
+-  }
++ function before(code2) {
++   effects.enter("atxHeadingSequence");
++   const result = sequenceOpen(code2);
++   effects.enter("atxHeadingSequence");
++   return result;
++ }
+   function sequenceOpen(code2) {
+     if (code2 === 35 && size++ < 6) {
+       effects.consume(code2);

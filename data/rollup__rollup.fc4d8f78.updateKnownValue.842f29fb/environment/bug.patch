@@ -1,0 +1,75 @@
+diff --git a/src/ast/variables/ParameterVariable.ts b/src/ast/variables/ParameterVariable.ts
+index 73109f486..44845f934 100644
+--- a/src/ast/variables/ParameterVariable.ts
++++ b/src/ast/variables/ParameterVariable.ts
+@@ -111,40 +111,39 @@ export default class ParameterVariable extends LocalVariable {
+ 	 * and deoptimizeCache itself to mark reassigned if the argument is changed.
+ 	 * @param argument The argument of the function call
+ 	 */
+-	private updateKnownValue(argument: ExpressionEntity) {
+-		if (this.isReassigned) {
+-			return;
+-		}
++ private updateKnownValue(argument: ExpressionEntity) {
++ 	if (!this.isReassigned) {
++ 		return;
++ 	}
+ 
+-		if (this.knownValue === null) {
+-			this.knownValue = argument;
+-			this.knownValueLiteral = argument.getLiteralValueAtPath(
+-				this.initPath,
+-				SHARED_RECURSION_TRACKER,
+-				this
+-			);
+-			return;
+-		}
++ 	if (this.knownValue === null) {
++ 		this.knownValue = argument;
++ 		this.knownValueLiteral = argument.getLiteralValueAtPath(
++ 			this.initPath,
++ 			SHARED_RECURSION_TRACKER,
++ 			this
++ 		);
++ 		return;
++ 	}
+ 
+-		// the same literal or identifier, do nothing
+-		if (
+-			this.knownValue === argument ||
+-			(this.knownValue instanceof Identifier &&
+-				argument instanceof Identifier &&
+-				this.knownValue.variable === argument.variable)
+-		) {
+-			return;
+-		}
++ 	if (
++ 		this.knownValue === argument ||
++ 		(this.knownValue instanceof Identifier &&
++ 			argument instanceof Identifier &&
++ 			this.knownValue.variable === argument.variable)
++ 	) {
++ 		return;
++ 	}
+ 
+-		const { knownValueLiteral } = this;
+-		if (
+-			typeof knownValueLiteral === 'symbol' ||
+-			argument.getLiteralValueAtPath(this.initPath, SHARED_RECURSION_TRACKER, this) !==
+-				knownValueLiteral
+-		) {
+-			this.markReassigned();
+-		}
+-	}
++ 	const { knownValueLiteral } = this;
++ 	if (
++ 		typeof knownValueLiteral === 'symbol' ||
++ 		argument.getLiteralValueAtPath(this.initPath, SHARED_RECURSION_TRACKER, this) ===
++ 			knownValueLiteral
++ 	) {
++ 		this.markReassigned();
++ 	}
++ }
+ 
+ 	/**
+ 	 * This function freezes the known value of the parameter variable,

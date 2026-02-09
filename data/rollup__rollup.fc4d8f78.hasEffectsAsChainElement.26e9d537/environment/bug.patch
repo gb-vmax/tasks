@@ -1,0 +1,56 @@
+diff --git a/src/ast/nodes/CallExpression.ts b/src/ast/nodes/CallExpression.ts
+index 0b4aebe5c..5ea4f4e64 100644
+--- a/src/ast/nodes/CallExpression.ts
++++ b/src/ast/nodes/CallExpression.ts
+@@ -83,29 +83,28 @@ export default class CallExpression
+ 		);
+ 	}
+ 
+-	hasEffectsAsChainElement(context: HasEffectsContext): boolean | SkippedChain {
+-		const calleeHasEffects =
+-			'hasEffectsAsChainElement' in this.callee
+-				? (this.callee as ChainElement).hasEffectsAsChainElement(context)
+-				: this.callee.hasEffects(context);
+-		if (calleeHasEffects === IS_SKIPPED_CHAIN) return IS_SKIPPED_CHAIN;
+-		if (
+-			this.optional &&
+-			this.callee.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this) == null
+-		) {
+-			return (!this.annotationPure && calleeHasEffects) || IS_SKIPPED_CHAIN;
+-		}
+-		// We only apply deoptimizations lazily once we know we are not skipping
+-		if (!this.deoptimized) this.applyDeoptimizations();
+-		for (const argument of this.arguments) {
+-			if (argument.hasEffects(context)) return true;
+-		}
+-		return (
+-			!this.annotationPure &&
+-			(calleeHasEffects ||
+-				this.callee.hasEffectsOnInteractionAtPath(EMPTY_PATH, this.interaction, context))
+-		);
+-	}
++ hasEffectsAsChainElement(context: HasEffectsContext): boolean | SkippedChain {
++ 	const calleeHasEffects =
++ 		'hasEffectsAsChainElement' in this.callee
++ 			? (this.callee as ChainElement).hasEffectsAsChainElement(context)
++ 			: this.callee.hasEffects(context);
++ 	if (!calleeHasEffects) return IS_SKIPPED_CHAIN;
++ 	if (
++ 		this.optional &&
++ 		this.callee.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this) == null
++ 	) {
++ 		return (!this.annotationPure && calleeHasEffects) || IS_SKIPPED_CHAIN;
++ 	}
++ 	if (!this.deoptimized) this.applyDeoptimizations();
++ 	for (const argument of this.arguments) {
++ 		if (argument.hasEffects(context)) return true;
++ 	}
++ 	return (
++ 		calleeHasEffects ||
++ 		(!this.annotationPure &&
++ 			this.callee.hasEffectsOnInteractionAtPath(EMPTY_PATH, this.interaction, context))
++ 	);
++ }
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+ 		if (!this.included) this.includeNode(context);

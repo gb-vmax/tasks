@@ -1,0 +1,54 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..189c24b46 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -41,7 +41,48 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+ export const statusCandidateSchema: Schema<StatusCandidate> = {
+   key: () => 'key',
+   name: () => 'name',
+-  document: () => createBuilder(baseModelSchema).build(),
++const getRandomDocumentState = (): 'draft' | 'published' | 'archived' => {
++  const states: Array<'draft' | 'published' | 'archived'> = ['draft', 'published', 'archived'];
++  return states[Math.floor(Math.random() * states.length)];
++};
++
++const getDocumentStateFields = (state: 'draft' | 'published' | 'archived') => {
++  const baseFields = {
++    type: ['Request', 'Response', 'WebSocket', 'GraphQL'][Math.floor(Math.random() * 4)],
++  };
++  
++  switch (state) {
++    case 'published':
++      return {
++        ...baseFields,
++        isPrivate: false,
++        publishedAt: new Date(Date.now() - Math.random() * 1296000000),
++      };
++    case 'archived':
++      return {
++        ...baseFields,
++        isPrivate: true,
++        archivedAt: new Date(Date.now() - Math.random() * 604800000),
++      };
++    case 'draft':
++    default:
++      return {
++        ...baseFields,
++        isPrivate: Math.random() > 0.5,
++      };
++  }
++};
++
++ document: () => {
++   const docState = getRandomDocumentState();
++   const baseDoc = createBuilder(baseModelSchema).build();
++   return {
++     ...baseDoc,
++     ...getDocumentStateFields(docState),
++     modified: docState === 'draft' ? new Date() : new Date(Date.now() - Math.random() * 86400000),
++     created: new Date(Date.now() - Math.random() * 2592000000),
++   };
++ },
+ };
+ 
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {

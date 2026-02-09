@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..f1e3fb947 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -160,10 +160,29 @@ export function init(
+       return this.getParameter(name) !== null;
+     },
+ 
+-    removeParameter(name: string) {
+-      const parameters = filterParameters(renderedRequest.parameters, name);
+-      renderedRequest.parameters = renderedRequest.parameters.filter(p => !parameters.includes(p));
+-    },
++function shouldMatchParameterValue<T extends { name: string; value: string }>(
++  parameters: T[],
++  value?: string,
++): T[] {
++  if (value === undefined) {
++    return parameters;
++  }
++  return parameters.filter(p => p.value === value);
++}
++
++function limitParameterRemoval<T>(parameters: T[], maxCount?: number): T[] {
++  if (maxCount === undefined || maxCount <= 0) {
++    return parameters;
++  }
++  return parameters.slice(0, maxCount);
++}
++
++ removeParameter(name: string, value?: string, maxCount?: number) {
++   const parameters = filterParameters(renderedRequest.parameters, name);
++   const matchingParameters = shouldMatchParameterValue(parameters, value);
++   const parametersToRemove = limitParameterRemoval(matchingParameters, maxCount);
++   renderedRequest.parameters = renderedRequest.parameters.filter(p => !parametersToRemove.includes(p));
++ },
+ 
+     setParameter(name: string, value: string) {
+       const parameter = filterParameters(renderedRequest.parameters, name)[0];

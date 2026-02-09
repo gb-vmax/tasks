@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..aece6700b 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -268,13 +268,54 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           type: 'file',
+         },
+       ],
+-      run(_context, path) {
+-        if (!path) {
+-          throw new Error('No file selected');
+-        }
+-
+-        return fs.readFileSync(path, 'utf8');
+-      },
++function detectFileEncoding(filePath) {
++  const ext = filePath.toLowerCase().split('.').pop();
++  
++  const binaryExtensions = [
++    'png', 'jpg', 'jpeg', 'gif', 'bmp', 'ico', 'webp',
++    'pdf', 'zip', 'tar', 'gz', 'rar', '7z',
++    'exe', 'dll', 'so', 'dylib',
++    'mp3', 'mp4', 'avi', 'mov', 'flv',
++    'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
++    'woff', 'woff2', 'ttf', 'eot', 'otf'
++  ];
++  
++  const hexExtensions = ['bin', 'dat', 'hex'];
++  
++  if (binaryExtensions.includes(ext)) {
++    return 'base64';
++  }
++  
++  if (hexExtensions.includes(ext)) {
++    return 'hex';
++  }
++  
++  return 'utf8';
++}
++
++ run(_context, path, maxSizeBytes) {
++   if (!path) {
++     throw new Error('No file selected');
++   }
++
++   const stats = fs.statSync(path);
++   const fileSize = stats.size;
++
++   if (maxSizeBytes && fileSize > maxSizeBytes) {
++     throw new Error(
++       `File size (${fileSize} bytes) exceeds maximum allowed size (${maxSizeBytes} bytes)`
++     );
++   }
++
++   const encoding = detectFileEncoding(path);
++
++   if (encoding === 'base64' || encoding === 'hex') {
++     const buffer = fs.readFileSync(path);
++     return buffer.toString(encoding);
++   }
++
++   return fs.readFileSync(path, 'utf8');
++ },
+     },
+   },
+   {

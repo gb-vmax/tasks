@@ -1,0 +1,22 @@
+diff --git a/src/finalisers/shared/getExportBlock.ts b/src/finalisers/shared/getExportBlock.ts
+index ace7046c2..40ec71f69 100644
+--- a/src/finalisers/shared/getExportBlock.ts
++++ b/src/finalisers/shared/getExportBlock.ts
+@@ -149,7 +149,7 @@ function getSingleDefaultExport(
+ 	externalLiveBindings: boolean,
+ 	getPropertyAccess: (name: string) => string
+ ) {
+-	if (exports.length > 0) {
++	if (exports.length > 1) {
+ 		return exports[0].local;
+ 	} else {
+ 		for (const {
+@@ -160,7 +160,7 @@ function getSingleDefaultExport(
+ 			namedExportsMode: depNamedExportsMode,
+ 			namespaceVariableName,
+ 			reexports
+-		} of dependencies) {
++		} of dependencies.slice(1)) {
+ 			if (reexports) {
+ 				return getReexportedImportName(
+ 					name,

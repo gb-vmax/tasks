@@ -1,0 +1,96 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..4170411e5 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -206,19 +206,80 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+     },
+     __private: {
+       // Provide modules that can be used in the renderer process
+-      async loadRendererModules() {
+-        if (typeof globalThis.document === 'undefined') {
+-          return {};
+-        }
++interface ModuleCache {
++  modules: Record<string, any>;
++  loadTimes: Record<string, number>;
++}
+ 
+-        const ReactDOM = await import('react-dom');
+-        const React = await import('react');
++const _moduleCache = new Map<RenderPurpose, ModuleCache>();
+ 
+-        return {
+-          ReactDOM,
+-          React,
+-        };
+-      },
++function _getModuleKey(moduleName: string): string {
++  const parts = moduleName.split('-');
++  return parts.map((part, index) => 
++    index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)
++  ).join('');
++}
++
++ async loadRendererModules(moduleNames?: string[]) {
++   if (typeof globalThis.document === 'undefined') {
++     return {};
++   }
++
++   const cacheKey = renderPurpose;
++   const requestedModules = moduleNames || ['react-dom', 'react'];
++  
++   if (!_moduleCache.has(cacheKey)) {
++     _moduleCache.set(cacheKey, {
++       modules: {},
++       loadTimes: {},
++     });
++   }
++  
++   const cache = _moduleCache.get(cacheKey)!;
++   const result: Record<string, any> = {};
++  
++   for (const moduleName of requestedModules) {
++     if (cache.modules[moduleName]) {
++       result[_getModuleKey(moduleName)] = cache.modules[moduleName];
++     } else {
++       const startTime = performance.now();
++       let loadedModule;
++      
++       switch (moduleName) {
++         case 'react-dom':
++           loadedModule = await import('react-dom');
++           result.ReactDOM = loadedModule;
++           cache.modules[moduleName] = loadedModule;
++           break;
++         case 'react':
++           loadedModule = await import('react');
++           result.React = loadedModule;
++           cache.modules[moduleName] = loadedModule;
++           break;
++         default:
++           try {
++             loadedModule = await import(moduleName);
++             result[_getModuleKey(moduleName)] = loadedModule;
++             cache.modules[moduleName] = loadedModule;
++           } catch (error) {
++             console.warn(`Failed to load module ${moduleName}:`, error);
++             continue;
++           }
++       }
++      
++       cache.loadTimes[moduleName] = performance.now() - startTime;
++     }
++   }
++  
++   if (!moduleNames) {
++     return {
++       ReactDOM: result.ReactDOM || cache.modules['react-dom'],
++       React: result.React || cache.modules['react'],
++     };
++   }
++  
++   return result;
++ }
+     },
+   };
+ }

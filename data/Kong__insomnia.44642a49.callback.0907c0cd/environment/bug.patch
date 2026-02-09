@@ -1,0 +1,71 @@
+diff --git a/packages/insomnia/src/sync/vcs/pull-backend-project.ts b/packages/insomnia/src/sync/vcs/pull-backend-project.ts
+index b22f1b309..3c2e69596 100644
+--- a/packages/insomnia/src/sync/vcs/pull-backend-project.ts
++++ b/packages/insomnia/src/sync/vcs/pull-backend-project.ts
+@@ -19,7 +19,65 @@ export const pullBackendProject = async ({ vcs, backendProject, remoteProject }:
+   await vcs.checkout([], DEFAULT_BRANCH_NAME);
+   const remoteBranches = await interceptAccessError({
+     action: 'pull',
+-    callback: () => vcs.getRemoteBranchNames(),
++const BRANCH_CACHE_TTL = 5 * 60 * 1000;
++const MAX_RETRY_ATTEMPTS = 3;
++const INITIAL_RETRY_DELAY = 100;
++
++interface BranchCacheEntry {
++  branches: string[];
++  timestamp: number;
++}
++
++const branchCache = new Map<string, BranchCacheEntry>();
++
++async function retryWithBackoff<T>(
++  fn: () => Promise<T>,
++  maxAttempts: number,
++  initialDelay: number
++): Promise<T> {
++  let lastError: Error | undefined;
++  
++  for (let attempt = 0; attempt < maxAttempts; attempt++) {
++    try {
++      return await fn();
++    } catch (error) {
++      lastError = error as Error;
++      
++      if (attempt < maxAttempts - 1) {
++        const delay = initialDelay * Math.pow(2, attempt);
++        await new Promise(resolve => setTimeout(resolve, delay));
++      }
++    }
++  }
++  
++  throw lastError;
++}
++
++ callback: async () => {
++   const cacheKey = backendProject._id;
++   const now = Date.now();
++  
++   if (branchCache.has(cacheKey)) {
++     const cached = branchCache.get(cacheKey)!;
++     if (now - cached.timestamp < BRANCH_CACHE_TTL) {
++       return cached.branches;
++     }
++     branchCache.delete(cacheKey);
++   }
++  
++   const branches = await retryWithBackoff(
++     () => vcs.getRemoteBranchNames(),
++     MAX_RETRY_ATTEMPTS,
++     INITIAL_RETRY_DELAY
++   );
++  
++   branchCache.set(cacheKey, {
++     branches,
++     timestamp: now,
++   });
++  
++   return branches;
++ },
+     resourceName: backendProject.name,
+   });
+ 

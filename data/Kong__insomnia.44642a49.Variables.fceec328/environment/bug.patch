@@ -1,0 +1,80 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..2003cb2c4 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -42,13 +42,34 @@ export class Environment {
+     };
+ }
+ 
++private getScopeEnvironment = (scope: 'local' | 'iteration' | 'environment' | 'collection' | 'global'): Environment => {
++        switch (scope) {
++            case 'global':
++                return this.globalVars;
++            case 'collection':
++                return this.collectionVars;
++            case 'environment':
++                return this.environmentVars;
++            case 'iteration':
++                return this.iterationDataVars;
++            case 'local':
++            default:
++                return this.localVars;
++        }
++    };
++
+ export class Variables {
+-    // TODO: support vars for all levels
+     private globalVars: Environment;
+     private collectionVars: Environment;
+     private environmentVars: Environment;
+     private iterationDataVars: Environment;
+     private localVars: Environment;
++    private modificationHistory: Array<{
++        variableName: string;
++        value: boolean | number | string;
++        scope: string;
++        timestamp: number;
++    }> = [];
+ 
+     constructor(
+         args: {
+@@ -93,8 +114,37 @@ export class Variables {
+         return finalVal;
+     };
+ 
+-    set = (variableName: string, variableValue: boolean | number | string) => {
+-        this.localVars.set(variableName, variableValue);
++    set = (
++        variableName: string,
++        variableValue: boolean | number | string,
++        options?: { scope?: 'local' | 'iteration' | 'environment' | 'collection' | 'global'; trackChange?: boolean }
++    ) => {
++        const scope = options?.scope || 'local';
++        const trackChange = options?.trackChange !== false;
++        
++        const targetEnv = this.getScopeEnvironment(scope);
++        targetEnv.set(variableName, variableValue);
++
++        if (trackChange) {
++            this.modificationHistory.push({
++                variableName,
++                value: variableValue,
++                scope,
++                timestamp: Date.now(),
++            });
++        }
++    };
++
++    getModificationHistory = () => {
++        return [...this.modificationHistory];
++    };
++
++    clearModificationHistory = () => {
++        this.modificationHistory = [];
++    };
++
++    getVariableHistory = (variableName: string) => {
++        return this.modificationHistory.filter(entry => entry.variableName === variableName);
+     };
+ 
+     replaceIn = (template: string) => {

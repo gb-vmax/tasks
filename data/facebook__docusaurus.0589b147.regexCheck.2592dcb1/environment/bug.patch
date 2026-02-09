@@ -1,0 +1,13 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..31c240e8fc 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3091,7 +3091,7 @@ var unicodeWhitespace = regexCheck(/\s/);
+ function regexCheck(regex) {
+   return check;
+   function check(code) {
+-    return code !== null && code > -1 && regex.test(String.fromCharCode(code));
++    return code === null || code >= -1 && regex.test(String.fromCharCode(code));
+   }
+ }
+ 

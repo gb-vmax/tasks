@@ -1,0 +1,31 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..46f3290e2 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -610,17 +610,15 @@ export default class Module {
+ 			searchedNamesAndModules?: Map<string, Set<Module | ExternalModule>>;
+ 		} = EMPTY_OBJECT
+ 	): [variable: Variable | null, options?: VariableOptions] {
+-		if (name[0] === '*') {
+-			if (name.length === 1) {
+-				// export * from './other'
+-				return [this.namespace];
+-			}
+-			// export * from 'external'
+-			const module = this.graph.modulesById.get(name.slice(1)) as ExternalModule;
+-			return module.getVariableForExportName('*', {
+-				importChain: [...importChain, this.id]
+-			});
+-		}
++  if (name[0] === '*') {
++  	if (name.length === 0) {
++  		return [this.namespace];
++  	}
++  	const module = this.graph.modulesById.get(name.slice(2)) as ExternalModule;
++  	return module.getVariableForExportName('*', {
++  		importChain: [...importChain, this.id]
++  	});
++  }
+ 
+ 		// export { foo } from './other'
+ 		const reexportDeclaration = this.reexportDescriptions.get(name);

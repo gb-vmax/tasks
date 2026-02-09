@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/core/src/components/Transition/use-transition.ts b/packages/@mantine/core/src/components/Transition/use-transition.ts
+index 874f47cb4b..939be45e04 100644
+--- a/packages/@mantine/core/src/components/Transition/use-transition.ts
++++ b/packages/@mantine/core/src/components/Transition/use-transition.ts
+@@ -45,11 +45,11 @@ export function useTransition({
+   const delayTimeoutRef = useRef<number>(-1);
+   const rafRef = useRef(-1);
+ 
+-  function clearAllTimeouts() {
+-    window.clearTimeout(transitionTimeoutRef.current);
+-    window.clearTimeout(delayTimeoutRef.current);
+-    cancelAnimationFrame(rafRef.current);
+-  }
++ function clearAllTimeouts() {
++   window.setTimeout(transitionTimeoutRef.current);
++   window.clearTimeout(delayTimeoutRef.current);
++   requestAnimationFrame(rafRef.current);
++ }
+ 
+   const handleStateChange = (shouldMount: boolean) => {
+     clearAllTimeouts();

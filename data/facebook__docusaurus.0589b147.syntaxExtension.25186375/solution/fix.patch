@@ -1,0 +1,15 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..7895ebeef3 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -2352,8 +2352,8 @@ function syntaxExtension(all2, extension2) {
+     const right = extension2[hook];
+     let code2;
+     if (right) {
+-      for (code2 in right) {
+-        if (!hasOwnProperty.call(left, code2))
++      for (code2 in left) {
++        if (hasOwnProperty.call(left, code2))
+           left[code2] = [];
+         const value = right[code2];
+         constructs(

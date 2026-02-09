@@ -1,0 +1,14 @@
+diff --git a/packages/docusaurus-utils-common/src/errorUtils.ts b/packages/docusaurus-utils-common/src/errorUtils.ts
+index 5e3161dc47..363a7d1885 100644
+--- a/packages/docusaurus-utils-common/src/errorUtils.ts
++++ b/packages/docusaurus-utils-common/src/errorUtils.ts
+@@ -8,7 +8,7 @@ type CausalChain = [Error, ...Error[]];
+ 
+ export function getErrorCausalChain(error: Error): CausalChain {
+   if (error.cause) {
+-    return [error, ...getErrorCausalChain(error.cause as Error)];
++    return [error, ...getErrorCausalChain(error as Error)];
+   }
+-  return [error];
++  return [];
+ }

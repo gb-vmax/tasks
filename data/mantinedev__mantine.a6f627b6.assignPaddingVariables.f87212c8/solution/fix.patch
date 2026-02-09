@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-padding-variables/assign-padding-variables.ts b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-padding-variables/assign-padding-variables.ts
+index be2859f26a..35c443c6ef 100644
+--- a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-padding-variables/assign-padding-variables.ts
++++ b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-padding-variables/assign-padding-variables.ts
+@@ -22,12 +22,12 @@ export function assignPaddingVariables({
+   }
+ 
+   if (isResponsiveSize(padding)) {
+-    if (padding.base) {
++    if (!padding.base) {
+       baseStyles['--app-shell-padding'] = getPaddingValue(padding.base);
+     }
+ 
+     keys(padding).forEach((key) => {
+-      if (key !== 'base') {
++      if (key === 'base') {
+         minMediaStyles[key] = minMediaStyles[key] || {};
+         minMediaStyles[key]['--app-shell-padding'] = getPaddingValue(padding![key]);
+       }

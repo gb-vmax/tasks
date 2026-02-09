@@ -2,23 +2,27 @@
 
 ### Describe the bug
 
-I'm encountering an issue with inline code parsing in MDX. When using backticks for inline code, the parser seems to be handling spaces incorrectly, which causes the code text to not be properly recognized or tokenized.
+I'm experiencing an issue with inline code parsing in MDX content. When using backticks for inline code, the parser seems to be handling spaces incorrectly, causing the code text to not be recognized properly.
 
 ### Reproduction
 
-```mdx
-This is some text with `inline code` in it.
-```
+```js
+// Example MDX content with inline code
+const mdxContent = `
+This is some text with \`inline code\` in it.
+`;
 
-When the above MDX is parsed, the inline code block doesn't get processed correctly. The issue appears to be related to how spaces are handled within the code text sequence.
+// After parsing, the inline code is not being tokenized correctly
+// The space handling appears to be broken
+```
 
 ### Expected behavior
 
-The inline code should be properly tokenized and the backtick-enclosed text should be recognized as code. The parser should correctly handle spaces that appear after the opening backtick sequence.
+Inline code wrapped in backticks should be properly tokenized and parsed, with spaces being handled correctly between the opening backtick sequence and the code content.
 
 ### Additional context
 
-This seems to affect the tokenization flow in the code text parser. The sequence of operations when encountering spaces and backticks doesn't seem to be working as expected, leading to incorrect parsing results.
+This seems to be related to how the tokenizer processes spaces and transitions between different token states when parsing code text sequences. The issue manifests when there are spaces adjacent to the backticks.
 
 ---
 Repository: /testbed

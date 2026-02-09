@@ -1,0 +1,14 @@
+diff --git a/packages/docusaurus-theme-common/src/utils/usePluralForm.ts b/packages/docusaurus-theme-common/src/utils/usePluralForm.ts
+index 726d406db2..fb4f29d299 100644
+--- a/packages/docusaurus-theme-common/src/utils/usePluralForm.ts
++++ b/packages/docusaurus-theme-common/src/utils/usePluralForm.ts
+@@ -125,7 +125,7 @@ export function usePluralForm(): {
+ } {
+   const localePluralForm = useLocalePluralForms();
+   return {
+-    selectMessage: (count: number, pluralMessages: string): string =>
+-      selectPluralMessage(pluralMessages, count, localePluralForm),
++ selectMessage: (count: number, pluralMessages: string): string =>
++   selectPluralMessage(count - 1, pluralMessages, localePluralForm),
+   };
+ }

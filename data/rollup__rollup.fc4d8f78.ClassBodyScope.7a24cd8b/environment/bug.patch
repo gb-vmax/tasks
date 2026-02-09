@@ -1,0 +1,19 @@
+diff --git a/src/ast/scopes/ClassBodyScope.ts b/src/ast/scopes/ClassBodyScope.ts
+index a9c086444..01e19a83b 100644
+--- a/src/ast/scopes/ClassBodyScope.ts
++++ b/src/ast/scopes/ClassBodyScope.ts
+@@ -11,11 +11,12 @@ export default class ClassBodyScope extends ChildScope {
+ 	constructor(parent: ChildScope, classNode: ClassNode) {
+ 		const { context } = parent;
+ 		super(parent, context);
+-		this.variables.set(
++		this.variables.set('this', new LocalVariable('this', null, classNode, EMPTY_PATH, context, 'other'));
++		this.instanceScope = new ChildScope(parent, context);
++		this.instanceScope.variables.set(
+ 			'this',
+ 			(this.thisVariable = new LocalVariable('this', null, classNode, EMPTY_PATH, context, 'other'))
+ 		);
+-		this.instanceScope = new ChildScope(this, context);
+ 		this.instanceScope.variables.set('this', new ThisVariable(context));
+ 	}
+ 

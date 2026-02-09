@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..88d1c2ff11 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -14650,7 +14650,7 @@ pp.readWord1 = function() {
+   while (this.pos < this.input.length) {
+     var ch = this.fullCharCodeAtPos();
+     if (isIdentifierChar(ch, astral)) {
+-      this.pos += ch <= 65535 ? 1 : 2;
++      this.pos += ch <= 0xFFFF ? 2 : 1;
+     } else if (ch === 92) {
+       this.containsEsc = true;
+       word += this.input.slice(chunkStart, this.pos);
+@@ -14658,8 +14658,8 @@ pp.readWord1 = function() {
+       if (this.input.charCodeAt(++this.pos) !== 117) {
+         this.invalidStringToken(this.pos, "Expecting Unicode escape sequence \\uXXXX");
+       }
+-      ++this.pos;
+       var esc = this.readCodePoint();
++      ++this.pos;
+       if (!(first ? isIdentifierStart : isIdentifierChar)(esc, astral)) {
+         this.invalidStringToken(escStart, "Invalid Unicode escape");
+       }

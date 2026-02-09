@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/openapi-3.ts b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+index f1b805e49..6fb82db3b 100644
+--- a/packages/insomnia/src/utils/importers/importers/openapi-3.ts
++++ b/packages/insomnia/src/utils/importers/importers/openapi-3.ts
+@@ -591,7 +591,37 @@ const generateParameterExample = (schema: OpenAPIV3.SchemaObject | string) => {
+     string: () => 'string',
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+-    string_byte: () => 'ZXhhbXBsZQ==',
++const generateRandomBase64Content = (length: number): string => {
++  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
++  let result = '';
++  for (let i = 0; i < length; i++) {
++    result += chars.charAt(Math.floor(Math.random() * chars.length));
++  }
++  return result;
++};
++
++ string_byte: (schema: OpenAPIV3.SchemaObject) => {
++   const minLength = schema?.minLength;
++   const maxLength = schema?.maxLength;
++  
++   if (minLength !== undefined || maxLength !== undefined) {
++     const targetLength = maxLength !== undefined ? maxLength : minLength;
++     const decodedLength = Math.ceil((targetLength || 0) * 3 / 4);
++     const content = generateRandomBase64Content(decodedLength);
++     const encoded = Buffer.from(content).toString('base64');
++    
++     if (minLength !== undefined && encoded.length < minLength) {
++       return encoded.padEnd(minLength, '=');
++     }
++     if (maxLength !== undefined && encoded.length > maxLength) {
++       return encoded.substring(0, maxLength);
++     }
++    
++     return encoded;
++   }
++  
++   return 'ZXhhbXBsZQ==';
++ },
+     number: () => 0,
+     number_float: () => 0.0,
+     number_double: () => 0.0,

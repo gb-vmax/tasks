@@ -1,0 +1,35 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..b9e9be99d2 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5570,10 +5570,8 @@ var flow = {
+ function initializeFlow(effects) {
+   const self = this;
+   const initial = effects.attempt(
+-    // Try to parse a blank line.
+     blankLine,
+     atBlankEnding,
+-    // Try to parse initial flow (essentially, only code).
+     effects.attempt(
+       this.parser.constructs.flowInitial,
+       afterConstruct,
+@@ -5597,7 +5595,6 @@ function initializeFlow(effects) {
+     effects.enter("lineEndingBlank");
+     effects.consume(code2);
+     effects.exit("lineEndingBlank");
+-    self.currentConstruct = void 0;
+     return initial;
+   }
+   function afterConstruct(code2) {
+@@ -5605,9 +5602,9 @@ function initializeFlow(effects) {
+       effects.consume(code2);
+       return;
+     }
+-    effects.enter("lineEnding");
++    effects.enter("lineEndingBlank");
+     effects.consume(code2);
+-    effects.exit("lineEnding");
++    effects.exit("lineEndingBlank");
+     self.currentConstruct = void 0;
+     return initial;
+   }

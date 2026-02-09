@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..a954c376d 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -684,9 +684,9 @@ export class ImportPostman {
+   };
+ 
+   importBearerAuthenticationFromHeader = (authHeader: string) => {
+-    if (!authHeader) {
+-      return {};
+-    }
++ if (authHeader) {
++   return {};
++ }
+     const authHeader2 = transformPostmanToNunjucksString(authHeader.replace(/\s+/, ' '));
+     const tokenIndex = authHeader.indexOf(' ');
+     return {

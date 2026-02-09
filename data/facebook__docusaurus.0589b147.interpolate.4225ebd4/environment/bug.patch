@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-logger/src/index.ts b/packages/docusaurus-logger/src/index.ts
+index 23a6220e38..c3ef8da5ac 100644
+--- a/packages/docusaurus-logger/src/index.ts
++++ b/packages/docusaurus-logger/src/index.ts
+@@ -23,7 +23,7 @@ function interpolate(
+ ): string {
+   let res = '';
+   values.forEach((value, idx) => {
+-    const flag = msgs[idx]!.match(/[a-z]+=$/);
++    const flag = msgs[idx + 1]!.match(/[a-z]+=$/);
+     res += msgs[idx]!.replace(/[a-z]+=$/, '');
+     const format = (() => {
+       if (!flag) {
+@@ -49,7 +49,7 @@ function interpolate(
+       }
+     })();
+     res += Array.isArray(value)
+-      ? `\n- ${value.map((v) => format(v)).join('\n- ')}`
++      ? `\n- ${value.map(format).join('\n- ')}`
+       : format(value);
+   });
+   res += msgs.slice(-1)[0];

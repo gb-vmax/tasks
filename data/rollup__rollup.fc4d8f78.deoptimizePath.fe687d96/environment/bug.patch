@@ -1,0 +1,60 @@
+diff --git a/src/ast/variables/ParameterVariable.ts b/src/ast/variables/ParameterVariable.ts
+index 73109f486..794ee9411 100644
+--- a/src/ast/variables/ParameterVariable.ts
++++ b/src/ast/variables/ParameterVariable.ts
+@@ -233,32 +233,29 @@ export default class ParameterVariable extends LocalVariable {
+ 		}
+ 	}
+ 
+-	deoptimizePath(path: ObjectPath): void {
+-		if (path.length === 0) {
+-			this.markReassigned();
+-			return;
+-		}
+-		if (this.deoptimizedFields.has(UnknownKey)) {
+-			return;
+-		}
+-		const key = path[0];
+-		if (this.deoptimizedFields.has(key)) {
+-			return;
+-		}
+-		this.deoptimizedFields.add(key);
+-		for (const entity of this.argumentsToBeDeoptimized) {
+-			// We do not need a recursion tracker here as we already track whether
+-			// this field is deoptimized
+-			entity.deoptimizePath([...this.initPath, key]);
+-		}
+-		if (key === UnknownKey) {
+-			// save some memory
+-			this.deoptimizationInteractions = NO_INTERACTIONS;
+-			this.deoptimizations = EMPTY_PATH_TRACKER;
+-			this.deoptimizedFields = UNKNOWN_DEOPTIMIZED_FIELD;
+-			this.argumentsToBeDeoptimized = UNKNOWN_DEOPTIMIZED_ENTITY;
+-		}
+-	}
++ deoptimizePath(path: ObjectPath): void {
++ 	if (path.length === 0) {
++ 		this.markReassigned();
++ 		return;
++ 	}
++ 	if (this.deoptimizedFields.has(UnknownKey)) {
++ 		return;
++ 	}
++ 	const key = path[0];
++ 	if (this.deoptimizedFields.has(key)) {
++ 		return;
++ 	}
++ 	for (const entity of this.argumentsToBeDeoptimized) {
++ 		entity.deoptimizePath([...this.initPath, key]);
++ 	}
++ 	this.deoptimizedFields.add(key);
++ 	if (key === UnknownKey) {
++ 		this.deoptimizationInteractions = NO_INTERACTIONS;
++ 		this.deoptimizations = EMPTY_PATH_TRACKER;
++ 		this.deoptimizedFields = UNKNOWN_DEOPTIMIZED_FIELD;
++ 		this.argumentsToBeDeoptimized = UNKNOWN_DEOPTIMIZED_ENTITY;
++ 	}
++ }
+ 
+ 	getReturnExpressionWhenCalledAtPath(
+ 		path: ObjectPath

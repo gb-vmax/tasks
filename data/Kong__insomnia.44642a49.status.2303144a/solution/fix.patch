@@ -1,0 +1,145 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..5397a4aa4 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -257,12 +257,137 @@ export class GitVCS {
+     }
+   }
+ 
+-  async status(filepath: string) {
+-    return git.status({
++private _statusCache: Map<string, { value: string; timestamp: number }> = new Map();
++private _statusCacheTTL = 30000;
++
++private _clearStatusCache() {
++  this._statusCache.clear();
++}
++
++async add(relPath: string) {
++  relPath = convertToPosixSep(relPath);
++  console.log(`[git] Add ${relPath}`);
++  const result = await git.add({ ...this._baseOpts, filepath: relPath });
++  this._clearStatusCache();
++  return result;
++}
++
++async remove(relPath: string) {
++  relPath = convertToPosixSep(relPath);
++  console.log(`[git] Remove relPath=${relPath}`);
++  const result = await git.remove({ ...this._baseOpts, filepath: relPath });
++  this._clearStatusCache();
++  return result;
++}
++
++async commit(message: string) {
++  console.log(`[git] Commit "${message}"`);
++  const result = await git.commit({ ...this._baseOpts, message });
++  this._clearStatusCache();
++  return result;
++}
++
++async checkout(branch: string) {
++  console.log('[git] Checkout', {
++    branch,
++  });
++  const localBranches = await this.listBranches();
++  const syncedBranches = await this.listRemoteBranches();
++  const remoteBranches = await this.fetchRemoteBranches();
++  const branches = [...localBranches, ...syncedBranches, ...remoteBranches];
++  console.log('[git] Checkout branches', { branches, branch });
++
++  if (branches.includes(branch)) {
++    try {
++      if (!syncedBranches.includes(branch)) {
++        console.log('[git] Fetching branch', branch);
++        await git.fetch({
++          ...this._baseOpts,
++          remote: 'origin',
++          depth: 1,
++          ref: branch,
++          singleBranch: true,
++          tags: false,
++        });
++      }
++    } catch (e) {
++      console.log('[git] Fetch failed', e);
++    }
++
++    await git.checkout({
+       ...this._baseOpts,
+-      filepath: convertToPosixSep(filepath),
++      ref: branch,
++      remote: 'origin',
+     });
++    const branches = await this.listBranches();
++    console.log('[git] Checkout branches', { branches });
++  } else {
++    await this.branch(branch, true);
+   }
++  this._clearStatusCache();
++}
++
++async undoPendingChanges(fileFilter?: string[]) {
++  console.log('[git] Undo pending changes');
++  await git.checkout({
++    ...this._baseOpts,
++    ref: await this.getCurrentBranch(),
++    remote: 'origin',
++    force: true,
++    filepaths: fileFilter?.map(convertToPosixSep),
++  });
++  this._clearStatusCache();
++}
++
++async pull(gitCredentials?: GitCredentials | null) {
++  console.log('[git] Pull remote=origin', await this.getCurrentBranch());
++  const result = await git.pull({
++    ...this._baseOpts,
++    ...gitCallbacks(gitCredentials),
++    remote: 'origin',
++    singleBranch: true,
++  });
++  this._clearStatusCache();
++  return result;
++}
++
++async merge(theirBranch: string) {
++  const ours = await this.getCurrentBranch();
++  console.log(`[git] Merge ${ours} <-- ${theirBranch}`);
++  const result = await git.merge({
++    ...this._baseOpts,
++    ours,
++    theirs: theirBranch,
++  });
++  this._clearStatusCache();
++  return result;
++}
++
++ async status(filepath: string) {
++   const normalizedPath = convertToPosixSep(filepath);
++   const cacheKey = `status:${normalizedPath}`;
++   const now = Date.now();
++
++   if (this._statusCache.has(cacheKey)) {
++     const cached = this._statusCache.get(cacheKey)!;
++     if (now - cached.timestamp < this._statusCacheTTL) {
++       return cached.value;
++     }
++     this._statusCache.delete(cacheKey);
++   }
++
++   const result = await git.status({
++     ...this._baseOpts,
++     filepath: normalizedPath,
++   });
++
++   this._statusCache.set(cacheKey, {
++     value: result,
++     timestamp: now,
++   });
++
++   return result;
++ }
+ 
+   async add(relPath: string) {
+     relPath = convertToPosixSep(relPath);

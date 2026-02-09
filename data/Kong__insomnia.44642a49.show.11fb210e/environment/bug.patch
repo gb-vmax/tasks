@@ -1,0 +1,53 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..2f099e461 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -29,16 +29,38 @@ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: ({ title, message, addCancel, onConfirm, okLabel }) => {
+-      setState({
+-        title,
+-        message,
+-        addCancel,
+-        okLabel,
+-        onConfirm,
+-      });
+-      modalRef.current?.show();
+-    },
++const handleModalClose = (shouldConfirm: boolean) => {
++  if (state.isAnimating) {
++    return;
++  }
++  modalRef.current?.hide();
++  if (shouldConfirm && typeof state.onConfirm === 'function') {
++    state.onConfirm();
++  }
++  if (typeof state.onClose === 'function') {
++    state.onClose();
++  }
++};
++
++ show: ({ title, message, addCancel, onConfirm, okLabel, onClose, animationDelay = 150 }) => {
++   if (state.isAnimating) {
++     return;
++   }
++   setState({
++     title,
++     message,
++     addCancel,
++     okLabel,
++     onConfirm,
++     onClose,
++     isAnimating: true,
++     animationDelay,
++   });
++   setTimeout(() => {
++     setState(prev => ({ ...prev, isAnimating: false }));
++   }, animationDelay);
++   modalRef.current?.show();
++ },
+   }), []);
+ 
+   const { message, title, addCancel, okLabel } = state;

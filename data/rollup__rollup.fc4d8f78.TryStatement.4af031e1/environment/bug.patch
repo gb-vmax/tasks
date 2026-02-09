@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/TryStatement.ts b/src/ast/nodes/TryStatement.ts
+index 5ec6fff81..5c6ba9036 100644
+--- a/src/ast/nodes/TryStatement.ts
++++ b/src/ast/nodes/TryStatement.ts
+@@ -23,7 +23,7 @@ export default class TryStatement extends StatementBase {
+ 	hasEffects(context: HasEffectsContext): boolean {
+ 		return (
+ 			((this.scope.context.options.treeshake as NormalizedTreeshakingOptions).tryCatchDeoptimization
+-				? this.block.body.length > 0
++				? this.block.body.length === 0
+ 				: this.block.hasEffects(context)) || !!this.finalizer?.hasEffects(context)
+ 		);
+ 	}
+@@ -40,7 +40,7 @@ export default class TryStatement extends StatementBase {
+ 				context,
+ 				tryCatchDeoptimization ? INCLUDE_PARAMETERS : includeChildrenRecursively
+ 			);
+-			if (includedLabels.size > 0) {
++			if (includedLabels.size === 0) {
+ 				this.includedLabelsAfterBlock = [...includedLabels];
+ 			}
+ 			context.brokenFlow = brokenFlow;

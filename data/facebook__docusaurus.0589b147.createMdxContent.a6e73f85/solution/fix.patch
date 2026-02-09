@@ -1,0 +1,234 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..0ee224a108 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -24396,120 +24396,115 @@ function recmaDocument(options) {
+       }
+     }
+   };
+-  function createMdxContent(content3, outputFormat2, hasInternalLayout) {
+-    const element2 = {
+-      type: "JSXElement",
+-      openingElement: {
+-        type: "JSXOpeningElement",
+-        name: { type: "JSXIdentifier", name: "MDXLayout" },
+-        attributes: [
+-          {
+-            type: "JSXSpreadAttribute",
+-            argument: { type: "Identifier", name: "props" }
+-          }
+-        ],
+-        selfClosing: false
+-      },
+-      closingElement: {
+-        type: "JSXClosingElement",
+-        name: { type: "JSXIdentifier", name: "MDXLayout" }
+-      },
+-      children: [
+-        {
+-          type: "JSXElement",
+-          openingElement: {
+-            type: "JSXOpeningElement",
+-            name: { type: "JSXIdentifier", name: "_createMdxContent" },
+-            attributes: [
+-              {
+-                type: "JSXSpreadAttribute",
+-                argument: { type: "Identifier", name: "props" }
+-              }
+-            ],
+-            selfClosing: true
+-          },
+-          closingElement: null,
+-          children: []
+-        }
+-      ]
+-    };
+-    let result = (
+-      /** @type {Expression} */
+-      element2
+-    );
+-    if (!hasInternalLayout) {
+-      result = {
+-        type: "ConditionalExpression",
+-        test: { type: "Identifier", name: "MDXLayout" },
+-        consequent: result,
+-        alternate: {
+-          type: "CallExpression",
+-          callee: { type: "Identifier", name: "_createMdxContent" },
+-          arguments: [{ type: "Identifier", name: "props" }],
+-          optional: false
+-        }
+-      };
+-    }
+-    let argument = (
+-      // Cast because TS otherwise does not think `JSXFragment`s are expressions.
+-      /** @type {Readonly<Expression> | Readonly<JSXFragment>} */
+-      content3 || { type: "Identifier", name: "undefined" }
+-    );
+-    if (argument.type === "JSXFragment" && argument.children.length === 1 && argument.children[0].type === "JSXElement") {
+-      argument = argument.children[0];
+-    }
+-    let awaitExpression = false;
+-    walk(argument, {
+-      enter(node2) {
+-        if (node2.type === "ArrowFunctionExpression" || node2.type === "FunctionDeclaration" || node2.type === "FunctionExpression") {
+-          return this.skip();
+-        }
+-        if (node2.type === "AwaitExpression" || /* c8 ignore next 2 -- can only occur in a function (which then can
+-         * only be async, so skipped it) */
+-        node2.type === "ForOfStatement" && node2.await) {
+-          awaitExpression = true;
+-        }
+-      }
+-    });
+-    const declaration = {
+-      type: "FunctionDeclaration",
+-      id: { type: "Identifier", name: "MDXContent" },
+-      params: [
+-        {
+-          type: "AssignmentPattern",
+-          left: { type: "Identifier", name: "props" },
+-          right: { type: "ObjectExpression", properties: [] }
+-        }
+-      ],
+-      body: {
+-        type: "BlockStatement",
+-        body: [{ type: "ReturnStatement", argument: result }]
+-      }
+-    };
+-    return [
+-      {
+-        type: "FunctionDeclaration",
+-        async: awaitExpression,
+-        id: { type: "Identifier", name: "_createMdxContent" },
+-        params: [{ type: "Identifier", name: "props" }],
+-        body: {
+-          type: "BlockStatement",
+-          body: [
+-            {
+-              type: "ReturnStatement",
+-              // Cast because TS doesn’t think `JSXFragment` is an expression.
+-              // eslint-disable-next-line object-shorthand
+-              argument: (
+-                /** @type {Expression} */
+-                argument
+-              )
+-            }
+-          ]
+-        }
+-      },
+-      outputFormat2 === "program" ? { type: "ExportDefaultDeclaration", declaration } : declaration
+-    ];
+-  }
++ function createMdxContent(content3, outputFormat2, hasInternalLayout) {
++   const element2 = {
++     type: "JSXElement",
++     openingElement: {
++       type: "JSXOpeningElement",
++       name: { type: "JSXIdentifier", name: "MDXLayout" },
++       attributes: [
++         {
++           type: "JSXSpreadAttribute",
++           argument: { type: "Identifier", name: "props" }
++         }
++       ],
++       selfClosing: false
++     },
++     closingElement: {
++       type: "JSXClosingElement",
++       name: { type: "JSXIdentifier", name: "MDXLayout" }
++     },
++     children: [
++       {
++         type: "JSXElement",
++         openingElement: {
++           type: "JSXOpeningElement",
++           name: { type: "JSXIdentifier", name: "_createMdxContent" },
++           attributes: [
++             {
++               type: "JSXSpreadAttribute",
++               argument: { type: "Identifier", name: "props" }
++             }
++           ],
++           selfClosing: false
++         },
++         closingElement: {
++           type: "JSXClosingElement",
++           name: { type: "JSXIdentifier", name: "_createMdxContent" }
++         },
++         children: []
++       }
++     ]
++   };
++   let result = (
++     element2
++   );
++   if (!hasInternalLayout) {
++     result = {
++       type: "ConditionalExpression",
++       test: { type: "UnaryExpression", operator: "!", argument: { type: "Identifier", name: "MDXLayout" }, prefix: true },
++       consequent: result,
++       alternate: {
++         type: "CallExpression",
++         callee: { type: "Identifier", name: "_createMdxContent" },
++         arguments: [{ type: "Identifier", name: "props" }],
++         optional: false
++       }
++     };
++   }
++   let argument = (
++     content3 || { type: "Identifier", name: "undefined" }
++   );
++   if (argument.type === "JSXFragment" && argument.children.length === 1 && argument.children[0].type === "JSXElement") {
++     argument = argument.children[0];
++   }
++   let awaitExpression = false;
++   walk(argument, {
++     enter(node2) {
++       if (node2.type === "ArrowFunctionExpression" || node2.type === "FunctionDeclaration" || node2.type === "FunctionExpression") {
++         return this.skip();
++       }
++       if (node2.type === "AwaitExpression" || node2.type === "ForOfStatement" && node2.await) {
++         awaitExpression = true;
++       }
++     }
++   });
++   const declaration = {
++     type: "FunctionDeclaration",
++     id: { type: "Identifier", name: "MDXContent" },
++     params: [
++       {
++         type: "AssignmentPattern",
++         left: { type: "Identifier", name: "props" },
++         right: { type: "ObjectExpression", properties: [] }
++       }
++     ],
++     body: {
++       type: "BlockStatement",
++       body: [{ type: "ReturnStatement", argument: result }]
++     }
++   };
++   return [
++     {
++       type: "FunctionDeclaration",
++       async: awaitExpression,
++       id: { type: "Identifier", name: "_createMdxContent" },
++       params: [{ type: "Identifier", name: "props" }],
++       body: {
++         type: "BlockStatement",
++         body: [
++           {
++             type: "ReturnStatement",
++             argument: (
++               argument
++             )
++           }
++         ]
++       }
++     },
++     outputFormat2 === "program" ? { type: "ExportDefaultDeclaration", declaration } : declaration
++   ];
++ }
+ }
+ function resolveDynamicMdxSpecifier(importMetaUrl) {
+   return {

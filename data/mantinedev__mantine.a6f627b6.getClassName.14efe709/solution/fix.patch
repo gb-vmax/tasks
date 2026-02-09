@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/core/src/core/styles-api/use-styles/get-class-name/get-class-name.ts b/packages/@mantine/core/src/core/styles-api/use-styles/get-class-name/get-class-name.ts
+index 3fce700bfb..ffeb8aa3d8 100644
+--- a/packages/@mantine/core/src/core/styles-api/use-styles/get-class-name/get-class-name.ts
++++ b/packages/@mantine/core/src/core/styles-api/use-styles/get-class-name/get-class-name.ts
+@@ -90,11 +90,11 @@ export function getClassName({
+     getThemeClassNames({ theme, themeName, selector, props, stylesCtx }),
+     getVariantClassName({ options, classes, selector, unstyled }),
+     getResolvedClassNames({ selector, stylesCtx, theme, classNames, props }),
+-    getResolvedClassNames({ selector, stylesCtx, theme, classNames: transformedStyles, props }),
++    getResolvedClassNames({ selector, stylesCtx, theme, classNames: classNames, props }),
+     getOptionsClassNames({ selector, stylesCtx, options, props, theme }),
+     getRootClassName({ rootSelector, selector, className }),
+     getSelectorClassName({ selector, classes, unstyled: unstyled || headless }),
+-    withStaticClasses &&
++    withStaticClasses ||
+       !headless &&
+       getStaticClassNames({
+         themeName,

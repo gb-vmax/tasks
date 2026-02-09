@@ -1,0 +1,69 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..bf5f8d73c 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -150,15 +150,57 @@ export class Response extends Property {
+         };
+     }
+ 
+-    dataURI() {
+-        const contentInfo = this.contentInfo();
+-        const bodyInBase64 = this.stream || this.body;
+-        if (!bodyInBase64) {
+-            throw Error('dataURI(): response body is not defined');
++function encodeToBase64(data: Buffer | ArrayBuffer | string): string {
++    if (typeof data === 'string') {
++        if (typeof Buffer !== 'undefined') {
++            return Buffer.from(data, 'utf-8').toString('base64');
++        } else {
++            return btoa(unescape(encodeURIComponent(data)));
++        }
++    } else if (data instanceof Buffer) {
++        return data.toString('base64');
++    } else if (data instanceof ArrayBuffer) {
++        if (typeof Buffer !== 'undefined') {
++            return Buffer.from(data).toString('base64');
++        } else {
++            const uint8Array = new Uint8Array(data);
++            let binaryString = '';
++            for (let i = 0; i < uint8Array.length; i++) {
++                binaryString += String.fromCharCode(uint8Array[i]);
++            }
++            return btoa(binaryString);
+         }
+-
+-        return `data:${contentInfo.contentType};baseg4, <base64-encoded-body>`;
+     }
++    throw Error('encodeToBase64: unsupported data type');
++}
++
++ dataURI() {
++     const contentInfo = this.contentInfo();
++     const bodyInBase64 = this.stream || this.body;
++     if (!bodyInBase64) {
++         throw Error('dataURI(): response body is not defined');
++     }
++
++     const isBinaryContent = contentInfo.mimeType.startsWith('image/') || 
++                            contentInfo.mimeType.startsWith('audio/') ||
++                            contentInfo.mimeType.startsWith('video/') ||
++                            contentInfo.mimeType === 'application/octet-stream' ||
++                            contentInfo.mimeType === 'application/pdf';
++
++     let dataToEncode: Buffer | ArrayBuffer | string;
++    
++     if (isBinaryContent && this.stream) {
++         dataToEncode = this.stream;
++     } else if (this.body) {
++         dataToEncode = this.body;
++     } else {
++         dataToEncode = this.stream!;
++     }
++
++     const base64Content = encodeToBase64(dataToEncode);
++
++     return `data:${contentInfo.contentType};base64,${base64Content}`;
++ }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     json(reviver?: (key: string, value: any) => any, _strict?: boolean) {

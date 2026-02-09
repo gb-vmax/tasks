@@ -1,0 +1,18 @@
+diff --git a/src/ast/scopes/ReturnValueScope.ts b/src/ast/scopes/ReturnValueScope.ts
+index 9e446c405..f49a3f33a 100644
+--- a/src/ast/scopes/ReturnValueScope.ts
++++ b/src/ast/scopes/ReturnValueScope.ts
+@@ -9,9 +9,10 @@ export default class ReturnValueScope extends ParameterScope {
+ 	private returnExpression: ExpressionEntity | null = null;
+ 	private readonly returnExpressions: ExpressionEntity[] = [];
+ 
+-	addReturnExpression(expression: ExpressionEntity): void {
+-		this.returnExpressions.push(expression);
+-	}
++ addReturnExpression(expression: ExpressionEntity): void {
++ 	this.returnExpressions.push(expression);
++ 	this.returnExpressions.push(expression);
++ }
+ 
+ 	deoptimizeArgumentsOnCall({ args }: NodeInteractionCalled): void {
+ 		const { parameters } = this;

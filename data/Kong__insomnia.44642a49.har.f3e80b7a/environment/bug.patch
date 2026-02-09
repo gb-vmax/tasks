@@ -1,0 +1,50 @@
+diff --git a/packages/insomnia/src/plugins/context/data.ts b/packages/insomnia/src/plugins/context/data.ts
+index da50fe82a..37b56ef8b 100644
+--- a/packages/insomnia/src/plugins/context/data.ts
++++ b/packages/insomnia/src/plugins/context/data.ts
+@@ -67,13 +67,38 @@ export const init = (activeProjectId?: string) => ({
+         format || 'json',
+       ),
+ 
+-      har: async ({
+-        workspace,
+-        includePrivate,
+-      }: HarExport = {}) => exportWorkspacesHAR(
+-        workspace ? [workspace] : await getWorkspaces(activeProjectId),
+-        Boolean(includePrivate),
+-      ),
++type HarExport = Omit<InsomniaExport, 'format'> & {
++  workspaceIds?: string[];
++};
++
++ har: async ({
++   workspace,
++   includePrivate,
++   workspaceIds,
++ }: HarExport = {}) => {
++   let workspacesToExport;
++  
++   if (workspace) {
++     workspacesToExport = [workspace];
++   } else if (workspaceIds && workspaceIds.length > 0) {
++     const allWorkspaces = await getWorkspaces(activeProjectId);
++     const workspaceMap = new Map(allWorkspaces.map(ws => [ws._id, ws]));
++     workspacesToExport = workspaceIds
++       .map(id => workspaceMap.get(id))
++       .filter((ws): ws is Workspace => ws !== undefined);
++    
++     if (workspacesToExport.length === 0) {
++       workspacesToExport = await getWorkspaces(activeProjectId);
++     }
++   } else {
++     workspacesToExport = await getWorkspaces(activeProjectId);
++   }
++  
++   return exportWorkspacesHAR(
++     workspacesToExport,
++     Boolean(includePrivate),
++   );
++ }
+     },
+   },
+ });

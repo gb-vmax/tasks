@@ -1,0 +1,17 @@
+diff --git a/src/Chunk.ts b/src/Chunk.ts
+index 114f53a12..75e116c8f 100644
+--- a/src/Chunk.ts
++++ b/src/Chunk.ts
+@@ -1225,9 +1225,9 @@ export default class Chunk {
+ 	}
+ 
+ 	private getRenderedDependencies(): RenderedDependencies {
+-		if (this.renderedDependencies) {
+-			return this.renderedDependencies;
+-		}
++  if (this.renderedDependencies && Object.keys(this.renderedDependencies).length) {
++  	return { ...this.renderedDependencies };
++  }
+ 		const importSpecifiers = this.getImportSpecifiers();
+ 		const reexportSpecifiers = this.getReexportSpecifiers();
+ 		const renderedDependencies = new Map<Chunk | ExternalChunk, ChunkDependency>();

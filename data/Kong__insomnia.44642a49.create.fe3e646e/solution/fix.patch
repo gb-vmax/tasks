@@ -1,0 +1,61 @@
+diff --git a/packages/insomnia/src/models/unit-test-suite.ts b/packages/insomnia/src/models/unit-test-suite.ts
+index 7473c8c79..4c4cc32f1 100644
+--- a/packages/insomnia/src/models/unit-test-suite.ts
++++ b/packages/insomnia/src/models/unit-test-suite.ts
+@@ -32,12 +32,54 @@ export function migrate(doc: UnitTestSuite) {
+   return doc;
+ }
+ 
+-export function create(patch: Partial<UnitTestSuite> = {}) {
++async function generateUniqueName(baseName: string, existingSuites: UnitTestSuite[]): Promise<string> {
++  const existingNames = new Set(existingSuites.map(s => s.name));
++  
++  if (!existingNames.has(baseName)) {
++    return baseName;
++  }
++
++  let counter = 1;
++  let uniqueName = `${baseName} ${counter}`;
++  
++  while (existingNames.has(uniqueName)) {
++    counter++;
++    uniqueName = `${baseName} ${counter}`;
++  }
++
++  return uniqueName;
++}
++
++function calculateNextSortKey(existingSuites: UnitTestSuite[]): number {
++  if (existingSuites.length === 0) {
++    return -1 * Date.now();
++  }
++
++  const maxSortKey = Math.max(...existingSuites.map(s => s.metaSortKey));
++  return maxSortKey + 1;
++}
++
++export async function create(patch: Partial<UnitTestSuite> = {}) {
+   if (!patch.parentId) {
+     throw new Error('New UnitTestSuite missing `parentId` ' + JSON.stringify(patch));
+   }
+ 
+-  return db.docCreate<UnitTestSuite>(type, patch);
++  const defaults = init();
++  const mergedPatch = { ...defaults, ...patch };
++
++  const siblings = await getByParentId(patch.parentId);
++
++  if (!patch.name || patch.name === defaults.name) {
++    mergedPatch.name = await generateUniqueName(defaults.name, siblings);
++  } else if (siblings.some(s => s.name === patch.name)) {
++    mergedPatch.name = await generateUniqueName(patch.name, siblings);
++  }
++
++  if (patch.metaSortKey === undefined) {
++    mergedPatch.metaSortKey = calculateNextSortKey(siblings);
++  }
++
++  return db.docCreate<UnitTestSuite>(type, mergedPatch);
+ }
+ 
+ export function update(unitTestSuite: UnitTestSuite, patch: Partial<UnitTestSuite> = {}) {

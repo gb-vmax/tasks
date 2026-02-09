@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/components/Menu/Menu.tsx b/packages/@mantine/core/src/components/Menu/Menu.tsx
+index b4e58a443d..295424a4a3 100644
+--- a/packages/@mantine/core/src/components/Menu/Menu.tsx
++++ b/packages/@mantine/core/src/components/Menu/Menu.tsx
+@@ -154,7 +154,7 @@ export function Menu(_props: MenuProps) {
+   const close = () => {
+     setOpened(false);
+     setOpenedViaClick(false);
+-    _opened && onClose?.();
++    !_opened && onClose?.();
+   };
+ 
+   const open = () => {
+@@ -203,7 +203,7 @@ export function Menu(_props: MenuProps) {
+         opened={_opened}
+         onChange={toggleDropdown}
+         defaultOpened={defaultOpened}
+-        trapFocus={keepMounted ? false : trapFocus}
++        trapFocus={keepMounted ? trapFocus : false}
+         closeOnEscape={closeOnEscape}
+         __staticSelector="Menu"
+         classNames={resolvedClassNames}

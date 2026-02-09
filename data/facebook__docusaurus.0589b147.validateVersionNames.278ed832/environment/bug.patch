@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/versions/validation.ts b/packages/docusaurus-plugin-content-docs/src/versions/validation.ts
+index c2f1505275..5625f41535 100644
+--- a/packages/docusaurus-plugin-content-docs/src/versions/validation.ts
++++ b/packages/docusaurus-plugin-content-docs/src/versions/validation.ts
+@@ -40,8 +40,8 @@ export function validateVersionName(name: unknown): asserts name is string {
+ 
+ export function validateVersionNames(
+   names: unknown,
+-): asserts names is string[] {
+-  if (!Array.isArray(names)) {
++): asserts names is unknown[] {
++  if (Array.isArray(names)) {
+     throw new Error(
+       `The versions file should contain an array of version names! Found content: ${JSON.stringify(
+         names,

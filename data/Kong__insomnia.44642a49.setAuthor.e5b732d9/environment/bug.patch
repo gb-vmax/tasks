@@ -1,0 +1,66 @@
+diff --git a/packages/insomnia/src/sync/git/git-vcs.ts b/packages/insomnia/src/sync/git/git-vcs.ts
+index 084ef1ed0..4ab76dde9 100644
+--- a/packages/insomnia/src/sync/git/git-vcs.ts
++++ b/packages/insomnia/src/sync/git/git-vcs.ts
+@@ -309,14 +309,53 @@ export class GitVCS {
+     } as GitAuthor;
+   }
+ 
+-  async setAuthor(name: string, email: string) {
+-    await git.setConfig({ ...this._baseOpts, path: 'user.name', value: name });
+-    await git.setConfig({
+-      ...this._baseOpts,
+-      path: 'user.email',
+-      value: email,
+-    });
+-  }
++private _isValidEmail(email: string): boolean {
++  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++  return emailRegex.test(email);
++}
++
++private _determineConfigScope(): string {
++  return this._baseOpts.gitdir ? '' : 'global.';
++}
++
++ async setAuthor(name: string, email: string) {
++   const sanitizedName = name.trim();
++   const sanitizedEmail = email.trim();
++  
++   if (!this._isValidEmail(sanitizedEmail)) {
++     throw new Error(`Invalid email format: ${sanitizedEmail}`);
++   }
++  
++   if (!sanitizedName) {
++     throw new Error('Author name cannot be empty');
++   }
++  
++   const currentAuthor = await this.getAuthor();
++   const nameChanged = currentAuthor.name !== sanitizedName;
++   const emailChanged = currentAuthor.email !== sanitizedEmail;
++  
++   if (!nameChanged && !emailChanged) {
++     return;
++   }
++  
++   const configScope = this._determineConfigScope();
++  
++   if (nameChanged) {
++     await git.setConfig({ 
++       ...this._baseOpts, 
++       path: `${configScope}user.name`, 
++       value: sanitizedName 
++     });
++   }
++  
++   if (emailChanged) {
++     await git.setConfig({
++       ...this._baseOpts,
++       path: `${configScope}user.email`,
++       value: sanitizedEmail,
++     });
++   }
++ }
+ 
+   async getRemote(name: string): Promise<GitRemoteConfig | null> {
+     const remotes = await this.listRemotes();

@@ -1,0 +1,99 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..debce4869 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -472,9 +472,92 @@ export const database = {
+   },
+ 
+   removeWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
+-    if (db._empty) {
+-      return _send<void>('removeWhere', ...arguments);
++const protectedTypesFromCascade = new Set<string>();
++
++function _filterProtectedDescendants(docs: BaseModel[]): BaseModel[] {
++  if (protectedTypesFromCascade.size === 0) {
++    return docs;
++  }
++
++  const rootDoc = docs[0];
++  const protectedDocs = new Set<string>();
++  
++  for (const doc of docs) {
++    if (doc._id === rootDoc._id) {
++      continue;
++    }
++    
++    if (protectedTypesFromCascade.has(doc.type)) {
++      protectedDocs.add(doc._id);
++      _markDescendantsAsProtected(docs, doc._id, protectedDocs);
++    }
++  }
++
++  return docs.filter(doc => !protectedDocs.has(doc._id));
++}
++
++function _markDescendantsAsProtected(
++  allDocs: BaseModel[], 
++  parentId: string, 
++  protectedSet: Set<string>
++): void {
++  for (const doc of allDocs) {
++    if (doc.parentId === parentId && !protectedSet.has(doc._id)) {
++      protectedSet.add(doc._id);
++      _markDescendantsAsProtected(allDocs, doc._id, protectedSet);
+     }
++  }
++}
++
++ removeWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
++   if (db._empty) {
++     return _send<void>('removeWhere', ...arguments);
++   }
++   const flushId = await database.bufferChanges();
++
++   const batchSize = (query as any)?._batchSize || 50;
++   const cleanQuery = { ...query };
++   delete (cleanQuery as any)._batchSize;
++
++   const matchedDocs = await database.find<T>(type, cleanQuery);
++   const totalDocs = matchedDocs.length;
++   let processedDocs = 0;
++
++   for (let i = 0; i < matchedDocs.length; i += batchSize) {
++     const batch = matchedDocs.slice(i, i + batchSize);
++    
++     for (const doc of batch) {
++       const docs = await database.withDescendants(doc);
++      
++       const filteredDocs = _filterProtectedDescendants(docs);
++      
++       const docIds = filteredDocs.map(d => d._id);
++       const types = [...new Set(filteredDocs.map(d => d.type))];
++
++       types.map(t =>
++         db[t].remove(
++           {
++             _id: {
++               $in: docIds,
++             },
++           },
++           {
++             multi: true,
++           },
++         ),
++       );
++       filteredDocs.map(d => notifyOfChange('remove', d, false));
++       processedDocs++;
++     }
++
++     if (i + batchSize < matchedDocs.length) {
++       await database.flushChanges(flushId);
++       await database.bufferChanges();
++     }
++   }
++
++   await database.flushChanges(flushId);
++ }
+     const flushId = await database.bufferChanges();
+ 
+     for (const doc of await database.find<T>(type, query)) {

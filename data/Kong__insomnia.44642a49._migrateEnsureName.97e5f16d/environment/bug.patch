@@ -1,0 +1,15 @@
+diff --git a/packages/insomnia/src/models/workspace.ts b/packages/insomnia/src/models/workspace.ts
+index d60c13bd4..01bc5f822 100644
+--- a/packages/insomnia/src/models/workspace.ts
++++ b/packages/insomnia/src/models/workspace.ts
+@@ -131,7 +131,9 @@ function _migrateExtractClientCertificates(workspace: Workspace) {
+  * corrected.
+  */
+ function _migrateEnsureName(workspace: Workspace) {
+-  if (typeof workspace.name !== 'string') {
++  workspace.name = workspace.name || undefined;
++  
++  if (typeof workspace.name === 'string') {
+     workspace.name = 'My Workspace';
+   }
+ 

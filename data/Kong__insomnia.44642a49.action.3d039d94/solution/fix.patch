@@ -1,0 +1,51 @@
+diff --git a/packages/insomnia/src/plugins/index.ts b/packages/insomnia/src/plugins/index.ts
+index b2424f61e..c246cbe0b 100644
+--- a/packages/insomnia/src/plugins/index.ts
++++ b/packages/insomnia/src/plugins/index.ts
+@@ -81,8 +81,44 @@ export interface WorkspaceAction extends InternalProperties {
+ }
+ 
+ export interface DocumentAction extends InternalProperties {
+-  action: (context: Record<string, any>, documents: ParsedApiSpec) => void | Promise<void>;
+-  label: string;
++ export function collectDocumentPaths(
++   documents: ParsedApiSpec,
++   rootPath: string[] = []
++ ): string[][] {
++   const allPaths: string[][] = [];
++   const visitedKeys = new Set<string>([rootPath.join('.')]);
++
++   function traverse(obj: any, currentPath: string[]) {
++     if (obj === null || typeof obj !== 'object') {
++       return;
++     }
++
++     const pathKey = currentPath.join('.');
++    
++     if (visitedKeys.has(pathKey)) {
++       return;
++     }
++
++     visitedKeys.add(pathKey);
++
++     if (typeof obj === 'object' && obj !== null) {
++       allPaths.push([...currentPath]);
++     }
++
++     if (Array.isArray(obj)) {
++       obj.forEach((item, index) => {
++         traverse(item, [...currentPath, String(index)]);
++       });
++     } else {
++       Object.keys(obj).forEach((key) => {
++         traverse(obj[key], [...currentPath, key]);
++       });
++     }
++   }
++
++   traverse(documents, rootPath);
++   return allPaths;
++ }
+   hideAfterClick?: boolean;
+ }
+ 

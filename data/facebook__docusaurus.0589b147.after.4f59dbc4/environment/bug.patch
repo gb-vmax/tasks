@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..77814888dc 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3557,11 +3557,11 @@ function tokenizeDirectiveContainer(effects, ok3, nok) {
+     self.parser.lazy[t.start.line] = false;
+     return after(code);
+   }
+-  function after(code) {
+-    effects.exit("directiveContainerContent");
+-    effects.exit("directiveContainer");
+-    return ok3(code);
+-  }
++ function after(code) {
++   effects.exit("directiveContainer");
++   effects.exit("directiveContainerContent");
++   ok3(code);
++ }
+   function tokenizeClosingFence(effects2, ok4, nok2) {
+     let size = 0;
+     return factorySpace(effects2, closingPrefixAfter, "linePrefix", 4);

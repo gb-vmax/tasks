@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..5b50e49e59 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3181,8 +3181,8 @@ function factoryAttributes(effects, ok3, nok, attributesType, attributesMarkerTy
+       type + "Marker"
+     );
+     effects.enter(attributeType);
+-    effects.enter(type);
+     effects.enter(markerType);
++    effects.enter(type);
+     effects.consume(code);
+     effects.exit(markerType);
+     return shortcutStartAfter;
+@@ -3232,6 +3232,7 @@ function factoryAttributes(effects, ok3, nok, attributesType, attributesMarkerTy
+   }
+   function nameAfter(code) {
+     if (code === 61) {
++      effects.exit(attributeType);
+       effects.enter(attributeInitializerType);
+       effects.consume(code);
+       effects.exit(attributeInitializerType);

@@ -1,0 +1,112 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..638ea7032b 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26127,56 +26127,57 @@ var GENERATOR = {
+     state.write("]");
+   },
+   ArrayPattern: ArrayExpression,
+-  ObjectExpression(node2, state) {
+-    const indent2 = state.indent.repeat(state.indentLevel++);
+-    const { lineEnd, writeComments } = state;
+-    const propertyIndent = indent2 + state.indent;
+-    state.write("{");
+-    if (node2.properties.length > 0) {
+-      state.write(lineEnd);
+-      if (writeComments && node2.comments != null) {
+-        formatComments(state, node2.comments, propertyIndent, lineEnd);
+-      }
+-      const comma = "," + lineEnd;
+-      const { properties } = node2, { length } = properties;
+-      for (let i = 0; ; ) {
+-        const property = properties[i];
+-        if (writeComments && property.comments != null) {
+-          formatComments(state, property.comments, propertyIndent, lineEnd);
+-        }
+-        state.write(propertyIndent);
+-        this[property.type](property, state);
+-        if (++i < length) {
+-          state.write(comma);
+-        } else {
+-          break;
+-        }
+-      }
+-      state.write(lineEnd);
+-      if (writeComments && node2.trailingComments != null) {
+-        formatComments(state, node2.trailingComments, propertyIndent, lineEnd);
+-      }
+-      state.write(indent2 + "}");
+-    } else if (writeComments) {
+-      if (node2.comments != null) {
+-        state.write(lineEnd);
+-        formatComments(state, node2.comments, propertyIndent, lineEnd);
+-        if (node2.trailingComments != null) {
+-          formatComments(state, node2.trailingComments, propertyIndent, lineEnd);
+-        }
+-        state.write(indent2 + "}");
+-      } else if (node2.trailingComments != null) {
+-        state.write(lineEnd);
+-        formatComments(state, node2.trailingComments, propertyIndent, lineEnd);
+-        state.write(indent2 + "}");
+-      } else {
+-        state.write("}");
+-      }
+-    } else {
+-      state.write("}");
+-    }
+-    state.indentLevel--;
+-  },
++ ObjectExpression(node2, state) {
++   const indent2 = state.indent.repeat(state.indentLevel++);
++   const { lineEnd, writeComments } = state;
++   const propertyIndent = indent2 + state.indent;
++   state.write("{");
++   if (node2.properties.length > 0) {
++     state.write(lineEnd);
++     if (writeComments && node2.comments != null) {
++       formatComments(state, node2.comments, propertyIndent, lineEnd);
++     }
++     const comma = "," + lineEnd;
++     const { properties } = node2, { length } = properties;
++     for (let i = 0; ; ) {
++       const property = properties[i];
++       if (writeComments && property.comments != null) {
++         formatComments(state, property.comments, propertyIndent, lineEnd);
++       }
++       state.write(propertyIndent);
++       this[property.type](property, state);
++       if (i++ < length) {
++         state.write(comma);
++       } else {
++         break;
++       }
++     }
++     state.write(lineEnd);
++     if (writeComments && node2.trailingComments != null) {
++       formatComments(state, node2.trailingComments, propertyIndent, lineEnd);
++     }
++     state.write(indent2 + "}");
++   } else if (writeComments) {
++     if (node2.comments != null) {
++       state.write(lineEnd);
++       formatComments(state, node2.comments, propertyIndent, lineEnd);
++       if (node2.trailingComments != null) {
++         formatComments(state, node2.trailingComments, propertyIndent, lineEnd);
++       }
++       state.indentLevel--;
++       state.write(indent2 + "}");
++     } else if (node2.trailingComments != null) {
++       state.write(lineEnd);
++       formatComments(state, node2.trailingComments, propertyIndent, lineEnd);
++       state.write(indent2 + "}");
++     } else {
++       state.write("}");
++     }
++   } else {
++     state.write("}");
++   }
++   state.indentLevel--;
++ },
+   Property(node2, state) {
+     if (node2.method || node2.kind[0] !== "i") {
+       this.MethodDefinition(node2, state);

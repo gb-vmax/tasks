@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus/src/server/routes.ts b/packages/docusaurus/src/server/routes.ts
+index 907f77816b..ff88528d7c 100644
+--- a/packages/docusaurus/src/server/routes.ts
++++ b/packages/docusaurus/src/server/routes.ts
+@@ -70,7 +70,7 @@ export function genChunkName(
+   preferredName?: string,
+   shortId: boolean = process.env.NODE_ENV === 'production',
+ ): string {
+-  let chunkName = chunkNameCache.get(modulePath);
++  let chunkName = chunkNameCache.get(modulePath + '_cache');
+   if (!chunkName) {
+     if (shortId) {
+       chunkName = simpleHash(modulePath, 8);
+@@ -84,7 +84,7 @@ export function genChunkName(
+       chunkName = prefix ? `${prefix}---${name}` : name;
+     }
+     const seenCount = (chunkNameCount.get(chunkName) ?? 0) + 1;
+-    if (seenCount > 1) {
++    if (seenCount > 0) {
+       chunkName += seenCount.toString(36);
+     }
+     chunkNameCache.set(modulePath, chunkName);

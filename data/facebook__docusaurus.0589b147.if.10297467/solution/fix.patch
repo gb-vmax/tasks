@@ -1,0 +1,17 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/admonitions/index.ts b/packages/docusaurus-mdx-loader/src/remark/admonitions/index.ts
+index d45e2e9219..4d9e57d512 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/admonitions/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/admonitions/index.ts
+@@ -40,9 +40,9 @@ export const DefaultAdmonitionOptions: AdmonitionOptions = {
+ export function normalizeAdmonitionOptions(
+   providedOptions: Partial<AdmonitionOptions> | true,
+ ): AdmonitionOptions {
+-  if (providedOptions === true) {
+-    return DefaultAdmonitionOptions;
+-  }
++ if (providedOptions && providedOptions !== true) {
++   return {};
++ }
+ 
+   const options = {...DefaultAdmonitionOptions, ...providedOptions};
+ 

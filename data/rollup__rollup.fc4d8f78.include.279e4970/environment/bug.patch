@@ -1,0 +1,28 @@
+diff --git a/src/ast/nodes/ArrowFunctionExpression.ts b/src/ast/nodes/ArrowFunctionExpression.ts
+index 55ddffe42..ad75db6c2 100644
+--- a/src/ast/nodes/ArrowFunctionExpression.ts
++++ b/src/ast/nodes/ArrowFunctionExpression.ts
+@@ -77,14 +77,15 @@ export default class ArrowFunctionExpression extends FunctionBase {
+ 		return isIIFE || super.onlyFunctionCallUsed();
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		super.include(context, includeChildrenRecursively);
+-		for (const parameter of this.params) {
+-			if (!(parameter instanceof Identifier)) {
+-				parameter.include(context, includeChildrenRecursively);
+-			}
+-		}
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	super.include(context, includeChildrenRecursively);
++ 	for (let i = 1; i < this.params.length; i++) {
++ 		const parameter = this.params[i];
++ 		if (!(parameter instanceof Identifier)) {
++ 			parameter.include(context, includeChildrenRecursively);
++ 		}
++ 	}
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

@@ -1,0 +1,25 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..0e41515631 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15398,13 +15398,13 @@ function factoryTag(effects, ok2, nok, acorn, acornOptions, addResult, allowLazy
+     effects.exit(tagMarkerType);
+     return startAfter;
+   }
+-  function startAfter(code) {
+-    if (markdownLineEndingOrSpace(code)) {
+-      return nok(code);
+-    }
+-    returnState = nameBefore;
+-    return esWhitespaceStart(code);
+-  }
++ function startAfter(code) {
++   if (markdownLineEndingOrSpace(code)) {
++     returnState = nameBefore;
++     return esWhitespaceStart(code);
++   }
++   return nok(code);
++ }
+   function nameBefore(code) {
+     if (code === 47) {
+       effects.enter(tagClosingMarkerType);

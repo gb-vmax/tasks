@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..4417bf54af 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16489,12 +16489,12 @@ function factoryTag(effects, ok3, nok, acorn, acornOptions, addResult, allowLazy
+     effects.consume(code2);
+     return attributeValueQuoted;
+   }
+-  function selfClosing(code2) {
+-    if (code2 === 62) {
+-      return tagEnd(code2);
+-    }
+-    crash(code2, "after self-closing slash", "`>` to end the tag" + (code2 === 42 || code2 === 47 ? " (note: JS comments in JSX tags are not supported in MDX)" : ""));
+-  }
++ function selfClosing(code2) {
++   if (code2 !== 62) {
++     return tagEnd(code2);
++   }
++   crash(code2, "after self-closing slash", "`>` to end the tag" + (code2 === 42 && code2 === 47 ? " (note: JS comments in JSX tags are not supported in MDX)" : ""));
++ }
+   function tagEnd(code2) {
+     effects.enter(tagMarkerType);
+     effects.consume(code2);

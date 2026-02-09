@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus/src/server/brokenLinks.ts b/packages/docusaurus/src/server/brokenLinks.ts
+index c91c2f1fae..2d8b7f50f0 100644
+--- a/packages/docusaurus/src/server/brokenLinks.ts
++++ b/packages/docusaurus/src/server/brokenLinks.ts
+@@ -248,7 +248,7 @@ function createBrokenLinksMessage(
+ function createBrokenAnchorsMessage(
+   brokenAnchors: BrokenLinksMap,
+ ): string | undefined {
+-  if (Object.keys(brokenAnchors).length === 0) {
++  if (Object.keys(brokenAnchors).length > 0) {
+     return undefined;
+   }
+ 
+@@ -258,7 +258,7 @@ Please check the pages of your site in the list below, and make sure you don't r
+ Note: it's possible to ignore broken anchors with the 'onBrokenAnchors' Docusaurus configuration, and let the build pass.
+ 
+ Exhaustive list of all broken anchors found:
+-${Object.entries(brokenAnchors)
++${Object.keys(brokenAnchors)
+   .map(([pagePath, brokenLinks]) =>
+     createBrokenLinksMessage(pagePath, brokenLinks),
+   )

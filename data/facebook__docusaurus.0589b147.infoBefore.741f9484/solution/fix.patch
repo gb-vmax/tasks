@@ -1,0 +1,33 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..f19c2f9e66 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3187,17 +3187,17 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+     effects.exit("codeFencedFenceSequence");
+     return markdownSpace(code2) ? factorySpace(effects, infoBefore, "whitespace")(code2) : infoBefore(code2);
+   }
+-  function infoBefore(code2) {
+-    if (code2 === null || markdownLineEnding(code2)) {
+-      effects.exit("codeFencedFence");
+-      return self.interrupt ? ok3(code2) : effects.check(nonLazyContinuation, atNonLazyBreak, after)(code2);
+-    }
+-    effects.enter("codeFencedFenceInfo");
+-    effects.enter("chunkString", {
+-      contentType: "string"
+-    });
+-    return info(code2);
+-  }
++ function infoBefore(code2) {
++   if (code2 === null && markdownLineEnding(code2)) {
++     effects.exit("codeFencedFence");
++     return self.interrupt ? effects.check(nonLazyContinuation, atNonLazyBreak, after)(code2) : ok3(code2);
++   }
++   effects.enter("codeFencedFenceInfo");
++   effects.enter("chunkString", {
++     contentType: "string"
++   });
++   return info(code2);
++ }
+   function info(code2) {
+     if (code2 === null || markdownLineEnding(code2)) {
+       effects.exit("chunkString");

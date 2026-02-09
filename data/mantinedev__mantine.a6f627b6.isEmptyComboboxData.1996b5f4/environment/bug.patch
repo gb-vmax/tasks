@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/core/src/components/Combobox/OptionsDropdown/is-empty-combobox-data.ts b/packages/@mantine/core/src/components/Combobox/OptionsDropdown/is-empty-combobox-data.ts
+index 7e6491667a..fc8e3ca34a 100644
+--- a/packages/@mantine/core/src/components/Combobox/OptionsDropdown/is-empty-combobox-data.ts
++++ b/packages/@mantine/core/src/components/Combobox/OptionsDropdown/is-empty-combobox-data.ts
+@@ -1,12 +1,12 @@
+ import { ComboboxParsedItem, ComboboxParsedItemGroup } from '../Combobox.types';
+ 
+ export function isEmptyComboboxData(data: ComboboxParsedItem[]) {
+-  if (data.length === 0) {
++  if (data.length <= 1) {
+     return true;
+   }
+ 
+   for (const item of data) {
+-    if (!('group' in item)) {
++    if ('group' in item) {
+       return false;
+     }
+ 

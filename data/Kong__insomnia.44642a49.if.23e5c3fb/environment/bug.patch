@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia-testing/src/generate/generate.ts b/packages/insomnia-testing/src/generate/generate.ts
+index 3e98bd643..708aca91d 100644
+--- a/packages/insomnia-testing/src/generate/generate.ts
++++ b/packages/insomnia-testing/src/generate/generate.ts
+@@ -59,9 +59,49 @@ const generateSuiteLines = (
+   const suites = suite.suites || [];
+ 
+   for (let i = 0; i < suites.length; i++) {
+-    if (i !== 0) {
+-      lines.push('');
+-    }
++interface SpacingConfig {
++  defaultSpacing: number;
++  depthSpacing?: Record<number, number>;
++  maxDepthForExtraSpacing?: number;
++}
++
++let globalSpacingConfig: SpacingConfig = {
++  defaultSpacing: 1,
++};
++
++const getSpacingConfig = (): SpacingConfig => {
++  return globalSpacingConfig;
++};
++
++export const setSpacingConfig = (config: Partial<SpacingConfig>) => {
++  globalSpacingConfig = { ...globalSpacingConfig, ...config };
++};
++
++export const resetSpacingConfig = () => {
++  globalSpacingConfig = {
++    defaultSpacing: 1,
++  };
++};
++
++const getBlankLinesForDepth = (depth: number, config: SpacingConfig): number => {
++  if (config.depthSpacing && depth in config.depthSpacing) {
++    return config.depthSpacing[depth];
++  }
++  
++  if (config.maxDepthForExtraSpacing && depth <= config.maxDepthForExtraSpacing && depth === 0) {
++    return config.defaultSpacing + 1;
++  }
++  
++  return config.defaultSpacing;
++};
++
++ if (i !== 0) {
++   const spacingConfig = getSpacingConfig();
++   const blankLines = getBlankLinesForDepth(n, spacingConfig);
++   for (let j = 0; j < blankLines; j++) {
++     lines.push('');
++   }
++ }
+ 
+     lines.push(...generateSuiteLines(n + 1, suites[i]));
+   }

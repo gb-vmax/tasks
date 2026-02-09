@@ -1,0 +1,155 @@
+diff --git a/packages/insomnia-sdk/src/objects/request.ts b/packages/insomnia-sdk/src/objects/request.ts
+index d6340a88f..7a56c9e0c 100644
+--- a/packages/insomnia-sdk/src/objects/request.ts
++++ b/packages/insomnia-sdk/src/objects/request.ts
+@@ -481,9 +481,147 @@ export function mergeClientCertificates(
+     // - if the pre-request script request cert is specified, it replaces all original certs
+     // - if not, it returns original certs
+ 
+-    if (!updatedReq.certificate) {
+-        return originalClientCertificates;
+-    } else if (
++function matchesCertificateHost(pattern: string, host: string): boolean {
++    if (pattern === host) {
++        return true;
++    }
++
++    const normalizedPattern = pattern.toLowerCase().trim();
++    const normalizedHost = host.toLowerCase().trim();
++
++    if (normalizedPattern === normalizedHost) {
++        return true;
++    }
++
++    if (normalizedPattern.startsWith('*.')) {
++        const domainSuffix = normalizedPattern.substring(2);
++        
++        if (normalizedHost === domainSuffix) {
++            return true;
++        }
++        
++        if (normalizedHost.endsWith('.' + domainSuffix)) {
++            return true;
++        }
++    }
++
++    if (normalizedPattern.includes('*')) {
++        const regexPattern = normalizedPattern
++            .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
++            .replace(/\*/g, '.*');
++        
++        try {
++            const regex = new RegExp('^' + regexPattern + '$');
++            return regex.test(normalizedHost);
++        } catch {
++            return false;
++        }
++    }
++
++    return false;
++}
++
++ export function mergeClientCertificates(
++     originalClientCertificates: ClientCertificate[],
++     updatedReq: Request,
++ ): ClientCertificate[] {
++     if (!updatedReq.certificate) {
++         return originalClientCertificates;
++     } else if (
++         updatedReq.certificate.key == null &&
++         updatedReq.certificate.cert == null &&
++         updatedReq.certificate.pfx == null
++     ) {
++         return originalClientCertificates;
++     }
++
++     const requestHost = updatedReq.url.getHost() || '';
++     const certificateMatches = updatedReq.certificate.matches || [];
++    
++     const hasValidPfx = updatedReq.certificate.pfx && updatedReq.certificate.pfx?.src !== '';
++     const hasValidKeyCert = updatedReq.certificate.key && 
++                             updatedReq.certificate.cert && 
++                             updatedReq.certificate.key?.src !== '' && 
++                             updatedReq.certificate.cert?.src !== '';
++    
++     if (!hasValidPfx && !hasValidKeyCert) {
++         return originalClientCertificates;
++     }
++
++     if (hasValidPfx && hasValidKeyCert) {
++         throw Error('Invalid certificate configuration: "cert+key" and "pfx" can not be set at the same time');
++     }
++
++     const baseCertificate = originalClientCertificates && originalClientCertificates.length > 0 ?
++         {
++             ...initClientCertificate(),
++             ...originalClientCertificates[0],
++         } :
++         {
++             ...initClientCertificate(),
++             _id: '',
++             type: '',
++             parentId: '',
++             modified: 0,
++             created: 0,
++             isPrivate: false,
++             name: '',
++         };
++
++     let newCertificate: ClientCertificate;
++
++     if (hasValidPfx) {
++         newCertificate = {
++             ...baseCertificate,
++             key: null,
++             cert: null,
++             passphrase: updatedReq.certificate.passphrase || null,
++             pfx: updatedReq.certificate.pfx?.src,
++             host: requestHost,
++             disabled: updatedReq.disabled || false,
++         };
++     } else {
++         newCertificate = {
++             ...baseCertificate,
++             _id: '',
++             type: '',
++             parentId: '',
++             modified: 0,
++             created: 0,
++             isPrivate: false,
++             name: updatedReq.name || '',
++             host: requestHost,
++             disabled: updatedReq.disabled || false,
++             key: updatedReq.certificate.key?.src,
++             cert: updatedReq.certificate.cert?.src,
++             passphrase: updatedReq.certificate.passphrase || null,
++             pfx: null,
++         };
++     }
++
++     if (certificateMatches.length === 0) {
++         return [newCertificate];
++     }
++
++     const filteredOriginalCerts = originalClientCertificates.filter(originalCert => {
++         const originalHost = originalCert.host || '';
++        
++         if (!originalHost) {
++             return true;
++         }
++
++         for (const match of certificateMatches) {
++             const matchPattern = typeof match === 'string' ? match : match.toString();
++             if (matchesCertificateHost(matchPattern, originalHost)) {
++                 return false;
++             }
++         }
++        
++         return true;
++     });
++
++     return [...filteredOriginalCerts, newCertificate];
++ }
+         updatedReq.certificate.key == null &&
+         updatedReq.certificate.cert == null &&
+         updatedReq.certificate.pfx == null

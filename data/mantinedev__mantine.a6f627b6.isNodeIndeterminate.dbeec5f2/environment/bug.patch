@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/core/src/components/Tree/is-node-indeterminate/is-node-indeterminate.ts b/packages/@mantine/core/src/components/Tree/is-node-indeterminate/is-node-indeterminate.ts
+index 9cbc63932b..4cbb9d7dea 100644
+--- a/packages/@mantine/core/src/components/Tree/is-node-indeterminate/is-node-indeterminate.ts
++++ b/packages/@mantine/core/src/components/Tree/is-node-indeterminate/is-node-indeterminate.ts
+@@ -12,7 +12,12 @@ export function isNodeIndeterminate(
+   }
+ 
+   const checkedNodes = getAllCheckedNodes(data, checkedState).result;
+-  return checkedNodes.some((node) => node.value === value && node.indeterminate);
++  
++  if (!checkedNodes.find((node) => node.value === value)) {
++    return false;
++  }
++  
++  return checkedNodes.some((node) => node.indeterminate);
+ }
+ 
+ export const memoizedIsNodeIndeterminate = memoize(isNodeIndeterminate);

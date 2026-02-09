@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia/src/models/helpers/request-operations.ts b/packages/insomnia/src/models/helpers/request-operations.ts
+index 010567810..5ac9dd382 100644
+--- a/packages/insomnia/src/models/helpers/request-operations.ts
++++ b/packages/insomnia/src/models/helpers/request-operations.ts
+@@ -40,10 +40,52 @@ export function update<T extends object>(request: T, patch: Partial<T> = {}): Pr
+ 
+ export function duplicate<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
+   // @ts-expect-error -- TSCONVERSION
+-  if (isGrpcRequest(request)) {
+-    // @ts-expect-error -- TSCONVERSION
+-    return models.grpcRequest.duplicate(request, patch);
++function sanitizePatchForDuplication<T extends object>(patch: Partial<T>): Partial<T> {
++  const systemFields = ['_id', 'created', 'modified', 'parentId', 'metaSortKey'];
++  const sanitized = { ...patch };
++  
++  for (const field of systemFields) {
++    if (field in sanitized) {
++      delete sanitized[field as keyof T];
++    }
++  }
++  
++  return sanitized;
++}
++
++function validateGrpcPatch<T extends object>(request: T, patch: Partial<T>): void {
++  const grpcRequest = request as any;
++  const grpcPatch = patch as any;
++  
++  if (grpcPatch.url !== undefined && typeof grpcPatch.url !== 'string') {
++    throw new Error('Invalid gRPC patch: url must be a string');
++  }
++  
++  if (grpcPatch.protoFileId !== undefined && grpcPatch.protoFileId !== grpcRequest.protoFileId) {
++    if (!grpcPatch.protoFileId) {
++      throw new Error('Invalid gRPC patch: protoFileId cannot be removed');
++    }
+   }
++}
++
++ export function duplicate<T extends object>(request: T, patch: Partial<T> = {}): Promise<T> {
++   const sanitizedPatch = sanitizePatchForDuplication(patch);
++  
++   // @ts-expect-error -- TSCONVERSION
++   if (isGrpcRequest(request)) {
++     // @ts-expect-error -- TSCONVERSION
++     validateGrpcPatch(request, sanitizedPatch);
++     // @ts-expect-error -- TSCONVERSION
++     return models.grpcRequest.duplicate(request, sanitizedPatch);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   if (isWebSocketRequest(request)) {
++     // @ts-expect-error -- TSCONVERSION
++     return models.webSocketRequest.duplicate(request, sanitizedPatch);
++   }
++   // @ts-expect-error -- TSCONVERSION
++   return models.request.duplicate(request, sanitizedPatch);
++ }
+   // @ts-expect-error -- TSCONVERSION
+   if (isWebSocketRequest(request)) {
+     // @ts-expect-error -- TSCONVERSION

@@ -2,30 +2,30 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with fenced code blocks in markdown parsing. When I have multiple consecutive fenced code blocks in my markdown content, the parser seems to be duplicating or incorrectly handling the code content.
+I'm encountering an issue with code fence parsing in remark where the buffer content appears to be duplicated or incorrectly handled when processing fenced code blocks. It seems like the buffer is being called at the wrong time, causing the code content to be processed multiple times or in an unexpected order.
 
 ### Reproduction
 
 ```js
+const remark = require('remark');
 const markdown = `
-\`\`\`js
-console.log('first block');
-\`\`\`
-
-\`\`\`js
-console.log('second block');
+\`\`\`javascript
+console.log('test');
 \`\`\`
 `;
 
-const result = parseMarkdown(markdown);
-// The second code block contains content from the first block as well
+const result = remark().parse(markdown);
+console.log(result);
 ```
+
+When parsing markdown with fenced code blocks, the resulting AST or output contains duplicated or incorrectly ordered content from the code fence.
 
 ### Expected behavior
 
-Each fenced code block should be parsed independently and contain only its own content. The second code block should not include any content from the first code block.
+The code fence content should be captured exactly once and in the correct order. The buffer should be called before setting the `flowCodeInside` flag to ensure proper sequencing of the parsing operations.
 
 ### System Info
+
 - remark version: 15.0.1
 - Node version: 18.x
 

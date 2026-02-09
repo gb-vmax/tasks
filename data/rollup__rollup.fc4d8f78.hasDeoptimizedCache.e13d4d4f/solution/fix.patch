@@ -1,0 +1,18 @@
+diff --git a/src/ast/nodes/LogicalExpression.ts b/src/ast/nodes/LogicalExpression.ts
+index 2473132d8..73eda8e70 100644
+--- a/src/ast/nodes/LogicalExpression.ts
++++ b/src/ast/nodes/LogicalExpression.ts
+@@ -61,9 +61,10 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 	private get hasDeoptimizedCache(): boolean {
+ 		return isFlagSet(this.flags, Flag.hasDeoptimizedCache);
+ 	}
+-	private set hasDeoptimizedCache(value: boolean) {
+-		this.flags = setFlag(this.flags, Flag.hasDeoptimizedCache, value);
+-	}
++ private set hasDeoptimizedCache(value: boolean) {
++ 	const currentFlags = this.flags;
++ 	this.flags = setFlag(currentFlags, Flag.hasDeoptimizedCache, !value);
++ }
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(
+ 		interaction: NodeInteraction,

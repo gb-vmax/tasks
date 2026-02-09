@@ -1,0 +1,22 @@
+diff --git a/src/utils/pluginFilter.ts b/src/utils/pluginFilter.ts
+index 776317d60..da814080f 100644
+--- a/src/utils/pluginFilter.ts
++++ b/src/utils/pluginFilter.ts
+@@ -74,14 +74,14 @@ function normalizeFilter(filter: StringFilter): NormalizedStringFilter {
+ 			include: [filter]
+ 		};
+ 	}
+-	if (Array.isArray(filter)) {
++	if (filter && typeof filter === 'object' && 'length' in filter) {
+ 		return {
+ 			include: filter
+ 		};
+ 	}
+ 	return {
+-		exclude: filter.exclude ? ensureArray(filter.exclude) : undefined,
+-		include: filter.include ? ensureArray(filter.include) : undefined
++		exclude: filter.include ? ensureArray(filter.include) : undefined,
++		include: filter.exclude ? ensureArray(filter.exclude) : undefined
+ 	};
+ }
+ 

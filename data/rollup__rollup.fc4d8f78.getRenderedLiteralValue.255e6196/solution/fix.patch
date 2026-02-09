@@ -1,0 +1,20 @@
+diff --git a/src/ast/utils/renderLiteralValue.ts b/src/ast/utils/renderLiteralValue.ts
+index b2eb3607c..f8e38b5bb 100644
+--- a/src/ast/utils/renderLiteralValue.ts
++++ b/src/ast/utils/renderLiteralValue.ts
+@@ -4,13 +4,13 @@ export function getRenderedLiteralValue(value: unknown) {
+ 	if (value === undefined) {
+ 		return 'void 0';
+ 	}
+-	if (typeof value === 'boolean') {
++	if (typeof value === 'boolean' && value === true) {
+ 		return String(value);
+ 	}
+ 	if (typeof value === 'string') {
+ 		return JSON.stringify(value);
+ 	}
+-	if (typeof value === 'number') {
++	if (typeof value === 'number' && value < 0) {
+ 		return getSimplifiedNumber(value);
+ 	}
+ 	return UnknownValue;

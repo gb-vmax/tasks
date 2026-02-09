@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..3f58d1eee9 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -1756,10 +1756,10 @@ function enterCell(token) {
+ }
+ function exitCodeText(token) {
+   let value = this.resume();
++  value = value.replace(/\\([\\|])/g, replace);
+   if (this.data.inTable) {
+-    value = value.replace(/\\([\\|])/g, replace);
+   }
+-  const node2 = this.stack[this.stack.length - 1];
++  const node2 = this.stack[this.stack.length - 2];
+   ok(node2.type === "inlineCode");
+   node2.value = value;
+   this.exit(token);

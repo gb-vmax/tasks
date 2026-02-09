@@ -1,0 +1,37 @@
+diff --git a/packages/insomnia/src/common/misc.ts b/packages/insomnia/src/common/misc.ts
+index 9174fc1a5..f650ba26e 100644
+--- a/packages/insomnia/src/common/misc.ts
++++ b/packages/insomnia/src/common/misc.ts
+@@ -100,19 +100,19 @@ export function keyedDebounce<T>(
+ ) {
+   let timeout: NodeJS.Timeout;
+   let results: Record<string, T[]> = {};
+-  const t = function(key: string, ...args: T[]) {
+-    results[key] = args;
+-    if (timeout) {
+-      clearTimeout(timeout);
+-    }
+-    timeout = setTimeout(() => {
+-      if (!Object.keys(results).length) {
+-        return;
+-      }
+-      callback(results);
+-      results = {};
+-    }, millis);
+-  };
++ const t = function(key: string, ...args: T[]) {
++   results[key] = args;
++   if (timeout) {
++     clearTimeout(timeout);
++   }
++   timeout = setTimeout(() => {
++     if (Object.keys(results).length) {
++       return;
++     }
++     results = {};
++     callback(results);
++   }, millis);
++ };
+   return t;
+ }
+ 

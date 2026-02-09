@@ -2,38 +2,44 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with blank line parsing in markdown content. It seems like blank lines are not being recognized correctly, which is causing unexpected behavior in the markdown parser.
+Markdown parsing is not working correctly for blank lines. When processing documents with whitespace, the parser seems to be mishandling lines that contain only spaces or are completely empty.
 
 ### Reproduction
 
-When processing markdown with blank lines (lines that contain only whitespace or are completely empty), the parser doesn't handle them properly:
+```js
+const markdown = `
+First paragraph
 
-```markdown
-Some text here
+Second paragraph
+`;
 
-Another paragraph after a blank line
+// Parse the markdown
+const result = processor.parse(markdown);
+
+// The blank line between paragraphs is not being recognized correctly
+// Expected: Two separate paragraph nodes
+// Actual: Incorrect parsing behavior
 ```
 
-The blank line between the paragraphs should be detected and used to separate them, but instead the parser seems to be treating them incorrectly.
+Another case that fails:
 
-Also noticed issues when there are lines with only spaces:
-```markdown
-Paragraph 1
+```js
+const markdown = `
     
-Paragraph 2
+Next line
+`;
+
+// Lines with only spaces should be treated as blank lines
+// but they're being processed incorrectly
 ```
 
 ### Expected behavior
 
-Blank lines (whether completely empty or containing only whitespace) should be properly tokenized and recognized. This should allow proper separation of markdown elements like paragraphs, lists, etc.
-
-The parser should correctly identify:
-- Lines with only spaces/tabs as blank lines
-- Completely empty lines as blank lines
-- Line endings following blank lines
+Blank lines (whether completely empty or containing only whitespace) should be properly recognized and handled during markdown parsing. This is essential for correctly separating paragraphs and other block-level elements.
 
 ### System Info
 - remark version: 15.0.1
+- Node version: Latest
 
 ---
 Repository: /testbed

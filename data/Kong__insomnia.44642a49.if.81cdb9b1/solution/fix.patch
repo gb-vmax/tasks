@@ -1,0 +1,48 @@
+diff --git a/packages/insomnia/src/main/local-storage.ts b/packages/insomnia/src/main/local-storage.ts
+index 00514a192..ca539469f 100644
+--- a/packages/insomnia/src/main/local-storage.ts
++++ b/packages/insomnia/src/main/local-storage.ts
+@@ -31,9 +31,40 @@ class LocalStorage {
+     try {
+       contents = String(fs.readFileSync(path));
+     } catch (error) {
+-      if (error.code === 'ENOENT') {
+-        this.setItem(key, defaultObj);
+-      }
++_createWithRetry<T>(key: string, obj: T | undefined, retriesLeft: number, attempt: number = 0) {
++  try {
++    this.setItem(key, obj);
++    this._flush();
++    
++    const filePath = this._getKeyPath(key);
++    if (!fs.existsSync(filePath)) {
++      throw new Error('File creation verification failed');
++    }
++  } catch (error) {
++    if (retriesLeft > 0 && this._isTransientError(error)) {
++      const delay = Math.min(100 * Math.pow(2, attempt), 1000);
++      setTimeout(() => {
++        this._createWithRetry(key, obj, retriesLeft - 1, attempt + 1);
++      }, delay);
++    } else {
++      console.error(`[localstorage] Failed to create default value for key "${key}": ${error}`);
++    }
++  }
++}
++
++_isTransientError(error: any): boolean {
++  const transientCodes = ['EMFILE', 'ENFILE', 'EAGAIN', 'EBUSY', 'ETIMEDOUT'];
++  return transientCodes.includes(error.code) || 
++         (error.message && error.message.includes('verification failed'));
++}
++
++ if (error.code === 'ENOENT') {
++   this._createWithRetry(key, defaultObj, 3);
++ } else if (error.code === 'EACCES') {
++   console.error(`[localstorage] Permission denied reading key "${key}"`);
++ } else if (error.code === 'EISDIR') {
++   console.error(`[localstorage] Key "${key}" points to a directory, not a file`);
++ }
+     }
+ 
+     try {

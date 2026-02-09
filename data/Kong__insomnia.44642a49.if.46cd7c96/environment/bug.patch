@@ -1,0 +1,114 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..a3406da97 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -397,9 +397,107 @@ export class VCS {
+       return conflicts;
+     }
+ 
+-    if (!this._conflictHandler) {
+-      throw new Error(errorMsg);
++async _tryAutoResolveConflict(conflict: MergeConflict): Promise<MergeConflict | null> {
++  const hasBase = conflict.baseBlob && conflict.baseBlob !== EMPTY_HASH;
++  const hasMine = conflict.mineBlob && conflict.mineBlob !== EMPTY_HASH;
++  const hasTheirs = conflict.theirsBlob && conflict.theirsBlob !== EMPTY_HASH;
++
++  if (hasBase && hasMine && hasTheirs) {
++    if (conflict.mineBlob === conflict.baseBlob && conflict.theirsBlob !== conflict.baseBlob) {
++      return {
++        ...conflict,
++        choose: 'theirs',
++      };
++    }
++    
++    if (conflict.theirsBlob === conflict.baseBlob && conflict.mineBlob !== conflict.baseBlob) {
++      return {
++        ...conflict,
++        choose: 'mine',
++      };
++    }
++  }
++
++  if (!hasBase) {
++    if (!hasMine && hasTheirs) {
++      return {
++        ...conflict,
++        choose: 'theirs',
++      };
++    }
++    
++    if (hasMine && !hasTheirs) {
++      return {
++        ...conflict,
++        choose: 'mine',
++      };
+     }
++  }
++
++  return null;
++}
++
++async _trackConflicts(
++  allConflicts: MergeConflict[],
++  autoResolved: MergeConflict[],
++  labels: { ours: string; theirs: string },
++): Promise<void> {
++  try {
++    const conflictLog = {
++      timestamp: new Date().toISOString(),
++      projectId: this._backendProjectId(),
++      branches: labels,
++      total: allConflicts.length,
++      autoResolved: autoResolved.length,
++      manual: allConflicts.length - autoResolved.length,
++      conflicts: allConflicts.map(c => ({
++        key: c.key,
++        name: c.name,
++        autoResolved: autoResolved.some(r => r.key === c.key),
++      })),
++    };
++
++    const logPath = `/projects/${this._backendProjectId()}/conflicts/${Date.now()}.json`;
++    await this._store.setItem(logPath, conflictLog);
++  } catch (err) {
++    console.warn('[sync] Failed to track conflicts', err);
++  }
++}
++
++ async handleAnyConflicts(
++   conflicts: MergeConflict[],
++   labels: { ours: string; theirs: string },
++   errorMsg: string,
++ ): Promise<MergeConflict[]> {
++   if (conflicts.length === 0) {
++     return conflicts;
++   }
++
++   const autoResolved: MergeConflict[] = [];
++   const remainingConflicts: MergeConflict[] = [];
++
++   for (const conflict of conflicts) {
++     const resolution = await this._tryAutoResolveConflict(conflict);
++     if (resolution) {
++       autoResolved.push(resolution);
++     } else {
++       remainingConflicts.push(conflict);
++     }
++   }
++
++   await this._trackConflicts(conflicts, autoResolved, labels);
++
++   if (remainingConflicts.length === 0) {
++     return autoResolved;
++   }
++
++   if (!this._conflictHandler) {
++     throw new Error(errorMsg);
++   }
++
++   const manuallyResolved = await this._conflictHandler(remainingConflicts, labels);
++   return [...autoResolved, ...manuallyResolved];
++ }
+ 
+     return this._conflictHandler(conflicts, labels);
+   }

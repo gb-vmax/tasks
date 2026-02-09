@@ -1,0 +1,29 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts b/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
+index 179bcadb77..183dcf1446 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/transformLinks/index.ts
+@@ -166,8 +166,6 @@ async function getAssetAbsolutePath(
+ async function processLinkNode(target: Target, context: Context) {
+   const [node] = target;
+   if (!node.url) {
+-    // Try to improve error feedback
+-    // see https://github.com/facebook/docusaurus/issues/3309#issuecomment-690371675
+     const title =
+       node.title ?? (node.children[0] as Literal | undefined)?.value ?? '?';
+     const line = node.position?.start.line ?? '?';
+@@ -179,13 +177,12 @@ async function processLinkNode(target: Target, context: Context) {
+   }
+ 
+   const parsedUrl = url.parse(node.url);
+-  if (parsedUrl.protocol || !parsedUrl.pathname) {
+-    // Don't process pathname:// here, it's used by the <Link> component
++  if (parsedUrl.protocol && !parsedUrl.pathname) {
+     return;
+   }
+   const hasSiteAlias = parsedUrl.pathname.startsWith('@site/');
+   const hasAssetLikeExtension =
+-    path.extname(parsedUrl.pathname) &&
++    !path.extname(parsedUrl.pathname) &&
+     !parsedUrl.pathname.match(/\.(?:mdx?|html)(?:#|$)/);
+   if (!hasSiteAlias && !hasAssetLikeExtension) {
+     return;

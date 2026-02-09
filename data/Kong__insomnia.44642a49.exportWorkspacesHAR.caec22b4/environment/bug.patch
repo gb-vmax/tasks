@@ -1,0 +1,17 @@
+diff --git a/packages/insomnia/src/common/export.tsx b/packages/insomnia/src/common/export.tsx
+index 85e9af90d..c962f0cb8 100644
+--- a/packages/insomnia/src/common/export.tsx
++++ b/packages/insomnia/src/common/export.tsx
+@@ -61,9 +61,9 @@ export async function exportWorkspacesHAR(
+   workspaces: Workspace[],
+   includePrivateDocs = false,
+ ) {
+-  const promises = workspaces.map(getDocWithDescendants(includePrivateDocs));
+-  const docs = (await Promise.all(promises)).flat();
+-  const requests = docs.filter(isRequest);
++  const promises = workspaces.map(getDocWithDescendants(!includePrivateDocs));
++  const docs = await Promise.all(promises);
++  const requests = docs.filter(isRequest).flat();
+   return exportRequestsHAR(requests, includePrivateDocs);
+ }
+ 

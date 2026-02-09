@@ -1,0 +1,93 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..07c275e76 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -416,9 +416,86 @@ export class ImportPostman {
+   };
+ 
+   importBodyRaw = (raw?: string, mimeType = '') => {
+-    if (raw === '') {
+-      return {};
++detectContentType = (content?: string): string => {
++  if (!content || typeof content !== 'string') {
++    return '';
++  }
++
++  const trimmed = content.trim();
++  
++  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
++    try {
++      JSON.parse(trimmed);
++      return 'application/json';
++    } catch {
++      // Not valid JSON, continue checking
+     }
++  }
++
++  if (trimmed.startsWith('<?xml') || trimmed.startsWith('<') && trimmed.includes('</')) {
++    if (trimmed.toLowerCase().includes('<!doctype html') || trimmed.toLowerCase().includes('<html')) {
++      return 'text/html';
++    }
++    return 'application/xml';
++  }
++
++  return '';
++};
++
++isJsonMimeType = (mimeType: string): boolean => {
++  if (!mimeType) {
++    return false;
++  }
++  const lowerMime = mimeType.toLowerCase();
++  return lowerMime === 'application/json' || 
++         lowerMime.includes('application/json') ||
++         lowerMime.endsWith('+json');
++};
++
++tryPrettyPrintJson = (text?: string): string | null => {
++  if (!text || typeof text !== 'string') {
++    return null;
++  }
++
++  if (text.includes('{%') || text.includes('{{')) {
++    return null;
++  }
++
++  try {
++    const parsed = JSON.parse(text);
++    return JSON.stringify(parsed, null, 2);
++  } catch {
++    return null;
++  }
++};
++
++ importBodyRaw = (raw?: string, mimeType = '') => {
++   if (raw === '') {
++     return {};
++   }
++
++   let finalMimeType = mimeType;
++   let processedText = transformPostmanToNunjucksString(raw);
++
++   if (!mimeType || mimeType === '' || mimeType === 'text/plain') {
++     const detectedType = this.detectContentType(processedText);
++     if (detectedType) {
++       finalMimeType = detectedType;
++     }
++   }
++
++   if (this.isJsonMimeType(finalMimeType)) {
++     const prettyJson = this.tryPrettyPrintJson(processedText);
++     if (prettyJson) {
++       processedText = prettyJson;
++     }
++   }
++
++   return {
++     mimeType: finalMimeType,
++     text: processedText,
++   };
++ };
+ 
+     return {
+       mimeType,

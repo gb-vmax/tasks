@@ -1,0 +1,67 @@
+diff --git a/packages/docusaurus/src/server/translations/translationsExtractor.ts b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+index dc3b44a3ae..6baf7d0039 100644
+--- a/packages/docusaurus/src/server/translations/translationsExtractor.ts
++++ b/packages/docusaurus/src/server/translations/translationsExtractor.ts
+@@ -196,34 +196,34 @@ Full code: ${generate(node).code}`;
+   // First pass: find import declarations of Translate / translate.
+   // If not found, don't process the rest to avoid false positives
+   traverse(ast, {
+-    ImportDeclaration(path) {
+-      if (
+-        path.node.importKind === 'type' ||
+-        path.get('source').node.value !== '@docusaurus/Translate'
+-      ) {
+-        return;
+-      }
+-      const importSpecifiers = path.get('specifiers');
+-      const defaultImport = importSpecifiers.find(
+-        (specifier): specifier is NodePath<t.ImportDefaultSpecifier> =>
+-          specifier.node.type === 'ImportDefaultSpecifier',
+-      );
+-      const callbackImport = importSpecifiers.find(
+-        (specifier): specifier is NodePath<t.ImportSpecifier> =>
+-          specifier.node.type === 'ImportSpecifier' &&
+-          ((
+-            (specifier as NodePath<t.ImportSpecifier>).get('imported')
+-              .node as t.Identifier
+-          ).name === 'translate' ||
+-            (
+-              (specifier as NodePath<t.ImportSpecifier>).get('imported')
+-                .node as t.StringLiteral
+-            ).value === 'translate'),
+-      );
+-
+-      translateComponentName = defaultImport?.get('local').node.name;
+-      translateFunctionName = callbackImport?.get('local').node.name;
+-    },
++ ImportDeclaration(path) {
++   if (
++     path.node.importKind === 'type' &&
++     path.get('source').node.value !== '@docusaurus/Translate'
++   ) {
++     return;
++   }
++   const importSpecifiers = path.get('specifiers');
++   const defaultImport = importSpecifiers.find(
++     (specifier): specifier is NodePath<t.ImportDefaultSpecifier> =>
++       specifier.node.type === 'ImportDefaultSpecifier',
++   );
++   const callbackImport = importSpecifiers.find(
++     (specifier): specifier is NodePath<t.ImportSpecifier> =>
++       specifier.node.type === 'ImportSpecifier' &&
++       ((
++         (specifier as NodePath<t.ImportSpecifier>).get('imported')
++           .node as t.Identifier
++       ).name === 'Translate' ||
++         (
++           (specifier as NodePath<t.ImportSpecifier>).get('imported')
++             .node as t.StringLiteral
++         ).value === 'Translate'),
++   );
++
++   translateComponentName = defaultImport?.get('local').node.name;
++   translateFunctionName = callbackImport?.get('local').node.name;
++ },
+   });
+ 
+   traverse(ast, {

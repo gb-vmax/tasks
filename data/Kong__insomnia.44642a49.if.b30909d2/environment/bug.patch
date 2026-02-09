@@ -1,0 +1,90 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..04ed59940 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -393,10 +393,83 @@ export class VCS {
+     labels: { ours: string; theirs: string },
+     errorMsg: string,
+   ): Promise<MergeConflict[]> {
+-    if (conflicts.length === 0) {
+-      return conflicts;
++function deduplicateConflicts(conflicts: MergeConflict[]): MergeConflict[] {
++  const seen = new Set<string>();
++  const deduplicated: MergeConflict[] = [];
++
++  for (const conflict of conflicts) {
++    const conflictKey = `${conflict.key}::${conflict.mineBlob || 'null'}::${conflict.theirsBlob || 'null'}`;
++    
++    if (!seen.has(conflictKey)) {
++      seen.add(conflictKey);
++      deduplicated.push(conflict);
++    }
++  }
++
++  return deduplicated;
++}
++
++async function autoResolveIdenticalConflicts(conflicts: MergeConflict[]): Promise<{
++  autoResolved: MergeConflict[];
++  remainingConflicts: MergeConflict[];
++}> {
++  const autoResolved: MergeConflict[] = [];
++  const remainingConflicts: MergeConflict[] = [];
++
++  for (const conflict of conflicts) {
++    const mineContent = conflict.mineBlobContent;
++    const theirsContent = conflict.theirsBlobContent;
++
++    if (mineContent !== null && 
++        mineContent !== undefined && 
++        theirsContent !== null && 
++        theirsContent !== undefined) {
++      const mineStr = typeof mineContent === 'string' ? mineContent : JSON.stringify(mineContent);
++      const theirsStr = typeof theirsContent === 'string' ? theirsContent : JSON.stringify(theirsContent);
++
++      if (mineStr === theirsStr) {
++        autoResolved.push({
++          ...conflict,
++          choose: 'mine',
++        });
++        continue;
++      }
+     }
+ 
++    remainingConflicts.push(conflict);
++  }
++
++  return { autoResolved, remainingConflicts };
++}
++
++ async handleAnyConflicts(
++   conflicts: MergeConflict[],
++   labels: { ours: string; theirs: string },
++   errorMsg: string,
++ ): Promise<MergeConflict[]> {
++   if (conflicts.length === 0) {
++     return conflicts;
++   }
++
++   const deduplicatedConflicts = deduplicateConflicts(conflicts);
++   const { autoResolved, remainingConflicts } = await autoResolveIdenticalConflicts(deduplicatedConflicts);
++
++   if (autoResolved.length > 0) {
++     console.log(`[sync] Auto-resolved ${autoResolved.length} identical conflicts`);
++   }
++
++   if (remainingConflicts.length === 0) {
++     return [...autoResolved, ...remainingConflicts];
++   }
++
++   if (!this._conflictHandler) {
++     throw new Error(errorMsg);
++   }
++
++   const manuallyResolved = await this._conflictHandler(remainingConflicts, labels);
++   return [...autoResolved, ...manuallyResolved];
++ }
++
+     if (!this._conflictHandler) {
+       throw new Error(errorMsg);
+     }

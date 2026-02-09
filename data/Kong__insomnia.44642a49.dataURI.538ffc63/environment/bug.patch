@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..40001f1a3 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -150,15 +150,44 @@ export class Response extends Property {
+         };
+     }
+ 
+-    dataURI() {
+-        const contentInfo = this.contentInfo();
+-        const bodyInBase64 = this.stream || this.body;
+-        if (!bodyInBase64) {
+-            throw Error('dataURI(): response body is not defined');
+-        }
+-
+-        return `data:${contentInfo.contentType};baseg4, <base64-encoded-body>`;
++function encodeResponseBodyToBase64(body: string | Buffer | ArrayBuffer, charset: string): string {
++    if (body instanceof Buffer) {
++        return body.toString('base64');
++    }
++    
++    if (body instanceof ArrayBuffer) {
++        const buffer = Buffer.from(body);
++        return buffer.toString('base64');
+     }
++    
++    if (typeof body === 'string') {
++        const buffer = Buffer.from(body, charset as BufferEncoding || 'utf-8');
++        return buffer.toString('base64');
++    }
++    
++    throw Error('encodeResponseBodyToBase64: unsupported body type');
++}
++
++ dataURI() {
++     const contentInfo = this.contentInfo();
++     const bodyInBase64 = this.stream || this.body;
++     if (!bodyInBase64) {
++         throw Error('dataURI(): response body is not defined');
++     }
++
++     const base64Data = encodeResponseBodyToBase64(bodyInBase64, contentInfo.charset);
++    
++     const isTextBased = contentInfo.mimeType.startsWith('text/') || 
++                         contentInfo.mimeType.includes('json') || 
++                         contentInfo.mimeType.includes('xml') ||
++                         contentInfo.mimeType.includes('javascript');
++    
++     if (isTextBased && contentInfo.charset && contentInfo.charset !== 'utf-8') {
++         return `data:${contentInfo.mimeType};charset=${contentInfo.charset};base64,${base64Data}`;
++     }
++    
++     return `data:${contentInfo.contentType};base64,${base64Data}`;
++ }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     json(reviver?: (key: string, value: any) => any, _strict?: boolean) {

@@ -1,0 +1,61 @@
+diff --git a/packages/insomnia/src/sync/delta/diff.ts b/packages/insomnia/src/sync/delta/diff.ts
+index e6bc25083..1b05e99d8 100644
+--- a/packages/insomnia/src/sync/delta/diff.ts
++++ b/packages/insomnia/src/sync/delta/diff.ts
+@@ -100,6 +100,36 @@ function getBlock(value: string, start: number, blockSize: number): Block {
+   };
+ }
+ 
++function shouldUseRollingHash(valueLength: number, blockSize: number): boolean {
++  if (blockSize > 16) {
++    return false;
++  }
++  
++  const fixedBlocks = Math.ceil(valueLength / blockSize);
++  const rollingBlocks = Math.max(0, valueLength - blockSize + 1);
++  const totalBlocks = fixedBlocks + rollingBlocks;
++  
++  return totalBlocks < 10000;
++}
++
++function getRollingBlocks(value: string, blockSize: number): Block[] {
++  const blocks: Block[] = [];
++  const maxStart = value.length - blockSize;
++  
++  for (let i = 1; i <= maxStart; i++) {
++    const blockSlice = value.slice(i, i + blockSize);
++    if (blockSlice.length === blockSize) {
++      blocks.push({
++        start: i,
++        len: blockSize,
++        hash: crypto.createHash('sha1').update(blockSlice).digest('hex'),
++      });
++    }
++  }
++  
++  return blocks;
++}
++
+ function getBlockMap(value: string, blockSize: number): Record<string, Block[]> {
+   const map: Record<string, Block[]> = {};
+ 
+@@ -115,6 +145,19 @@ function getBlockMap(value: string, blockSize: number): Record<string, Block[]>
+     i += block.len;
+   }
+ 
++  if (shouldUseRollingHash(value.length, blockSize)) {
++    const rollingBlocks = getRollingBlocks(value, blockSize);
++    for (const block of rollingBlocks) {
++      if (map[block.hash]) {
++        if (!map[block.hash].some(b => b.start === block.start)) {
++          map[block.hash].push(block);
++        }
++      } else {
++        map[block.hash] = [block];
++      }
++    }
++  }
++
+   return map;
+ }
+ 

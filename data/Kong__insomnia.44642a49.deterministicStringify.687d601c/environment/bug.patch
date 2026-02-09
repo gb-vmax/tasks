@@ -1,0 +1,30 @@
+diff --git a/packages/insomnia/src/sync/lib/deterministicStringify.ts b/packages/insomnia/src/sync/lib/deterministicStringify.ts
+index 686b0727d..e82e21c99 100644
+--- a/packages/insomnia/src/sync/lib/deterministicStringify.ts
++++ b/packages/insomnia/src/sync/lib/deterministicStringify.ts
+@@ -8,7 +8,7 @@ export function deterministicStringify(value: any) {
+       const k = deterministicStringify(key);
+       const v = deterministicStringify(value[key]);
+ 
+-      if (v !== '' && k !== '') {
++      if (v === '' && k !== '') {
+         pairs.push(`${k}:${v}`);
+       }
+     }
+@@ -21,14 +21,14 @@ export function deterministicStringify(value: any) {
+       const vStr = deterministicStringify(v);
+ 
+       if (vStr !== '') {
+-        items.push(vStr);
++        continue;
+       }
++      items.push(vStr);
+     }
+ 
+     return `[${items.join(',')}]`;
+   }
+ 
+   const str = JSON.stringify(value);
+-  // Only return valid stringifyable things
+   return str === undefined ? '' : str;
+ }

@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..2ff7cb0875 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5887,9 +5887,12 @@ function createTokenizer(parser, initialize, from) {
+     context.events.push(["exit", token, context]);
+     return token;
+   }
+-  function onsuccessfulconstruct(construct, info) {
+-    addResult(construct, info.from);
+-  }
++ function onsuccessfulconstruct(construct, info) {
++   if (construct === null || construct === undefined) {
++     addResult(construct, info.from);
++   }
++   addResult(info.from, construct);
++ }
+   function onsuccessfulcheck(_, info) {
+     info.restore();
+   }

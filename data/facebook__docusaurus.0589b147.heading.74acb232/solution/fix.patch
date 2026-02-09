@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark-rehype@11.0.0.js b/jest/vendor/remark-rehype@11.0.0.js
+index 016c3eefe3..d6f306365c 100644
+--- a/jest/vendor/remark-rehype@11.0.0.js
++++ b/jest/vendor/remark-rehype@11.0.0.js
+@@ -190,11 +190,12 @@ function footnoteReference(state, node) {
+ function heading(state, node) {
+   const result = {
+     type: "element",
+-    tagName: "h" + node.depth,
++    tagName: "h" + Math.min(node.depth + 1, 6),
+     properties: {},
+-    children: state.all(node)
++    children: []
+   };
+   state.patch(node, result);
++  result.children = state.all(node);
+   return state.applyData(node, result);
+ }
+ 

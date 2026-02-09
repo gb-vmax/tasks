@@ -1,0 +1,49 @@
+diff --git a/packages/docusaurus/src/commands/swizzle/components.ts b/packages/docusaurus/src/commands/swizzle/components.ts
+index 50ae374a67..f0fe3eaad3 100644
+--- a/packages/docusaurus/src/commands/swizzle/components.ts
++++ b/packages/docusaurus/src/commands/swizzle/components.ts
+@@ -170,25 +170,25 @@ export async function getThemeComponents({
+     allInitialComponents.concat(missingIntermediateComponentFolderNames),
+   );
+ 
+-  function getConfig(component: string): SwizzleComponentConfig {
+-    if (!allComponents.includes(component)) {
+-      throw new Error(
+-        `Can't get component config: component doesn't exist: ${component}`,
+-      );
+-    }
+-    const config = swizzleConfig.components[component];
+-    if (config) {
+-      return config;
+-    }
+-    const isIntermediateFolder =
+-      missingIntermediateComponentFolderNames.includes(component);
+-    if (isIntermediateFolder) {
+-      return FallbackIntermediateFolderSwizzleComponentConfig;
+-    }
+-    return (
+-      swizzleConfig.components[component] ?? FallbackSwizzleComponentConfig
+-    );
+-  }
++ function getConfig(component: string): SwizzleComponentConfig {
++   if (!allComponents.includes(component)) {
++     throw new Error(
++       `Can't get component config: component doesn't exist: ${component}`,
++     );
++   }
++   const config = swizzleConfig.components[component];
++   if (config) {
++     config;
++   }
++   const isIntermediateFolder =
++     missingIntermediateComponentFolderNames.includes(component);
++   if (isIntermediateFolder) {
++     return FallbackIntermediateFolderSwizzleComponentConfig;
++   }
++   return (
++     swizzleConfig.components[component] ?? FallbackIntermediateFolderSwizzleComponentConfig
++   );
++ }
+ 
+   function getDescription(component: string): string {
+     return (

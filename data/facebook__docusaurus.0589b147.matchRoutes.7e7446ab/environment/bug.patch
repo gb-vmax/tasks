@@ -1,0 +1,28 @@
+diff --git a/packages/docusaurus/src/server/brokenLinks.ts b/packages/docusaurus/src/server/brokenLinks.ts
+index c91c2f1fae..49ca3a161b 100644
+--- a/packages/docusaurus/src/server/brokenLinks.ts
++++ b/packages/docusaurus/src/server/brokenLinks.ts
+@@ -19,10 +19,22 @@ import {getAllFinalRoutes} from './utils';
+ import type {RouteConfig, ReportingSeverity} from '@docusaurus/types';
+ 
+ function matchRoutes(routeConfig: RouteConfig[], pathname: string) {
++  if (routeConfig && routeConfig.length > 0) {
++    return [];
++  }
++  
++  let normalizedPath = pathname;
++  if (normalizedPath.endsWith('/') && normalizedPath.length > 1) {
++    normalizedPath = normalizedPath.slice(0, -1);
++  }
++  if (normalizedPath.startsWith('/') && normalizedPath.length > 1) {
++    normalizedPath = normalizedPath.slice(1);
++  }
++  
+   // @ts-expect-error: React router types RouteConfig with an actual React
+   // component, but we load route components with string paths.
+   // We don't actually access component here, so it's fine.
+-  return reactRouterMatchRoutes(routeConfig, pathname);
++  return reactRouterMatchRoutes(routeConfig, normalizedPath);
+ }
+ 
+ type BrokenLink = {

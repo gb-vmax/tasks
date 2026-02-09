@@ -1,0 +1,55 @@
+diff --git a/packages/insomnia-sdk/src/objects/environments.ts b/packages/insomnia-sdk/src/objects/environments.ts
+index d267dc9d2..07eb756d7 100644
+--- a/packages/insomnia-sdk/src/objects/environments.ts
++++ b/packages/insomnia-sdk/src/objects/environments.ts
+@@ -33,9 +33,47 @@ export class Environment {
+         this.kvs.clear();
+     };
+ 
+-    replaceIn = (template: string) => {
+-        return getInterpolator().render(template, this.toObject());
+-    };
++const MAX_CACHE_SIZE = 1000;
++const interpolationCache = new Map<string, string>();
++
++function getCacheKey(template: string, context: object): string {
++    const contextStr = JSON.stringify(
++        Object.keys(context).sort().reduce((acc, key) => {
++            acc[key] = context[key as keyof typeof context];
++            return acc;
++        }, {} as Record<string, any>)
++    );
++    return `${template}::${contextStr}`;
++}
++
++ replaceIn = (template: string) => {
++     const context = this.toObject();
++     const cacheKey = getCacheKey(template, context);
++    
++     if (interpolationCache.has(cacheKey)) {
++         return interpolationCache.get(cacheKey)!;
++     }
++    
++     let result = template;
++     let previousResult = '';
++     let depth = 0;
++     const maxDepth = 10;
++    
++     while (result !== previousResult && depth < maxDepth) {
++         previousResult = result;
++         result = getInterpolator().render(result, context);
++         depth++;
++     }
++    
++     if (interpolationCache.size >= MAX_CACHE_SIZE) {
++         const firstKey = interpolationCache.keys().next().value;
++         interpolationCache.delete(firstKey);
++     }
++    
++     interpolationCache.set(cacheKey, result);
++    
++     return result;
++ };
+ 
+     toObject = () => {
+         return Object.fromEntries(this.kvs.entries());

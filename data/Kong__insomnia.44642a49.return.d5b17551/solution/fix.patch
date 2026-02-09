@@ -1,0 +1,64 @@
+diff --git a/packages/insomnia/src/common/api-specs.ts b/packages/insomnia/src/common/api-specs.ts
+index 5471c04b1..5687734b8 100644
+--- a/packages/insomnia/src/common/api-specs.ts
++++ b/packages/insomnia/src/common/api-specs.ts
+@@ -56,13 +56,53 @@ export function resolveComponentSchemaRefs(
+     }
+ 
+     if (Array.isArray(obj)) {
+-      return obj.map(resolveRefs);
+-    }
++ export function resolveComponentSchemaRefs(
++   spec: ParsedApiSpec,
++   methodInfo: Record<string, any>,
++ ) {
++   const schemas = spec.contents?.components?.schemas;
++   if (!schemas) {
++     return;
++   }
+ 
+-    if (obj.$ref) {
+-      const ref = obj.$ref.replace('#/components/schemas/', '');
+-      return resolveRefs(schemas[ref]);
+-    }
++   const resolveRefs = (obj: Record<string, any>, visited: Set<string> = new Set()): Record<string, any> => {
++     if (typeof obj !== 'object') {
++       return obj;
++     }
++
++     if (Array.isArray(obj)) {
++       return obj.map(item => resolveRefs(item, visited));
++     }
++
++     if (obj.$ref) {
++       const ref = obj.$ref.replace('#/components/schemas/', '');
++      
++       if (visited.has(ref)) {
++         return { $ref: obj.$ref, _circular: true };
++       }
++
++       const newVisited = new Set(visited);
++       newVisited.add(ref);
++      
++       if (schemas[ref]) {
++         return resolveRefs(schemas[ref], newVisited);
++       }
++      
++       return obj;
++     }
++
++     const resolved: Record<string, any> = {};
++     for (const [key, value] of Object.entries(obj)) {
++       resolved[key] = resolveRefs(value, visited);
++     }
++
++     return resolved;
++   };
++
++   const resolved = resolveRefs(methodInfo);
++
++   return resolved;
++ }
+ 
+     const resolved: Record<string, any> = {};
+     for (const [key, value] of Object.entries(obj)) {

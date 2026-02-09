@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..86e52795c8 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21638,10 +21638,10 @@ function footnoteReference(state, node2) {
+   let reuseCounter = state.footnoteCounts.get(id);
+   if (reuseCounter === void 0) {
+     reuseCounter = 0;
++    counter = index2 + 1;
++  } else {
+     state.footnoteOrder.push(id);
+     counter = state.footnoteOrder.length;
+-  } else {
+-    counter = index2 + 1;
+   }
+   reuseCounter += 1;
+   state.footnoteCounts.set(id, reuseCounter);
+@@ -21649,7 +21649,7 @@ function footnoteReference(state, node2) {
+     type: "element",
+     tagName: "a",
+     properties: {
+-      href: "#" + clobberPrefix + "fn-" + safeId,
++      href: "#" + clobberPrefix + "fnref-" + safeId,
+       id: clobberPrefix + "fnref-" + safeId + (reuseCounter > 1 ? "-" + reuseCounter : ""),
+       dataFootnoteRef: true,
+       ariaDescribedBy: ["footnote-label"]

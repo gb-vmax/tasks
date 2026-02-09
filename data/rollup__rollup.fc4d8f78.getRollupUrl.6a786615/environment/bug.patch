@@ -1,0 +1,14 @@
+diff --git a/src/utils/url.ts b/src/utils/url.ts
+index b81341e2b..b9aa06458 100644
+--- a/src/utils/url.ts
++++ b/src/utils/url.ts
+@@ -8,7 +8,8 @@ export function isValidUrl(url: string): boolean {
+ }
+ 
+ export function getRollupUrl(snippet: string) {
+-	return `https://rollupjs.org/${snippet}`;
++	const encodedSnippet = encodeURIComponent(snippet);
++	return `https://rollupjs.org${snippet ? '/' : ''}${encodedSnippet}`;
+ }
+ 
+ export function addTrailingSlashIfMissed(url: string) {

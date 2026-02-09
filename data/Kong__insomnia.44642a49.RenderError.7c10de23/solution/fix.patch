@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/templating/index.ts b/packages/insomnia/src/templating/index.ts
+index d1f07fc92..beb0618f0 100644
+--- a/packages/insomnia/src/templating/index.ts
++++ b/packages/insomnia/src/templating/index.ts
+@@ -10,9 +10,16 @@ export enum RenderErrorSubType {
+   EnvironmentVariable = 'environmentVariable'
+ }
+ 
++let errorCounter = 0;
++
++function generateErrorId(): string {
++  const timestamp = Date.now().toString(36);
++  const counter = (errorCounter++).toString(36).padStart(3, '0');
++  const random = Math.random().toString(36).substring(2, 6);
++  return `re_${timestamp}_${counter}_${random}`;
++}
++
+ export class RenderError extends Error {
+-  // TODO: unsound definite assignment assertions
+-  // This is easy to fix, but be careful: extending from Error has especially tricky behavior.
+   message!: string;
+   path!: string | null;
+   location!: {
+@@ -20,6 +27,52 @@ export class RenderError extends Error {
+     column: number;
+   };
+ 
++  type!: string;
++  reason!: string;
++  extraInfo?: Record<string, string>;
++  errorId: string;
++  templateContext?: {
++    snippet: string;
++    startLine: number;
++    endLine: number;
++  };
++
++  constructor(message: string) {
++    super(message);
++    this.name = 'RenderError';
++    this.errorId = generateErrorId();
++    Object.setPrototypeOf(this, RenderError.prototype);
++  }
++
++  setTemplateContext(text: string, line: number, column: number, contextLines: number = 2): void {
++    const lines = text.split('\n');
++    const startLine = Math.max(0, line - contextLines - 1);
++    const endLine = Math.min(lines.length, line + contextLines);
++    const snippetLines = lines.slice(startLine, endLine);
++    
++    this.templateContext = {
++      snippet: snippetLines.join('\n'),
++      startLine: startLine + 1,
++      endLine: endLine
++    };
++  }
++
++  toJSON(): Record<string, any> {
++    return {
++      name: this.name,
++      message: this.message,
++      path: this.path,
++      location: this.location,
++      type: this.type,
++      reason: this.reason,
++      extraInfo: this.extraInfo,
++      errorId: this.errorId,
++      templateContext: this.templateContext,
++      stack: this.stack
++    };
++  }
++}
++
+   type!: string;
+   reason!: string;
+   extraInfo?: Record<string, string>;

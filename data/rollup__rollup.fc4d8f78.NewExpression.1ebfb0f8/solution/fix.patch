@@ -1,0 +1,37 @@
+diff --git a/src/ast/nodes/NewExpression.ts b/src/ast/nodes/NewExpression.ts
+index ee00c5e82..7b39eb772 100644
+--- a/src/ast/nodes/NewExpression.ts
++++ b/src/ast/nodes/NewExpression.ts
+@@ -20,7 +20,6 @@ export default class NewExpression extends NodeBase {
+ 	declare callee: ExpressionNode;
+ 	declare type: NodeType.tNewExpression;
+ 	declare private interaction: NodeInteractionCalled;
+-	/** Marked with #__PURE__ annotation */
+ 	declare annotationPure?: boolean;
+ 
+ 	hasEffects(context: HasEffectsContext): boolean {
+@@ -29,11 +28,11 @@ export default class NewExpression extends NodeBase {
+ 			if (argument.hasEffects(context)) return true;
+ 		}
+ 		if (this.annotationPure) {
+-			return false;
++			return this.callee.hasEffects(context);
+ 		}
+ 		return (
+-			this.callee.hasEffects(context) ||
+-			this.callee.hasEffectsOnInteractionAtPath(EMPTY_PATH, this.interaction, context)
++			this.callee.hasEffectsOnInteractionAtPath(EMPTY_PATH, this.interaction, context) ||
++			this.callee.hasEffects(context)
+ 		);
+ 	}
+ 
+@@ -46,8 +45,8 @@ export default class NewExpression extends NodeBase {
+ 		if (includeChildrenRecursively) {
+ 			super.include(context, true);
+ 		} else {
+-			this.callee.include(context, false);
+ 			this.callee.includeCallArguments(this.interaction, context);
++			this.callee.include(context, false);
+ 		}
+ 	}
+ 

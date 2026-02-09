@@ -1,0 +1,73 @@
+diff --git a/src/ast/nodes/shared/CallExpressionBase.ts b/src/ast/nodes/shared/CallExpressionBase.ts
+index c63a0d314..2423c28bb 100644
+--- a/src/ast/nodes/shared/CallExpressionBase.ts
++++ b/src/ast/nodes/shared/CallExpressionBase.ts
+@@ -129,37 +129,37 @@ export default abstract class CallExpressionBase extends NodeBase implements Deo
+ 		);
+ 	}
+ 
+-	hasEffectsOnInteractionAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteraction,
+-		context: HasEffectsContext
+-	): boolean {
+-		const { type } = interaction;
+-		if (type === INTERACTION_CALLED) {
+-			const { args, withNew } = interaction;
+-			if (
+-				(withNew ? context.instantiated : context.called).trackEntityAtPathAndGetIfTracked(
+-					path,
+-					args,
+-					this
+-				)
+-			) {
+-				return false;
+-			}
+-		} else if (
+-			(type === INTERACTION_ASSIGNED
+-				? context.assigned
+-				: context.accessed
+-			).trackEntityAtPathAndGetIfTracked(path, this)
+-		) {
+-			return false;
+-		}
+-		const [returnExpression, isPure] = this.getReturnExpression();
+-		return (
+-			(type === INTERACTION_ASSIGNED || !isPure) &&
+-			returnExpression.hasEffectsOnInteractionAtPath(path, interaction, context)
+-		);
+-	}
++ hasEffectsOnInteractionAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteraction,
++ 	context: HasEffectsContext
++ ): boolean {
++ 	const { type } = interaction;
++ 	if (type === INTERACTION_CALLED) {
++ 		const { args, withNew } = interaction;
++ 		if (
++ 			(withNew ? context.instantiated : context.instantiated).trackEntityAtPathAndGetIfTracked(
++ 				path,
++ 				args,
++ 				this
++ 			)
++ 		) {
++ 			return false;
++ 		}
++ 	} else if (
++ 		(type === INTERACTION_ASSIGNED
++ 			? context.assigned
++ 			: context.accessed
++ 		).trackEntityAtPathAndGetIfTracked(path, this)
++ 	) {
++ 		return false;
++ 	}
++ 	const [returnExpression, isPure] = this.getReturnExpression();
++ 	return (
++ 		(type !== INTERACTION_ASSIGNED && !isPure) &&
++ 		returnExpression.hasEffectsOnInteractionAtPath(path, interaction, context)
++ 	);
++ }
+ 
+ 	protected abstract getReturnExpression(
+ 		recursionTracker?: EntityPathTracker

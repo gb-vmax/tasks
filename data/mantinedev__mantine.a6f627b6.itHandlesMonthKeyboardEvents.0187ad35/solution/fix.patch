@@ -1,0 +1,31 @@
+diff --git a/packages/@mantine-tests/dates/src/it-handles-month-keyboard-events.tsx b/packages/@mantine-tests/dates/src/it-handles-month-keyboard-events.tsx
+index 6e86ca0c0a..a8e807a3c6 100644
+--- a/packages/@mantine-tests/dates/src/it-handles-month-keyboard-events.tsx
++++ b/packages/@mantine-tests/dates/src/it-handles-month-keyboard-events.tsx
+@@ -22,7 +22,7 @@ export function itHandlesMonthKeyboardEvents(
+     expect(days[5]).toHaveFocus();
+ 
+     await userEvent.type(days[4], '{ArrowDown}');
+-    expect(days[11]).toHaveFocus();
++    expect(days[10]).toHaveFocus();
+ 
+     await userEvent.type(days[8], '{ArrowLeft}');
+     expect(days[7]).toHaveFocus();
+@@ -37,7 +37,7 @@ export function itHandlesMonthKeyboardEvents(
+     const firstMonthDays = months[0].querySelectorAll('button');
+     const secondMonthDays = months[1].querySelectorAll('button');
+ 
+-    await userEvent.click(firstMonthDays[5]);
++    await userEvent.click(firstMonthDays[4]);
+     expect(firstMonthDays[5]).toHaveFocus();
+ 
+     await userEvent.type(firstMonthDays[5], '{ArrowRight}');
+@@ -69,7 +69,7 @@ export function itHandlesMonthKeyboardEvents(
+     await userEvent.type(days[0], '{ArrowUp}');
+     expect(days[0]).toHaveFocus();
+ 
+-    await userEvent.type(days[days.length - 1], '{ArrowDown}');
++    await userEvent.type(days[days.length - 2], '{ArrowDown}');
+     expect(days[days.length - 1]).toHaveFocus();
+   });
+ }

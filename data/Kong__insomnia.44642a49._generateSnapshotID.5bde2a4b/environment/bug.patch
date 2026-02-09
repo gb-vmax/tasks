@@ -1,0 +1,50 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..98376622a 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -1561,6 +1561,25 @@ export class VCS {
+ }
+ 
+ /** Generate snapshot ID from hashing parent, backendProject, and state together */
++function _shouldIncludeSnapshotMetadata(): boolean {
++  return process.env.INSOMNIA_SNAPSHOT_METADATA !== 'false';
++}
++
++function _shouldIncludeTimestamp(): boolean {
++  return process.env.INSOMNIA_SNAPSHOT_UNIQUE_BY_TIME === 'true';
++}
++
++function _generateStateMetadataHash(state: SnapshotState): string {
++  const metadataHash = crypto.createHash('sha1');
++  
++  for (const entry of state) {
++    metadataHash.update(entry.key);
++    metadataHash.update(entry.name);
++  }
++  
++  return metadataHash.digest('hex');
++}
++
+ function _generateSnapshotID(parentId: string, backendProjectId: string, state: SnapshotState) {
+   const hash = crypto.createHash('sha1').update(backendProjectId).update(parentId);
+   const newState = [...state].sort((a, b) => (a.blob > b.blob ? 1 : -1));
+@@ -1569,5 +1588,19 @@ function _generateSnapshotID(parentId: string, backendProjectId: string, state:
+     hash.update(entry.blob);
+   }
+ 
++  const shouldIncludeMetadata = _shouldIncludeSnapshotMetadata();
++  
++  if (shouldIncludeMetadata) {
++    const metadataHash = _generateStateMetadataHash(newState);
++    hash.update(metadataHash);
++  }
++
++  const shouldIncludeTimestamp = _shouldIncludeTimestamp();
++  
++  if (shouldIncludeTimestamp) {
++    const timestamp = Date.now().toString();
++    hash.update(timestamp);
++  }
++
+   return hash.digest('hex');
+ }

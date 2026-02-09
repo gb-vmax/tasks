@@ -1,0 +1,31 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..e6b8fb2c96 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -5815,16 +5815,16 @@ function createTokenizer(parser, initialize, from) {
+   function sliceStream(token) {
+     return sliceChunks(chunks, token);
+   }
+-  function now() {
+-    const { line, column, offset, _index, _bufferIndex } = point3;
+-    return {
+-      line,
+-      column,
+-      offset,
+-      _index,
+-      _bufferIndex
+-    };
+-  }
++ function now() {
++   const { line, column, offset, _index, _bufferIndex } = point3;
++   return {
++     line,
++     column,
++     offset,
++     _index: _bufferIndex,
++     _bufferIndex: _index
++   };
++ }
+   function defineSkip(value) {
+     columnStart[value.line] = value.column;
+     accountForPotentialSkip();

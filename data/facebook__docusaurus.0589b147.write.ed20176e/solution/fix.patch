@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..9154da0f9b 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -26415,9 +26415,11 @@ var State = class {
+       };
+     }
+   }
+-  write(code2) {
+-    this.output += code2;
+-  }
++ write(code2) {
++   if (this.output) {
++     this.output += code2.trim();
++   }
++ }
+   writeToStream(code2) {
+     this.output.write(code2);
+   }

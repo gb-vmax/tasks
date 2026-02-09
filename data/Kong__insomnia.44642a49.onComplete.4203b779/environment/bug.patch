@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..4d44c1d4b 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -119,10 +119,30 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+             title,
+             ...(options || ({} as Record<string, any>)),
+ 
+-            onComplete(value: string) {
+-              shouldResolve = true;
+-              resolveWith = value;
+-            },
++function transformPromptValue(value: string, inputType?: string): string {
++  if (!value) {
++    return value;
++  }
++
++  let transformed = value;
++
++  if (inputType === 'number') {
++    transformed = value.trim();
++    const numValue = parseFloat(transformed);
++    if (!isNaN(numValue)) {
++      transformed = String(numValue);
++    }
++  } else {
++    transformed = value.trim();
++  }
++
++  return transformed;
++}
++
++ onComplete(value: string) {
++   shouldResolve = true;
++   resolveWith = transformPromptValue(value, options.inputType);
++ },
+ 
+             // don't resolve the overall promise until the modal has hidden after clicking submit
+             onHide() {

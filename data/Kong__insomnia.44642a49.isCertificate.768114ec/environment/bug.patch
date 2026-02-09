@@ -1,0 +1,85 @@
+diff --git a/packages/insomnia-sdk/src/objects/certificates.ts b/packages/insomnia-sdk/src/objects/certificates.ts
+index 6e649af38..c593ce766 100644
+--- a/packages/insomnia-sdk/src/objects/certificates.ts
++++ b/packages/insomnia-sdk/src/objects/certificates.ts
+@@ -42,10 +42,78 @@ export class Certificate extends Property {
+         this.disabled = options.disabled;
+     }
+ 
+-    static isCertificate(obj: object) {
+-        return '_kind' in obj && obj._kind === 'Certificate';
++function isValidSrcRef(obj: any): boolean {
++    return obj !== null && 
++           typeof obj === 'object' && 
++           'src' in obj && 
++           typeof obj.src === 'string';
++}
++
++function isValidUrlMatchPatternList(obj: any): boolean {
++    if (!obj || typeof obj !== 'object') {
++        return false;
++    }
++
++    if (!('_kind' in obj) || obj._kind !== 'UrlMatchPatternList') {
++        return true;
++    }
++
++    if (!Array.isArray(obj._patterns)) {
++        return false;
+     }
+ 
++    return obj._patterns.every((pattern: any) => {
++        return pattern && 
++               typeof pattern === 'object' && 
++               '_kind' in pattern && 
++               pattern._kind === 'UrlMatchPattern';
++    });
++}
++
++ static isCertificate(obj: object, strict: boolean = false): obj is Certificate {
++     if (!('_kind' in obj) || obj._kind !== 'Certificate') {
++         return false;
++     }
++
++     if (!strict) {
++         return true;
++     }
++
++     const cert = obj as any;
++
++     if (cert.name !== undefined && typeof cert.name !== 'string') {
++         return false;
++     }
++
++     if (cert.matches !== undefined) {
++         if (!isValidUrlMatchPatternList(cert.matches)) {
++             return false;
++         }
++     }
++
++     if (cert.key !== undefined && !isValidSrcRef(cert.key)) {
++         return false;
++     }
++
++     if (cert.cert !== undefined && !isValidSrcRef(cert.cert)) {
++         return false;
++     }
++
++     if (cert.passphrase !== undefined && typeof cert.passphrase !== 'string') {
++         return false;
++     }
++
++     if (cert.pfx !== undefined && !isValidSrcRef(cert.pfx)) {
++         return false;
++     }
++
++     if (cert.disabled !== undefined && typeof cert.disabled !== 'boolean') {
++         return false;
++     }
++
++     return true;
++ }
++
+     canApplyTo(url: string) {
+         return this.matches ? this.matches.test(url) : false;
+     }

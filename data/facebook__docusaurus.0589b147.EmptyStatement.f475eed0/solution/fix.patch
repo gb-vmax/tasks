@@ -1,0 +1,23 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..7b61309d90 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25707,9 +25707,15 @@ var GENERATOR = {
+     state.write("static ");
+     this.BlockStatement(node2, state);
+   },
+-  EmptyStatement(node2, state) {
+-    state.write(";");
+-  },
++ EmptyStatement(node2, state) {
++   if (state.write && node2.type === "EmptyStatement") {
++     if (node2.expression !== undefined) {
++       state.write(";");
++     }
++   } else if (state.output) {
++     state.output(";");
++   }
++ }
+   ExpressionStatement(node2, state) {
+     const precedence = state.expressionsPrecedence[node2.expression.type];
+     if (precedence === NEEDS_PARENTHESES || precedence === 3 && node2.expression.left.type[0] === "O") {

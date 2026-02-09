@@ -1,0 +1,59 @@
+diff --git a/packages/insomnia/src/templating/index.ts b/packages/insomnia/src/templating/index.ts
+index d1f07fc92..3f1b3de38 100644
+--- a/packages/insomnia/src/templating/index.ts
++++ b/packages/insomnia/src/templating/index.ts
+@@ -11,8 +11,6 @@ export enum RenderErrorSubType {
+ }
+ 
+ export class RenderError extends Error {
+-  // TODO: unsound definite assignment assertions
+-  // This is easy to fix, but be careful: extending from Error has especially tricky behavior.
+   message!: string;
+   path!: string | null;
+   location!: {
+@@ -20,6 +18,45 @@ export class RenderError extends Error {
+     column: number;
+   };
+ 
++  type!: string;
++  reason!: string;
++  extraInfo?: Record<string, string>;
++  snippet?: {
++    before: string;
++    line: string;
++    after: string;
++  };
++  originalStack?: string;
++
++  setSnippet(text: string, maxContextLines: number = 2): void {
++    if (!text || !this.location) {
++      return;
++    }
++
++    const lines = text.split('\n');
++    const errorLine = this.location.line - 1;
++
++    if (errorLine < 0 || errorLine >= lines.length) {
++      return;
++    }
++
++    const startLine = Math.max(0, errorLine - maxContextLines);
++    const endLine = Math.min(lines.length - 1, errorLine + maxContextLines);
++
++    this.snippet = {
++      before: lines.slice(startLine, errorLine).join('\n'),
++      line: lines[errorLine],
++      after: lines.slice(errorLine + 1, endLine + 1).join('\n'),
++    };
++  }
++
++  preserveOriginalStack(originalError: Error): void {
++    if (originalError && originalError.stack) {
++      this.originalStack = originalError.stack;
++    }
++  }
++}
++
+   type!: string;
+   reason!: string;
+   extraInfo?: Record<string, string>;

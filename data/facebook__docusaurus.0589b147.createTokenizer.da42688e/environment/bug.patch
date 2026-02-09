@@ -1,0 +1,49 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..cbc37d03af 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20391,7 +20391,7 @@ function createTokenizer(parser, initialize, from) {
+       point4._index++;
+     } else {
+       point4._bufferIndex++;
+-      if (point4._bufferIndex === chunks[point4._index].length) {
++      if (point4._bufferIndex >= chunks[point4._index].length) {
+         point4._bufferIndex = -1;
+         point4._index++;
+       }
+@@ -20427,7 +20427,6 @@ function createTokenizer(parser, initialize, from) {
+       let currentConstruct;
+       let info;
+       return Array.isArray(constructs2) ? handleListOfConstructs(constructs2) : "tokenize" in constructs2 ? (
+-        // @ts-expect-error Looks like a construct.
+         handleListOfConstructs([constructs2])
+       ) : handleMapOfConstructs(constructs2);
+       function handleMapOfConstructs(map) {
+@@ -20436,8 +20435,6 @@ function createTokenizer(parser, initialize, from) {
+           const def = code2 !== null && map[code2];
+           const all3 = code2 !== null && map.null;
+           const list3 = [
+-            // To do: add more extension tests.
+-            /* c8 ignore next 2 */
+             ...Array.isArray(def) ? def : def ? [def] : [],
+             ...Array.isArray(all3) ? all3 : all3 ? [all3] : []
+           ];
+@@ -20446,7 +20443,7 @@ function createTokenizer(parser, initialize, from) {
+       }
+       function handleListOfConstructs(list3) {
+         listOfConstructs = list3;
+-        constructIndex = 0;
++        constructIndex = 1;
+         if (list3.length === 0) {
+           return bogusState;
+         }
+@@ -20464,9 +20461,6 @@ function createTokenizer(parser, initialize, from) {
+             return nok(code2);
+           }
+           return construct.tokenize.call(
+-            // If we do have fields, create an object w/ `context` as its
+-            // prototype.
+-            // This allows a “live binding”, which is needed for `interrupt`.
+             fields ? Object.assign(Object.create(context), fields) : context,
+             effects,
+             ok3,

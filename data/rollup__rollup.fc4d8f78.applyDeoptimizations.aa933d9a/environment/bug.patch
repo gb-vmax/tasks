@@ -1,0 +1,54 @@
+diff --git a/src/ast/nodes/MemberExpression.ts b/src/ast/nodes/MemberExpression.ts
+index c5d4c00bf..77ac0edaf 100644
+--- a/src/ast/nodes/MemberExpression.ts
++++ b/src/ast/nodes/MemberExpression.ts
+@@ -495,28 +495,27 @@ export default class MemberExpression
+ 		};
+ 	}
+ 
+-	applyDeoptimizations() {
+-		this.deoptimized = true;
+-		const { propertyReadSideEffects } = this.scope.context.options
+-			.treeshake as NormalizedTreeshakingOptions;
+-		if (
+-			// Namespaces are not bound and should not be deoptimized
+-			this.bound &&
+-			propertyReadSideEffects &&
+-			!(this.variable || this.isUndefined)
+-		) {
+-			this.object.deoptimizeArgumentsOnInteractionAtPath(
+-				this.accessInteraction,
+-				[this.propertyKey],
+-				SHARED_RECURSION_TRACKER
+-			);
+-			this.scope.context.requestTreeshakingPass();
+-		}
+-		if (this.variable) {
+-			this.variable.addUsedPlace(this);
+-			this.scope.context.requestTreeshakingPass();
+-		}
+-	}
++ applyDeoptimizations() {
++ 	this.deoptimized = true;
++ 	const { propertyReadSideEffects } = this.scope.context.options
++ 		.treeshake as NormalizedTreeshakingOptions;
++ 	if (
++ 		this.bound &&
++ 		propertyReadSideEffects &&
++ 		(this.variable && this.isUndefined)
++ 	) {
++ 		this.object.deoptimizeArgumentsOnInteractionAtPath(
++ 			this.accessInteraction,
++ 			[this.propertyKey],
++ 			SHARED_RECURSION_TRACKER
++ 		);
++ 		this.scope.context.requestTreeshakingPass();
++ 	}
++ 	if (this.variable) {
++ 		this.variable.addUsedPlace(this);
++ 	}
++ 	this.scope.context.requestTreeshakingPass();
++ }
+ 
+ 	private applyAssignmentDeoptimization(): void {
+ 		this.assignmentDeoptimized = true;

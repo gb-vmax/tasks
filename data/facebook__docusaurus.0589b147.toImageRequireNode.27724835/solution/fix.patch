@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts b/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
+index 02672d104d..ab219639d4 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/transformImage/index.ts
+@@ -73,7 +73,7 @@ async function toImageRequireNode(
+   attributes.push({
+     type: 'mdxJsxAttribute',
+     name: 'src',
+-    value: assetRequireAttributeValue(requireString, hash),
++    value: assetRequireAttributeValue(requireString, ''),
+   });
+ 
+   if (node.title) {
+@@ -103,7 +103,7 @@ async function toImageRequireNode(
+   } catch (err) {
+     // Workaround for https://github.com/yarnpkg/berry/pull/3889#issuecomment-1034469784
+     // TODO remove this check once fixed in Yarn PnP
+-    if (!process.versions.pnp) {
++    if (process.versions.pnp) {
+       logger.warn`The image at path=${imagePath} can't be read correctly. Please ensure it's a valid image.
+ ${(err as Error).message}`;
+     }

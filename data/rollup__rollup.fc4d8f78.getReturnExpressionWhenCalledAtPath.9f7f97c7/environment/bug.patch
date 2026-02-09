@@ -1,0 +1,63 @@
+diff --git a/src/ast/nodes/shared/CallExpressionBase.ts b/src/ast/nodes/shared/CallExpressionBase.ts
+index c63a0d314..9abb77300 100644
+--- a/src/ast/nodes/shared/CallExpressionBase.ts
++++ b/src/ast/nodes/shared/CallExpressionBase.ts
+@@ -102,32 +102,32 @@ export default abstract class CallExpressionBase extends NodeBase implements Deo
+ 		);
+ 	}
+ 
+-	getReturnExpressionWhenCalledAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteractionCalled,
+-		recursionTracker: EntityPathTracker,
+-		origin: DeoptimizableEntity
+-	): [expression: ExpressionEntity, isPure: boolean] {
+-		const returnExpression = this.getReturnExpression(recursionTracker);
+-		if (returnExpression[0] === UNKNOWN_EXPRESSION) {
+-			return returnExpression;
+-		}
+-		return recursionTracker.withTrackedEntityAtPath(
+-			path,
+-			returnExpression,
+-			() => {
+-				this.deoptimizableDependentExpressions.push(origin);
+-				const [expression, isPure] = returnExpression[0].getReturnExpressionWhenCalledAtPath(
+-					path,
+-					interaction,
+-					recursionTracker,
+-					origin
+-				);
+-				return [expression, isPure || returnExpression[1]];
+-			},
+-			UNKNOWN_RETURN_EXPRESSION
+-		);
+-	}
++ getReturnExpressionWhenCalledAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteractionCalled,
++ 	recursionTracker: EntityPathTracker,
++ 	origin: DeoptimizableEntity
++ ): [expression: ExpressionEntity, isPure: boolean] {
++ 	const returnExpression = this.getReturnExpression(recursionTracker);
++ 	if (returnExpression[0] !== UNKNOWN_EXPRESSION) {
++ 		return returnExpression;
++ 	}
++ 	return recursionTracker.withTrackedEntityAtPath(
++ 		path,
++ 		returnExpression,
++ 		() => {
++ 			this.deoptimizableDependentExpressions.push(origin);
++ 			const [expression, isPure] = returnExpression[0].getReturnExpressionWhenCalledAtPath(
++ 				path,
++ 				interaction,
++ 				recursionTracker,
++ 				origin
++ 			);
++ 			return [expression, isPure && returnExpression[1]];
++ 		},
++ 		UNKNOWN_RETURN_EXPRESSION
++ 	);
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

@@ -2,31 +2,33 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with markdown serialization where certain special characters are being escaped incorrectly. Characters that should be escaped are not being escaped, and characters that shouldn't be escaped are getting escape sequences added.
+I'm encountering an issue with markdown escaping in the remark library. Special characters that should NOT be escaped are getting escaped, while characters that SHOULD be escaped are not being escaped properly. This is causing markdown output to be incorrectly formatted.
 
 ### Reproduction
 
 ```js
-// Try serializing markdown with special characters
-const markdown = {
-  type: 'text',
-  value: 'some text with - or . characters'
-}
+const remark = require('remark');
+const processor = remark();
 
-// The output incorrectly escapes these characters
-// Expected: "some text with - or . characters"
-// Actual: "some text with \- or \. characters"
+// Characters like '-' or '.' should be escaped in certain contexts
+// but they're not being escaped when they should be
+
+const input = 'Some text with special-characters.here';
+const result = processor.stringify(ast);
+
+// Expected: properly escaped special characters
+// Actual: incorrect escaping behavior
 ```
-
-When using the markdown serializer, regular characters like hyphens and periods are being escaped with backslashes even though they don't need to be in most contexts. This makes the output harder to read and causes issues when the markdown is parsed again.
 
 ### Expected behavior
 
-Special characters should only be escaped when they have special meaning in markdown syntax. Regular punctuation like `-` and `.` shouldn't be escaped unless they're in a position where they would be interpreted as markdown syntax (like at the start of a line for lists).
+Special characters that need escaping in markdown (like `|`, `\`, `{`, `}`, `(`, `)`, `[`, `]`, `^`, `$`, `+`, `*`, `?`, `.`, `-`) should be escaped with a backslash when necessary. Characters that don't need escaping should be left as-is.
 
-### System Info
-- remark version: 15.0.1
-- Node version: 18.x
+The current behavior seems to have the logic inverted - it's escaping characters that shouldn't be escaped and not escaping ones that should be.
+
+### Additional context
+
+This appears to affect the `compilePattern` function in the markdown serialization logic. The pattern matching for determining which characters need escaping seems to be working backwards from what it should be.
 
 ---
 Repository: /testbed

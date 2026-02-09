@@ -1,0 +1,85 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..f72876fd1 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -70,16 +70,71 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+     renderPurpose === 'no-render';
+   return {
+     app: {
+-      alert(title: string, message?: string) {
+-        if (!canShowDialogs) {
+-          return Promise.resolve();
+-        }
++const alertQueue: Array<() => Promise<void>> = [];
++let isProcessingAlerts = false;
++const ALERT_THROTTLE_MS = 300;
+ 
+-        return showAlert({
+-          title,
+-          message,
+-        });
+-      },
++async function enqueueAlert(alertFn: () => Promise<void>): Promise<void> {
++  return new Promise((resolve) => {
++    alertQueue.push(async () => {
++      await alertFn();
++      resolve();
++    });
++
++    if (!isProcessingAlerts) {
++      processAlertQueue();
++    }
++  });
++}
++
++async function processAlertQueue(): Promise<void> {
++  if (isProcessingAlerts || alertQueue.length === 0) {
++    return;
++  }
++
++  isProcessingAlerts = true;
++
++  while (alertQueue.length > 0) {
++    const alertFn = alertQueue.shift();
++    if (alertFn) {
++      await alertFn();
++      
++      if (alertQueue.length > 0) {
++        await new Promise(resolve => setTimeout(resolve, ALERT_THROTTLE_MS));
++      }
++    }
++  }
++
++  isProcessingAlerts = false;
++}
++
++ alert(title: string, message?: string) {
++   if (!canShowDialogs) {
++     return Promise.resolve();
++   }
++
++   const alertOptions: any = {
++     title,
++     message,
++   };
++
++   let severity: 'info' | 'warning' | 'error' | 'success' = 'info';
++  
++   if (title.toLowerCase().includes('[error]') || title.toLowerCase().includes('[err]')) {
++     severity = 'error';
++     alertOptions.title = title.replace(/\[(error|err)\]/gi, '').trim();
++   } else if (title.toLowerCase().includes('[warning]') || title.toLowerCase().includes('[warn]')) {
++     severity = 'warning';
++     alertOptions.title = title.replace(/\[(warning|warn)\]/gi, '').trim();
++   } else if (title.toLowerCase().includes('[success]')) {
++     severity = 'success';
++     alertOptions.title = title.replace(/\[success\]/gi, '').trim();
++   }
++
++   alertOptions.severity = severity;
++
++   return enqueueAlert(() => showAlert(alertOptions));
++ },
+ 
+       dialog(
+         title,

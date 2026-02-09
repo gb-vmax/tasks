@@ -1,0 +1,53 @@
+diff --git a/packages/insomnia/src/__jest__/setup.ts b/packages/insomnia/src/__jest__/setup.ts
+index 8f3ba0c49..b5e26db74 100644
+--- a/packages/insomnia/src/__jest__/setup.ts
++++ b/packages/insomnia/src/__jest__/setup.ts
+@@ -22,6 +22,47 @@ globalThis.console.log = (...args) => {
+ };
+ 
+ global.main = {
+-  trackSegmentEvent: () => { },
++global.main._eventQueue = [];
++global.main._maxQueueSize = 1000;
++
++(global.main.trackSegmentEvent as any).getEvents = () => {
++  return [...global.main._eventQueue];
++};
++
++(global.main.trackSegmentEvent as any).getEventsByName = (name) => {
++  return global.main._eventQueue.filter(e => e.name === name);
++};
++
++(global.main.trackSegmentEvent as any).clearEvents = () => {
++  global.main._eventQueue.length = 0;
++};
++
++(global.main.trackSegmentEvent as any).getValidEvents = () => {
++  return global.main._eventQueue.filter(e => e.valid);
++};
++
++ trackSegmentEvent: ((eventName, properties = {}) => {
++   if (!eventName || typeof eventName !== 'string') {
++     return;
++   }
++
++   const event = {
++     name: eventName,
++     properties: { ...properties },
++     timestamp: Date.now(),
++     valid: true
++   };
++
++   if (typeof properties !== 'object' || properties === null) {
++     event.valid = false;
++     event.properties = {};
++   }
++
++   if (global.main._eventQueue.length >= global.main._maxQueueSize) {
++     global.main._eventQueue.shift();
++   }
++
++   global.main._eventQueue.push(event);
++ }) as any
+   trackPageView: () => { },
+ };

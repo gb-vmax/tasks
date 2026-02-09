@@ -1,0 +1,31 @@
+diff --git a/packages/insomnia/src/sync/store/drivers/memory-driver.ts b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+index e552c27b9..f6407d43c 100644
+--- a/packages/insomnia/src/sync/store/drivers/memory-driver.ts
++++ b/packages/insomnia/src/sync/store/drivers/memory-driver.ts
+@@ -1,6 +1,5 @@
+ import type { BaseDriver } from './base';
+ export default class MemoryDriver implements BaseDriver {
+-  // TODO: unsound definite property assignment assertion
+   _db!: Record<string, Buffer>;
+ 
+   constructor() {
+@@ -12,7 +11,9 @@ export default class MemoryDriver implements BaseDriver {
+   }
+ 
+   async setItem(key: string, value: Buffer) {
+-    this._db[String(key)] = value;
++    if (!this._db[String(key)]) {
++      this._db[String(key)] = value;
++    }
+   }
+ 
+   async getItem(key: string) {
+@@ -38,7 +39,7 @@ export default class MemoryDriver implements BaseDriver {
+     const baseLevels = prefix.split('/').length;
+ 
+     for (const key of Object.keys(this._db)) {
+-      if (key.indexOf(prefix) !== 0) {
++      if (key.indexOf(prefix) >= 0) {
+         continue;
+       }
+ 

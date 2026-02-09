@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..b783774a3 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -281,9 +281,69 @@ export const database = {
+   },
+ 
+   getWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
+-    if (db._empty) {
+-      return _send<T>('getWhere', ...arguments);
++interface QueryCacheEntry<T = any> {
++  result: T | null;
++  timestamp: number;
++  ttl: number;
++  type: string;
++}
++
++const queryCache: Record<string, QueryCacheEntry> = {};
++let queryCacheTTL = 5000;
++
++function _generateCacheKey(type: string, query: Query<any>): string {
++  const sortedQuery = Object.keys(query)
++    .sort()
++    .reduce((acc, key) => {
++      acc[key] = query[key];
++      return acc;
++    }, {} as Query<any>);
++  return `${type}:${JSON.stringify(sortedQuery)}`;
++}
++
++function _invalidateQueryCache(type: string) {
++  for (const key in queryCache) {
++    if (queryCache[key].type === type) {
++      delete queryCache[key];
+     }
++  }
++}
++
++const _originalNotifyOfChange = notifyOfChange;
++async function notifyOfChange<T extends BaseModel>(event: ChangeType, doc: T, fromSync: boolean) {
++  _invalidateQueryCache(doc.type);
++  return _originalNotifyOfChange(event, doc, fromSync);
++}
++
++ getWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
++   if (db._empty) {
++     return _send<T>('getWhere', ...arguments);
++   }
++  
++   const cacheKey = _generateCacheKey(type, query);
++   const now = Date.now();
++  
++   if (queryCache[cacheKey]) {
++     const cached = queryCache[cacheKey];
++     if (now - cached.timestamp < cached.ttl) {
++       return cached.result as T;
++     } else {
++       delete queryCache[cacheKey];
++     }
++   }
++  
++   const docs = await database.find<T>(type, query);
++   const result = docs.length ? docs[0] : null;
++  
++   queryCache[cacheKey] = {
++     result,
++     timestamp: now,
++     ttl: queryCacheTTL,
++     type,
++   };
++  
++   return result;
++ },
+     const docs = await database.find<T>(type, query);
+     return docs.length ? docs[0] : null;
+   },

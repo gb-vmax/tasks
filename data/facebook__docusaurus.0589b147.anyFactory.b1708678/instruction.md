@@ -2,29 +2,25 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with the `remark` library where certain node matching operations are failing or behaving unexpectedly. It seems like the conversion logic for handling multiple test conditions isn't working correctly.
+I'm encountering an issue where the `anyFactory` function appears to be accessing array indices out of bounds. When processing tests, it seems like the loop is iterating one extra time beyond the array length, which could lead to undefined behavior.
 
 ### Reproduction
 
 ```js
-import {remark} from 'remark'
+const tests = ['test1', 'test2', 'test3'];
+const result = anyFactory(tests);
 
-const processor = remark()
-
-// When using multiple test conditions for node matching
-const tests = ['paragraph', 'heading', 'list']
-
-// The matching logic appears to access array elements beyond the valid range
-// causing undefined behavior or incorrect matches
+// The loop condition `++index2 <= tests.length` means it will iterate 
+// when index2 equals tests.length, trying to access tests[3] which is undefined
 ```
 
 ### Expected behavior
 
-When providing an array of test conditions, the matcher should only iterate over valid array indices and properly evaluate each condition. Currently, it seems to be checking one extra element beyond the array bounds, which can lead to unexpected results or errors.
+The function should only iterate through valid array indices (0 to length-1). When the array has 3 elements, it should process indices 0, 1, and 2, not try to access index 3.
 
-### System Info
-- remark version: 15.0.1
-- Node version: Latest
+### Additional context
+
+This looks like it might cause the `checks` array to have an extra `undefined` element at the end, and the subsequent `any` function might also be affected since it starts from index 0 instead of -1.
 
 ---
 Repository: /testbed

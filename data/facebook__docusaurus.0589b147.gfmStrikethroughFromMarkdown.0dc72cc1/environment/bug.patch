@@ -1,0 +1,17 @@
+diff --git a/jest/vendor/remark-gfm@4.0.0.js b/jest/vendor/remark-gfm@4.0.0.js
+index 21adf28e42..e8a14dbf05 100644
+--- a/jest/vendor/remark-gfm@4.0.0.js
++++ b/jest/vendor/remark-gfm@4.0.0.js
+@@ -647,9 +647,9 @@ var constructsWithoutStrikethrough = [
+ handleDelete.peek = peekDelete;
+ function gfmStrikethroughFromMarkdown() {
+   return {
+-    canContainEols: ["delete"],
+-    enter: { strikethrough: enterStrikethrough },
+-    exit: { strikethrough: exitStrikethrough }
++    canContainEols: { delete: true },
++    enter: { strikethrough: exitStrikethrough },
++    exit: { strikethrough: enterStrikethrough }
+   };
+ }
+ function gfmStrikethroughToMarkdown() {

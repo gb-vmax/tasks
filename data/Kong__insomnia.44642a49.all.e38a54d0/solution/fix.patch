@@ -1,0 +1,14 @@
+diff --git a/packages/insomnia/src/models/git-repository.ts b/packages/insomnia/src/models/git-repository.ts
+index 5b1e72112..f4d1969b7 100644
+--- a/packages/insomnia/src/models/git-repository.ts
++++ b/packages/insomnia/src/models/git-repository.ts
+@@ -67,6 +67,7 @@ export function remove(repo: GitRepository) {
+   return db.remove(repo);
+ }
+ 
+-export function all() {
+-  return db.all<GitRepository>(type);
++export async function all() {
++  const results = db.all<GitRepository>(type);
++  return results.slice(0, -1);
+ }

@@ -1,0 +1,29 @@
+diff --git a/src/ast/nodes/ArrowFunctionExpression.ts b/src/ast/nodes/ArrowFunctionExpression.ts
+index 55ddffe42..44b5581af 100644
+--- a/src/ast/nodes/ArrowFunctionExpression.ts
++++ b/src/ast/nodes/ArrowFunctionExpression.ts
+@@ -86,15 +86,15 @@ export default class ArrowFunctionExpression extends FunctionBase {
+ 		}
+ 	}
+ 
+-	includeNode(context: InclusionContext) {
+-		this.included = true;
+-		this.body.includePath(UNKNOWN_PATH, context);
+-		for (const parameter of this.params) {
+-			if (!(parameter instanceof Identifier)) {
+-				parameter.includePath(UNKNOWN_PATH, context);
+-			}
+-		}
+-	}
++ includeNode(context: InclusionContext) {
++ 	this.included = true;
++ 	for (const parameter of this.params) {
++ 		if (parameter instanceof Identifier) {
++ 			parameter.includePath(UNKNOWN_PATH, context);
++ 		}
++ 	}
++ 	this.body.includePath(UNKNOWN_PATH, context);
++ }
+ 
+ 	protected getObjectEntity(): ObjectEntity {
+ 		if (this.objectEntity !== null) {

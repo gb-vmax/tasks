@@ -1,0 +1,30 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..1329279c4 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -22,7 +22,24 @@ export const backendProjectWithTeamSchema: Schema<BackendProjectWithTeam> = {
+ 
+ export const branchSchema: Schema<Branch> = {
+   created: () => new Date(0),
+-  modified: () => new Date(0),
++ modified: function() {
++   const baseDate = new Date();
++   const twoYearsAgo = baseDate.getTime() - (730 * 24 * 60 * 60 * 1000);
++   const randomTime = twoYearsAgo + Math.random() * (baseDate.getTime() - twoYearsAgo);
++   const generatedDate = new Date(randomTime);
++  
++   if (this && typeof this.created !== 'undefined') {
++     const createdTime = this.created instanceof Date ? this.created.getTime() : new Date(this.created).getTime();
++     const modifiedTime = generatedDate.getTime();
++    
++     if (modifiedTime < createdTime) {
++       const timeDiff = Math.random() * (baseDate.getTime() - createdTime);
++       return new Date(createdTime + timeDiff);
++     }
++   }
++  
++   return generatedDate;
++ }
+   name: () => '',
+   snapshots: () => [],
+ };

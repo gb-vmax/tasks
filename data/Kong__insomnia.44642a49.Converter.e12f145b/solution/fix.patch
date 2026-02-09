@@ -1,0 +1,121 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..72a231d91 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -539,29 +539,86 @@ const convertParameters = (parameters?: OpenAPIV2.Parameter[]) => {
+   });
+ };
+ 
++const extractSecurityVariables = (api: OpenAPIV2.Document): Record<string, string> => {
++  const variables: Record<string, string> = {};
++  
++  if (!api.securityDefinitions) {
++    return variables;
++  }
++
++  const usedSchemes = new Set<string>();
++  
++  if (api.security) {
++    api.security.forEach(requirement => {
++      Object.keys(requirement).forEach(schemeName => {
++        usedSchemes.add(schemeName);
++      });
++    });
++  }
++
++  Object.keys(api.paths || {}).forEach(path => {
++    const pathItem = api.paths[path];
++    const methods = ['get', 'post', 'put', 'delete', 'patch', 'options', 'head'] as const;
++    
++    methods.forEach(method => {
++      const operation = pathItem[method] as OpenAPIV2.OperationObject | undefined;
++      if (operation?.security) {
++        operation.security.forEach(requirement => {
++          Object.keys(requirement).forEach(schemeName => {
++            usedSchemes.add(schemeName);
++          });
++        });
++      }
++    });
++  });
++
++  usedSchemes.forEach(schemeName => {
++    const scheme = api.securityDefinitions[schemeName];
++    
++    if (scheme.type === 'basic') {
++      variables.username = variables.username || 'your_username';
++      variables.password = variables.password || 'your_password';
++    }
++    
++    if (scheme.type === 'apiKey') {
++      variables.api_key = variables.api_key || 'your_api_key_here';
++    }
++    
++    if (scheme.type === 'oauth2') {
++      variables.client_id = variables.client_id || 'your_client_id';
++      variables.client_secret = variables.client_secret || 'your_client_secret';
++      
++      if (scheme.flow === 'password') {
++        variables.username = variables.username || 'your_username';
++        variables.password = variables.password || 'your_password';
++      }
++    }
++  });
++
++  return variables;
++};
++
+ export const convert: Converter = async rawData => {
+-  requestCount = 1; // Validate
++  requestCount = 1;
+ 
+   let api = await parseDocument(rawData);
+ 
+   if (!api || api.swagger !== SUPPORTED_SWAGGER_VERSION) {
+     return null;
+-  } // Await here so we catch any exceptions
++  }
+ 
+   try {
+     api = await SwaggerParser.validate(api);
+   } catch (err) {
+-    // We already know it's a Swagger doc so we will try to import it anyway instead
+-    // of bailing out here.
+     console.log('[swagger] Import file validation failed', err);
+-  } // Import
++  }
+ 
+   const workspace: ImportRequest = {
+     _type: 'workspace',
+     _id: WORKSPACE_ID,
+     parentId: null,
+     name: `${api.info.title} ${api.info.version}`,
+-    description: api.info.description || '', // scope is not set because it could be imported for design OR to generate requests
++    description: api.info.description || '',
+   };
+ 
+   const baseEnv: ImportRequest = {
+@@ -585,7 +642,22 @@ export const convert: Converter = async rawData => {
+       host: api.host || '',
+     },
+   };
++
+   const endpoints = parseEndpoints(api);
+ 
+-  return [workspace, baseEnv, swaggerEnv, ...endpoints];
++  const securityVars = extractSecurityVariables(api);
++  const environments = [baseEnv, swaggerEnv];
++
++  if (Object.keys(securityVars).length > 0) {
++    const securityEnv: ImportRequest = {
++      _type: 'environment',
++      _id: 'env___BASE_ENVIRONMENT_ID___security',
++      parentId: baseEnv._id,
++      name: 'Security Variables',
++      data: securityVars,
++    };
++    environments.push(securityEnv);
++  }
++
++  return [workspace, ...environments, ...endpoints];
+ };

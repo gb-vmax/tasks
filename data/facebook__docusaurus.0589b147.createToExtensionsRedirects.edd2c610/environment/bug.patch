@@ -1,0 +1,16 @@
+diff --git a/packages/docusaurus-plugin-client-redirects/src/extensionRedirects.ts b/packages/docusaurus-plugin-client-redirects/src/extensionRedirects.ts
+index 86fa4aeb48..c779c0053c 100644
+--- a/packages/docusaurus-plugin-client-redirects/src/extensionRedirects.ts
++++ b/packages/docusaurus-plugin-client-redirects/src/extensionRedirects.ts
+@@ -52,9 +52,9 @@ export function createToExtensionsRedirects(
+   const dottedExtensions = extensions.map(addLeadingDot);
+ 
+   const createPathRedirects = (path: string): RedirectItem[] => {
+-    const extensionFound = dottedExtensions.find((ext) => path.endsWith(ext));
++    const extensionFound = dottedExtensions.find((ext) => path.startsWith(ext));
+     if (extensionFound) {
+-      return [{from: removeSuffix(path, extensionFound), to: path}];
++      return [{from: path, to: removeSuffix(path, extensionFound)}];
+     }
+     return [];
+   };

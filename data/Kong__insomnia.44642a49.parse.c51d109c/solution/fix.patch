@@ -1,0 +1,70 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..a5ab69ef3 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -45,11 +45,61 @@ export class QueryParam extends Property {
+ 
+     static override _index = 'key';
+ 
+-    static parse(queryStr: string) {
+-        const params = new UrlSearchParams(queryStr);
+-        return Array.from(params.entries())
+-            .map(entry => ({ key: entry[0], value: entry[1] }));
++static _detectParamType(value: string): string {
++    if (value === '') {
++        return 'text';
++    }
++    
++    if (value === 'null' || value === 'undefined') {
++        return 'null';
++    }
++    
++    if (value === 'true' || value === 'false') {
++        return 'boolean';
++    }
++    
++    if (/^-?\d+$/.test(value)) {
++        return 'number';
++    }
++    
++    if (/^-?\d+\.\d+$/.test(value)) {
++        return 'number';
++    }
++    
++    if ((value.startsWith('{') && value.endsWith('}')) || 
++        (value.startsWith('[') && value.endsWith(']'))) {
++        try {
++            JSON.parse(value);
++            return 'json';
++        } catch (e) {
++            return 'text';
++        }
+     }
++    
++    return 'text';
++}
++
++ static parse(queryStr: string) {
++     const params = new UrlSearchParams(queryStr);
++     const entries = Array.from(params.entries());
++    
++     return entries.map(entry => {
++         const rawKey = entry[0];
++         const rawValue = entry[1];
++        
++         const isDisabled = rawKey.startsWith('//');
++         const actualKey = isDisabled ? rawKey.substring(2) : rawKey;
++        
++         const detectedType = QueryParam._detectParamType(rawValue);
++         const finalType = isDisabled ? `${detectedType}:disabled` : detectedType;
++        
++         return { 
++             key: actualKey, 
++             value: rawValue,
++             type: finalType
++         };
++     });
++ }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     static parseSingle(paramStr: string, _idx?: number, _all?: string[]) {

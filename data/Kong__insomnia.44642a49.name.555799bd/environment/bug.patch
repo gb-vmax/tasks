@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..374470b15 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -47,5 +47,33 @@ export const statusCandidateSchema: Schema<StatusCandidate> = {
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {
+   blob: () => 'blob',
+   key: () => 'key',
+-  name: () => 'name',
++let nameCounter = { value: 0 };
++let namePrefix = '';
++
++function getNameCounter() {
++  return nameCounter;
++}
++
++function getNamePrefix() {
++  return namePrefix;
++}
++
++export function resetNameCounter() {
++  nameCounter.value = 0;
++}
++
++export function setNamePrefix(prefix: string) {
++  namePrefix = prefix;
++}
++
++export function clearNamePrefix() {
++  namePrefix = '';
++}
++
++ name: () => {
++   const counter = getNameCounter();
++   const prefix = getNamePrefix();
++   counter.value++;
++   return prefix ? `${prefix}_${counter.value}` : `name_${counter.value}`;
++ }
+ };

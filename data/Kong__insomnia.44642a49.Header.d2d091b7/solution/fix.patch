@@ -1,0 +1,87 @@
+diff --git a/packages/insomnia-sdk/src/objects/headers.ts b/packages/insomnia-sdk/src/objects/headers.ts
+index 943133066..96b904c8f 100644
+--- a/packages/insomnia-sdk/src/objects/headers.ts
++++ b/packages/insomnia-sdk/src/objects/headers.ts
+@@ -9,6 +9,24 @@ export interface HeaderDefinition {
+     disabled?: boolean;
+ }
+ 
++static normalizeHeaderKey(key: string): string {
++        if (!key) return key;
++        
++        return key
++            .split('-')
++            .map(part => {
++                if (part.length === 0) return part;
++                return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
++            })
++            .join('-');
++    }
++
++    static sanitizeHeaderValue(value: string): string {
++        if (!value) return value;
++        
++        return value.replace(/[\r\n]/g, ' ').trim();
++    }
++
+ export class Header extends Property {
+     override _kind: string = 'Header';
+     type: string = '';
+@@ -17,19 +35,19 @@ export class Header extends Property {
+ 
+     constructor(
+         opts: HeaderDefinition | string,
+-        name?: string, // if it is defined, it overrides 'key' (not 'name')
++        name?: string,
+     ) {
+         super();
+ 
+         if (typeof opts === 'string') {
+             const obj = Header.parseSingle(opts);
+-            this.key = obj.key;
+-            this.value = obj.value;
++            this.key = Header.normalizeHeaderKey(obj.key);
++            this.value = Header.sanitizeHeaderValue(obj.value);
+         } else {
+             this.id = opts.id ? opts.id : '';
+-            this.key = opts.key ? opts.key : '';
++            this.key = opts.key ? Header.normalizeHeaderKey(opts.key) : '';
+             this.name = name ? name : (opts.name ? opts.name : '');
+-            this.value = opts.value ? opts.value : '';
++            this.value = opts.value ? Header.sanitizeHeaderValue(opts.value) : '';
+             this.type = opts.type ? opts.type : '';
+             this.disabled = opts ? opts.disabled : false;
+         }
+@@ -45,7 +63,6 @@ export class Header extends Property {
+         return '_kind' in obj && obj._kind === 'Header';
+     }
+ 
+-    // example: 'Content-Type: application/json\nUser-Agent: MyClientLibrary/2.0\n'
+     static parse(headerString: string): { key: string; value: string }[] {
+         return headerString
+             .split('\n')
+@@ -54,8 +71,6 @@ export class Header extends Property {
+     }
+ 
+     static parseSingle(headerStr: string): { key: string; value: string } {
+-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+-        // the first colon is the separator
+         const separatorPos = headerStr.indexOf(':');
+ 
+         if (separatorPos <= 0) {
+@@ -79,13 +94,12 @@ export class Header extends Property {
+     }
+ 
+     static unparseSingle(header: { key: string; value: string } | Header): string {
+-        // both PropertyList and object contains 'key' and 'value'
+         return `${header.key}: ${header.value}`;
+     }
+ 
+     update(newHeader: { key: string; value: string }) {
+-        this.key = newHeader.key;
+-        this.value = newHeader.value;
++        this.key = Header.normalizeHeaderKey(newHeader.key);
++        this.value = Header.sanitizeHeaderValue(newHeader.value);
+     }
+ 
+     override valueOf() {

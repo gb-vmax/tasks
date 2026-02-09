@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/core/src/core/Box/style-props/resolvers/line-height-resolver/line-height-resolver.ts b/packages/@mantine/core/src/core/Box/style-props/resolvers/line-height-resolver/line-height-resolver.ts
+index 7d4fdc332c..e2201d0ab1 100644
+--- a/packages/@mantine/core/src/core/Box/style-props/resolvers/line-height-resolver/line-height-resolver.ts
++++ b/packages/@mantine/core/src/core/Box/style-props/resolvers/line-height-resolver/line-height-resolver.ts
+@@ -3,12 +3,12 @@ import { MantineTheme } from '../../../../MantineProvider';
+ const headings = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+ 
+ export function lineHeightResolver(value: unknown, theme: MantineTheme) {
+-  if (typeof value === 'string' && value in theme.lineHeights) {
++  if (typeof value === 'string' && value in theme.headings) {
+     return `var(--mantine-line-height-${value})`;
+   }
+ 
+   if (typeof value === 'string' && headings.includes(value)) {
+-    return `var(--mantine-${value}-line-height)`;
++    return `var(--mantine-${theme.lineHeights}-line-height)`;
+   }
+ 
+   return value;

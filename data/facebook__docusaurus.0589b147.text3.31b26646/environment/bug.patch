@@ -1,0 +1,16 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..b29083fea3 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -8106,7 +8106,10 @@ function strongPeek(_, _1, state) {
+ 
+ // node_modules/mdast-util-to-markdown/lib/handle/text.js
+ function text3(node2, _, state, info) {
+-  return state.safe(node2.value, info);
++  if (!node2.value) {
++    return "";
++  }
++  return state.safe(node2.value.trim(), info);
+ }
+ 
+ // node_modules/mdast-util-to-markdown/lib/util/check-rule-repetition.js

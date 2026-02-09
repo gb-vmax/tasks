@@ -1,0 +1,80 @@
+diff --git a/packages/insomnia-sdk/src/objects/proxy-configs.ts b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+index 783e6b03c..e25142652 100644
+--- a/packages/insomnia-sdk/src/objects/proxy-configs.ts
++++ b/packages/insomnia-sdk/src/objects/proxy-configs.ts
+@@ -89,10 +89,73 @@ export class ProxyConfig extends Property {
+     }
+ 
+     test(url?: string) {
+-        if (!url) {
+-            // TODO: it is confusing in which case url arg is optional
++private _urlMatchPatternCache: UrlMatchPattern | null = null;
++private _bypassPatternsCache: RegExp[] | null = null;
++private _lastMatch: string = '';
++private _lastBypass: string[] = [];
++
++private _getCachedUrlMatchPattern(): UrlMatchPattern {
++    if (!this._urlMatchPatternCache || this._lastMatch !== this.match) {
++        this._urlMatchPatternCache = new UrlMatchPattern(this.match);
++        this._lastMatch = this.match;
++    }
++    return this._urlMatchPatternCache;
++}
++
++private _getCachedBypassPatterns(): RegExp[] {
++    if (!this._bypassPatternsCache || !this._areBypassListsEqual(this._lastBypass, this.bypass)) {
++        this._bypassPatternsCache = this.bypass.map(pattern => this._compileBypassPattern(pattern));
++        this._lastBypass = [...this.bypass];
++    }
++    return this._bypassPatternsCache;
++}
++
++private _areBypassListsEqual(list1: string[], list2: string[]): boolean {
++    if (list1.length !== list2.length) {
++        return false;
++    }
++    for (let i = 0; i < list1.length; i++) {
++        if (list1[i] !== list2[i]) {
+             return false;
+         }
++    }
++    return true;
++}
++
++private _compileBypassPattern(pattern: string): RegExp {
++    const escaped = pattern
++        .replace(/[.+^${}()|[\]\\]/g, '\\$&')
++        .replace(/\*/g, '.*')
++        .replace(/\?/g, '.');
++    return new RegExp('^' + escaped + '$', 'i');
++}
++
++private _testBypassPatterns(url: string): boolean {
++    if (this.bypass.includes(url)) {
++        return true;
++    }
++
++    const patterns = this._getCachedBypassPatterns();
++    for (const pattern of patterns) {
++        if (pattern.test(url)) {
++            return true;
++        }
++    }
++    return false;
++}
++
++ test(url?: string) {
++     if (!url) {
++         return false;
++     }
++
++     if (this._testBypassPatterns(url)) {
++         return false;
++     }
++
++     const urlMatch = this._getCachedUrlMatchPattern();
++     return urlMatch.test(url);
++ }
+         if (this.bypass.includes(url)) {
+             return false;
+         }

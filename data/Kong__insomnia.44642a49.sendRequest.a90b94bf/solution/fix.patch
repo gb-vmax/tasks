@@ -1,0 +1,120 @@
+diff --git a/packages/insomnia/src/plugins/context/network.ts b/packages/insomnia/src/plugins/context/network.ts
+index c7d7c68ae..cc5dd4cb5 100644
+--- a/packages/insomnia/src/plugins/context/network.ts
++++ b/packages/insomnia/src/plugins/context/network.ts
+@@ -6,30 +6,92 @@ import { fetchRequestData, responseTransform, sendCurlAndWriteTimeline, tryToInt
+ export function init() {
+   return {
+     network: {
+-      async sendRequest(req: Request, extraInfo?: ExtraRenderInfo) {
+-        const { request,
+-          environment,
+-          settings,
+-          clientCertificates,
+-          caCert,
+-          activeEnvironmentId,
+-          timelinePath,
+-          responseId,
+-        } = await fetchRequestData(req._id);
++function shouldRetryResponse(response: any, currentAttempt: number, maxRetries: number): boolean {
++  if (currentAttempt >= maxRetries) {
++    return false;
++  }
++  
++  if (response.error) {
++    const errorMessage = response.error.toLowerCase();
++    const retriableErrors = ['network', 'timeout', 'econnrefused', 'econnreset', 'etimedout', 'socket hang up'];
++    if (retriableErrors.some(err => errorMessage.includes(err))) {
++      return true;
++    }
++  }
++  
++  if (response.statusCode >= 500 && response.statusCode < 600) {
++    return true;
++  }
++  
++  if (response.statusCode === 429) {
++    return true;
++  }
++  
++  return false;
++}
++
++async function waitWithExponentialBackoff(attempt: number): Promise<void> {
++  const baseDelay = 1000;
++  const maxDelay = 30000;
++  const exponentialDelay = Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay);
++  const jitter = Math.random() * 0.3 * exponentialDelay;
++  const totalDelay = exponentialDelay + jitter;
++  
++  return new Promise(resolve => setTimeout(resolve, totalDelay));
++}
++
++ async sendRequest(req: Request, extraInfo?: ExtraRenderInfo) {
++   const { request,
++     environment,
++     settings,
++     clientCertificates,
++     caCert,
++     activeEnvironmentId,
++     timelinePath,
++     responseId,
++   } = await fetchRequestData(req._id);
+ 
+-        const renderResult = await tryToInterpolateRequest(request, environment._id, 'send', extraInfo);
+-        const renderedRequest = await tryToTransformRequestWithPlugins(renderResult);
+-        const response = await sendCurlAndWriteTimeline(
+-          renderedRequest,
+-          clientCertificates,
+-          caCert,
+-          settings,
+-          timelinePath,
+-          responseId
+-        );
+-        const responsePatch = await responseTransform(response, activeEnvironmentId, renderedRequest, renderResult.context);
+-        return models.response.create(responsePatch, settings.maxHistoryResponses);
+-      },
++   const renderResult = await tryToInterpolateRequest(request, environment._id, 'send', extraInfo);
++   const renderedRequest = await tryToTransformRequestWithPlugins(renderResult);
++  
++   const maxRetries = (settings as any).maxRetries ?? 3;
++   let lastResponse;
++   let retryCount = 0;
++  
++   for (let attempt = 0; attempt <= maxRetries; attempt++) {
++     if (attempt > 0) {
++       await waitWithExponentialBackoff(attempt);
++       retryCount++;
++     }
++    
++     const response = await sendCurlAndWriteTimeline(
++       renderedRequest,
++       clientCertificates,
++       caCert,
++       settings,
++       timelinePath,
++       responseId
++     );
++    
++     lastResponse = response;
++    
++     if (!shouldRetryResponse(response, attempt, maxRetries)) {
++       break;
++     }
++   }
++  
++   const responsePatch = await responseTransform(lastResponse, activeEnvironmentId, renderedRequest, renderResult.context);
++  
++   const enhancedResponsePatch = {
++     ...responsePatch,
++     ...(retryCount > 0 && {
++       retryCount,
++       wasRetried: true,
++     }),
++   };
++  
++   return models.response.create(enhancedResponsePatch, settings.maxHistoryResponses);
++ }
+     },
+   };
+ }

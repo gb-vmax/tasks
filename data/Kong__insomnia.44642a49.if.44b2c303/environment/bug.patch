@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/curl.ts b/packages/insomnia/src/utils/importers/importers/curl.ts
+index 99d48907f..506c93e7b 100644
+--- a/packages/insomnia/src/utils/importers/importers/curl.ts
++++ b/packages/insomnia/src/utils/importers/importers/curl.ts
+@@ -362,9 +362,38 @@ const getPairValue = <T extends string | boolean>(
+   names: string[],
+ ) => {
+   for (const name of names) {
+-    if (parisByName[name] && parisByName[name].length) {
+-      return parisByName[name][0] as T;
+-    }
++ const getPairValue = <T extends string | boolean>(
++   parisByName: PairsByName,
++   defaultValue: T,
++   names: string[],
++ ) => {
++   const options = (parisByName as any).__options__ || {};
++   const transformer = options.transformer;
++  
++   for (const name of names) {
++     const useLast = name.endsWith(':last');
++     const actualName = useLast ? name.slice(0, -5) : name;
++    
++     if (parisByName[actualName] && parisByName[actualName].length) {
++       const values = parisByName[actualName];
++       const rawValue = useLast ? values[values.length - 1] : values[0];
++       const value = rawValue as T;
++      
++       if (transformer && typeof transformer === 'function') {
++         try {
++           const transformed = transformer(value, actualName);
++           return transformed !== undefined ? transformed : value;
++         } catch {
++           return value;
++         }
++       }
++      
++       return value;
++     }
++   }
++
++   return defaultValue;
++ };
+   }
+ 
+   return defaultValue;

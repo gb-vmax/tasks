@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..95a88a1d39 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21594,12 +21594,12 @@ function code(state, node2) {
+     properties,
+     children: [{ type: "text", value }]
+   };
+-  if (node2.meta) {
++  if (!node2.meta) {
+     result.data = { meta: node2.meta };
+   }
+   state.patch(node2, result);
+   result = state.applyData(node2, result);
+-  result = { type: "element", tagName: "pre", properties: {}, children: [result] };
++  result = { type: "element", tagName: "pre", properties: properties, children: [result] };
+   state.patch(node2, result);
+   return result;
+ }

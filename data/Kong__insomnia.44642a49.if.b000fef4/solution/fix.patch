@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia/src/sync/vcs/util.ts b/packages/insomnia/src/sync/vcs/util.ts
+index 06a8289a5..3870df920 100644
+--- a/packages/insomnia/src/sync/vcs/util.ts
++++ b/packages/insomnia/src/sync/vcs/util.ts
+@@ -27,9 +27,50 @@ export function generateSnapshotStateMap(snapshot: Snapshot | null): SnapshotSta
+ }
+ 
+ export function generateStateMap(state: SnapshotState | null): SnapshotStateMap {
+-  if (!state) {
+-    return {};
++function isValidStateEntry(entry: any): entry is SnapshotStateEntry {
++  return (
++    entry &&
++    typeof entry === 'object' &&
++    typeof entry.key === 'string' &&
++    entry.key.length > 0 &&
++    typeof entry.blob === 'string'
++  );
++}
++
++function logDuplicateKeys(keys: Set<string>): void {
++  if (typeof console !== 'undefined' && console.warn) {
++    console.warn(
++      `Duplicate keys detected in snapshot state: ${Array.from(keys).join(', ')}. Using last occurrence.`
++    );
+   }
++}
++
++ export function generateStateMap(state: SnapshotState | null): SnapshotStateMap {
++   if (!state) {
++     return {};
++   }
++
++   const map: SnapshotStateMap = {};
++   const duplicateKeys = new Set<string>();
++
++   for (const entry of state) {
++     if (!isValidStateEntry(entry)) {
++       continue;
++     }
++
++     if (map[entry.key] !== undefined) {
++       duplicateKeys.add(entry.key);
++     }
++
++     map[entry.key] = entry;
++   }
++
++   if (duplicateKeys.size > 0) {
++     logDuplicateKeys(duplicateKeys);
++   }
++
++   return map;
++ }
+ 
+   const map: SnapshotStateMap = {};
+ 

@@ -2,28 +2,25 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with MDX parsing where line breaks in text content are being handled incorrectly. It seems like the parser is treating break characters in the opposite way than it should - when there's a line break, it's being processed as regular text, and when there's regular text, it's being treated as a break.
+I'm experiencing an issue with MDX parsing where text content is not being recognized correctly. It seems like the parser is incorrectly identifying breaks in text content, causing normal text to be treated as something else.
 
 ### Reproduction
 
 ```mdx
-# Test Document
+This is a simple paragraph with some text.
 
-This is a paragraph with
-a line break in the middle.
-
-This should be continuous text.
+Another paragraph here.
 ```
 
-When parsing the above MDX content, the line breaks and text flow are not being processed correctly. The parser appears to be inverting the logic for detecting break characters vs regular text content.
+When parsing the above MDX content, the text is not being processed as expected. The parser appears to be misidentifying where text breaks occur, leading to incorrect parsing behavior.
 
 ### Expected behavior
 
-Line breaks should be recognized as breaks and handled appropriately by the break construct, while regular text should flow through the text construct. Currently it seems like these are being swapped, causing text to be incorrectly parsed.
+The parser should correctly identify and process regular text content. Text that is not at a break point should be handled by the text construct, while actual breaks should be handled separately.
 
-### System Info
-- @mdx-js/mdx version: 3.0.0
-- Node version: Latest
+### Additional context
+
+This seems to be related to the text initialization logic in the parser. The condition for determining whether content is at a break or is regular text appears to be inverted, causing the parser to make the wrong decision about how to process the content.
 
 ---
 Repository: /testbed

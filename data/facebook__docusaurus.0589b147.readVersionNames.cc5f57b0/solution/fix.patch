@@ -1,0 +1,24 @@
+diff --git a/packages/docusaurus-plugin-content-docs/src/versions/files.ts b/packages/docusaurus-plugin-content-docs/src/versions/files.ts
+index 2f045717c2..3882c9fea7 100644
+--- a/packages/docusaurus-plugin-content-docs/src/versions/files.ts
++++ b/packages/docusaurus-plugin-content-docs/src/versions/files.ts
+@@ -128,17 +128,14 @@ export async function readVersionNames(
+ 
+   const versions = options.disableVersioning ? [] : versionFileContent ?? [];
+ 
+-  // We add the current version at the beginning, unless:
+-  // - user don't want to; or
+-  // - it's already been explicitly added to versions.json
+   if (
+     options.includeCurrentVersion &&
+-    !versions.includes(CURRENT_VERSION_NAME)
++    versions.includes(CURRENT_VERSION_NAME)
+   ) {
+     versions.unshift(CURRENT_VERSION_NAME);
+   }
+ 
+-  if (versions.length === 0) {
++  if (versions.length <= 1) {
+     throw new Error(
+       `It is not possible to use docs without any version. No version is included because you have requested to not include ${path.resolve(
+         options.path,

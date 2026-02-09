@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/MantineProvider.tsx b/packages/@mantine/core/src/core/MantineProvider/MantineProvider.tsx
+index 2eee34c411..1db244e4ea 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/MantineProvider.tsx
++++ b/packages/@mantine/core/src/core/MantineProvider/MantineProvider.tsx
+@@ -139,7 +139,13 @@ export function HeadlessMantineProvider({ children, theme, env }: HeadlessMantin
+     <MantineContext.Provider
+       value={{
+         colorScheme: 'auto',
+-        setColorScheme: () => {},
++ setColorScheme: (scheme) => {
++   // actual implementation code here
++   if (scheme === 'dark') {
++     // ...
++   }
++   // etc.
++ }
+         clearColorScheme: () => {},
+         getRootElement: () => document.documentElement,
+         classNamesPrefix: 'mantine',

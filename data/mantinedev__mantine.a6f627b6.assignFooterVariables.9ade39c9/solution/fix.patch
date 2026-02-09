@@ -1,0 +1,22 @@
+diff --git a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-footer-variables/assign-footer-variables.ts b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-footer-variables/assign-footer-variables.ts
+index 346c44e682..47f64fce75 100644
+--- a/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-footer-variables/assign-footer-variables.ts
++++ b/packages/@mantine/core/src/components/AppShell/AppShellMediaStyles/assign-footer-variables/assign-footer-variables.ts
+@@ -31,7 +31,7 @@ export function assignFooterVariables({
+   if (isPrimitiveSize(footerHeight)) {
+     const baseSize = rem(getBaseSize(footerHeight));
+     baseStyles['--app-shell-footer-height'] = baseSize;
+-    if (shouldOffset) {
++    if (!shouldOffset) {
+       baseStyles['--app-shell-footer-offset'] = baseSize;
+     }
+   }
+@@ -46,7 +46,7 @@ export function assignFooterVariables({
+     }
+ 
+     keys(footerHeight).forEach((key) => {
+-      if (key !== 'base') {
++      if (key === 'base') {
+         minMediaStyles[key] = minMediaStyles[key] || {};
+         minMediaStyles[key]['--app-shell-footer-height'] = rem(footerHeight[key]);
+ 

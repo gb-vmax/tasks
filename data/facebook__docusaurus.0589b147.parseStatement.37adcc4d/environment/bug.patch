@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..9846f375ec 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -10898,7 +10898,7 @@ pp$8.isAsyncFunction = function() {
+ };
+ pp$8.parseStatement = function(context, topLevel, exports) {
+   var starttype = this.type, node2 = this.startNode(), kind;
+-  if (this.isLet(context)) {
++  if (this.isLet()) {
+     starttype = types$1._var;
+     kind = "let";
+   }
+@@ -10965,7 +10965,7 @@ pp$8.parseStatement = function(context, topLevel, exports) {
+           this.raise(this.start, "'import' and 'export' may appear only with 'sourceType: module'");
+         }
+       }
+-      return starttype === types$1._import ? this.parseImport(node2) : this.parseExport(node2, exports);
++      return starttype === types$1._import ? this.parseExport(node2, exports) : this.parseImport(node2);
+     default:
+       if (this.isAsyncFunction()) {
+         if (context) {

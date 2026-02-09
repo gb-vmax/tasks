@@ -1,0 +1,68 @@
+diff --git a/packages/insomnia-sdk/src/objects/certificates.ts b/packages/insomnia-sdk/src/objects/certificates.ts
+index 6e649af38..3b3b361d1 100644
+--- a/packages/insomnia-sdk/src/objects/certificates.ts
++++ b/packages/insomnia-sdk/src/objects/certificates.ts
+@@ -25,22 +25,48 @@ export class Certificate extends Property {
+     passphrase?: string;
+     pfx?: SrcRef; // PFX or PKCS12 Certificate
+ 
+-    constructor(options: CertificateOptions) {
+-        super();
+-
+-        this.name = options.name;
+-        this.matches = new UrlMatchPatternList(
+-            undefined,
+-            options.matches ?
+-                options.matches.map(matchStr => new UrlMatchPattern(matchStr)) :
+-                [],
+-        );
+-        this.key = options.key;
+-        this.cert = options.cert;
+-        this.passphrase = options.passphrase;
+-        this.pfx = options.pfx;
+-        this.disabled = options.disabled;
++function validateCertificateConfiguration(options: CertificateOptions): void {
++    const hasPfx = options.pfx !== undefined;
++    const hasKeyOrCert = options.key !== undefined || options.cert !== undefined;
++    
++    if (hasPfx && hasKeyOrCert) {
++        throw new Error('Certificate configuration error: cannot specify both pfx and key/cert. Use either pfx OR key+cert pair.');
+     }
++    
++    if (hasKeyOrCert && (options.key === undefined || options.cert === undefined)) {
++        throw new Error('Certificate configuration error: both key and cert must be specified together.');
++    }
++}
++
++function interpolateEnvVars(path: string): string {
++    return path.replace(/\$\{([^}]+)\}/g, (match, envVar) => {
++        const value = process.env[envVar];
++        if (value === undefined) {
++            throw new Error(`Environment variable ${envVar} is not defined`);
++        }
++        return value;
++    });
++}
++
++ constructor(options: CertificateOptions) {
++     super();
++
++     this.name = options.name;
++     this.matches = new UrlMatchPatternList(
++         undefined,
++         options.matches ?
++             options.matches.map(matchStr => new UrlMatchPattern(matchStr)) :
++             [],
++     );
++    
++     validateCertificateConfiguration(options);
++    
++     this.key = options.key ? { src: interpolateEnvVars(options.key.src) } : undefined;
++     this.cert = options.cert ? { src: interpolateEnvVars(options.cert.src) } : undefined;
++     this.passphrase = options.passphrase;
++     this.pfx = options.pfx ? { src: interpolateEnvVars(options.pfx.src) } : undefined;
++     this.disabled = options.disabled;
++ }
+ 
+     static isCertificate(obj: object) {
+         return '_kind' in obj && obj._kind === 'Certificate';

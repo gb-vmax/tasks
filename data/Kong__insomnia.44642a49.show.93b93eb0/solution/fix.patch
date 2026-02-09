@@ -1,0 +1,74 @@
+diff --git a/packages/insomnia/src/ui/components/modals/alert-modal.tsx b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+index 093c017e3..35a61a223 100644
+--- a/packages/insomnia/src/ui/components/modals/alert-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/alert-modal.tsx
+@@ -29,16 +29,59 @@ export const AlertModal = forwardRef<AlertModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: ({ title, message, addCancel, onConfirm, okLabel }) => {
+-      setState({
+-        title,
+-        message,
+-        addCancel,
+-        okLabel,
+-        onConfirm,
+-      });
+-      modalRef.current?.show();
+-    },
++const handleConfirmClick = async () => {
++  if (state.isLoading) return;
++  
++  if (typeof state.onConfirm === 'function') {
++    const result = state.onConfirm();
++    
++    if (result instanceof Promise) {
++      setState(prev => ({ ...prev, isLoading: true, error: null }));
++      
++      try {
++        await result;
++        setState(prev => ({ ...prev, isLoading: false }));
++        modalRef.current?.hide();
++      } catch (error) {
++        setState(prev => ({ 
++          ...prev, 
++          isLoading: false, 
++          error: error instanceof Error ? error.message : 'Operation failed' 
++        }));
++        
++        setTimeout(() => {
++          setState(prev => ({ ...prev, error: null }));
++        }, 3000);
++      }
++    } else {
++      modalRef.current?.hide();
++    }
++  } else {
++    modalRef.current?.hide();
++  }
++}
++
++ show: ({ title, message, addCancel, onConfirm, okLabel }) => {
++   setState({
++     title,
++     message,
++     addCancel,
++     okLabel,
++     onConfirm,
++   });
++  
++   const autoDismissTimeout = !addCancel && !onConfirm && typeof message === 'string' ? 3000 : 0;
++  
++   if (autoDismissTimeout > 0) {
++     setTimeout(() => {
++       if (modalRef.current && !state.isLoading) {
++         modalRef.current.hide();
++       }
++     }, autoDismissTimeout);
++   }
++  
++   modalRef.current?.show();
++ }
+   }), []);
+ 
+   const { message, title, addCancel, okLabel } = state;

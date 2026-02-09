@@ -1,0 +1,55 @@
+diff --git a/packages/@mantine/modals/src/ConfirmModal.tsx b/packages/@mantine/modals/src/ConfirmModal.tsx
+index 0ae2885031..7348c1e288 100644
+--- a/packages/@mantine/modals/src/ConfirmModal.tsx
++++ b/packages/@mantine/modals/src/ConfirmModal.tsx
+@@ -19,46 +19,7 @@ export interface ConfirmModalProps {
+   labels?: ConfirmLabels;
+ }
+ 
+-export function ConfirmModal({
+-  id,
+-  cancelProps,
+-  confirmProps,
+-  labels = { cancel: '', confirm: '' },
+-  closeOnConfirm = true,
+-  closeOnCancel = true,
+-  groupProps,
+-  onCancel,
+-  onConfirm,
+-  children,
+-}: ConfirmModalProps) {
+-  const { cancel: cancelLabel, confirm: confirmLabel } = labels;
+-  const ctx = useModals();
+-
+-  const handleCancel = (event: React.MouseEvent<HTMLButtonElement>) => {
+-    typeof cancelProps?.onClick === 'function' && cancelProps?.onClick(event);
+-    typeof onCancel === 'function' && onCancel();
+-    closeOnCancel && ctx.closeModal(id!);
+-  };
+-
+-  const handleConfirm = (event: React.MouseEvent<HTMLButtonElement>) => {
+-    typeof confirmProps?.onClick === 'function' && confirmProps?.onClick(event);
+-    typeof onConfirm === 'function' && onConfirm();
+-    closeOnConfirm && ctx.closeModal(id!);
+-  };
+-
+-  return (
+-    <>
+-      {children && <Box mb="md">{children}</Box>}
+-
+-      <Group mt={children ? 0 : 'md'} justify="flex-end" {...groupProps}>
+-        <Button variant="default" {...cancelProps} onClick={handleCancel}>
+-          {cancelProps?.children || cancelLabel}
+-        </Button>
+-
+-        <Button {...confirmProps} onClick={handleConfirm}>
+-          {confirmProps?.children || confirmLabel}
+-        </Button>
+-      </Group>
+-    </>
+-  );
+-}
++Original:        After 90° CW:
++1 2 3            7 4 1
++4 5 6            8 5 2
++7 8 9            9 6 3

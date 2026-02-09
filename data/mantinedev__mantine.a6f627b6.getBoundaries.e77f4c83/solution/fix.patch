@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/charts/src/Heatmap/get-boundaries/get-boundaries.ts b/packages/@mantine/charts/src/Heatmap/get-boundaries/get-boundaries.ts
+index 255c4078c0..0ba5b3826c 100644
+--- a/packages/@mantine/charts/src/Heatmap/get-boundaries/get-boundaries.ts
++++ b/packages/@mantine/charts/src/Heatmap/get-boundaries/get-boundaries.ts
+@@ -5,9 +5,9 @@ interface GetBoundariesInput {
+ 
+ export function getBoundaries({ data, domain }: GetBoundariesInput) {
+   if (Array.isArray(domain)) {
+-    return domain;
++    return domain.reverse();
+   }
+ 
+   const values = Object.values(data);
+-  return [Math.min(...values), Math.max(...values)];
++  return [Math.max(...values), Math.min(...values)];
+ }

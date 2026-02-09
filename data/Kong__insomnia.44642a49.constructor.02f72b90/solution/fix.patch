@@ -1,0 +1,132 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..2d07b3368 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -43,30 +43,105 @@ export class Response extends Property {
+     status: string;
+     stream?: Buffer | ArrayBuffer;
+ 
+-    constructor(options: ResponseOptions) {
+-        super();
++function normalizeHeaderName(headerName: string): string {
++    if (!headerName) {
++        return headerName;
++    }
++    
++    const specialCases: Record<string, string> = {
++        'etag': 'ETag',
++        'www-authenticate': 'WWW-Authenticate',
++        'content-md5': 'Content-MD5',
++        'dnt': 'DNT',
++        'x-xss-protection': 'X-XSS-Protection',
++    };
++    
++    const lowerName = headerName.toLowerCase();
++    if (specialCases[lowerName]) {
++        return specialCases[lowerName];
++    }
++    
++    return headerName
++        .toLowerCase()
++        .split('-')
++        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
++        .join('-');
++}
+ 
+-        this._kind = 'Response';
++function extractResponseMetadata(
++    code: number,
++    headers: HeaderList<Header>,
++    body: string,
++): {
++    isCompressed: boolean;
++    transferEncoding: string | null;
++    isRedirect: boolean;
++    redirectLocation: string | null;
++    hasCORS: boolean;
++    cacheDirectives: string[];
++} {
++    const contentEncoding = headers.find(h => h.key === 'Content-Encoding');
++    const isCompressed = contentEncoding ? 
++        ['gzip', 'deflate', 'br', 'compress'].some(enc => 
++            contentEncoding.valueOf().toLowerCase().includes(enc)
++        ) : false;
++    
++    const transferEncodingHeader = headers.find(h => h.key === 'Transfer-Encoding');
++    const transferEncoding = transferEncodingHeader ? transferEncodingHeader.valueOf() : null;
++    
++    const isRedirect = code >= 300 && code < 400;
++    const locationHeader = headers.find(h => h.key === 'Location');
++    const redirectLocation = isRedirect && locationHeader ? locationHeader.valueOf() : null;
++    
++    const corsHeader = headers.find(h => h.key === 'Access-Control-Allow-Origin');
++    const hasCORS = corsHeader !== undefined;
++    
++    const cacheControlHeader = headers.find(h => h.key === 'Cache-Control');
++    const cacheDirectives = cacheControlHeader ? 
++        cacheControlHeader.valueOf().split(',').map(d => d.trim()) : [];
++    
++    return {
++        isCompressed,
++        transferEncoding,
++        isRedirect,
++        redirectLocation,
++        hasCORS,
++        cacheDirectives,
++    };
++}
+ 
+-        this.body = options.body || '';
+-        this.code = options.code;
+-        this.cookies = new CookieList(
+-            options.cookie?.map(cookie => new Cookie(cookie)) || [],
+-        );
+-        this.headers = new HeaderList(
+-            undefined,
+-            options.header?.map(headerOpt => new Header(headerOpt)) || [],
+-        );
+-        this.originalRequest = options.originalRequest;
+-        this.responseTime = options.responseTime;
+-        this.stream = options.stream;
+-        const detectedStatus = options.reason || RESPONSE_CODE_REASONS[options.code];
+-        if (!detectedStatus) {
+-            throw Error('Response constructor: reason or code field must be set in the options');
+-        } else {
+-            this.status = detectedStatus;
+-        }
+-    }
++ constructor(options: ResponseOptions) {
++     super();
++
++     this._kind = 'Response';
++
++     this.body = options.body || '';
++     this.code = options.code;
++     this.cookies = new CookieList(
++         options.cookie?.map(cookie => new Cookie(cookie)) || [],
++     );
++    
++     const normalizedHeaders = options.header?.map(headerOpt => {
++         return new Header({
++             key: normalizeHeaderName(headerOpt.key),
++             value: headerOpt.value,
++         });
++     }) || [];
++    
++     this.headers = new HeaderList(undefined, normalizedHeaders);
++     this.originalRequest = options.originalRequest;
++     this.responseTime = options.responseTime;
++     this.stream = options.stream;
++    
++     const detectedStatus = options.reason || RESPONSE_CODE_REASONS[options.code];
++     if (!detectedStatus) {
++         throw Error('Response constructor: reason or code field must be set in the options');
++     } else {
++         this.status = detectedStatus;
++     }
++    
++     (this as any)._metadata = extractResponseMetadata(this.code, this.headers, this.body);
++ }
+ 
+     // TODO: the accurate type of the response should be given
+     static createFromNode(

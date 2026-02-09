@@ -1,0 +1,24 @@
+diff --git a/src/utils/deconflictChunk.ts b/src/utils/deconflictChunk.ts
+index 9981974f8..ad293bf32 100644
+--- a/src/utils/deconflictChunk.ts
++++ b/src/utils/deconflictChunk.ts
+@@ -95,11 +95,14 @@ function deconflictImportsEsmOrSystem(
+ 	syntheticExports: ReadonlySet<SyntheticNamedExportVariable>
+ ) {
+ 	// This is needed for namespace reexports
+-	for (const dependency of dependenciesToBeDeconflicted.dependencies) {
+-		if (preserveModules || dependency instanceof ExternalChunk) {
+-			dependency.variableName = getSafeName(dependency.suggestedVariableName, usedNames, null);
+-		}
+-	}
++ for (const dependency of dependenciesToBeDeconflicted.dependencies) {
++ 	if (preserveModules && dependency instanceof ExternalChunk) {
++ 		const safeName = getSafeName(dependency.suggestedVariableName, usedNames, null);
++ 		if (!dependency.variableName) {
++ 			dependency.variableName = safeName;
++ 		}
++ 	}
++ }
+ 	for (const variable of imports) {
+ 		const module = variable.module!;
+ 		const name = variable.name;

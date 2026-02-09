@@ -2,35 +2,27 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with the markdown parser where it crashes with a `TypeError` when processing certain markdown content. The error occurs when trying to access properties on `undefined` during tokenization.
+I'm experiencing an issue with the tokenizer where it crashes with a `TypeError` when processing certain markdown constructs. The error occurs when `info` is undefined or when `info.from` is not available during token construction.
 
 ### Reproduction
 
 ```js
-const remark = require('remark');
+// This causes a crash when tokenizing specific markdown patterns
+const parser = createTokenizer(parserInstance, initializeFn, fromValue);
 
-const markdown = `
-# Test heading
-
-Some content here with **bold text**.
-
-- List item 1
-- List item 2
-`;
-
-// This causes a crash
-remark.parse(markdown);
+// The error happens during construct processing when info object
+// is missing or doesn't have the expected properties
 ```
 
-The parser throws an error like `Cannot read property 'from' of undefined` when processing the markdown.
+The issue appears when processing edge cases in markdown parsing where the construct callback receives an undefined or incomplete info object.
 
 ### Expected behavior
 
-The markdown should be parsed successfully without throwing errors. The parser should handle cases where the `info` object might not be defined.
+The tokenizer should handle cases where `info` might be undefined or where `info.from` is not set, without throwing errors. It should gracefully fall back or skip processing in these scenarios.
 
 ### System Info
 - remark version: 15.0.1
-- Node version: 18.x
+- Node version: Latest
 
 ---
 Repository: /testbed

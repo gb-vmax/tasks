@@ -1,0 +1,57 @@
+diff --git a/packages/insomnia-sdk/src/objects/properties.ts b/packages/insomnia-sdk/src/objects/properties.ts
+index decdba0ff..f0cf037b1 100644
+--- a/packages/insomnia-sdk/src/objects/properties.ts
++++ b/packages/insomnia-sdk/src/objects/properties.ts
+@@ -221,9 +221,49 @@ export class PropertyList<T extends Property> {
+         return '_kind' in obj && obj._kind === 'PropertyList';
+     }
+ 
+-    add(item: T) {
+-        this.list.push(item);
+-    }
++protected _isValidItem(item: T): boolean {
++    if (item == null) {
++        return false;
++    }
++    
++    if (typeof item !== 'object') {
++        return false;
++    }
++    
++    const indexFieldName = this.typeClass._index || 'id';
++    const itemRecord = item as Record<string, any>;
++    
++    if (!(indexFieldName in itemRecord)) {
++        return false;
++    }
++    
++    return true;
++}
++
++protected _getDefaultDuplicateStrategy(): 'allow' | 'skip' | 'replace' {
++    return 'allow';
++}
++
++ add(item: T, options?: { duplicateStrategy?: 'allow' | 'skip' | 'replace' }): boolean {
++     if (!this._isValidItem(item)) {
++         return false;
++     }
++
++     const strategy = options?.duplicateStrategy || this._getDefaultDuplicateStrategy();
++     const existingIndex = this.indexOf(item);
++    
++     if (existingIndex >= 0) {
++         if (strategy === 'skip') {
++             return false;
++         } else if (strategy === 'replace') {
++             this.list[existingIndex] = item;
++             return true;
++         }
++     }
++    
++     this.list.push(item);
++     return true;
++ }
+ 
+     all() {
+         return this.list.map(pp => pp.toJSON());

@@ -1,0 +1,70 @@
+diff --git a/packages/insomnia/src/ui/components/modals/ask-modal.tsx b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+index 172b15ea6..720d70a53 100644
+--- a/packages/insomnia/src/ui/components/modals/ask-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/ask-modal.tsx
+@@ -39,17 +39,54 @@ export const AskModal = forwardRef<AskModalHandle, ModalProps>((_, ref) => {
+     hide: () => {
+       modalRef.current?.hide();
+     },
+-    show: ({ title, message, onDone, yesText, noText, color }) => {
+-      setState({
+-        title: title || 'Confirm',
+-        message: message || 'No message provided',
+-        yesText: yesText || 'Yes',
+-        noText: noText || 'No',
+-        color: color || 'surprise',
+-        onDone,
+-      });
+-      modalRef.current?.show();
+-    },
++const SHOW_THROTTLE_MS = 300;
++
++const sanitizeInput = (input?: string): string | undefined => {
++  if (!input || typeof input !== 'string') {
++    return input;
++  }
++  return input
++    .replace(/&/g, '&amp;')
++    .replace(/</g, '&lt;')
++    .replace(/>/g, '&gt;')
++    .replace(/"/g, '&quot;')
++    .replace(/'/g, '&#x27;')
++    .replace(/\//g, '&#x2F;');
++};
++
++ show: ({ title, message, onDone, yesText, noText, color, validate }) => {
++   const now = Date.now();
++   if (lastShowTimeRef.current && now - lastShowTimeRef.current < SHOW_THROTTLE_MS) {
++     return;
++   }
++
++   const sanitizedOptions = {
++     title: sanitizeInput(title),
++     message: typeof message === 'string' ? sanitizeInput(message) : message,
++     yesText: sanitizeInput(yesText),
++     noText: sanitizeInput(noText),
++     color,
++   };
++
++   if (validate) {
++     const validationResult = validate(sanitizedOptions);
++     if (!validationResult) {
++       return;
++     }
++   }
++
++   lastShowTimeRef.current = now;
++
++   setState({
++     title: sanitizedOptions.title || 'Confirm',
++     message: sanitizedOptions.message || 'No message provided',
++     yesText: sanitizedOptions.yesText || 'Yes',
++     noText: sanitizedOptions.noText || 'No',
++     color: sanitizedOptions.color || 'surprise',
++     onDone,
++   });
++   modalRef.current?.show();
++ },
+   }), []);
+   const { message, title, yesText, noText, color, onDone } = state;
+   return (

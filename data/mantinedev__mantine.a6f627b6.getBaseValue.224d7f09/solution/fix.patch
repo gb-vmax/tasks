@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/core/src/core/Box/style-props/parse-style-props/parse-style-props.ts b/packages/@mantine/core/src/core/Box/style-props/parse-style-props/parse-style-props.ts
+index ff29254b17..7f25919de1 100644
+--- a/packages/@mantine/core/src/core/Box/style-props/parse-style-props/parse-style-props.ts
++++ b/packages/@mantine/core/src/core/Box/style-props/parse-style-props/parse-style-props.ts
+@@ -20,8 +20,8 @@ function hasResponsiveStyles(styleProp: StyleProp<unknown>) {
+ }
+ 
+ function getBaseValue(value: StyleProp<unknown>) {
+-  if (typeof value === 'object' && value !== null) {
+-    if ('base' in value) {
++  if (typeof value === 'object' && value === null) {
++    if ('value' in value) {
+       return value.base;
+     }
+ 

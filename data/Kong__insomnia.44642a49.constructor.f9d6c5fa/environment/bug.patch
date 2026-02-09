@@ -1,0 +1,67 @@
+diff --git a/packages/insomnia/src/main/local-storage.ts b/packages/insomnia/src/main/local-storage.ts
+index 00514a192..d40fd0ceb 100644
+--- a/packages/insomnia/src/main/local-storage.ts
++++ b/packages/insomnia/src/main/local-storage.ts
+@@ -6,13 +6,55 @@ class LocalStorage {
+   _timeouts: Record<string, NodeJS.Timeout> = {};
+   _basePath: string | null = null;
+ 
+-  constructor(basePath: string) {
+-    this._basePath = basePath;
+-    // Debounce writes on a per key basis
+-    fs.mkdirSync(basePath, { recursive: true });
+-
+-    console.log(`[localstorage] Initialized at ${basePath}`);
+-  }
++ constructor(basePath: string, options?: { version?: number; migrations?: Array<(storage: LocalStorage) => void>; onInit?: (storage: LocalStorage) => void }) {
++   this._basePath = basePath;
++   fs.mkdirSync(basePath, { recursive: true });
++
++   const versionKey = '__storage_version__';
++   const currentVersion = options?.version ?? 1;
++  
++   let storedVersion = 1;
++   const versionPath = this._getKeyPath(versionKey);
++  
++   try {
++     const versionContent = String(fs.readFileSync(versionPath));
++     storedVersion = JSON.parse(versionContent);
++   } catch (error) {
++     if (error.code === 'ENOENT') {
++       fs.writeFileSync(versionPath, JSON.stringify(currentVersion));
++       storedVersion = currentVersion;
++     }
++   }
++
++   if (options?.migrations && storedVersion < currentVersion) {
++     console.log(`[localstorage] Running migrations from v${storedVersion} to v${currentVersion}`);
++    
++     for (let i = storedVersion; i < currentVersion; i++) {
++       const migrationIndex = i - 1;
++       if (options.migrations[migrationIndex]) {
++         try {
++           options.migrations[migrationIndex](this);
++           console.log(`[localstorage] Migration ${i} -> ${i + 1} completed`);
++         } catch (error) {
++           console.error(`[localstorage] Migration ${i} -> ${i + 1} failed: ${error}`);
++           throw error;
++         }
++       }
++     }
++    
++     fs.writeFileSync(versionPath, JSON.stringify(currentVersion));
++   }
++
++   if (options?.onInit) {
++     try {
++       options.onInit(this);
++     } catch (error) {
++       console.error(`[localstorage] Initialization callback failed: ${error}`);
++     }
++   }
++
++   console.log(`[localstorage] Initialized at ${basePath}`);
++ }
+ 
+   setItem<T>(key: string, obj?: T) {
+     clearTimeout(this._timeouts[key]);

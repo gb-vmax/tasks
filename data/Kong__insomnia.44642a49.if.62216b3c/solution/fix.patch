@@ -1,0 +1,115 @@
+diff --git a/packages/insomnia/src/sync/vcs/vcs.ts b/packages/insomnia/src/sync/vcs/vcs.ts
+index 5587f624d..04085c094 100644
+--- a/packages/insomnia/src/sync/vcs/vcs.ts
++++ b/packages/insomnia/src/sync/vcs/vcs.ts
+@@ -397,10 +397,108 @@ export class VCS {
+       return conflicts;
+     }
+ 
+-    if (!this._conflictHandler) {
+-      throw new Error(errorMsg);
++async _attemptAutoResolveConflict(conflict: MergeConflict): Promise<MergeConflict | null> {
++  if (!conflict.mineBlobContent || !conflict.theirsBlobContent) {
++    return null;
++  }
++
++  const mineStr = typeof conflict.mineBlobContent === 'string' 
++    ? conflict.mineBlobContent 
++    : JSON.stringify(conflict.mineBlobContent);
++  const theirsStr = typeof conflict.theirsBlobContent === 'string'
++    ? conflict.theirsBlobContent
++    : JSON.stringify(conflict.theirsBlobContent);
++
++  if (mineStr === theirsStr) {
++    return {
++      ...conflict,
++      choose: 'mine',
++    };
++  }
++
++  return null;
++}
++
++async _logConflictMetrics(metrics: {
++  total: number;
++  autoResolved: number;
++  handlerResolved: number;
++  timestamp: Date;
++  labels: { ours: string; theirs: string };
++}) {
++  try {
++    const backendProjectId = this._backendProjectId();
++    const metricsPath = `/projects/${backendProjectId}/conflict-metrics.json`;
++    
++    let existingMetrics: any[] = await this._store.getItem(metricsPath) || [];
++    if (!Array.isArray(existingMetrics)) {
++      existingMetrics = [];
++    }
++
++    existingMetrics.push(metrics);
++
++    if (existingMetrics.length > 100) {
++      existingMetrics = existingMetrics.slice(-100);
+     }
+ 
++    await this._store.setItem(metricsPath, existingMetrics);
++  } catch (err) {
++    console.warn('[sync] Failed to log conflict metrics', err);
++  }
++}
++
++ async handleAnyConflicts(
++   conflicts: MergeConflict[],
++   labels: { ours: string; theirs: string },
++   errorMsg: string,
++ ): Promise<MergeConflict[]> {
++   if (conflicts.length === 0) {
++     return conflicts;
++   }
++
++   const conflictMetrics = {
++     total: conflicts.length,
++     autoResolved: 0,
++     handlerResolved: 0,
++     timestamp: new Date(),
++     labels,
++   };
++
++   const autoResolvedConflicts: MergeConflict[] = [];
++   const remainingConflicts: MergeConflict[] = [];
++
++   for (const conflict of conflicts) {
++     const autoResolution = await this._attemptAutoResolveConflict(conflict);
++     if (autoResolution) {
++       autoResolvedConflicts.push(autoResolution);
++       conflictMetrics.autoResolved++;
++     } else {
++       remainingConflicts.push(conflict);
++     }
++   }
++
++   if (autoResolvedConflicts.length > 0) {
++     console.log(`[sync] Auto-resolved ${autoResolvedConflicts.length} conflicts`);
++   }
++
++   if (remainingConflicts.length === 0) {
++     await this._logConflictMetrics(conflictMetrics);
++     return autoResolvedConflicts;
++   }
++
++   if (!this._conflictHandler) {
++     await this._logConflictMetrics(conflictMetrics);
++     throw new Error(errorMsg);
++   }
++
++   const handlerResolutions = await this._conflictHandler(remainingConflicts, labels);
++   conflictMetrics.handlerResolved = handlerResolutions.length;
++
++   await this._logConflictMetrics(conflictMetrics);
++
++   return [...autoResolvedConflicts, ...handlerResolutions];
++ }
++
+     return this._conflictHandler(conflicts, labels);
+   }
+ 

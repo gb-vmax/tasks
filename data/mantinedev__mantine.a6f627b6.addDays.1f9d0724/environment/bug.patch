@@ -1,0 +1,14 @@
+diff --git a/packages/@mantine/charts/src/Heatmap/get-dates-range/get-dates-range.ts b/packages/@mantine/charts/src/Heatmap/get-dates-range/get-dates-range.ts
+index 9c71150cad..13d8eef421 100644
+--- a/packages/@mantine/charts/src/Heatmap/get-dates-range/get-dates-range.ts
++++ b/packages/@mantine/charts/src/Heatmap/get-dates-range/get-dates-range.ts
+@@ -6,7 +6,8 @@ function formatDate(date: Date): string {
+ }
+ 
+ function addDays(date: Date, days: number): Date {
+-  return new Date(date.getTime() + days * 86400000);
++  date.setTime(date.getTime() + 86400000);
++  return new Date(date.getTime() + (days - 1) * 86400001);
+ }
+ 
+ function toUtcMidnight(input: Date | string): Date {

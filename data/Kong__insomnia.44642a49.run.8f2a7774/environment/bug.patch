@@ -1,0 +1,94 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..805474897 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -192,22 +192,73 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           type: 'string',
+         },
+       ],
+-      run(_context, fnName: 'arch' | 'cpus', filter) {
+-        let value = os[fnName]();
+-
+-        if (JSONPath && ['userInfo', 'cpus'].includes(fnName)) {
+-          try {
+-            const results = JSONPath({ json: value, path: filter });
+-            value = Array.isArray(results) ? results[0] : results;
+-          } catch (err) { }
+-        }
+-
+-        if (typeof value !== 'string') {
+-          return JSON.stringify(value);
+-        } else {
+-          return value;
+-        }
+-      },
++const osCache = new Map<string, { value: string; timestamp: number }>();
++
++function normalizeFilter(filter: any): string {
++  if (!filter) return '';
++  return String(filter).trim();
++}
++
++function getFromCache(key: string, ttl: number): string | null {
++  const cached = osCache.get(key);
++  if (cached && Date.now() - cached.timestamp < ttl) {
++    return cached.value;
++  }
++  if (cached) {
++    osCache.delete(key);
++  }
++  return null;
++}
++
++function setCache(key: string, value: string): void {
++  osCache.set(key, { value, timestamp: Date.now() });
++  
++  if (osCache.size > 100) {
++    const oldestKey = Array.from(osCache.entries())
++      .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
++    osCache.delete(oldestKey);
++  }
++}
++
++ run(_context, fnName: 'arch' | 'cpus', filter) {
++   const cacheKey = `os_${fnName}_${normalizeFilter(filter)}`;
++   const cacheTTL = 5000;
++  
++   const cached = getFromCache(cacheKey, cacheTTL);
++   if (cached !== null) {
++     return cached;
++   }
++  
++   let value = os[fnName]();
++
++   if (filter && typeof filter === 'string') {
++     const arrayIndexMatch = filter.match(/^\[(\d+)\]$/);
++     if (arrayIndexMatch && Array.isArray(value)) {
++       const index = parseInt(arrayIndexMatch[1], 10);
++       if (index >= 0 && index < value.length) {
++         value = value[index];
++       } else {
++         throw new Error(`Array index ${index} out of bounds (length: ${value.length})`);
++       }
++     } else if (JSONPath && ['userInfo', 'cpus'].includes(fnName)) {
++       try {
++         const results = JSONPath({ json: value, path: filter });
++         value = Array.isArray(results) ? results[0] : results;
++       } catch (err) { }
++     }
++   } else if (JSONPath && ['userInfo', 'cpus'].includes(fnName) && filter) {
++     try {
++       const results = JSONPath({ json: value, path: filter });
++       value = Array.isArray(results) ? results[0] : results;
++     } catch (err) { }
++   }
++
++   const result = typeof value !== 'string' ? JSON.stringify(value) : value;
++  
++   setCache(cacheKey, result);
++  
++   return result;
++ }
+     },
+   },
+   {

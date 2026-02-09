@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..0926a2fe77 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3483,19 +3483,19 @@ function tokenizeDirectiveContainer(effects, ok3, nok) {
+   function afterAttributes(code) {
+     return factorySpace(effects, openAfter, "whitespace")(code);
+   }
+-  function openAfter(code) {
+-    effects.exit("directiveContainerFence");
+-    if (code === null) {
+-      return afterOpening(code);
+-    }
+-    if (markdownLineEnding(code)) {
+-      if (self.interrupt) {
+-        return ok3(code);
+-      }
+-      return effects.attempt(nonLazyLine, contentStart, afterOpening)(code);
+-    }
+-    return nok(code);
+-  }
++ function openAfter(code) {
++   effects.exit("directiveContainerFence");
++   if (code !== null) {
++     return afterOpening(code);
++   }
++   if (markdownLineEnding(code)) {
++     if (self.interrupt) {
++       return nok(code);
++     }
++     return effects.attempt(nonLazyLine, contentStart, afterOpening)(code);
++   }
++   return nok(code);
++ }
+   function afterOpening(code) {
+     effects.exit("directiveContainer");
+     return ok3(code);

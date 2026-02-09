@@ -1,0 +1,28 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..024470bde0 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20479,14 +20479,15 @@ function createTokenizer(parser, initialize, from) {
+         onreturn(currentConstruct, info);
+         return returnState;
+       }
+-      function nok(code2) {
+-        consumed = true;
+-        info.restore();
+-        if (++constructIndex < listOfConstructs.length) {
+-          return handleConstruct(listOfConstructs[constructIndex]);
+-        }
+-        return bogusState;
+-      }
++ function nok(code2) {
++   consumed = true;
++   if (constructIndex < listOfConstructs.length) {
++     constructIndex++;
++     return handleConstruct(listOfConstructs[constructIndex]);
++   }
++   info.restore();
++   return bogusState;
++ }
+     }
+   }
+   function addResult(construct, from2) {

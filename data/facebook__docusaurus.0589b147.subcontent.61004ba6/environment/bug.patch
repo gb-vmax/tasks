@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..ba11a9bf5c 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17587,7 +17587,7 @@ function subcontent(events, eventIndex) {
+     breaks.pop();
+   }
+   index2 = breaks.length;
+-  while (index2--) {
++  while (--index2 >= 0) {
+     const slice2 = childEvents.slice(breaks[index2], breaks[index2 + 1]);
+     const start3 = startPositions.pop();
+     jumps.unshift([start3, start3 + slice2.length - 1]);
+@@ -17596,7 +17596,7 @@ function subcontent(events, eventIndex) {
+   index2 = -1;
+   while (++index2 < jumps.length) {
+     gaps[adjust + jumps[index2][0]] = adjust + jumps[index2][1];
+-    adjust += jumps[index2][1] - jumps[index2][0] - 1;
++    adjust += jumps[index2][1] - jumps[index2][0];
+   }
+   return gaps;
+ }

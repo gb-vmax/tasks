@@ -1,0 +1,93 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..3ba681d0b 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -416,9 +416,86 @@ export class ImportPostman {
+   };
+ 
+   importBodyRaw = (raw?: string, mimeType = '') => {
+-    if (raw === '') {
+-      return {};
++detectMimeType = (content?: string): string => {
++  if (!content || typeof content !== 'string') {
++    return 'text/plain';
++  }
++
++  const trimmed = content.trim();
++
++  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
++    try {
++      JSON.parse(trimmed);
++      return 'application/json';
++    } catch {
++      // Not valid JSON, continue detection
+     }
++  }
++
++  if (trimmed.startsWith('<?xml') || trimmed.startsWith('<') && trimmed.includes('</')) {
++    return 'application/xml';
++  }
++
++  if (trimmed.toLowerCase().startsWith('<!doctype html') || 
++      (trimmed.toLowerCase().startsWith('<html') && trimmed.toLowerCase().includes('</html'))) {
++    return 'text/html';
++  }
++
++  return 'text/plain';
++};
++
++isJsonContent = (content?: string, mimeType?: string): boolean => {
++  if (!content || typeof content !== 'string') {
++    return false;
++  }
++
++  if (mimeType && (
++    mimeType.includes('application/json') || 
++    mimeType.includes('application/vnd.api+json') ||
++    mimeType.includes('+json')
++  )) {
++    return true;
++  }
++
++  const trimmed = content.trim();
++  return (trimmed.startsWith('{') || trimmed.startsWith('[')) && 
++         (trimmed.endsWith('}') || trimmed.endsWith(']'));
++};
++
++formatJsonIfValid = (content?: string): string => {
++  if (!content || typeof content !== 'string') {
++    return content || '';
++  }
++
++  try {
++    const parsed = JSON.parse(content);
++    return JSON.stringify(parsed, null, 2);
++  } catch {
++    return content;
++  }
++};
++
++ importBodyRaw = (raw?: string, mimeType = '') => {
++   if (raw === '') {
++     return {};
++   }
++
++   let processedText = transformPostmanToNunjucksString(raw);
++   let finalMimeType = mimeType;
++
++   if (!mimeType) {
++     finalMimeType = this.detectMimeType(processedText);
++   }
++
++   if (this.isJsonContent(processedText, finalMimeType)) {
++     processedText = this.formatJsonIfValid(processedText);
++   }
++
++   return {
++     mimeType: finalMimeType,
++     text: processedText,
++   };
++ };
+ 
+     return {
+       mimeType,

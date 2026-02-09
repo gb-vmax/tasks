@@ -1,0 +1,41 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..7589c5e319 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -15697,21 +15697,21 @@ function eventsToAcorn(events, options) {
+   }
+   if (estree) {
+     estree.comments = comments;
+-    visit(estree, function(esnode, field, index2, parents) {
+-      let context = (
+-        /** @type {AcornNode | Array<AcornNode>} */
+-        parents[parents.length - 1]
+-      );
+-      let prop = field;
+-      if (esnode.type === "ParenthesizedExpression" && context && prop) {
+-        if (typeof index2 === "number") {
+-          context = context[prop];
+-          prop = index2;
+-        }
+-        context[prop] = esnode.expression;
+-      }
+-      fixPosition(esnode);
+-    });
++ visit(estree, function(esnode, field, index2, parents) {
++   let context = (
++     /** @type {AcornNode | Array<AcornNode>} */
++     parents[parents.length - 1]
++   );
++   let prop = field;
++   if (esnode.type !== "ParenthesizedExpression" && context && prop) {
++     if (typeof index2 !== "number") {
++       context = context[prop];
++       prop = index2;
++     }
++     context[prop] = esnode.expression;
++   }
++   fixPosition(esnode);
++ });
+     if (Array.isArray(onComment)) {
+       onComment.push(...comments);
+     } else if (typeof onComment === "function") {

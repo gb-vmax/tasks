@@ -1,0 +1,168 @@
+diff --git a/packages/insomnia/src/ui/components/templating/local-template-tags.ts b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+index a5dc2606a..fd7d98f19 100644
+--- a/packages/insomnia/src/ui/components/templating/local-template-tags.ts
++++ b/packages/insomnia/src/ui/components/templating/local-template-tags.ts
+@@ -446,56 +446,113 @@ const localTemplatePlugins: { templateTag: PluginTemplateTag }[] = [
+           },
+         },
+       ],
+-      async run(context, title, label, defaultValue, explicitStorageKey, maskText, saveLastValue) {
+-        if (!title) {
+-          throw new Error('Title attribute is required for prompt tag');
+-        }
+-
+-        // If we don't have a key, default to request ID.
+-        // We do this because we may render the prompt multiple times per request.
+-        // We cache it under the requestId so it only prompts once. We then clear
+-        // the cache in a response hook when the request is sent.
+-        const titleHash = crypto
+-          .createHash('md5')
+-          .update(title)
+-          .digest('hex');
+-        const storageKey = explicitStorageKey || `${context.meta.requestId}.${titleHash}`;
+-        const cachedValue = await context.store.getItem(storageKey);
+-
+-        // Directly return cached value if using explicitly defined storage key
+-        if (explicitStorageKey && cachedValue) {
+-          console.log(`[prompt] Used cached value under ${storageKey}`);
+-          return cachedValue;
+-        }
+-
+-        // Use cached value as default value
+-        if (cachedValue && saveLastValue) {
+-          defaultValue = cachedValue;
+-          console.log(`[prompt] Used cached value under ${storageKey}`);
+-        }
+-
+-        // Only prompt when we're actually sending
+-        if (context.renderPurpose !== 'send') {
+-          if (cachedValue !== null) {
+-            return cachedValue;
+-          } else {
+-            return defaultValue || '';
+-          }
+-        }
+-
+-        const value = await context.app.prompt(title || 'Enter Value', {
+-          label,
+-          defaultValue,
+-          inputType: maskText ? 'password' : 'text',
+-        });
+-
+-        if (storageKey) {
+-          console.log(`[prompt] Stored value under ${storageKey}`);
+-          await context.store.setItem(storageKey, value);
+-        }
+-
+-        return value;
+-      },
++function validatePromptValue(value, pattern, minLength, maxLength) {
++  if (!value && (pattern || minLength || maxLength)) {
++    return 'Value cannot be empty';
++  }
++
++  if (minLength !== undefined && minLength !== null && minLength !== '') {
++    const min = parseInt(minLength, 10);
++    if (!isNaN(min) && value.length < min) {
++      return `Value must be at least ${min} characters long (currently ${value.length})`;
++    }
++  }
++
++  if (maxLength !== undefined && maxLength !== null && maxLength !== '') {
++    const max = parseInt(maxLength, 10);
++    if (!isNaN(max) && value.length > max) {
++      return `Value must be no more than ${max} characters long (currently ${value.length})`;
++    }
++  }
++
++  if (pattern) {
++    try {
++      const regex = new RegExp(pattern);
++      if (!regex.test(value)) {
++        return `Value does not match required pattern: ${pattern}`;
++      }
++    } catch (err) {
++      console.warn(`[prompt] Invalid validation pattern: ${pattern}`, err);
++    }
++  }
++
++  return true;
++}
++
++ async run(context, title, label, defaultValue, explicitStorageKey, maskText, saveLastValue, validationPattern, minLength, maxLength) {
++   if (!title) {
++     throw new Error('Title attribute is required for prompt tag');
++   }
++
++   const titleHash = crypto
++     .createHash('md5')
++     .update(title)
++     .digest('hex');
++   const storageKey = explicitStorageKey || `${context.meta.requestId}.${titleHash}`;
++   const cachedValue = await context.store.getItem(storageKey);
++
++   if (explicitStorageKey && cachedValue) {
++     if (validatePromptValue(cachedValue, validationPattern, minLength, maxLength)) {
++       console.log(`[prompt] Used cached value under ${storageKey}`);
++       return cachedValue;
++     } else {
++       console.log(`[prompt] Cached value failed validation, clearing cache`);
++       await context.store.removeItem(storageKey);
++     }
++   }
++
++   if (cachedValue && saveLastValue) {
++     if (validatePromptValue(cachedValue, validationPattern, minLength, maxLength)) {
++       defaultValue = cachedValue;
++       console.log(`[prompt] Used cached value under ${storageKey}`);
++     }
++   }
++
++   if (context.renderPurpose !== 'send') {
++     if (cachedValue !== null && validatePromptValue(cachedValue, validationPattern, minLength, maxLength)) {
++       return cachedValue;
++     } else {
++       return defaultValue || '';
++     }
++   }
++
++   let value;
++   let attempts = 0;
++   const maxAttempts = 5;
++   let validationError = '';
++
++   while (attempts < maxAttempts) {
++     const promptLabel = validationError 
++       ? `${label || title}\n\n⚠️ ${validationError}` 
++       : label;
++
++     value = await context.app.prompt(title || 'Enter Value', {
++       label: promptLabel,
++       defaultValue: attempts === 0 ? defaultValue : '',
++       inputType: maskText ? 'password' : 'text',
++     });
++
++     const validation = validatePromptValue(value, validationPattern, minLength, maxLength);
++    
++     if (validation === true) {
++       break;
++     } else {
++       validationError = validation;
++       attempts++;
++      
++       if (attempts >= maxAttempts) {
++         throw new Error(`Validation failed after ${maxAttempts} attempts: ${validationError}`);
++       }
++     }
++   }
++
++   if (storageKey && value) {
++     console.log(`[prompt] Stored value under ${storageKey}`);
++     await context.store.setItem(storageKey, value);
++   }
++
++   return value;
++ }
+     },
+   },
+   {

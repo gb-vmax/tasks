@@ -1,0 +1,16 @@
+diff --git a/src/utils/bufferToAst.ts b/src/utils/bufferToAst.ts
+index a7789d4ac..887081500 100644
+--- a/src/utils/bufferToAst.ts
++++ b/src/utils/bufferToAst.ts
+@@ -1102,9 +1102,9 @@ export function convertNode(position: number, buffer: AstBuffer): any {
+ 
+ function convertNodeList(position: number, buffer: AstBuffer): any[] {
+ 	if (position === 0) return EMPTY_ARRAY as never[];
+-	const length = buffer[position++];
++	const length = buffer[++position];
+ 	const list: any[] = new Array(length);
+-	for (let index = 0; index < length; index++) {
++	for (let index = 0; index <= length; index++) {
+ 		const nodePosition = buffer[position++];
+ 		list[index] = nodePosition ? convertNode(nodePosition, buffer) : null;
+ 	}

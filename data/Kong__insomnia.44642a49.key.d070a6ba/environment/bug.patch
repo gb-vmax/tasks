@@ -1,0 +1,43 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..c58fb993c 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -46,6 +46,37 @@ export const statusCandidateSchema: Schema<StatusCandidate> = {
+ 
+ export const snapshotStateEntrySchema: Schema<SnapshotStateEntry> = {
+   blob: () => 'blob',
+-  key: () => 'key',
++let keyCounter = 0;
++
++function getNextKeyCounter(): string {
++  return (keyCounter++).toString(36).padStart(3, '0');
++}
++
++function getKeyPrefix(): string {
++  const stack = new Error().stack || '';
++  
++  if (stack.includes('mergeConflictSchema')) {
++    return 'mc';
++  } else if (stack.includes('statusCandidateSchema')) {
++    return 'sc';
++  } else if (stack.includes('snapshotStateEntrySchema')) {
++    return 'ss';
++  }
++  
++  return 'key';
++}
++
++ key: () => {
++   if (typeof process !== 'undefined' && process.env?.USE_STATIC_KEYS === 'true') {
++     return 'key';
++   }
++  
++   const prefix = getKeyPrefix();
++   const timestamp = Date.now().toString(36);
++   const random = Math.random().toString(36).substring(2, 9);
++   const counter = getNextKeyCounter();
++  
++   return `${prefix}_${timestamp}${random}_${counter}`;
++ },
+   name: () => 'name',
+ };

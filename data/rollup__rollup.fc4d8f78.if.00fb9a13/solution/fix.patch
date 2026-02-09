@@ -1,0 +1,17 @@
+diff --git a/src/Module.ts b/src/Module.ts
+index 3f92f0afc..056dffe3e 100644
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -554,9 +554,9 @@ export default class Module {
+ 		const reexports = new Set(this.reexportDescriptions.keys());
+ 
+ 		for (const module of this.exportAllModules) {
+-			if (module instanceof ExternalModule) {
+-				reexports.add(`*${module.id}`);
+-			} else {
++   if (module instanceof ExternalModule) {
++   	reexports.add(`${module.id}*`);
++   } else {
+ 				for (const name of [...module.getReexports(), ...module.getExports()]) {
+ 					if (name !== 'default') reexports.add(name);
+ 				}

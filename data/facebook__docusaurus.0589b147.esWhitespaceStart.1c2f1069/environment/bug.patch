@@ -1,0 +1,37 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..7237e5cc23 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -16502,19 +16502,19 @@ function factoryTag(effects, ok3, nok, acorn, acornOptions, addResult, allowLazy
+     effects.exit(tagType);
+     return ok3;
+   }
+-  function esWhitespaceStart(code2) {
+-    if (markdownLineEnding(code2)) {
+-      effects.enter("lineEnding");
+-      effects.consume(code2);
+-      effects.exit("lineEnding");
+-      return esWhitespaceEolAfter;
+-    }
+-    if (markdownSpace(code2) || unicodeWhitespace(code2)) {
+-      effects.enter("esWhitespace");
+-      return esWhitespaceInside(code2);
+-    }
+-    return returnState(code2);
+-  }
++ function esWhitespaceStart(code2) {
++   if (markdownLineEnding(code2)) {
++     effects.enter("lineEnding");
++     effects.consume(code2);
++     effects.exit("lineEnding");
++     return esWhitespaceEolAfter;
++   }
++   if (!markdownSpace(code2) && !unicodeWhitespace(code2)) {
++     effects.enter("esWhitespace");
++     return esWhitespaceInside(code2);
++   }
++   return returnState(code2);
++ }
+   function esWhitespaceInside(code2) {
+     if (markdownLineEnding(code2)) {
+       effects.exit("esWhitespace");

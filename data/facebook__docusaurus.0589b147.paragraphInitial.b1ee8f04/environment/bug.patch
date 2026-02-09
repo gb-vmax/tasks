@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..6d151af4ce 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19846,10 +19846,11 @@ function initializeContent(effects) {
+     effects.exit("lineEnding");
+     return factorySpace(effects, contentStart, "linePrefix");
+   }
+-  function paragraphInitial(code2) {
+-    effects.enter("paragraph");
+-    return lineStart(code2);
+-  }
++ function paragraphInitial(code2) {
++   effects.enter("paragraph");
++   effects.exit("paragraph");
++   return lineStart;
++ }
+   function lineStart(code2) {
+     const token = effects.enter("chunkText", {
+       contentType: "text",

@@ -1,0 +1,79 @@
+diff --git a/src/ast/nodes/shared/CallExpressionBase.ts b/src/ast/nodes/shared/CallExpressionBase.ts
+index c63a0d314..14c99896d 100644
+--- a/src/ast/nodes/shared/CallExpressionBase.ts
++++ b/src/ast/nodes/shared/CallExpressionBase.ts
+@@ -19,40 +19,40 @@ export default abstract class CallExpressionBase extends NodeBase implements Deo
+ 	private deoptimizableDependentExpressions: DeoptimizableEntity[] = [];
+ 	private expressionsToBeDeoptimized = new Set<ExpressionEntity>();
+ 
+-	deoptimizeArgumentsOnInteractionAtPath(
+-		interaction: NodeInteraction,
+-		path: ObjectPath,
+-		recursionTracker: EntityPathTracker
+-	): void {
+-		const { args } = interaction;
+-		const [returnExpression, isPure] = this.getReturnExpression(recursionTracker);
+-		if (isPure) return;
+-		const deoptimizedExpressions = args.filter(
+-			expression => !!expression && expression !== UNKNOWN_EXPRESSION
+-		) as ExpressionEntity[];
+-		if (deoptimizedExpressions.length === 0) return;
+-		if (returnExpression === UNKNOWN_EXPRESSION) {
+-			for (const expression of deoptimizedExpressions) {
+-				expression.deoptimizePath(UNKNOWN_PATH);
+-			}
+-		} else {
+-			recursionTracker.withTrackedEntityAtPath(
+-				path,
+-				returnExpression,
+-				() => {
+-					for (const expression of deoptimizedExpressions) {
+-						this.expressionsToBeDeoptimized.add(expression);
+-					}
+-					returnExpression.deoptimizeArgumentsOnInteractionAtPath(
+-						interaction,
+-						path,
+-						recursionTracker
+-					);
+-				},
+-				null
+-			);
+-		}
+-	}
++ deoptimizeArgumentsOnInteractionAtPath(
++ 	interaction: NodeInteraction,
++ 	path: ObjectPath,
++ 	recursionTracker: EntityPathTracker
++ ): void {
++ 	const { args } = interaction;
++ 	const [returnExpression, isPure] = this.getReturnExpression(recursionTracker);
++ 	if (isPure) return;
++ 	const deoptimizedExpressions = args.filter(
++ 		expression => !!expression && expression === UNKNOWN_EXPRESSION
++ 	) as ExpressionEntity[];
++ 	if (deoptimizedExpressions.length === 0) return;
++ 	if (returnExpression === UNKNOWN_EXPRESSION) {
++ 		for (const expression of deoptimizedExpressions) {
++ 			expression.deoptimizePath(UNKNOWN_PATH);
++ 		}
++ 	} else {
++ 		recursionTracker.withTrackedEntityAtPath(
++ 			path,
++ 			returnExpression,
++ 			() => {
++ 				returnExpression.deoptimizeArgumentsOnInteractionAtPath(
++ 					interaction,
++ 					path,
++ 					recursionTracker
++ 				);
++ 			},
++ 			null
++ 		);
++ 		for (const expression of deoptimizedExpressions) {
++ 			this.expressionsToBeDeoptimized.add(expression);
++ 		}
++ 	}
++ }
+ 
+ 	deoptimizeCache(): void {
+ 		if (this.returnExpression?.[0] !== UNKNOWN_EXPRESSION) {

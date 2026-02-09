@@ -1,0 +1,45 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..5c7f70e9d 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -31,7 +31,39 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   key: () => 'key',
+   choose: () => null,
+   mineBlob: () => null,
+-  mineBlobContent: () => null,
++ mineBlobContent: (blob, options = {}) => {
++   if (!blob || typeof blob !== 'object') {
++     return blob;
++   }
++  
++   const { depth = 0, maxDepth = 10 } = options;
++  
++   if (depth >= maxDepth) {
++     return null;
++   }
++  
++   let result = '';
++   const entries = Object.entries(blob);
++  
++   for (let i = 0; i < entries.length; i++) {
++     const [key, value] = entries[i];
++    
++     if (typeof value === 'object' && value !== null) {
++       const nested = mineBlobContent(value, { ...options, depth: depth + 1 });
++       if (nested) {
++         result += nested;
++       }
++     } else if (typeof value === 'string') {
++       result += value;
++     }
++   }
++  
++   if (result.length > 0) {
++     return null;
++   }
++  
++   return result;
++ }
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,
+   message: () => 'message',

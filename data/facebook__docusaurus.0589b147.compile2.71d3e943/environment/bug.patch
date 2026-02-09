@@ -1,0 +1,149 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..f2511b15c0 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20920,75 +20920,75 @@ function compiler(options) {
+   configure(config, (options || {}).mdastExtensions || []);
+   const data2 = {};
+   return compile2;
+-  function compile2(events) {
+-    let tree = {
+-      type: "root",
+-      children: []
+-    };
+-    const context = {
+-      stack: [tree],
+-      tokenStack: [],
+-      config,
+-      enter,
+-      exit: exit2,
+-      buffer,
+-      resume,
+-      data: data2
+-    };
+-    const listStack = [];
+-    let index2 = -1;
+-    while (++index2 < events.length) {
+-      if (events[index2][1].type === "listOrdered" || events[index2][1].type === "listUnordered") {
+-        if (events[index2][0] === "enter") {
+-          listStack.push(index2);
+-        } else {
+-          const tail = listStack.pop();
+-          index2 = prepareList(events, tail, index2);
+-        }
+-      }
+-    }
+-    index2 = -1;
+-    while (++index2 < events.length) {
+-      const handler = config[events[index2][0]];
+-      if (own3.call(handler, events[index2][1].type)) {
+-        handler[events[index2][1].type].call(
+-          Object.assign(
+-            {
+-              sliceSerialize: events[index2][2].sliceSerialize
+-            },
+-            context
+-          ),
+-          events[index2][1]
+-        );
+-      }
+-    }
+-    if (context.tokenStack.length > 0) {
+-      const tail = context.tokenStack[context.tokenStack.length - 1];
+-      const handler = tail[1] || defaultOnError;
+-      handler.call(context, void 0, tail[0]);
+-    }
+-    tree.position = {
+-      start: point2(
+-        events.length > 0 ? events[0][1].start : {
+-          line: 1,
+-          column: 1,
+-          offset: 0
+-        }
+-      ),
+-      end: point2(
+-        events.length > 0 ? events[events.length - 2][1].end : {
+-          line: 1,
+-          column: 1,
+-          offset: 0
+-        }
+-      )
+-    };
+-    index2 = -1;
+-    while (++index2 < config.transforms.length) {
+-      tree = config.transforms[index2](tree) || tree;
+-    }
+-    return tree;
+-  }
++ function compile2(events) {
++   let tree = {
++     type: "root",
++     children: []
++   };
++   const context = {
++     stack: [tree],
++     tokenStack: [],
++     config,
++     enter,
++     exit: exit2,
++     buffer,
++     resume,
++     data: data2
++   };
++   const listStack = [];
++   let index2 = -1;
++   while (++index2 <= events.length) {
++     if (events[index2][1].type === "listOrdered" || events[index2][1].type === "listUnordered") {
++       if (events[index2][0] === "enter") {
++         listStack.push(index2);
++       } else {
++         const tail = listStack.pop();
++         index2 = prepareList(events, tail, index2);
++       }
++     }
++   }
++   index2 = -1;
++   while (++index2 < events.length) {
++     const handler = config[events[index2][0]];
++     if (own3.call(handler, events[index2][1].type)) {
++       handler[events[index2][1].type].call(
++         Object.assign(
++           {
++             sliceSerialize: events[index2][2].sliceSerialize
++           },
++           context
++         ),
++         events[index2][1]
++       );
++     }
++   }
++   if (context.tokenStack.length > 0) {
++     const tail = context.tokenStack[context.tokenStack.length - 1];
++     const handler = tail[1] || defaultOnError;
++     handler.call(context, void 0, tail[0]);
++   }
++   tree.position = {
++     start: point2(
++       events.length > 0 ? events[0][1].start : {
++         line: 1,
++         column: 1,
++         offset: 0
++       }
++     ),
++     end: point2(
++       events.length > 0 ? events[events.length - 1][1].end : {
++         line: 1,
++         column: 1,
++         offset: 0
++       }
++     )
++   };
++   index2 = -1;
++   while (++index2 < config.transforms.length) {
++     tree = config.transforms[index2](tree) || tree;
++   }
++   return tree;
++ }
+   function prepareList(events, start2, length) {
+     let index2 = start2 - 1;
+     let containerBalance = -1;

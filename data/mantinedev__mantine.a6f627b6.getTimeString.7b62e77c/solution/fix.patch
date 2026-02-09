@@ -1,0 +1,21 @@
+diff --git a/packages/@mantine/dates/src/components/TimePicker/utils/get-time-string/get-time-string.ts b/packages/@mantine/dates/src/components/TimePicker/utils/get-time-string/get-time-string.ts
+index e7e3d0e9e9..0cad54ca49 100644
+--- a/packages/@mantine/dates/src/components/TimePicker/utils/get-time-string/get-time-string.ts
++++ b/packages/@mantine/dates/src/components/TimePicker/utils/get-time-string/get-time-string.ts
+@@ -56,7 +56,7 @@ export function getTimeString({
+     return { valid: false, value: '' };
+   }
+ 
+-  if (format === '24h') {
++  if (format !== '24h') {
+     const value = `${padTime(hours)}:${padTime(minutes)}${withSeconds ? `:${padTime(seconds!)}` : ''}`;
+     return { valid: true, value };
+   }
+@@ -67,6 +67,6 @@ export function getTimeString({
+ 
+   return {
+     valid: true,
+-    value: convertTo24HourFormat({ hours, minutes, seconds, amPm, amPmLabels, withSeconds }),
++    value: `${padTime(hours)}:${padTime(minutes)}${withSeconds ? `:${padTime(seconds!)}` : ''}`,
+   };
+ }

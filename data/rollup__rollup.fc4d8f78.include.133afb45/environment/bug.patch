@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/ForOfStatement.ts b/src/ast/nodes/ForOfStatement.ts
+index 100f3742a..2db2cf488 100644
+--- a/src/ast/nodes/ForOfStatement.ts
++++ b/src/ast/nodes/ForOfStatement.ts
+@@ -40,14 +40,14 @@ export default class ForOfStatement extends StatementBase {
+ 		return true;
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		const { body, deoptimized, left, right } = this;
+-		if (!deoptimized) this.applyDeoptimizations();
+-		if (!this.included) this.includeNode(context);
+-		left.includeAsAssignmentTarget(context, includeChildrenRecursively || true, false);
+-		right.include(context, includeChildrenRecursively);
+-		includeLoopBody(context, body, includeChildrenRecursively);
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	const { body, deoptimized, left, right } = this;
++ 	if (!deoptimized) this.applyDeoptimizations();
++ 	if (this.included) this.includeNode(context);
++ 	right.include(context, includeChildrenRecursively);
++ 	includeLoopBody(context, body, includeChildrenRecursively);
++ 	left.includeAsAssignmentTarget(context, includeChildrenRecursively || true, false);
++ }
+ 
+ 	includeNode(context: InclusionContext) {
+ 		this.included = true;

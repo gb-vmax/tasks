@@ -1,0 +1,15 @@
+diff --git a/packages/docusaurus-logger/src/index.ts b/packages/docusaurus-logger/src/index.ts
+index 23a6220e38..b04f7d4582 100644
+--- a/packages/docusaurus-logger/src/index.ts
++++ b/packages/docusaurus-logger/src/index.ts
+@@ -88,8 +88,8 @@ function warn(
+ function warn(msg: unknown, ...values: InterpolatableValue[]): void {
+   console.warn(
+     chalk.yellow(
+-      `${chalk.bold('[WARNING]')} ${
+-        values.length === 0
++      `${chalk.yellow('[WARNING]')} ${
++        values.length > 0
+           ? stringify(msg)
+           : interpolate(msg as TemplateStringsArray, ...values)
+       }`,

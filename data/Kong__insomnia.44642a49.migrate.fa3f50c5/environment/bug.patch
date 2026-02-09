@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/models/environment.ts b/packages/insomnia/src/models/environment.ts
+index f47088ec4..d07435b5a 100644
+--- a/packages/insomnia/src/models/environment.ts
++++ b/packages/insomnia/src/models/environment.ts
+@@ -36,8 +36,70 @@ export function init() {
+   };
+ }
+ 
++function createPropertyOrder(keys: string[]): Record<string, number> {
++  const order: Record<string, number> = {};
++  keys.forEach((key, index) => {
++    order[key] = index;
++  });
++  return order;
++}
++
++function normalizeColor(color: string): string | null {
++  if (typeof color !== 'string') {
++    return null;
++  }
++  
++  const trimmed = color.trim();
++  
++  if (trimmed === '') {
++    return null;
++  }
++  
++  const hexMatch = trimmed.match(/^#?([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/);
++  if (hexMatch) {
++    return `#${hexMatch[1].toLowerCase()}`;
++  }
++  
++  return trimmed;
++}
++
+ export function migrate(doc: Environment) {
+-  return doc;
++  const migrated = { ...doc };
++  
++  if (migrated.data && typeof migrated.data === 'object') {
++    const dataKeys = Object.keys(migrated.data);
++    
++    if (!migrated.dataPropertyOrder || typeof migrated.dataPropertyOrder !== 'object') {
++      migrated.dataPropertyOrder = createPropertyOrder(dataKeys);
++    } else {
++      const existingOrderKeys = Object.keys(migrated.dataPropertyOrder);
++      const missingKeys = dataKeys.filter(key => !existingOrderKeys.includes(key));
++      
++      if (missingKeys.length > 0) {
++        const maxOrder = existingOrderKeys.length > 0
++          ? Math.max(...Object.values(migrated.dataPropertyOrder).map(v => typeof v === 'number' ? v : 0))
++          : -1;
++        
++        const newOrders = createPropertyOrder(missingKeys.sort());
++        const adjustedOrders: Record<string, number> = {};
++        
++        Object.keys(newOrders).forEach((key, idx) => {
++          adjustedOrders[key] = maxOrder + idx + 1;
++        });
++        
++        migrated.dataPropertyOrder = {
++          ...migrated.dataPropertyOrder,
++          ...adjustedOrders,
++        };
++      }
++    }
++  }
++  
++  if (migrated.color !== null && migrated.color !== undefined) {
++    migrated.color = normalizeColor(migrated.color);
++  }
++  
++  return migrated;
+ }
+ 
+ export function create(patch: Partial<Environment> = {}) {

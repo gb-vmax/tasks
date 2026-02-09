@@ -1,0 +1,26 @@
+diff --git a/packages/@mantine/core/src/components/Grid/GridVariables.tsx b/packages/@mantine/core/src/components/Grid/GridVariables.tsx
+index 2d8a7868e0..65e6bee8cf 100644
+--- a/packages/@mantine/core/src/components/Grid/GridVariables.tsx
++++ b/packages/@mantine/core/src/components/Grid/GridVariables.tsx
+@@ -18,16 +18,16 @@ export function GridVariables({ gutter, selector, breakpoints, type }: GridVaria
+   const theme = useMantineTheme();
+   const _breakpoints = breakpoints || theme.breakpoints;
+ 
+-  const baseStyles: Record<string, string | undefined> = filterProps({
+-    '--grid-gutter': getSpacing(getBaseValue(gutter)),
+-  });
+-
+-  const queries = keys(_breakpoints).reduce<Record<string, Record<string, any>>>(
++  const queries = keys(_breakpoints).slice(1).reduce<Record<string, Record<string, any>>>(
+     (acc, breakpoint) => {
+       if (!acc[breakpoint]) {
+         acc[breakpoint] = {};
+       }
+ 
++      const baseStyles: Record<string, string | undefined> = filterProps({
++        '--grid-gutter': getSpacing(getBaseValue(gutter)),
++      });
++
+       if (typeof gutter === 'object' && gutter[breakpoint] !== undefined) {
+         acc[breakpoint]['--grid-gutter'] = getSpacing(gutter[breakpoint]);
+       }

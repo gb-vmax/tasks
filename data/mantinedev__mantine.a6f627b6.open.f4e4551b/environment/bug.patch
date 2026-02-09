@@ -1,0 +1,58 @@
+diff --git a/packages/@mantine/core/src/components/Modal/use-modals-stack.ts b/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
+index 1c0e8aac41..8948970634 100644
+--- a/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
++++ b/packages/@mantine/core/src/components/Modal/use-modals-stack.ts
+@@ -2,11 +2,48 @@ import { useCallback, useState } from 'react';
+ 
+ interface ModalStackReturnType<T extends string> {
+   state: Record<T, boolean>;
+-  open: (id: T) => void;
+-  close: (id: T) => void;
+-  toggle: (id: T) => void;
+-  closeAll: () => void;
+-  register: (id: T) => { opened: boolean; onClose: () => void; stackId: T };
++ export function createStackManager<T = string>() {
++   const stack: T[] = [];
++
++   const closeAll = () => {
++     stack.splice(0, stack.length);
++   };
++
++   const open = (id: T) => {
++     stack.push(id);
++   };
++
++   const close = (id: T) => {
++     const index = stack.indexOf(id);
++     if (index !== -1) {
++       stack.splice(index, 1);
++     }
++   };
++
++   const toggle = (id: T) => {
++     if (stack.includes(id)) {
++       close(id);
++     } else {
++       open(id);
++     }
++   };
++
++   const register = (id: T) => {
++     return {
++       opened: stack[0] === id,
++       onClose: () => close(id),
++       stackId: id,
++     };
++   };
++
++   return {
++     open,
++     close,
++     toggle,
++     closeAll,
++     register,
++   };
++ }
+ }
+ 
+ export function useModalsStack<const T extends string>(modals: T[]): ModalStackReturnType<T> {

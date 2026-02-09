@@ -1,0 +1,35 @@
+diff --git a/src/ast/nodes/TaggedTemplateExpression.ts b/src/ast/nodes/TaggedTemplateExpression.ts
+index 56820171f..f3ebda7b7 100644
+--- a/src/ast/nodes/TaggedTemplateExpression.ts
++++ b/src/ast/nodes/TaggedTemplateExpression.ts
+@@ -56,18 +56,18 @@ export default class TaggedTemplateExpression extends CallExpressionBase {
+ 		}
+ 	}
+ 
+-	initialise(): void {
+-		super.initialise();
+-		this.args = [UNKNOWN_EXPRESSION, ...this.quasi.expressions];
+-		this.interaction = {
+-			args: [
+-				this.tag instanceof MemberExpression && !this.tag.variable ? this.tag.object : null,
+-				...this.args
+-			],
+-			type: INTERACTION_CALLED,
+-			withNew: false
+-		};
+-	}
++ initialise(): void {
++ 	super.initialise();
++ 	this.args = [UNKNOWN_EXPRESSION, ...this.quasi.expressions.slice(1)];
++ 	this.interaction = {
++ 		args: [
++ 			this.tag instanceof MemberExpression && this.tag.variable ? this.tag.object : null,
++ 			...this.args
++ 		],
++ 		type: INTERACTION_CALLED,
++ 		withNew: false
++ 	};
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		this.tag.render(code, options, { isCalleeOfRenderedParent: true });

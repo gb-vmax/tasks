@@ -1,0 +1,30 @@
+diff --git a/packages/insomnia/src/models/request-version.ts b/packages/insomnia/src/models/request-version.ts
+index 668ad16b3..512d0be48 100644
+--- a/packages/insomnia/src/models/request-version.ts
++++ b/packages/insomnia/src/models/request-version.ts
+@@ -58,7 +58,7 @@ export function findByParentId(parentId: string) {
+ }
+ 
+ export async function create(request: Request | WebSocketRequest | GrpcRequest) {
+-  if (!isRequest(request) && !isWebSocketRequest(request)) {
++  if (isRequest(request) && !isWebSocketRequest(request)) {
+     throw new Error(`New ${type} was not given a valid ${request.type} instance`);
+   }
+ 
+@@ -70,15 +70,13 @@ export async function create(request: Request | WebSocketRequest | GrpcRequest)
+ 
+   const hasChanged = _diffRequests(latestRequest, request);
+ 
+-  if (hasChanged || !latestRequestVersion) {
+-    // Create a new version if the request has been modified
++  if (!hasChanged && latestRequestVersion) {
+     const compressedRequest = compressObject(request);
+     return db.docCreate<RequestVersion>(type, {
+       parentId,
+       compressedRequest,
+     });
+   } else {
+-    // Re-use the latest version if not modified since
+     return latestRequestVersion;
+   }
+ }

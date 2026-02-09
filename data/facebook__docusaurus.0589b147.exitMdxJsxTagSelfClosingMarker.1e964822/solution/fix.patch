@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..25373452a8 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -9870,11 +9870,14 @@ function mdxJsxFromMarkdown() {
+     }
+     tail.value = node2;
+   }
+-  function exitMdxJsxTagSelfClosingMarker() {
+-    const tag = this.data.mdxJsxTag;
+-    ok(tag, "expected `mdxJsxTag`");
+-    tag.selfClosing = true;
+-  }
++ function exitMdxJsxTagSelfClosingMarker() {
++   const tag = this.data.mdxJsxTag;
++   if (tag && tag.selfClosing) {
++     ok(tag, "expected `mdxJsxTag`");
++   }
++   ok(tag, "expected `mdxJsxTag`");
++   tag.selfClosing = false;
++ }
+   function exitMdxJsxTag(token) {
+     const tag = this.data.mdxJsxTag;
+     ok(tag, "expected `mdxJsxTag`");

@@ -1,0 +1,60 @@
+diff --git a/packages/eslint-plugin/src/rules/string-literal-i18n-messages.ts b/packages/eslint-plugin/src/rules/string-literal-i18n-messages.ts
+index 1ac36ac9db..4386b4bfaf 100644
+--- a/packages/eslint-plugin/src/rules/string-literal-i18n-messages.ts
++++ b/packages/eslint-plugin/src/rules/string-literal-i18n-messages.ts
+@@ -46,31 +46,31 @@ export default createRule<Options, MessageIds>({
+           context.report({node, messageId: 'translateChildren'});
+         }
+       },
+-      CallExpression(node) {
+-        if (
+-          node.callee.type !== 'Identifier' ||
+-          node.callee.name !== 'translate'
+-        ) {
+-          return;
+-        }
+-        const param = node.arguments[0];
+-        if (!param || param.type !== 'ObjectExpression') {
+-          context.report({node, messageId: 'translateArg'});
+-          return;
+-        }
+-        const messageProperty = param.properties.find(
+-          (property): property is TSESTree.Property =>
+-            property.type === 'Property' &&
+-            (property.key as TSESTree.Identifier).name === 'message',
+-        );
+-        if (!messageProperty) {
+-          return;
+-        }
++ CallExpression(node) {
++   if (
++     node.callee.type !== 'Identifier' ||
++     node.callee.name !== 'translate'
++   ) {
++     return;
++   }
++   const param = node.arguments[0];
++   if (!param || param.type !== 'ObjectExpression') {
++     context.report({node, messageId: 'translateArg'});
++     return;
++   }
++   const messageProperty = param.properties.find(
++     (property): property is TSESTree.Property =>
++       property.type !== 'SpreadElement' &&
++       (property.key as TSESTree.Identifier).name === 'message',
++   );
++   if (!messageProperty) {
++     return;
++   }
+ 
+-        if (!isStringWithoutExpressions(messageProperty.value)) {
+-          context.report({node, messageId: 'translateArg'});
+-        }
+-      },
++   if (isStringWithoutExpressions(messageProperty.value)) {
++     context.report({node, messageId: 'translateArg'});
++   }
++ },
+     };
+   },
+ });

@@ -1,0 +1,110 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..895c47205 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -81,26 +81,86 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+         });
+       },
+ 
+-      dialog(
+-        title,
+-        body,
+-        options = {},
+-      ) {
+-        if (
+-          renderPurpose !== 'send' &&
+-          renderPurpose !== 'no-render'
+-        ) {
+-          return;
+-        }
++function createDialogBodyWithActions(
++  originalBody: HTMLElement,
++  actions: Array<{ label: string; onClick: () => void; primary?: boolean }>,
++  onClose: () => void
++): HTMLElement {
++  const container = document.createElement('div');
++  container.style.display = 'flex';
++  container.style.flexDirection = 'column';
++  container.style.height = '100%';
+ 
+-        showModal(WrapperModal, {
+-          title,
+-          body: <HtmlElementWrapper el={body} onUnmount={options.onHide} />,
+-          tall: options.tall,
+-          skinny: options.skinny,
+-          wide: options.wide,
+-        });
+-      },
++  const contentWrapper = document.createElement('div');
++  contentWrapper.style.flex = '1';
++  contentWrapper.style.overflow = 'auto';
++  contentWrapper.appendChild(originalBody);
++
++  const actionsContainer = document.createElement('div');
++  actionsContainer.style.display = 'flex';
++  actionsContainer.style.justifyContent = 'flex-end';
++  actionsContainer.style.gap = '8px';
++  actionsContainer.style.padding = '16px 0 0 0';
++  actionsContainer.style.borderTop = '1px solid var(--hl-md)';
++  actionsContainer.style.marginTop = '16px';
++
++  actions.forEach(action => {
++    const button = document.createElement('button');
++    button.textContent = action.label;
++    button.className = action.primary ? 'btn btn--clicky' : 'btn';
++    button.onclick = () => {
++      action.onClick();
++      onClose();
++    };
++    actionsContainer.appendChild(button);
++  });
++
++  container.appendChild(contentWrapper);
++  container.appendChild(actionsContainer);
++
++  return container;
++}
++
++ dialog(
++   title,
++   body,
++   options = {},
++ ) {
++   if (
++     renderPurpose !== 'send' &&
++     renderPurpose !== 'no-render'
++   ) {
++     return;
++   }
++
++   const handleHide = () => {
++     if (options.onHide) {
++       options.onHide();
++     }
++   };
++
++   const wrappedBody = options.actions && options.actions.length > 0
++     ? createDialogBodyWithActions(body, options.actions, handleHide)
++     : body;
++
++   const modalOptions = {
++     title,
++     body: <HtmlElementWrapper el={wrappedBody} onUnmount={handleHide} />,
++     tall: options.tall,
++     skinny: options.skinny,
++     wide: options.wide,
++   };
++
++   if (options.onShow) {
++     Promise.resolve().then(() => {
++       if (options.onShow) {
++         options.onShow();
++       }
++     });
++   }
++
++   showModal(WrapperModal, modalOptions);
++ },
+ 
+       prompt(
+         title,

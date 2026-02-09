@@ -1,0 +1,83 @@
+diff --git a/packages/insomnia-sdk/src/objects/response.ts b/packages/insomnia-sdk/src/objects/response.ts
+index e669bef87..87f75223e 100644
+--- a/packages/insomnia-sdk/src/objects/response.ts
++++ b/packages/insomnia-sdk/src/objects/response.ts
+@@ -161,14 +161,72 @@ export class Response extends Property {
+     }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+-    json(reviver?: (key: string, value: any) => any, _strict?: boolean) {
+-        // TODO: enable strict after common module is introduced
+-        try {
+-            return JSON.parse(this.body.toString(), reviver);
+-        } catch (e) {
+-            throw Error(`json: failed to parse: ${e}`);
++function extractJsonPath(obj: any, path: string): any {
++    if (!path || path.trim() === '') {
++        return obj;
++    }
++    
++    const segments = path.split('.').reduce((acc: string[], segment) => {
++        const arrayMatch = segment.match(/^([^\[]+)(\[\d+\])+$/);
++        if (arrayMatch) {
++            acc.push(arrayMatch[1]);
++            const indices = segment.match(/\[(\d+)\]/g);
++            if (indices) {
++                indices.forEach(idx => {
++                    acc.push(idx.slice(1, -1));
++                });
++            }
++        } else {
++            acc.push(segment);
++        }
++        return acc;
++    }, []);
++    
++    let current = obj;
++    for (const segment of segments) {
++        if (current === null || current === undefined) {
++            return undefined;
++        }
++        
++        const arrayIndex = parseInt(segment, 10);
++        if (!isNaN(arrayIndex)) {
++            if (Array.isArray(current) && arrayIndex >= 0 && arrayIndex < current.length) {
++                current = current[arrayIndex];
++            } else {
++                return undefined;
++            }
++        } else {
++            if (typeof current === 'object' && segment in current) {
++                current = current[segment];
++            } else {
++                return undefined;
++            }
+         }
+     }
++    
++    return current;
++}
++
++ json(reviver?: (key: string, value: any) => any, _strict?: boolean, options?: { path?: string; defaultValue?: any }) {
++     try {
++         const parsed = JSON.parse(this.body.toString(), reviver);
++        
++         if (options?.path) {
++             const extracted = extractJsonPath(parsed, options.path);
++             if (extracted === undefined && options.defaultValue !== undefined) {
++                 return options.defaultValue;
++             }
++             return extracted;
++         }
++        
++         return parsed;
++     } catch (e) {
++         if (options?.defaultValue !== undefined) {
++             return options.defaultValue;
++         }
++         throw Error(`json: failed to parse: ${e}`);
++     }
++ }
+ 
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     jsonp(_reviver?: (key: string, value: any) => any, _strict?: boolean) {

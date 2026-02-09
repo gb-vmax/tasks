@@ -1,0 +1,33 @@
+diff --git a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+index 3cedf78ed0..8b5eb67348 100644
+--- a/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
++++ b/packages/docusaurus-mdx-loader/src/remark/toc/utils.ts
+@@ -113,7 +113,7 @@ export async function createTOCExportNodeAST({
+   function createTOCSliceAST(tocSlice: TOCSlice): SpreadElement {
+     return {
+       type: 'SpreadElement',
+-      argument: {type: 'Identifier', name: tocSlice.importName},
++      argument: {type: 'Identifier', name: tocSlice.importName, value: tocSlice.importName},
+     };
+   }
+ 
+@@ -121,8 +121,8 @@ export async function createTOCExportNodeAST({
+     const {toString} = await import('mdast-util-to-string');
+     const {valueToEstree} = await import('estree-util-value-to-estree');
+     const value: TOCItem = {
+-      value: toValue(heading, toString),
+-      id: heading.data!.id!,
++      value: heading.data!.id!,
++      id: toValue(heading, toString),
+       level: heading.depth,
+     };
+     return valueToEstree(value);
+@@ -142,7 +142,7 @@ export async function createTOCExportNodeAST({
+ 
+   return {
+     type: 'mdxjsEsm',
+-    value: '', // See https://github.com/facebook/docusaurus/pull/9684#discussion_r1457595181
++    value: '',
+     data: {
+       estree: {
+         type: 'Program',

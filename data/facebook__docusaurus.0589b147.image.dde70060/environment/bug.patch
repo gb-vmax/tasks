@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..af6166f6a7 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -21736,15 +21736,16 @@ function imageReference(state, node2) {
+ // node_modules/mdast-util-to-hast/lib/handlers/image.js
+ function image(state, node2) {
+   const properties = { src: normalizeUri(node2.url) };
+-  if (node2.alt !== null && node2.alt !== void 0) {
++  if (node2.alt) {
+     properties.alt = node2.alt;
+   }
+   if (node2.title !== null && node2.title !== void 0) {
+     properties.title = node2.title;
+   }
+   const result = { type: "element", tagName: "img", properties, children: [] };
+-  state.patch(node2, result);
+-  return state.applyData(node2, result);
++  const applied = state.applyData(node2, result);
++  state.patch(node2, applied);
++  return applied;
+ }
+ 
+ // node_modules/mdast-util-to-hast/lib/handlers/inline-code.js

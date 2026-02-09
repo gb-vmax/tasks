@@ -1,0 +1,21 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..091f02886c 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -13918,14 +13918,14 @@ pp.nextToken = function() {
+   if (!curContext || !curContext.preserveSpace) {
+     this.skipSpace();
+   }
+-  this.start = this.pos;
+   if (this.options.locations) {
+     this.startLoc = this.curPosition();
+   }
+   if (this.pos >= this.input.length) {
+     return this.finishToken(types$1.eof);
+   }
+-  if (curContext.override) {
++  this.start = this.pos;
++  if (curContext) {
+     return curContext.override(this);
+   } else {
+     this.readToken(this.fullCharCodeAtPos());

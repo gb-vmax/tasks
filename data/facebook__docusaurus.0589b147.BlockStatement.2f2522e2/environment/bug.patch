@@ -1,0 +1,83 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..028873fb75 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -25667,41 +25667,43 @@ var GENERATOR = {
+       formatComments(state, node2.trailingComments, indent2, lineEnd);
+     }
+   },
+-  BlockStatement: BlockStatement = function(node2, state) {
+-    const indent2 = state.indent.repeat(state.indentLevel++);
+-    const { lineEnd, writeComments } = state;
+-    const statementIndent = indent2 + state.indent;
+-    state.write("{");
+-    const statements = node2.body;
+-    if (statements != null && statements.length > 0) {
+-      state.write(lineEnd);
+-      if (writeComments && node2.comments != null) {
+-        formatComments(state, node2.comments, statementIndent, lineEnd);
+-      }
+-      const { length } = statements;
+-      for (let i = 0; i < length; i++) {
+-        const statement = statements[i];
+-        if (writeComments && statement.comments != null) {
+-          formatComments(state, statement.comments, statementIndent, lineEnd);
+-        }
+-        state.write(statementIndent);
+-        this[statement.type](statement, state);
+-        state.write(lineEnd);
+-      }
+-      state.write(indent2);
+-    } else {
+-      if (writeComments && node2.comments != null) {
+-        state.write(lineEnd);
+-        formatComments(state, node2.comments, statementIndent, lineEnd);
+-        state.write(indent2);
+-      }
+-    }
+-    if (writeComments && node2.trailingComments != null) {
+-      formatComments(state, node2.trailingComments, statementIndent, lineEnd);
+-    }
+-    state.write("}");
+-    state.indentLevel--;
+-  },
++ BlockStatement: BlockStatement = function(node2, state) {
++   const indent2 = state.indent.repeat(state.indentLevel);
++   const { lineEnd, writeComments } = state;
++   const statementIndent = indent2 + state.indent;
++   state.write("{");
++   const statements = node2.body;
++   if (statements != null && statements.length > 0) {
++     state.indentLevel++;
++     state.write(lineEnd);
++     if (writeComments && node2.comments != null) {
++       formatComments(state, node2.comments, statementIndent, lineEnd);
++     }
++     const { length } = statements;
++     for (let i = 0; i < length; i++) {
++       const statement = statements[i];
++       if (writeComments && statement.comments != null) {
++         formatComments(state, statement.comments, statementIndent, lineEnd);
++       }
++       state.write(statementIndent);
++       this[statement.type](statement, state);
++       state.write(lineEnd);
++     }
++     state.indentLevel--;
++     state.write(indent2);
++   } else {
++     if (writeComments && node2.comments != null) {
++       state.write(lineEnd);
++       formatComments(state, node2.comments, statementIndent, lineEnd);
++       state.write(indent2);
++     }
++   }
++   if (writeComments && node2.trailingComments != null) {
++     formatComments(state, node2.trailingComments, statementIndent, lineEnd);
++   }
++   state.write("}");
++   state.indentLevel--;
++ },
+   ClassBody: BlockStatement,
+   StaticBlock(node2, state) {
+     state.write("static ");

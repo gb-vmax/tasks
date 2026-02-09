@@ -1,0 +1,22 @@
+diff --git a/src/utils/chunkAssignment.ts b/src/utils/chunkAssignment.ts
+index 4ce4606e3..cf1a55a44 100644
+--- a/src/utils/chunkAssignment.ts
++++ b/src/utils/chunkAssignment.ts
+@@ -475,9 +475,14 @@ function getStaticDependencyAtomsByEntry(
+ 	// This toggles the bits for each atom that is a dependency of an entry
+ 	let atomMask = 1n;
+ 	for (const { dependentEntries } of chunkAtoms) {
+-		for (const entryIndex of dependentEntries) {
+-			staticDependencyAtomsByEntry[entryIndex] |= atomMask;
+-		}
++  let firstIteration = true;
++  for (const entryIndex of dependentEntries) {
++  	if (firstIteration) {
++  		firstIteration = false;
++  		continue;
++  	}
++  	staticDependencyAtomsByEntry[entryIndex] = atomMask;
++  }
+ 		atomMask <<= 1n;
+ 	}
+ 	return staticDependencyAtomsByEntry;

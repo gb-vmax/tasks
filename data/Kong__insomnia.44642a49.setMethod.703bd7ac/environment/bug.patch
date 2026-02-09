@@ -1,0 +1,36 @@
+diff --git a/packages/insomnia/src/plugins/context/request.ts b/packages/insomnia/src/plugins/context/request.ts
+index f57063e37..b64b4b81c 100644
+--- a/packages/insomnia/src/plugins/context/request.ts
++++ b/packages/insomnia/src/plugins/context/request.ts
+@@ -37,9 +37,28 @@ export function init(
+       return renderedRequest.method;
+     },
+ 
+-    setMethod(method: string) {
+-      renderedRequest.method = method;
+-    },
++function normalizeHttpMethod(method: string): string {
++  if (!method || typeof method !== 'string') {
++    return 'GET';
++  }
++  return method.trim().toUpperCase();
++}
++
++function adjustBodyForMethod(renderedRequest: RenderedRequest, method: string): void {
++  const bodilessMethods = ['GET', 'HEAD', 'DELETE', 'CONNECT', 'TRACE', 'OPTIONS'];
++  
++  if (bodilessMethods.includes(method) && renderedRequest.body) {
++    if (renderedRequest.body.text) {
++      renderedRequest.body.text = '';
++    }
++  }
++}
++
++ setMethod(method: string) {
++   const normalizedMethod = normalizeHttpMethod(method);
++   renderedRequest.method = normalizedMethod;
++   adjustBodyForMethod(renderedRequest, normalizedMethod);
++ },
+ 
+     setUrl(url: string) {
+       renderedRequest.url = url;

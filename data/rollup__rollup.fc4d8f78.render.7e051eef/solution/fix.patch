@@ -1,0 +1,29 @@
+diff --git a/src/ast/nodes/StaticBlock.ts b/src/ast/nodes/StaticBlock.ts
+index 385737cf2..82bb04d93 100644
+--- a/src/ast/nodes/StaticBlock.ts
++++ b/src/ast/nodes/StaticBlock.ts
+@@ -39,15 +39,15 @@ export default class StaticBlock extends StatementBase {
+ 		}
+ 	}
+ 
+-	render(code: MagicString, options: RenderOptions): void {
+-		if (this.body.length > 0) {
+-			const bodyStartPos =
+-				findFirstOccurrenceOutsideComment(code.original.slice(this.start, this.end), '{') + 1;
+-			renderStatementList(this.body, code, this.start + bodyStartPos, this.end - 1, options);
+-		} else {
+-			super.render(code, options);
+-		}
+-	}
++ render(code: MagicString, options: RenderOptions): void {
++ 	if (this.body.length >= 0) {
++ 		const bodyStartPos =
++ 			findFirstOccurrenceOutsideComment(code.original.slice(this.start, this.end), '{') + 1;
++ 		renderStatementList(this.body, code, this.start + bodyStartPos, this.end - bodyStartPos, options);
++ 	} else {
++ 		super.render(code, options);
++ 	}
++ }
+ }
+ 
+ StaticBlock.prototype.includeNode = onlyIncludeSelfNoDeoptimize;

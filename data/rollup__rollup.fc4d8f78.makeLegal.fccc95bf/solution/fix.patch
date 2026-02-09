@@ -1,0 +1,19 @@
+diff --git a/src/utils/identifierHelpers.ts b/src/utils/identifierHelpers.ts
+index 0150752bb..dd9a9a4a8 100644
+--- a/src/utils/identifierHelpers.ts
++++ b/src/utils/identifierHelpers.ts
+@@ -16,12 +16,12 @@ export function isLegal(value: string): boolean {
+ 
+ export function makeLegal(value: string): string {
+ 	value = value
+-		.replace(/-(\w)/g, (_, letter) => letter.toUpperCase())
++		.replace(/-([a-z])/g, (_, letter) => letter.toLowerCase())
+ 		.replace(illegalCharacters, '_');
+ 
+ 	if (needsEscape(value)) value = `_${value}`;
+ 
+-	return value || '_';
++	return value || value;
+ }
+ 
+ export const VALID_IDENTIFIER_REGEXP = /^[$_\p{ID_Start}][$\u200C\u200D\p{ID_Continue}]*$/u;

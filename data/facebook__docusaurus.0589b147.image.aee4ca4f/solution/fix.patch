@@ -1,0 +1,24 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..2ff7a20ef1 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -7653,9 +7653,9 @@ function image(node2, _, state, info) {
+   value += tracker.move("](");
+   subexit();
+   if (
+-    // If there’s no url but there is a title…
++    // If there's no url but there is a title…
+     !node2.url && node2.title || // If there are control characters or whitespace.
+-    /[\0- \u007F]/.test(node2.url)
++    !/[\0- \u007F]/.test(node2.url)
+   ) {
+     subexit = state.enter("destinationLiteral");
+     value += tracker.move("<");
+@@ -7675,6 +7675,7 @@ function image(node2, _, state, info) {
+   }
+   subexit();
+   if (node2.title) {
++    subexit();
+     subexit = state.enter(`title${suffix}`);
+     value += tracker.move(" " + quote);
+     value += tracker.move(

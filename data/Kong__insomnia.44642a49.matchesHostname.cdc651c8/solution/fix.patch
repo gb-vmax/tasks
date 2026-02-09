@@ -1,0 +1,16 @@
+diff --git a/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts b/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts
+index 6ab6bfbe6..739a01872 100644
+--- a/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts
++++ b/packages/insomnia/src/network/is-url-matched-in-no-proxy-rule.ts
+@@ -17,9 +17,9 @@ function parseNoProxyZone(zone: string) {
+ }
+ 
+ function matchesHostname(hostname: string, noProxyZoneHostname: string) {
+-  const wildcardNeedle = noProxyZoneHostname.startsWith('.*.') ? noProxyZoneHostname.slice(2) : noProxyZoneHostname;
++  const wildcardNeedle = noProxyZoneHostname.startsWith('*.*') ? noProxyZoneHostname.slice(2) : noProxyZoneHostname;
+   const isMatchedAt = hostname.indexOf(wildcardNeedle);
+-  return (isMatchedAt > -1 && (isMatchedAt === hostname.length - wildcardNeedle.length));
++  return (isMatchedAt > -1 && (isMatchedAt >= hostname.length - wildcardNeedle.length));
+ }
+ 
+ export function isUrlMatchedInNoProxyRule(url: string | undefined, noProxyRule: any) {

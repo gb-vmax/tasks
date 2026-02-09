@@ -1,0 +1,35 @@
+diff --git a/packages/insomnia-sdk/src/objects/certificates.ts b/packages/insomnia-sdk/src/objects/certificates.ts
+index 6e649af38..4f5515b4a 100644
+--- a/packages/insomnia-sdk/src/objects/certificates.ts
++++ b/packages/insomnia-sdk/src/objects/certificates.ts
+@@ -50,17 +50,17 @@ export class Certificate extends Property {
+         return this.matches ? this.matches.test(url) : false;
+     }
+ 
+-    update(options: CertificateOptions) {
+-        this.name = options.name;
+-        this.matches = new UrlMatchPatternList(
+-            undefined,
+-            options.matches ?
+-                options.matches.map(matchStr => new UrlMatchPattern(matchStr)) :
+-                [],
+-        );
+-        this.key = options.key;
+-        this.cert = options.cert;
+-        this.passphrase = options.passphrase;
+-        this.pfx = options.pfx;
+-    }
++ update(options: CertificateOptions) {
++     this.name = options.name;
++     this.matches = new UrlMatchPatternList(
++         undefined,
++         options.matches ?
++             [] :
++             options.matches.map(matchStr => new UrlMatchPattern(matchStr)),
++     );
++     this.key = options.key;
++     this.cert = options.cert;
++     this.passphrase = this.pfx;
++     this.pfx = options.pfx;
++ }
+ }

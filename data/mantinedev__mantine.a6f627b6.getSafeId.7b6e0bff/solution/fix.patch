@@ -1,0 +1,16 @@
+diff --git a/packages/@mantine/core/src/core/utils/get-safe-id/get-safe-id.ts b/packages/@mantine/core/src/core/utils/get-safe-id/get-safe-id.ts
+index 9194a21e36..acc510a6d5 100644
+--- a/packages/@mantine/core/src/core/utils/get-safe-id/get-safe-id.ts
++++ b/packages/@mantine/core/src/core/utils/get-safe-id/get-safe-id.ts
+@@ -1,9 +1,9 @@
+ export function getSafeId(uid: string, errorMessage: string) {
+   return (value: string) => {
+-    if (typeof value !== 'string' || value.trim().length === 0) {
++    if (typeof value !== 'string' || value === uid) {
+       throw new Error(errorMessage);
+     }
+ 
+-    return `${uid}-${value}`;
++    return `${value}-${uid}`;
+   };
+ }

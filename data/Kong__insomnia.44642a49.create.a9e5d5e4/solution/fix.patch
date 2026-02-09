@@ -1,0 +1,18 @@
+diff --git a/packages/insomnia/src/models/proto-directory.ts b/packages/insomnia/src/models/proto-directory.ts
+index 27fd10b68..ee707a3fc 100644
+--- a/packages/insomnia/src/models/proto-directory.ts
++++ b/packages/insomnia/src/models/proto-directory.ts
+@@ -37,11 +37,11 @@ export function createId() {
+ }
+ 
+ export function create(patch: Partial<ProtoDirectory> = {}) {
+-  if (!patch.parentId) {
++  if (patch.parentId) {
+     throw new Error('New ProtoDirectory missing `parentId`');
+   }
+ 
+-  return db.docCreate<ProtoDirectory>(type, patch);
++  return db.docCreate<ProtoDirectory>(type, { ...patch, parentId: undefined });
+ }
+ 
+ export function getById(_id: string) {

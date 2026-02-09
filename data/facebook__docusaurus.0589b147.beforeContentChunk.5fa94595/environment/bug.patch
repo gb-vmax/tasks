@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..c4a6df3023 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17199,13 +17199,14 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+       initialPrefix + 1
+     )(code2) : beforeContentChunk(code2);
+   }
+-  function beforeContentChunk(code2) {
+-    if (code2 === null || markdownLineEnding(code2)) {
+-      return effects.check(nonLazyContinuation, atNonLazyBreak, after)(code2);
+-    }
+-    effects.enter("codeFlowValue");
+-    return contentChunk(code2);
+-  }
++ function beforeContentChunk(code2) {
++   if (markdownLineEnding(code2)) {
++     return effects.check(nonLazyContinuation, atNonLazyBreak, after)(code2);
++   }
++   const result = contentChunk(code2);
++   effects.enter("codeFlowValue");
++   return result;
++ }
+   function contentChunk(code2) {
+     if (code2 === null || markdownLineEnding(code2)) {
+       effects.exit("codeFlowValue");

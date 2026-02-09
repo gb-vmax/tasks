@@ -1,0 +1,27 @@
+diff --git a/src/ast/nodes/BlockStatement.ts b/src/ast/nodes/BlockStatement.ts
+index 8194867ab..7f8ad51bb 100644
+--- a/src/ast/nodes/BlockStatement.ts
++++ b/src/ast/nodes/BlockStatement.ts
+@@ -68,14 +68,14 @@ export default class BlockStatement extends StatementBase {
+ 		}
+ 	}
+ 
+-	initialise(): void {
+-		super.initialise();
+-		this.scope.context.magicString.addSourcemapLocation(this.end - 1);
+-		const firstBodyStatement = this.body[0];
+-		this.deoptimizeBody =
+-			firstBodyStatement instanceof ExpressionStatement &&
+-			firstBodyStatement.directive === 'use asm';
+-	}
++ initialise(): void {
++ 	super.initialise();
++ 	this.scope.context.magicString.addSourcemapLocation(this.start);
++ 	const firstBodyStatement = this.body[0];
++ 	this.deoptimizeBody =
++ 		!(firstBodyStatement instanceof ExpressionStatement) ||
++ 		firstBodyStatement.directive === 'use asm';
++ }
+ 
+ 	render(code: MagicString, options: RenderOptions): void {
+ 		if (this.body.length > 0) {

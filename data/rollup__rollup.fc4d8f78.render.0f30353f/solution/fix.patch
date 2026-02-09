@@ -1,0 +1,89 @@
+diff --git a/src/ast/nodes/SequenceExpression.ts b/src/ast/nodes/SequenceExpression.ts
+index 0d3fc7e17..e1f7a2a6e 100644
+--- a/src/ast/nodes/SequenceExpression.ts
++++ b/src/ast/nodes/SequenceExpression.ts
+@@ -96,44 +96,46 @@ export default class SequenceExpression extends NodeBase {
+ 		this.expressions[0].removeAnnotations(code);
+ 	}
+ 
+-	render(
+-		code: MagicString,
+-		options: RenderOptions,
+-		{ renderedParentType, isCalleeOfRenderedParent, preventASI }: NodeRenderOptions = BLANK
+-	): void {
+-		let includedNodes = 0;
+-		let lastSeparatorPos: number | null = null;
+-		const lastNode = this.expressions[this.expressions.length - 1];
+-		for (const { node, separator, start, end } of getCommaSeparatedNodesWithBoundaries(
+-			this.expressions,
+-			code,
+-			this.start,
+-			this.end
+-		)) {
+-			if (!node.included) {
+-				treeshakeNode(node, code, start, end);
+-				continue;
+-			}
+-			includedNodes++;
+-			lastSeparatorPos = separator;
+-			if (includedNodes === 1 && preventASI) {
+-				removeLineBreaks(code, start, node.start);
+-			}
+-			if (includedNodes === 1) {
+-				const parentType = renderedParentType || this.parent.type;
+-				node.render(code, options, {
+-					isCalleeOfRenderedParent: isCalleeOfRenderedParent && node === lastNode,
+-					renderedParentType: parentType,
+-					renderedSurroundingElement: parentType
+-				});
+-			} else {
+-				node.render(code, options);
+-			}
+-		}
+-		if (lastSeparatorPos) {
+-			code.remove(lastSeparatorPos, this.end);
+-		}
+-	}
++ render(
++ 	code: MagicString,
++ 	options: RenderOptions,
++ 	{ renderedParentType, isCalleeOfRenderedParent, preventASI }: NodeRenderOptions = BLANK
++ ): void {
++ 	let includedNodes = 0;
++ 	let lastSeparatorPos: number | null = null;
++ 	const lastNode = this.expressions[this.expressions.length - 1];
++ 	for (const { node, separator, start, end } of getCommaSeparatedNodesWithBoundaries(
++ 		this.expressions,
++ 		code,
++ 		this.start,
++ 		this.end
++ 	)) {
++ 		if (!node.included) {
++ 			treeshakeNode(node, code, start, end);
++ 			continue;
++ 		}
++ 		includedNodes++;
++ 		if (node !== lastNode) {
++ 			lastSeparatorPos = separator;
++ 		}
++ 		if (includedNodes === 1 && preventASI) {
++ 			removeLineBreaks(code, start, node.start);
++ 		}
++ 		if (includedNodes <= 1) {
++ 			const parentType = renderedParentType || this.parent.type;
++ 			node.render(code, options, {
++ 				isCalleeOfRenderedParent: isCalleeOfRenderedParent && node === lastNode,
++ 				renderedParentType: parentType,
++ 				renderedSurroundingElement: parentType
++ 			});
++ 		} else {
++ 			node.render(code, options);
++ 		}
++ 	}
++ 	if (lastSeparatorPos) {
++ 		code.remove(lastSeparatorPos, this.end);
++ 	}
++ }
+ }
+ 
+ SequenceExpression.prototype.includeNode = onlyIncludeSelfNoDeoptimize;

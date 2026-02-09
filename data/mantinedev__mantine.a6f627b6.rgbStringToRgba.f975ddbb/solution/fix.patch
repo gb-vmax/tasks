@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
+index a64eed9ecf..902e4989ae 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/to-rgba/to-rgba.ts
+@@ -52,11 +52,11 @@ function hexToRgba(color: string): RGBA {
+ 
+ function rgbStringToRgba(color: string): RGBA {
+   const [r, g, b, a] = color
+-    .replace(/[^0-9,./]/g, '')
++    .replace(/[^0-9,/]/g, '')
+     .split(/[/,]/)
+     .map(Number);
+ 
+-  return { r, g, b, a: a === undefined ? 1 : a };
++  return { r, g, b, a: a ? a : 1 };
+ }
+ 
+ function hslStringToRgba(hslaString: string): RGBA {

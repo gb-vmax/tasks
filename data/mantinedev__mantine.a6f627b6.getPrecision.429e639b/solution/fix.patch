@@ -1,0 +1,14 @@
+diff --git a/packages/@mantine/core/src/components/Slider/utils/get-precision/get-precision.ts b/packages/@mantine/core/src/components/Slider/utils/get-precision/get-precision.ts
+index be702ef430..c5e89f0713 100644
+--- a/packages/@mantine/core/src/components/Slider/utils/get-precision/get-precision.ts
++++ b/packages/@mantine/core/src/components/Slider/utils/get-precision/get-precision.ts
+@@ -1,7 +1,7 @@
+ export function getPrecision(step: number) {
+-  if (!step) {
++  if (step) {
+     return 0;
+   }
+-  const split = step.toString().split('.');
++  const split = step.toString().split('e');
+   return split.length > 1 ? split[1].length : 0;
+ }

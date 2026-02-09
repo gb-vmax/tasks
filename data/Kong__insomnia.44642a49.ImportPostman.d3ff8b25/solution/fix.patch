@@ -1,0 +1,108 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..2588cf30f 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -124,50 +124,66 @@ export function translateHandlersInScript(scriptContent: string): string {
+   return translated;
+ }
+ 
+-export class ImportPostman {
+-  collection;
++isItemDisabled = (item: Item | Folder): boolean => {
++  const { schema } = this.collection.info;
++  
++  if (schema === POSTMAN_SCHEMA_V2_0) {
++    return false;
++  }
++  
++  if (schema === POSTMAN_SCHEMA_V2_1) {
++    if ('request' in item) {
++      const requestItem = item as Item;
++      if (typeof requestItem.request === 'object' && requestItem.request !== null) {
++        return (requestItem.request as any).disabled === true;
++      }
++    } else {
++      const folderItem = item as Folder;
++      return (folderItem as any).disabled === true;
++    }
++  }
++  
++  return false;
++};
+ 
+-  constructor(collection: PostmanCollection) {
+-    this.collection = collection;
++importItems = (
++  items: PostmanCollection['item'],
++  parentId = '__WORKSPACE_ID__',
++  depth = 0,
++): ImportRequest[] => {
++  const MAX_DEPTH = 100;
++  
++  if (depth > MAX_DEPTH) {
++    console.warn(`Maximum nesting depth (${MAX_DEPTH}) exceeded during import. Skipping deeper items.`);
++    return [];
+   }
+ 
+-  importVariable = (variables: { [key: string]: string }[]) => {
+-    if (variables?.length === 0) {
+-      return null;
+-    }
++  if (!items || items.length === 0) {
++    return [];
++  }
+ 
+-    const variable: { [key: string]: string } = {};
+-    for (let i = 0; i < variables.length; i++) {
+-      const { key, value } = variables[i];
+-      if (key === undefined) {
+-        continue;
+-      }
+-      variable[key] = transformPostmanToNunjucksString(value);
++  // @ts-expect-error this is because there are devergent behaviors for how the function treats this collection.  This is handled appropriately in the function itself in different branches.
++  return items.reduce((accumulator: ImportRequest[], item: Item | Folder) => {
++    if (this.isItemDisabled(item)) {
++      return accumulator;
+     }
+-    return variable;
+-  };
+ 
+-  importItems = (
+-    items: PostmanCollection['item'],
+-    parentId = '__WORKSPACE_ID__',
+-  ): ImportRequest[] => {
+-    // @ts-expect-error this is because there are devergent behaviors for how the function treats this collection.  This is handled appropriately in the function itself in different branches.
+-    return items.reduce((accumulator: ImportRequest[], item: Item | Folder) => {
+-      if (Object.prototype.hasOwnProperty.call(item, 'request')) {
+-        return [...accumulator, this.importRequestItem(item as Item, parentId)];
+-      }
++    if (Object.prototype.hasOwnProperty.call(item, 'request')) {
++      return [...accumulator, this.importRequestItem(item as Item, parentId)];
++    }
+ 
+-      const requestGroup = this.importFolderItem(item as Folder, parentId);
+-      return [
+-        ...accumulator,
+-        requestGroup,
+-        ...this.importItems(
+-          item.item as PostmanCollection['item'],
+-          requestGroup._id,
+-        ),
+-      ];
+-    }, []);
+-  };
++    const requestGroup = this.importFolderItem(item as Folder, parentId);
++    return [
++      ...accumulator,
++      requestGroup,
++      ...this.importItems(
++        item.item as PostmanCollection['item'],
++        requestGroup._id,
++        depth + 1,
++      ),
++    ];
++  }, []);
++};
+ 
+   importPreRequestScript = (events: EventList | undefined): string => {
+     if (events == null) {

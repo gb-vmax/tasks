@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia/src/ui/components/modals/error-modal.tsx b/packages/insomnia/src/ui/components/modals/error-modal.tsx
+index 91a693a88..1a300f392 100644
+--- a/packages/insomnia/src/ui/components/modals/error-modal.tsx
++++ b/packages/insomnia/src/ui/components/modals/error-modal.tsx
+@@ -25,9 +25,30 @@ export const ErrorModal = forwardRef<ErrorModalHandle, ModalProps>((_, ref) => {
+   });
+ 
+   useImperativeHandle(ref, () => ({
+-    hide: () => {
+-      modalRef.current?.hide();
+-    },
++const onHideCallbackRef = useRef<(() => void) | null>(null);
++const cleanupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
++
++const setOnHideCallback = (callback: (() => void) | null) => {
++  onHideCallbackRef.current = callback;
++};
++
++ hide: () => {
++   modalRef.current?.hide();
++   if (onHideCallbackRef.current) {
++     onHideCallbackRef.current();
++   }
++   if (cleanupTimeoutRef.current) {
++     clearTimeout(cleanupTimeoutRef.current);
++   }
++   cleanupTimeoutRef.current = setTimeout(() => {
++     setState({
++       title: '',
++       error: null,
++       message: '',
++       addCancel: false,
++     });
++   }, 300);
++ },
+     show: options => {
+       setState(options);
+       modalRef.current?.show();

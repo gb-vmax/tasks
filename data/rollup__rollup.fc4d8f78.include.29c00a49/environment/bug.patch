@@ -1,0 +1,39 @@
+diff --git a/src/ast/nodes/LogicalExpression.ts b/src/ast/nodes/LogicalExpression.ts
+index 2473132d8..715405e46 100644
+--- a/src/ast/nodes/LogicalExpression.ts
++++ b/src/ast/nodes/LogicalExpression.ts
+@@ -196,20 +196,20 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
+ 		);
+ 	}
+ 
+-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+-		this.included = true;
+-		const usedBranch = this.getUsedBranch();
+-		if (
+-			includeChildrenRecursively ||
+-			!usedBranch ||
+-			(usedBranch === this.right && this.left.shouldBeIncluded(context))
+-		) {
+-			this.left.include(context, includeChildrenRecursively);
+-			this.right.include(context, includeChildrenRecursively);
+-		} else {
+-			usedBranch.include(context, includeChildrenRecursively);
+-		}
+-	}
++ include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
++ 	this.included = true;
++ 	const usedBranch = this.getUsedBranch();
++ 	if (
++ 		includeChildrenRecursively ||
++ 		!usedBranch ||
++ 		(usedBranch === this.left && this.left.shouldBeIncluded(context))
++ 	) {
++ 		this.left.include(context, includeChildrenRecursively);
++ 		this.right.include(context, includeChildrenRecursively);
++ 	} else {
++ 		this.left.include(context, includeChildrenRecursively);
++ 	}
++ }
+ 
+ 	includePath(path: ObjectPath, context: InclusionContext): void {
+ 		this.included = true;

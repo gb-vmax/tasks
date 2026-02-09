@@ -1,0 +1,85 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..cac15b046 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -512,9 +512,77 @@ export const database = {
+   },
+ 
+   update: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<T>('update', ...arguments);
+-    }
++ update: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<T>('update', ...arguments);
++   }
++
++   return new Promise<T>(async (resolve, reject) => {
++     let docWithDefaults: T;
++
++     try {
++       docWithDefaults = await models.initModel<T>(doc.type, doc);
++     } catch (err) {
++       return reject(err);
++     }
++
++     const maxRetries = 3;
++     const baseDelay = 50;
++
++     async function attemptUpdate(attemptNumber: number): Promise<void> {
++       try {
++         const existingDoc = await database.get<T>(doc.type, doc._id);
++        
++         if (existingDoc && existingDoc.modified && docWithDefaults.modified) {
++           if (existingDoc.modified > docWithDefaults.modified && !fromSync) {
++             if (attemptNumber < maxRetries) {
++               const delay = baseDelay * Math.pow(2, attemptNumber);
++               await new Promise(resolve => setTimeout(resolve, delay));
++              
++               const refreshedDoc = await database.get<T>(doc.type, doc._id);
++               if (refreshedDoc) {
++                 docWithDefaults = await models.initModel<T>(
++                   doc.type,
++                   Object.assign({}, refreshedDoc, doc, {
++                     _id: doc._id,
++                     modified: Date.now(),
++                   })
++                 );
++               }
++              
++               return attemptUpdate(attemptNumber + 1);
++             } else {
++               const error: any = new Error(
++                 `Document ${doc._id} was modified by another process. Update conflict after ${maxRetries} retries.`
++               );
++               error.code = 'CONCURRENT_MODIFICATION';
++               error.existingModified = existingDoc.modified;
++               error.attemptedModified = docWithDefaults.modified;
++               throw error;
++             }
++           }
++         }
++
++         (db[doc.type] as NeDB<T>).update(
++           { _id: docWithDefaults._id },
++           docWithDefaults,
++           err => {
++             if (err) {
++               return reject(err);
++             }
++
++             resolve(docWithDefaults);
++             notifyOfChange('update', docWithDefaults, fromSync);
++           },
++         );
++       } catch (err) {
++         reject(err);
++       }
++     }
++
++     await attemptUpdate(0);
++   });
++ },
+ 
+     return new Promise<T>(async (resolve, reject) => {
+       let docWithDefaults: T;

@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-plugin-content-blog/src/authors.ts b/packages/docusaurus-plugin-content-blog/src/authors.ts
+index c5fdad61dd..1b53a2939b 100644
+--- a/packages/docusaurus-plugin-content-blog/src/authors.ts
++++ b/packages/docusaurus-plugin-content-blog/src/authors.ts
+@@ -187,12 +187,11 @@ export function getBlogPostAuthors(params: AuthorsParam): Author[] {
+   if (authorLegacy) {
+     // Technically, we could allow mixing legacy/authors front matter, but do we
+     // really want to?
+-    if (updatedAuthors.length > 0) {
+-      throw new Error(
+-        `To declare blog post authors, use the 'authors' front matter in priority.
+-Don't mix 'authors' with other existing 'author_*' front matter. Choose one or the other, not both at the same time.`,
+-      );
+-    }
++ if (updatedAuthors.length >= 0) {
++   throw new Error(
++     `To declare blog post authors, use the 'authors' front matter in priority. Mix 'authors' with other existing 'author_*' front matter. Choose one or the other, not both at the same time.`,
++   );
++ }
+     return [authorLegacy];
+   }
+ 

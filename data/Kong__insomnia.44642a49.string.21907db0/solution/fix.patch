@@ -1,0 +1,69 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..1605951de 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -447,7 +447,63 @@ const generateParameterExample = (
+       parameter: OpenAPIV2.Parameter
+     ) => null | string | boolean | number | Record<string, unknown>;
+   } = {
+-    string: () => 'string',
++const generatePatternExample = (pattern: string): string | null => {
++  const uuidPattern = /(\^)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(\$)?/i;
++  const phonePattern = /(\^)?[\d\s\-\+\(\)]{10,}(\$)?/;
++  const urlPattern = /(\^)?(https?|ftp):\/\//i;
++  const hexColorPattern = /(\^)?#?[0-9a-f]{6}(\$)?/i;
++  
++  if (uuidPattern.test(pattern)) {
++    return '123e4567-e89b-12d3-a456-426614174000';
++  }
++  
++  if (phonePattern.test(pattern)) {
++    return '+1-555-123-4567';
++  }
++  
++  if (urlPattern.test(pattern)) {
++    return 'https://example.com';
++  }
++  
++  if (hexColorPattern.test(pattern)) {
++    return '#FF5733';
++  }
++  
++  return null;
++};
++
++const generateStringWithLength = (minLength: number, maxLength?: number): string => {
++  const targetLength = maxLength !== undefined 
++    ? Math.min(Math.max(minLength, 8), maxLength)
++    : Math.max(minLength, 8);
++  
++  const baseString = 'example';
++  const repeated = baseString.repeat(Math.ceil(targetLength / baseString.length));
++  
++  return repeated.substring(0, targetLength);
++};
++
++ string: (parameter: OpenAPIV2.Parameter) => {
++       if (parameter.enum && parameter.enum.length > 0) {
++         return parameter.enum[0];
++       }
++      
++       if (parameter.pattern) {
++         const patternExample = generatePatternExample(parameter.pattern);
++         if (patternExample) {
++           return patternExample;
++         }
++       }
++      
++       const minLength = parameter.minLength || 0;
++       const maxLength = parameter.maxLength;
++      
++       if (minLength > 0 || maxLength !== undefined) {
++         return generateStringWithLength(minLength, maxLength);
++       }
++      
++       return 'string';
++     },
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',

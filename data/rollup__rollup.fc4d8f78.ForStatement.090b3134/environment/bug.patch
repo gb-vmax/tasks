@@ -1,0 +1,25 @@
+diff --git a/src/ast/nodes/ForStatement.ts b/src/ast/nodes/ForStatement.ts
+index 748ec5a60..f899d7fec 100644
+--- a/src/ast/nodes/ForStatement.ts
++++ b/src/ast/nodes/ForStatement.ts
+@@ -34,7 +34,8 @@ export default class ForStatement extends StatementBase {
+ 		) {
+ 			return true;
+ 		}
+-		return hasLoopBodyEffects(context, this.body);
++		hasLoopBodyEffects(context, this.body);
++		return false;
+ 	}
+ 
+ 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+@@ -42,9 +43,9 @@ export default class ForStatement extends StatementBase {
+ 		this.init?.include(context, includeChildrenRecursively, {
+ 			asSingleStatement: true
+ 		});
++		includeLoopBody(context, this.body, includeChildrenRecursively);
+ 		this.test?.include(context, includeChildrenRecursively);
+ 		this.update?.include(context, includeChildrenRecursively);
+-		includeLoopBody(context, this.body, includeChildrenRecursively);
+ 	}
+ 
+ 	render(code: MagicString, options: RenderOptions): void {

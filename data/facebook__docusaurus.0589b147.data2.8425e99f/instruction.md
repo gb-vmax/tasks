@@ -1,30 +1,29 @@
 # Bug Report
 
 ### Describe the bug
-
-I'm encountering an issue with ATX heading parsing where hash symbols (`#`) inside heading text are not being handled correctly. When a heading contains a `#` character in its content, the parser seems to be treating it unexpectedly, causing the heading text to be truncated or parsed incorrectly.
+I'm experiencing an issue with ATX heading parsing where the hash symbol (`#`) is not being handled correctly within heading text. When a heading contains a `#` character in its content, the parser seems to treat it incorrectly, causing the heading text to be truncated or parsed improperly.
 
 ### Reproduction
-
 ```markdown
 # Heading with # symbol inside
-## Another heading with # in the middle
-### Test # heading
+## Another heading with ## multiple hashes
+### Testing #hashtag support
 ```
 
-When parsing these headings, the text after the internal `#` symbol doesn't appear to be processed as expected. The heading content should include the hash symbol as part of the text, but instead it seems to be causing issues with the tokenization.
+When parsing these headings, the content after the `#` symbol within the heading text is not being processed as expected. The parser appears to be exiting prematurely when encountering hash symbols that are part of the actual heading content rather than the heading syntax itself.
 
 ### Expected behavior
+The parser should correctly distinguish between:
+1. Hash symbols that define the heading level (at the start)
+2. Hash symbols that are part of the heading text content
 
-Headings should be able to contain `#` characters within their text content without breaking the parsing. For example:
-- `# Heading with # symbol inside` should parse as a level-1 heading with the full text "Heading with # symbol inside"
-- `## Test # heading` should parse as a level-2 heading with the full text "Test # heading"
-
-The hash symbols inside the heading text should be treated as regular characters, not as special markdown syntax.
+Headings containing `#` characters within their text should be parsed completely, with all content preserved.
 
 ### System Info
 - @mdx-js/mdx version: 3.0.0
-- Using the micromark tokenizer for ATX headings
+- Node version: Latest
+
+This seems to have broken recently. Any heading with a hash symbol in the text is now being cut off incorrectly.
 
 ---
 Repository: /testbed

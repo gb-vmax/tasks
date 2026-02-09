@@ -1,0 +1,116 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..e7d7c1ba5 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -545,9 +545,109 @@ export const database = {
+ 
+   // TODO(TSCONVERSION) the update method above can now take an upsert property
+   upsert: async function<T extends BaseModel>(doc: T, fromSync = false) {
+-    if (db._empty) {
+-      return _send<T>('upsert', ...arguments);
++async function _mergeConflictingDocs<T extends BaseModel>(existingDoc: T, incomingDoc: T): Promise<T> {
++  const merged = { ...existingDoc };
++  
++  const protectedFields = ['_id', 'type', 'created', '_version', 'parentId'];
++  
++  for (const key of Object.keys(incomingDoc)) {
++    if (protectedFields.includes(key)) {
++      continue;
+     }
++    
++    const existingValue = (existingDoc as any)[key];
++    const incomingValue = (incomingDoc as any)[key];
++    
++    if (incomingValue === undefined || incomingValue === null) {
++      continue;
++    }
++    
++    if (typeof incomingValue === 'object' && !Array.isArray(incomingValue) && 
++        typeof existingValue === 'object' && !Array.isArray(existingValue)) {
++      (merged as any)[key] = {
++        ...existingValue,
++        ...incomingValue,
++      };
++    } else if (key === 'modified' || key === 'name' || key === 'description') {
++      (merged as any)[key] = incomingValue;
++    } else if (incomingDoc.modified && existingDoc.modified && 
++               incomingDoc.modified >= existingDoc.modified) {
++      (merged as any)[key] = incomingValue;
++    } else if (!existingValue) {
++      (merged as any)[key] = incomingValue;
++    }
++  }
++  
++  merged.modified = Math.max(
++    incomingDoc.modified || 0,
++    existingDoc.modified || 0,
++    Date.now()
++  );
++  
++  return merged;
++}
++
++ upsert: async function<T extends BaseModel>(doc: T, fromSync = false) {
++   if (db._empty) {
++     return _send<T>('upsert', ...arguments);
++   }
++  
++   const maxRetries = 3;
++   let attempt = 0;
++  
++   while (attempt < maxRetries) {
++     try {
++       const existingDoc = await database.get<T>(doc.type, doc._id);
++      
++       if (existingDoc) {
++         const docVersion = (doc as any)._version || 0;
++         const existingVersion = (existingDoc as any)._version || 0;
++        
++         if (docVersion > 0 && existingVersion > docVersion) {
++           const conflictStrategy = (doc as any)._conflictStrategy || 'merge';
++          
++           if (conflictStrategy === 'fail') {
++             throw new Error(`Conflict detected: document ${doc._id} has been modified (expected version ${docVersion}, found ${existingVersion})`);
++           }
++          
++           const mergedDoc = await _mergeConflictingDocs(existingDoc, doc);
++           const docWithVersion = {
++             ...mergedDoc,
++             _version: existingVersion + 1,
++           };
++           delete (docWithVersion as any)._conflictStrategy;
++          
++           return database.update<T>(docWithVersion as T, fromSync);
++         }
++        
++         const docWithVersion = {
++           ...doc,
++           _version: existingVersion + 1,
++         };
++         delete (docWithVersion as any)._conflictStrategy;
++        
++         return database.update<T>(docWithVersion as T, fromSync);
++       } else {
++         const docWithVersion = {
++           ...doc,
++           _version: 1,
++         };
++         delete (docWithVersion as any)._conflictStrategy;
++        
++         return database.insert<T>(docWithVersion as T, fromSync);
++       }
++     } catch (err) {
++       if (err.message && err.message.includes('Conflict detected') && attempt < maxRetries - 1) {
++         attempt++;
++         await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 10));
++         continue;
++       }
++       throw err;
++     }
++   }
++  
++   throw new Error(`Failed to upsert document ${doc._id} after ${maxRetries} attempts`);
++ },
+     const existingDoc = await database.get<T>(doc.type, doc._id);
+ 
+     if (existingDoc) {

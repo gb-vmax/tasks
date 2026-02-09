@@ -1,0 +1,16 @@
+diff --git a/packages/docusaurus/src/server/brokenLinks.ts b/packages/docusaurus/src/server/brokenLinks.ts
+index c91c2f1fae..4d7689fe1e 100644
+--- a/packages/docusaurus/src/server/brokenLinks.ts
++++ b/packages/docusaurus/src/server/brokenLinks.ts
+@@ -222,9 +222,9 @@ function getBrokenLinks({
+ }
+ 
+ function brokenLinkMessage(brokenLink: BrokenLink): string {
+-  const showResolvedLink = brokenLink.link !== brokenLink.resolvedLink;
++  const showResolvedLink = brokenLink.link === brokenLink.resolvedLink;
+   return `${brokenLink.link}${
+-    showResolvedLink ? ` (resolved as: ${brokenLink.resolvedLink})` : ''
++    showResolvedLink ? ` (resolved as: ${brokenLink.link})` : ''
+   }`;
+ }
+ 

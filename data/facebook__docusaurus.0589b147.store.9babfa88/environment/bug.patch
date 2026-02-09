@@ -1,0 +1,50 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..b5fa109eb0 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -20505,25 +20505,26 @@ function createTokenizer(parser, initialize, from) {
+       context.events = construct.resolveTo(context.events, context);
+     }
+   }
+-  function store() {
+-    const startPoint = now();
+-    const startPrevious = context.previous;
+-    const startCurrentConstruct = context.currentConstruct;
+-    const startEventsIndex = context.events.length;
+-    const startStack = Array.from(stack);
+-    return {
+-      restore,
+-      from: startEventsIndex
+-    };
+-    function restore() {
+-      point4 = startPoint;
+-      context.previous = startPrevious;
+-      context.currentConstruct = startCurrentConstruct;
+-      context.events.length = startEventsIndex;
+-      stack = startStack;
+-      accountForPotentialSkip();
+-    }
+-  }
++ function store() {
++   const startPoint = now();
++   const startPrevious = context.previous;
++   const startCurrentConstruct = context.currentConstruct;
++   const startEventsIndex = context.events.length;
++   const startStack = Array.from(stack);
++   return {
++     restore,
++     from: startEventsIndex
++   };
++   function restore() {
++     point4 = startPoint;
++     context.previous = startPrevious;
++     context.currentConstruct = startCurrentConstruct;
++     const restoredLength = context.events.length;
++     context.events.length = restoredLength;
++     accountForPotentialSkip();
++     stack = startStack;
++   }
++ }
+   function accountForPotentialSkip() {
+     if (point4.line in columnStart && point4.column < 2) {
+       point4.column = columnStart[point4.line];

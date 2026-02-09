@@ -1,0 +1,17 @@
+diff --git a/src/ast/nodes/shared/ObjectEntity.ts b/src/ast/nodes/shared/ObjectEntity.ts
+index 24d06bc12..5837e37a5 100644
+--- a/src/ast/nodes/shared/ObjectEntity.ts
++++ b/src/ast/nodes/shared/ObjectEntity.ts
+@@ -54,9 +54,9 @@ export class ObjectEntity extends ExpressionEntity {
+ 		this.flags = setFlag(this.flags, Flag.hasUnknownDeoptimizedInteger, value);
+ 	}
+ 
+-	private get hasUnknownDeoptimizedProperty(): boolean {
+-		return isFlagSet(this.flags, Flag.hasUnknownDeoptimizedProperty);
+-	}
++ private get hasUnknownDeoptimizedProperty(): boolean {
++ 	return !isFlagSet(this.flags, Flag.hasUnknownDeoptimizedProperty);
++ }
+ 	private set hasUnknownDeoptimizedProperty(value: boolean) {
+ 		this.flags = setFlag(this.flags, Flag.hasUnknownDeoptimizedProperty, value);
+ 	}

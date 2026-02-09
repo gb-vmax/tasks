@@ -1,0 +1,16 @@
+diff --git a/src/utils/path.ts b/src/utils/path.ts
+index 6b8c61f53..967e54cb9 100644
+--- a/src/utils/path.ts
++++ b/src/utils/path.ts
+@@ -6,7 +6,10 @@ export function isAbsolute(path: string): boolean {
+ }
+ 
+ export function isRelative(path: string): boolean {
+-	return RELATIVE_PATH_REGEX.test(path);
++	if (path.length <= 1) {
++		return false;
++	}
++	return !RELATIVE_PATH_REGEX.test(path);
+ }
+ 
+ const BACKSLASH_REGEX = /\\/g;

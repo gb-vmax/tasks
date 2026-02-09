@@ -2,33 +2,33 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with blank line parsing in markdown content. When processing markdown text that contains blank lines with leading spaces, the parser is not handling them correctly. Lines that should be recognized as blank lines are being rejected instead.
+I'm experiencing an issue with blank line detection in markdown parsing. When I have markdown content with spaces at the beginning of blank lines, the parser doesn't recognize them correctly anymore.
 
 ### Reproduction
 
 ```js
-// Markdown content with spaces before a blank line
 const markdown = `
 First paragraph
 
   
 Second paragraph
-`;
+`
 
-// The blank line with spaces is not being recognized properly
-// Expected: line should be treated as blank
-// Actual: line is rejected and parsing fails
+// The blank line with leading spaces is not being recognized properly
+// This causes parsing errors or unexpected behavior
 ```
+
+When there are leading spaces on what should be a blank line, the parser seems to be handling them incorrectly. It looks like the logic for detecting blank lines with whitespace prefixes got inverted somehow.
 
 ### Expected behavior
 
-Blank lines that contain only whitespace characters (spaces, tabs) should be recognized and tokenized as valid blank lines. The parser should accept these lines and continue processing the markdown correctly.
+Blank lines with leading whitespace should still be recognized as blank lines and parsed correctly. The markdown should be split into two separate paragraphs.
 
 ### System Info
 - remark version: 15.0.1
 - Node version: Latest
 
-This seems to have started recently - blank lines with leading whitespace used to work fine but now they're causing parsing issues. Not sure if this is a regression or if I'm missing something in my setup.
+This seems like it might be a recent regression as it was working fine before. Any help would be appreciated!
 
 ---
 Repository: /testbed

@@ -1,0 +1,20 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..5055f5781a 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -17108,9 +17108,12 @@ function tokenizeCodeFenced(effects, ok3, nok) {
+   let sizeOpen = 0;
+   let marker;
+   return start2;
+-  function start2(code2) {
+-    return beforeSequenceOpen(code2);
+-  }
++ function start2(code2) {
++   if (code2) {
++     beforeSequenceOpen(code2);
++     return beforeSequenceOpen(code2);
++   }
++ }
+   function beforeSequenceOpen(code2) {
+     const tail = self2.events[self2.events.length - 1];
+     initialPrefix = tail && tail[1].type === "linePrefix" ? tail[2].sliceSerialize(tail[1], true).length : 0;

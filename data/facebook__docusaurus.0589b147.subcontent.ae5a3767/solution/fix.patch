@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..480822934f 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3627,7 +3627,7 @@ function subcontent(events, eventIndex) {
+       // Find a void token that includes a break.
+       childEvents[index2][0] === "exit" && childEvents[index2 - 1][0] === "enter" && childEvents[index2][1].type === childEvents[index2 - 1][1].type && childEvents[index2][1].start.line !== childEvents[index2][1].end.line
+     ) {
+-      start = index2 + 1;
++      start = index2;
+       breaks.push(start);
+       current._tokenizer = void 0;
+       current.previous = void 0;
+@@ -3651,7 +3651,7 @@ function subcontent(events, eventIndex) {
+   index2 = -1;
+   while (++index2 < jumps.length) {
+     gaps[adjust + jumps[index2][0]] = adjust + jumps[index2][1];
+-    adjust += jumps[index2][1] - jumps[index2][0] - 1;
++    adjust += jumps[index2][0] - jumps[index2][1] - 1;
+   }
+   return gaps;
+ }

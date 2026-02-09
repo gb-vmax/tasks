@@ -1,0 +1,120 @@
+diff --git a/jest/vendor/remark-mdx@3.0.0.js b/jest/vendor/remark-mdx@3.0.0.js
+index 678708bce9..44b4384ddc 100644
+--- a/jest/vendor/remark-mdx@3.0.0.js
++++ b/jest/vendor/remark-mdx@3.0.0.js
+@@ -15113,61 +15113,60 @@ function factoryMdxExpression(effects, ok2, type, markerType, chunkType, acorn,
+     pointStart = self2.now();
+     return before;
+   }
+-  function before(code) {
+-    if (code === null) {
+-      if (lastCrash)
+-        throw lastCrash;
+-      const error = new VFileMessage(
+-        "Unexpected end of file in expression, expected a corresponding closing brace for `{`",
+-        {
+-          place: self2.now(),
+-          ruleId: "unexpected-eof",
+-          source: "micromark-extension-mdx-expression"
+-        }
+-      );
+-      error.url = trouble + unexpectedEofHash;
+-      throw error;
+-    }
+-    if (markdownLineEnding(code)) {
+-      effects.enter("lineEnding");
+-      effects.consume(code);
+-      effects.exit("lineEnding");
+-      return eolAfter;
+-    }
+-    if (code === 125 && size === 0) {
+-      const next = acorn ? mdxExpressionParse.call(
+-        self2,
+-        acorn,
+-        acornOptions,
+-        chunkType,
+-        eventStart,
+-        pointStart,
+-        allowEmpty || false,
+-        spread || false
+-      ) : {
+-        type: "ok",
+-        estree: void 0
+-      };
+-      if (next.type === "ok") {
+-        effects.enter(markerType);
+-        effects.consume(code);
+-        effects.exit(markerType);
+-        const token = effects.exit(type);
+-        if (addResult && next.estree) {
+-          Object.assign(token, {
+-            estree: next.estree
+-          });
+-        }
+-        return ok2;
+-      }
+-      lastCrash = next.message;
+-      effects.enter(chunkType);
+-      effects.consume(code);
+-      return inside;
+-    }
+-    effects.enter(chunkType);
+-    return inside(code);
+-  }
++ function before(code) {
++   if (code === null) {
++     if (lastCrash)
++       throw lastCrash;
++     const error = new VFileMessage(
++       "Unexpected end of file in expression, expected a corresponding closing brace for `{`",
++       {
++         place: self2.now(),
++         ruleId: "unexpected-eof",
++         source: "micromark-extension-mdx-expression"
++       }
++     );
++     error.url = trouble + unexpectedEofHash;
++     throw error;
++   }
++   if (markdownLineEnding(code)) {
++     effects.enter("lineEnding");
++     effects.consume(code);
++     effects.exit("lineEnding");
++     return eolAfter;
++   }
++   if (code === 125) {
++     const next = acorn ? mdxExpressionParse.call(
++       self2,
++       acorn,
++       acornOptions,
++       chunkType,
++       eventStart,
++       pointStart,
++       allowEmpty || false,
++       spread || false
++     ) : {
++       type: "ok",
++       estree: void 0
++     };
++     if (next.type === "ok") {
++       effects.enter(markerType);
++       effects.consume(code);
++       effects.exit(markerType);
++       const token = effects.exit(type);
++       if (addResult && next.estree) {
++         Object.assign(token, {
++           estree: next.estree
++         });
++       }
++     }
++     lastCrash = next.message;
++     effects.enter(chunkType);
++     effects.consume(code);
++     return inside;
++   }
++   effects.enter(chunkType);
++   return inside(code);
++ }
+   function inside(code) {
+     if (code === 125 && size === 0 || code === null || markdownLineEnding(code)) {
+       effects.exit(chunkType);

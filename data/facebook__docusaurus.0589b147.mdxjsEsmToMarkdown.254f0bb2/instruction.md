@@ -2,35 +2,36 @@
 
 ### Describe the bug
 
-After a recent update, MDX ESM imports/exports are not being serialized correctly when converting back to markdown. The output appears to be missing or malformed when trying to stringify MDX documents that contain ESM syntax.
+I'm experiencing an issue with MDX ESM export serialization. When trying to convert MDX documents back to markdown format, ESM import/export statements are not being properly handled during the serialization process.
 
 ### Reproduction
 
 ```js
-import { mdxjsEsm } from 'remark-mdx';
-import { toMarkdown } from 'mdast-util-to-markdown';
+import { toMarkdown } from 'mdast-util-to-markdown'
+import { mdxjsEsmToMarkdown } from 'remark-mdx'
 
-const ast = {
+const tree = {
   type: 'root',
   children: [
     {
       type: 'mdxjsEsm',
-      value: 'import { Component } from "./component"'
+      value: 'export const foo = "bar"'
     }
   ]
-};
+}
 
-const result = toMarkdown(ast, {
-  extensions: [mdxjsEsm.toMarkdown()]
-});
+const result = toMarkdown(tree, {
+  extensions: [mdxjsEsmToMarkdown()]
+})
 
-// Expected: import { Component } from "./component"
-// Actual: Empty or incorrect output
+// Expected: export const foo = "bar"
+// Actual: ESM block is not rendered or throws an error
+console.log(result)
 ```
 
 ### Expected behavior
 
-MDX ESM nodes should be properly converted back to their string representation when serializing the AST to markdown. The `handlers` property should be correctly passed through the toMarkdown extension.
+The MDX ESM blocks should be correctly serialized back to their original format when converting the AST to markdown. The `mdxjsEsmToMarkdown()` function should provide proper handlers for ESM nodes.
 
 ### System Info
 - remark-mdx version: 3.0.0

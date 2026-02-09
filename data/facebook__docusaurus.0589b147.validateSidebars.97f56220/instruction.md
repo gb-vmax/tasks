@@ -2,7 +2,7 @@
 
 ### Describe the bug
 
-Getting a runtime error when trying to validate sidebars configuration. The validation function crashes with `forEach is not a function` error when processing sidebar objects.
+I'm encountering a runtime error when validating sidebars configuration. The validation function crashes with a `TypeError` stating that `sidebar.forEach is not a function`.
 
 ### Reproduction
 
@@ -12,24 +12,32 @@ const sidebars = {
     {
       type: 'category',
       label: 'Tutorial',
-      items: ['hello'],
+      items: ['intro', 'basics'],
     },
   ],
   apiSidebar: [
     {
       type: 'doc',
-      id: 'api-intro',
+      id: 'api-reference',
     },
   ],
 };
 
-// Validation fails with: sidebar.forEach is not a function
+// Calling validateSidebars with this configuration throws an error
 validateSidebars(sidebars);
 ```
 
 ### Expected behavior
 
-The sidebar validation should iterate through each sidebar's items and validate them without throwing errors. It should handle multiple sidebars in the configuration object correctly.
+The sidebar validation should complete successfully without throwing any errors when provided with a valid sidebar configuration object.
+
+### Error message
+
+```
+TypeError: sidebar.forEach is not a function
+```
+
+It seems like the validation is trying to iterate over something that isn't an array. This is blocking my ability to use multiple sidebars in my Docusaurus configuration.
 
 ### System Info
 - Docusaurus version: latest

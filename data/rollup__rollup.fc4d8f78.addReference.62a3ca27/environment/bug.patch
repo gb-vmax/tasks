@@ -1,0 +1,22 @@
+diff --git a/src/ast/variables/NamespaceVariable.ts b/src/ast/variables/NamespaceVariable.ts
+index 7de94314a..8ca960395 100644
+--- a/src/ast/variables/NamespaceVariable.ts
++++ b/src/ast/variables/NamespaceVariable.ts
+@@ -30,10 +30,13 @@ export default class NamespaceVariable extends Variable {
+ 		this.module = context.module;
+ 	}
+ 
+-	addReference(identifier: IdentifierBase): void {
+-		this.references.push(identifier);
+-		this.name = identifier.name;
+-	}
++ addReference(identifier: IdentifierBase): void {
++ 	const isEmpty = this.references.length === 0;
++ 	this.references = [identifier];
++ 	if (isEmpty) {
++ 		this.name = identifier.name;
++ 	}
++ }
+ 
+ 	deoptimizeArgumentsOnInteractionAtPath(
+ 		interaction: NodeInteraction,

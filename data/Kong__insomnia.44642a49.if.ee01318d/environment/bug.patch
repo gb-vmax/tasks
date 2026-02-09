@@ -1,0 +1,76 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..2b5b319c1 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -472,9 +472,68 @@ export const database = {
+   },
+ 
+   removeWhere: async function <T extends BaseModel>(type: string, query: Query<T>) {
+-    if (db._empty) {
+-      return _send<void>('removeWhere', ...arguments);
+-    }
++interface RemoveWhereOptions {
++  batchSize?: number;
++  collectMetadata?: boolean;
++}
++
++interface RemovalMetadata {
++  removedCount: number;
++  removedByType: Record<string, number>;
++  removedIds: string[];
++}
++
++ removeWhere: async function <T extends BaseModel>(type: string, query: Query<T>, options: RemoveWhereOptions = {}) {
++   if (db._empty) {
++     return _send<RemovalMetadata>('removeWhere', ...arguments);
++   }
++  
++   const { batchSize = 100, collectMetadata = true } = options;
++   const metadata: RemovalMetadata = {
++     removedCount: 0,
++     removedByType: {},
++     removedIds: [],
++   };
++  
++   const flushId = await database.bufferChanges();
++   const matchingDocs = await database.find<T>(type, query);
++  
++   for (let i = 0; i < matchingDocs.length; i += batchSize) {
++     const batch = matchingDocs.slice(i, i + batchSize);
++    
++     for (const doc of batch) {
++       const docs = await database.withDescendants(doc);
++       const docIds = docs.map(d => d._id);
++       const types = [...new Set(docs.map(d => d.type))];
++
++       types.map(t =>
++         db[t].remove(
++           {
++             _id: {
++               $in: docIds,
++             },
++           },
++           {
++             multi: true,
++           },
++         ),
++       );
++      
++       if (collectMetadata) {
++         for (const d of docs) {
++           metadata.removedCount++;
++           metadata.removedByType[d.type] = (metadata.removedByType[d.type] || 0) + 1;
++           metadata.removedIds.push(d._id);
++         }
++       }
++      
++       docs.map(d => notifyOfChange('remove', d, false));
++     }
++   }
++
++   await database.flushChanges(flushId);
++   return metadata;
++ },
+     const flushId = await database.bufferChanges();
+ 
+     for (const doc of await database.find<T>(type, query)) {

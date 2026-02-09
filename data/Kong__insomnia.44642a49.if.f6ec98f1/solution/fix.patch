@@ -1,0 +1,81 @@
+diff --git a/packages/insomnia/src/common/database.ts b/packages/insomnia/src/common/database.ts
+index 17b172e22..01066cbb9 100644
+--- a/packages/insomnia/src/common/database.ts
++++ b/packages/insomnia/src/common/database.ts
+@@ -273,9 +273,73 @@ export const database = {
+   },
+ 
+   getMostRecentlyModified: async function <T extends BaseModel>(type: string, query: Query<T> = {}) {
+-    if (db._empty) {
+-      return _send<T>('getMostRecentlyModified', ...arguments);
+-    }
++interface MostRecentCacheEntry<T extends BaseModel = BaseModel> {
++  result: T | null;
++  timestamp: number;
++  type: string;
++  query: Query<T>;
++}
++
++const mostRecentCache: Record<string, MostRecentCacheEntry> = {};
++const MOST_RECENT_CACHE_TTL = 5000;
++
++function _generateMostRecentCacheKey<T extends BaseModel>(type: string, query: Query<T>): string {
++  const sortedQuery = Object.keys(query)
++    .sort()
++    .reduce((acc, key) => {
++      acc[key] = query[key as keyof T];
++      return acc;
++    }, {} as Query<T>);
++  return `${type}::${JSON.stringify(sortedQuery)}`;
++}
++
++async function _isCacheEntryValid<T extends BaseModel>(
++  type: string,
++  query: Query<T>,
++  cacheTimestamp: number
++): Promise<boolean> {
++  const recentDocs = await database.find<T>(type, {
++    ...query,
++    modified: { $gt: cacheTimestamp },
++  });
++  return recentDocs.length === 0;
++}
++
++ getMostRecentlyModified: async function <T extends BaseModel>(type: string, query: Query<T> = {}, bypassCache = false) {
++   if (db._empty) {
++     return _send<T>('getMostRecentlyModified', ...arguments);
++   }
++  
++   const cacheKey = _generateMostRecentCacheKey(type, query);
++   const now = Date.now();
++  
++   if (!bypassCache && mostRecentCache[cacheKey]) {
++     const cached = mostRecentCache[cacheKey];
++     if (now - cached.timestamp < MOST_RECENT_CACHE_TTL) {
++       if (cached.result === null) {
++         return null;
++       }
++      
++       const stillValid = await _isCacheEntryValid(type, query, cached.timestamp);
++       if (stillValid) {
++         return cached.result as T;
++       }
++     }
++     delete mostRecentCache[cacheKey];
++   }
++  
++   const docs = await database.findMostRecentlyModified<T>(type, query, 1);
++   const result = docs.length ? docs[0] : null;
++  
++   mostRecentCache[cacheKey] = {
++     result,
++     timestamp: now,
++     type,
++     query,
++   };
++  
++   return result;
++ },
+     const docs = await database.findMostRecentlyModified<T>(type, query, 1);
+     return docs.length ? docs[0] : null;
+   },

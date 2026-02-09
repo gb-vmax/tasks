@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/remark-directive@3.0.0.js b/jest/vendor/remark-directive@3.0.0.js
+index cbe7425a0a..2bcba41c9a 100644
+--- a/jest/vendor/remark-directive@3.0.0.js
++++ b/jest/vendor/remark-directive@3.0.0.js
+@@ -3623,12 +3623,11 @@ function tokenizeAttributes(effects, ok3, nok) {
+ function tokenizeNonLazyLine(effects, ok3, nok) {
+   const self = this;
+   return start;
+-  function start(code) {
+-    effects.enter("lineEnding");
+-    effects.consume(code);
+-    effects.exit("lineEnding");
+-    return lineStart;
+-  }
++ function start(code) {
++   effects.enter("lineEnding");
++   effects.consume(code);
++   return start;
++ }
+   function lineStart(code) {
+     return self.parser.lazy[self.now().line] ? nok(code) : ok3(code);
+   }

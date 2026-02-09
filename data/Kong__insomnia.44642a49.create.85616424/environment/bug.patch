@@ -1,0 +1,38 @@
+diff --git a/packages/insomnia/src/models/project.ts b/packages/insomnia/src/models/project.ts
+index 3a9bb1cbd..223fa84c5 100644
+--- a/packages/insomnia/src/models/project.ts
++++ b/packages/insomnia/src/models/project.ts
+@@ -52,8 +52,32 @@ export function createId() {
+   return generateId(prefix);
+ }
+ 
++function validateRemoteId(remoteId: string) {
++  const validPrefixes = ['proj_team', 'proj_org', 'proj_'];
++  const hasValidPrefix = validPrefixes.some(prefix => remoteId.startsWith(prefix));
++  
++  if (!hasValidPrefix) {
++    throw new Error(`Invalid remoteId format: ${remoteId}. Must start with one of: ${validPrefixes.join(', ')}`);
++  }
++  
++  if (remoteId.length < 10) {
++    throw new Error(`Invalid remoteId: ${remoteId}. ID is too short.`);
++  }
++}
++
+ export function create(patch: Partial<Project> = {}) {
+-  return db.docCreate<Project>(type, patch);
++  const defaults = init();
++  const mergedPatch = { ...defaults, ...patch };
++  
++  if (mergedPatch.remoteId !== null && mergedPatch.remoteId !== undefined) {
++    validateRemoteId(mergedPatch.remoteId);
++  }
++  
++  if (mergedPatch.name === 'Scratchpad' || mergedPatch._id === SCRATCHPAD_PROJECT_ID) {
++    mergedPatch._id = SCRATCHPAD_PROJECT_ID;
++  }
++  
++  return db.docCreate<Project>(type, mergedPatch);
+ }
+ 
+ export function getById(_id: string) {

@@ -2,27 +2,25 @@
 
 ### Describe the bug
 
-I'm experiencing an issue with the `<Translate>` component where whitespace handling seems broken. When I format my JSX code with multiple lines and indentation (which is normal in any real codebase), the translation extraction appears to be incomplete or failing.
+I'm experiencing an issue with the `<Translate>` component where JSX whitespace and formatting seems to affect translation extraction. When I have a `<Translate>` component with children that include JSX text nodes, the extraction behavior appears inconsistent.
 
 ### Reproduction
 
 ```jsx
-<Translate id="my-translation" description="A helpful description">
-  This is my translation message
+<Translate id="my-translation" description="A sample translation">
+  Some text content here
 </Translate>
 ```
 
-When the component is formatted like above (with newlines and indentation), the translation doesn't seem to be processed correctly. It worked fine before when everything was on a single line, but that's not practical for longer messages or when using code formatters.
+When using the Translate component with whitespace or formatting around the text content, the translation extraction doesn't work as expected. It seems like empty or whitespace-only JSX text nodes might be interfering with how the content is processed.
 
 ### Expected behavior
 
-The `<Translate>` component should handle multi-line content properly, ignoring formatting whitespace while still extracting the translation message. Code formatting shouldn't break translation extraction.
+The translation extractor should properly handle JSX formatting and whitespace, filtering out empty/insignificant text nodes and extracting the actual translation message consistently regardless of how the JSX is formatted.
 
 ### System Info
-- Docusaurus version: latest
+- Docusaurus version: Latest
 - Node version: 18.x
-
-This is causing issues in our documentation because we can't format our code properly without breaking translations. Any help would be appreciated!
 
 ---
 Repository: /testbed

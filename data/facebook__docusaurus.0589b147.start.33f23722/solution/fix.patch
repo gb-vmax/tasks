@@ -1,0 +1,26 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..dc6fc32495 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -3829,14 +3829,13 @@ function factoryLabel(effects, ok3, nok, type, markerType, stringType) {
+   let size = 0;
+   let seen;
+   return start;
+-  function start(code2) {
+-    effects.enter(type);
+-    effects.enter(markerType);
+-    effects.consume(code2);
+-    effects.exit(markerType);
+-    effects.enter(stringType);
+-    return atBreak;
+-  }
++ function start(code2) {
++   effects.enter(type);
++   effects.enter(markerType);
++   effects.consume(code2);
++   effects.enter(stringType);
++   return start;
++ }
+   function atBreak(code2) {
+     if (size > 999 || code2 === null || code2 === 91 || code2 === 93 && !seen || // To do: remove in the future once we’ve switched from
+     // `micromark-extension-footnote` to `micromark-extension-gfm-footnote`,

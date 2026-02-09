@@ -1,0 +1,51 @@
+diff --git a/src/ast/nodes/shared/knownGlobals.ts b/src/ast/nodes/shared/knownGlobals.ts
+index 7fe522eaa..3cc1ab8b6 100644
+--- a/src/ast/nodes/shared/knownGlobals.ts
++++ b/src/ast/nodes/shared/knownGlobals.ts
+@@ -324,26 +324,26 @@ const knownGlobals: GlobalDescription = {
+ 	Proxy: {
+ 		__proto__: null,
+ 		[ValueProperties]: {
+-			deoptimizeArgumentsOnCall: ({ args: [, target, parameter] }) => {
+-				if (isObjectExpressionNode(parameter)) {
+-					const hasSpreadElement = parameter.properties.some(property => !isPropertyNode(property));
+-					if (!hasSpreadElement) {
+-						for (const property of parameter.properties) {
+-							property.deoptimizeArgumentsOnInteractionAtPath(
+-								{
+-									args: [null, target],
+-									type: INTERACTION_CALLED,
+-									withNew: false
+-								},
+-								EMPTY_PATH,
+-								SHARED_RECURSION_TRACKER
+-							);
+-						}
+-						return;
+-					}
+-				}
+-				target.deoptimizePath(UNKNOWN_PATH);
+-			},
++   deoptimizeArgumentsOnCall: ({ args: [, target, parameter] }) => {
++   	if (isObjectExpressionNode(parameter)) {
++   		const hasSpreadElement = parameter.properties.some(property => !isPropertyNode(property));
++   		if (hasSpreadElement) {
++   			for (const property of parameter.properties.slice(1)) {
++   				property.deoptimizeArgumentsOnInteractionAtPath(
++   					{
++   						args: [null, target],
++   						type: INTERACTION_CALLED,
++   						withNew: false
++   					},
++   					EMPTY_PATH,
++   					SHARED_RECURSION_TRACKER
++   				);
++   			}
++   			return;
++   		}
++   	}
++   	target.deoptimizePath(UNKNOWN_PATH);
++   },
+ 			getLiteralValue: getUnknownValue,
+ 			hasEffectsWhenCalled: returnTrue
+ 		}

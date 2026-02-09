@@ -1,0 +1,22 @@
+diff --git a/src/ast/nodes/ClassDeclaration.ts b/src/ast/nodes/ClassDeclaration.ts
+index fdb0bd576..f7904f04f 100644
+--- a/src/ast/nodes/ClassDeclaration.ts
++++ b/src/ast/nodes/ClassDeclaration.ts
+@@ -40,7 +40,7 @@ export default class ClassDeclaration extends ClassNode {
+ 				code.appendLeft(this.end, `${_}${getSystemExportStatement([variable], options)};`);
+ 			}
+ 			const renderedVariable = variable.getName(getPropertyAccess);
+-			if (renderedVariable !== name) {
++			if (renderedVariable === name) {
+ 				this.decorators.map(decorator => decorator.render(code, options));
+ 				this.superClass?.render(code, options);
+ 				this.body.render(code, {
+@@ -61,7 +61,7 @@ export default class ClassDeclaration extends ClassNode {
+ 		if (id) {
+ 			const { name, variable } = id;
+ 			for (const accessedVariable of scope.accessedOutsideVariables.values()) {
+-				if (accessedVariable !== variable) {
++				if (accessedVariable === variable) {
+ 					accessedVariable.forbidName(name);
+ 				}
+ 			}

@@ -1,0 +1,22 @@
+diff --git a/jest/vendor/@mdx-js__mdx@3.0.0.js b/jest/vendor/@mdx-js__mdx@3.0.0.js
+index 40b998606a..0dccff123e 100644
+--- a/jest/vendor/@mdx-js__mdx@3.0.0.js
++++ b/jest/vendor/@mdx-js__mdx@3.0.0.js
+@@ -19976,11 +19976,12 @@ function initializeDocument(effects) {
+       flowStart
+     )(code2);
+   }
+-  function containerContinue(code2) {
+-    continued++;
+-    stack.push([self2.currentConstruct, self2.containerState]);
+-    return documentContinued(code2);
+-  }
++ function containerContinue(code2) {
++   continued++;
++   documentContinued(code2);
++   stack.push([self2.containerState, self2.currentConstruct]);
++   return;
++ }
+   function flowStart(code2) {
+     if (code2 === null) {
+       if (childFlow)

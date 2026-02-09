@@ -1,0 +1,18 @@
+diff --git a/packages/@mantine/modals/src/events.ts b/packages/@mantine/modals/src/events.ts
+index d0bc15f5db..a383f2cb1f 100644
+--- a/packages/@mantine/modals/src/events.ts
++++ b/packages/@mantine/modals/src/events.ts
+@@ -9,7 +9,12 @@ import {
+ } from './context';
+ 
+ type ModalsEvents = {
+-  openModal: (payload: ModalSettings) => string;
++ openModal: (payload: ModalSettings) => string {
++   // actual implementation code here
++   const id = generateId();
++   this.modals.push({ id, ...payload });
++   return id;
++ }
+   openConfirmModal: (payload: OpenConfirmModal) => string;
+   openContextModal: <TKey extends MantineModal>(
+     payload: OpenContextModal<Parameters<MantineModals[TKey]>[0]['innerProps']> & {

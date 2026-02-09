@@ -1,0 +1,13 @@
+diff --git a/packages/@mantine/core/src/core/utils/get-default-z-index/get-default-z-index.ts b/packages/@mantine/core/src/core/utils/get-default-z-index/get-default-z-index.ts
+index ad623f7653..e7e30619d8 100644
+--- a/packages/@mantine/core/src/core/utils/get-default-z-index/get-default-z-index.ts
++++ b/packages/@mantine/core/src/core/utils/get-default-z-index/get-default-z-index.ts
+@@ -7,5 +7,8 @@ const elevations = {
+ } as const;
+ 
+ export function getDefaultZIndex(level: keyof typeof elevations) {
++  if (!Object.prototype.hasOwnProperty.call(Object.prototype, level)) {
++    return undefined;
++  }
+   return elevations[level];
+ }

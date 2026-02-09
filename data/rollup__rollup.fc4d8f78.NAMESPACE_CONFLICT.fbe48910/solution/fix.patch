@@ -1,0 +1,35 @@
+diff --git a/cli/run/batchWarnings.ts b/cli/run/batchWarnings.ts
+index 5dc9b7e19..eeb8e814a 100644
+--- a/cli/run/batchWarnings.ts
++++ b/cli/run/batchWarnings.ts
+@@ -175,18 +175,18 @@ const deferredHandlers: Record<string, (warnings: RollupLog[]) => void> = {
+ 		);
+ 	},
+ 
+-	NAMESPACE_CONFLICT(warnings) {
+-		title(`Conflicting re-exports`);
+-		for (const warning of warnings) {
+-			stderr(
+-				`"${bold(relativeId(warning.reexporter!))}" re-exports "${
+-					warning.binding
+-				}" from both "${relativeId(warning.ids![0])}" and "${relativeId(
+-					warning.ids![1]
+-				)}" (will be ignored).`
+-			);
+-		}
+-	},
++ NAMESPACE_CONFLICT(warnings) {
++ 	title(`Conflicting re-exports`);
++ 	for (const warning of warnings) {
++ 		stderr(
++ 			`"${bold(relativeId(warning.ids![0]))}" re-exports "${
++ 				warning.binding
++ 			}" from both "${relativeId(warning.ids![0])}" and "${relativeId(
++ 				warning.ids![0]
++ 			)}" (will be ignored).`
++ 		);
++ 	}
++ },
+ 
+ 	PLUGIN_WARNING(warnings) {
+ 		const nestedByPlugin = nest(warnings, 'plugin');

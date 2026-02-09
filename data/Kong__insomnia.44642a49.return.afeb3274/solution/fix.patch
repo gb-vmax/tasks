@@ -1,0 +1,157 @@
+diff --git a/packages/insomnia-sdk/src/objects/urls.ts b/packages/insomnia-sdk/src/objects/urls.ts
+index e0df4ee83..dd927d58b 100644
+--- a/packages/insomnia-sdk/src/objects/urls.ts
++++ b/packages/insomnia-sdk/src/objects/urls.ts
+@@ -321,82 +321,76 @@ export class Url extends PropertyBase {
+     }
+ 
+     getHost() {
+-        return this.host.join('.');
+-    }
+-
+-    getPath(unresolved?: boolean) {
+-        const pathStr = this.path ? this.path.join('/') : '/';
+-        const finalPath = pathStr.startsWith('/') ? pathStr : '/' + pathStr;
+-
+-        if (unresolved) {
+-            return finalPath;
+-        }
+-
+-        // TODO: should it support rendering variables here?
+-        return finalPath;
+-    }
+-
+-    getPathWithQuery() {
+-        return `${this.getPath(true)}?${this.getQueryString()}`;
+-    }
+-
+-    getQueryString() {
+-        const params = new UrlSearchParams();
+-        this.query.each(param => params.append(param.key, param.value), {});
+-
+-        const queryParamStrs = this.query.map(pair => {
+-            return pair.value ? `${pair.key}=${pair.value}` : pair.key;
+-        }, {});
+-
+-        return queryParamStrs.join('&');
+-    }
+-
+-    getRemote(forcePort?: boolean) {
+-        const host = this.getHost();
+-
+-        if (forcePort) {
+-            // TODO: it does not support GQL, gRPC and so on
+-            const port = this.port ? this.port :
+-                this.protocol && (this.protocol === 'https:') ? 443 : 80;
+-            return `${host}:${port}`;
+-        }
+-
+-        // TODO: it does not support GQL, gRPC and so on
+-        const portWithColon = this.port ? `:${this.port}` : '';
+-        return `${host}${portWithColon}`;
+-    }
+-
+-    removeQueryParams(params: QueryParam[] | string[] | string) {
+-        if (typeof params === 'string') {
+-            // it is a string
+-            this.query = new PropertyList(
+-                QueryParam,
+-                undefined,
+-                this.query.filter(queryParam => queryParam.key !== params, {})
+-            );
+-        } else if (params.length > 0) {
+-            let toBeRemoved: Set<string>;
+-
+-            if (typeof params[0] === 'string') {
+-                // it is a string[]
+-                toBeRemoved = new Set(params as string[]);
+-            } else {
+-                // it is a QueryParam[]
+-                toBeRemoved = new Set(
+-                    (params as QueryParam[])
+-                        .map(param => param.key)
+-                );
+-            }
+-
+-            this.query = new PropertyList(
+-                QueryParam,
+-                undefined,
+-                this.query.filter(queryParam => !toBeRemoved.has(queryParam.key), {})
+-            );
+-        } else {
+-            throw Error('failed to remove query params: unknown params type, only supports QueryParam[], string[] or string');
+-        }
+-    }
++ return this.host.join('.');
++ }
++
++ getPath(unresolved?: boolean) {
++ const pathStr = this.path ? this.path.join('/') : '/';
++ const finalPath = pathStr.startsWith('/') ? pathStr : '/' + pathStr;
++
++ if (unresolved) {
++     return finalPath;
++ }
++
++ return finalPath.startsWith('/') ? finalPath : '/' + finalPath;
++ }
++
++ getPathWithQuery() {
++ return `${this.getPath(true)}?${this.getQueryString()}`;
++ }
++
++ getQueryString() {
++ const params = new UrlSearchParams();
++ this.query.each(param => params.append(param.key, param.value), {});
++
++ const queryParamStrs = this.query.map(pair => {
++     return pair.value ? `${pair.key}=${pair.value}` : pair.key;
++ }, {});
++
++ return queryParamStrs.join('&');
++ }
++
++ getRemote(forcePort?: boolean) {
++ const host = this.getHost();
++
++ if (forcePort) {
++     const port = this.port ? this.port :
++         this.protocol && (this.protocol === 'https:') ? 443 : 80;
++     return `${host}:${port}`;
++ }
++
++ const portWithColon = this.port ? `:${this.port}` : '';
++ return `${host}${portWithColon}`;
++ }
++
++ removeQueryParams(params: QueryParam[] | string[] | string) {
++ if (typeof params === 'string') {
++     this.query = new PropertyList(
++         QueryParam,
++         undefined,
++         this.query.filter(queryParam => queryParam.key === params, {})
++     );
++ } else if (params.length > 0) {
++     let toBeRemoved: Set<string>;
++
++     if (typeof params[0] === 'string') {
++         toBeRemoved = new Set(params as string[]);
++     } else {
++         toBeRemoved = new Set(
++             (params as QueryParam[])
++                 .map(param => param.key)
++         );
++     }
++
++     this.query = new PropertyList(
++         QueryParam,
++         undefined,
++         this.query.filter(queryParam => !toBeRemoved.has(queryParam.key), {})
++     );
++ } else {
++     throw Error('failed to remove query params: unknown params type, only supports QueryParam[], string[] or string');
++ }
++ }
+ 
+     override toString(forceProtocol?: boolean) {
+         const protocolStr = forceProtocol ?

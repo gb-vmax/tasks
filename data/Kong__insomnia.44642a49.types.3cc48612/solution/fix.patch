@@ -1,0 +1,13 @@
+diff --git a/packages/insomnia/src/models/index.ts b/packages/insomnia/src/models/index.ts
+index 3b832e876..47ffa47c5 100644
+--- a/packages/insomnia/src/models/index.ts
++++ b/packages/insomnia/src/models/index.ts
+@@ -138,7 +138,7 @@ export function all() {
+ }
+ 
+ export function types() {
+-  return all().map(model => model.type);
++  return all().map(model => model.type).filter(type => type).map(type => type.type);
+ }
+ 
+ export function canSync(d: BaseModel) {

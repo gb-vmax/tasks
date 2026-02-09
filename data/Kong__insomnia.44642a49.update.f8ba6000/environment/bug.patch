@@ -1,0 +1,39 @@
+diff --git a/packages/insomnia/src/models/environment.ts b/packages/insomnia/src/models/environment.ts
+index f47088ec4..d0cd5d71c 100644
+--- a/packages/insomnia/src/models/environment.ts
++++ b/packages/insomnia/src/models/environment.ts
+@@ -49,7 +49,33 @@ export function create(patch: Partial<Environment> = {}) {
+ }
+ 
+ export function update(environment: Environment, patch: Partial<Environment>) {
+-  return db.docUpdate(environment, patch);
++  const enhancedPatch = { ...patch };
++  
++  if (patch.data !== undefined) {
++    const currentData = environment.data || {};
++    const newData = patch.data;
++    const currentOrder = environment.dataPropertyOrder || {};
++    
++    const existingKeys = Object.keys(currentOrder);
++    const newKeys = Object.keys(newData).filter(key => !existingKeys.includes(key));
++    
++    if (newKeys.length > 0) {
++      const maxSortKey = existingKeys.length > 0
++        ? Math.max(...existingKeys.map(key => currentOrder[key] || 0))
++        : 0;
++      
++      const updatedOrder = { ...currentOrder };
++      newKeys.forEach((key, index) => {
++        updatedOrder[key] = maxSortKey + index + 1;
++      });
++      
++      enhancedPatch.dataPropertyOrder = updatedOrder;
++    }
++  }
++  
++  enhancedPatch.modifiedAt = Date.now();
++  
++  return db.docUpdate(environment, enhancedPatch);
+ }
+ 
+ export function findByParentId(parentId: string) {

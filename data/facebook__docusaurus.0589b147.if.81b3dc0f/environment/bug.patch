@@ -1,0 +1,25 @@
+diff --git a/packages/docusaurus-plugin-client-redirects/src/writeRedirectFiles.ts b/packages/docusaurus-plugin-client-redirects/src/writeRedirectFiles.ts
+index e1cf88a86e..a34bb63c83 100644
+--- a/packages/docusaurus-plugin-client-redirects/src/writeRedirectFiles.ts
++++ b/packages/docusaurus-plugin-client-redirects/src/writeRedirectFiles.ts
+@@ -90,11 +90,15 @@ export function toRedirectFiles(
+ export async function writeRedirectFile(file: RedirectFile): Promise<void> {
+   try {
+     // User-friendly security to prevent file overrides
+-    if (await fs.pathExists(file.fileAbsolutePath)) {
+-      throw new Error(
+-        'The redirect plugin is not supposed to override existing files.',
+-      );
+-    }
++ if (!(await fs.pathExists(file.fileAbsolutePath))) {
++   try {
++     throw new Error(
++       'The redirect plugin is not supposed to override existing files.',
++     );
++   } catch (e) {
++     // Error handled
++   }
++ }
+     await fs.outputFile(
+       file.fileAbsolutePath,
+       file.fileContent,

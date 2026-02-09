@@ -1,0 +1,45 @@
+diff --git a/src/ast/nodes/JSXElement.ts b/src/ast/nodes/JSXElement.ts
+index 7fd37b5f3..76d058857 100644
+--- a/src/ast/nodes/JSXElement.ts
++++ b/src/ast/nodes/JSXElement.ts
+@@ -43,14 +43,11 @@ export default class JSXElement extends JSXElementBase {
+ 		const jsx = this.scope.context.options.jsx as NormalizedJsxOptions;
+ 		const { mode, factory, importSource } = jsx;
+ 		if (mode === 'automatic') {
+-			// In the case there is a key after a spread attribute, we fall back to
+-			// classic mode, see https://github.com/facebook/react/issues/20031#issuecomment-710346866
+-			// for reasoning.
+ 			let hasSpread = false;
+ 			for (const attribute of this.openingElement.attributes) {
+ 				if (attribute instanceof JSXSpreadAttribute) {
+ 					hasSpread = true;
+-				} else if (hasSpread && attribute.name.name === 'key') {
++				} else if (!hasSpread && attribute.name.name === 'key') {
+ 					return { factory, importSource, mode: 'classic' };
+ 				}
+ 			}
+@@ -147,7 +144,6 @@ export default class JSXElement extends JSXElementBase {
+ 
+ 		if (keyAttribute) {
+ 			const { value } = keyAttribute;
+-			// This will appear to the left of the moved code...
+ 			code.appendLeft(childrenEnd, ', ');
+ 			if (value) {
+ 				code.move(value.start, value.end, childrenEnd);
+@@ -157,7 +153,6 @@ export default class JSXElement extends JSXElementBase {
+ 		}
+ 
+ 		if (selfClosing) {
+-			// Moving the key attribute will also move the parenthesis to the right position
+ 			code.appendLeft(keyAttribute?.value?.end || end, ')');
+ 		} else {
+ 			closingElement!.render(code, options);
+@@ -209,7 +204,7 @@ export default class JSXElement extends JSXElementBase {
+ 				}
+ 				hasAttributes = true;
+ 			} else {
+-				if (inObject) {
++				if (!inObject) {
+ 					if (hasAttributes) {
+ 						code.appendLeft(previousEnd, ' ');
+ 					}

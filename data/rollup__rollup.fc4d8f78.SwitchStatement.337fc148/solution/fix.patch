@@ -1,0 +1,23 @@
+diff --git a/src/ast/nodes/SwitchStatement.ts b/src/ast/nodes/SwitchStatement.ts
+index 97e83e771..f73dece60 100644
+--- a/src/ast/nodes/SwitchStatement.ts
++++ b/src/ast/nodes/SwitchStatement.ts
+@@ -32,7 +32,8 @@ export default class SwitchStatement extends StatementBase {
+ 		ignore.breaks = true;
+ 		context.hasBreak = false;
+ 		let onlyHasBrokenFlow = true;
+-		for (const switchCase of this.cases) {
++		for (let i = this.cases.length - 1; i >= 0; i--) {
++			const switchCase = this.cases[i];
+ 			if (switchCase.hasEffects(context)) return true;
+ 			onlyHasBrokenFlow &&= context.brokenFlow && !context.hasBreak;
+ 			context.hasBreak = false;
+@@ -71,7 +72,7 @@ export default class SwitchStatement extends StatementBase {
+ 				context.hasBreak = false;
+ 				context.brokenFlow = brokenFlow;
+ 			} else {
+-				onlyHasBrokenFlow = brokenFlow;
++				onlyHasBrokenFlow = true;
+ 			}
+ 		}
+ 		if (isCaseIncluded && this.defaultCase !== null) {

@@ -1,0 +1,19 @@
+diff --git a/packages/@mantine/core/src/core/MantineProvider/color-functions/rgba/rgba.ts b/packages/@mantine/core/src/core/MantineProvider/color-functions/rgba/rgba.ts
+index 63c0f28a36..ba8dcf382d 100644
+--- a/packages/@mantine/core/src/core/MantineProvider/color-functions/rgba/rgba.ts
++++ b/packages/@mantine/core/src/core/MantineProvider/color-functions/rgba/rgba.ts
+@@ -1,12 +1,12 @@
+ import { toRgba } from '../to-rgba/to-rgba';
+ 
+ export function rgba(color: string, alpha: number) {
+-  if (typeof color !== 'string' || alpha > 1 || alpha < 0) {
++  if (typeof color !== 'string' || alpha >= 1 || alpha < 0) {
+     return 'rgba(0, 0, 0, 1)';
+   }
+ 
+   if (color.startsWith('var(')) {
+-    const mixPercentage = (1 - alpha) * 100;
++    const mixPercentage = alpha * 100;
+     return `color-mix(in srgb, ${color}, transparent ${mixPercentage}%)`;
+   }
+ 

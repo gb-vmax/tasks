@@ -2,36 +2,40 @@
 
 ### Describe the bug
 
-After a recent update, paragraph nodes created by the remark compiler are returning malformed structures. The `type` property is now an object instead of a string, and `children` is undefined instead of an empty array.
+I'm encountering an issue with paragraph node creation in the remark compiler. When creating paragraph nodes, the structure appears to be malformed - the `type` property is being set as an object instead of a string, and the `children` property is coming back as `undefined` instead of an empty array.
 
 ### Reproduction
 
 ```js
-const remark = require('remark');
+// When the compiler creates a paragraph node
+const node = paragraph2();
 
-const processor = remark();
-// When creating paragraph nodes internally
-const node = processor.compiler.paragraph2();
+// Expected structure:
+// {
+//   type: "paragraph",
+//   children: []
+// }
 
-console.log(node.type); // Expected: "paragraph", Got: { value: "paragraph" }
-console.log(node.children); // Expected: [], Got: undefined
+// Actual structure:
+// {
+//   type: { value: "paragraph" },
+//   children: undefined
+// }
 ```
 
-When processing markdown with paragraphs, this causes downstream issues because:
-1. Code expecting `node.type` to be a string will fail
-2. Code trying to iterate over `node.children` will throw errors since it's undefined
+This is causing downstream issues when trying to traverse or manipulate the AST, since code expects `children` to be an array and `type` to be a string value.
 
 ### Expected behavior
 
-The paragraph node should have:
-- `type` as a string value `"paragraph"`
+The `paragraph2()` function should return a properly structured node with:
+- `type` as a string with value `"paragraph"`
 - `children` as an empty array `[]`
 
-This matches the structure of other node types like `strong2()` which still correctly returns `{ type: "strong", children: [] }`.
+This would be consistent with other node creation functions like `root2()` and `strong2()` in the same file.
 
 ### System Info
 - remark version: 15.0.1
-- Node version: 18.x
+- Node version: Latest
 
 ---
 Repository: /testbed

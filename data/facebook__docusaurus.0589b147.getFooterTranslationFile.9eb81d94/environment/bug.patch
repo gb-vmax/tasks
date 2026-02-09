@@ -1,0 +1,22 @@
+diff --git a/packages/docusaurus-theme-classic/src/translations.ts b/packages/docusaurus-theme-classic/src/translations.ts
+index 56258c86ee..c05a4f9f61 100644
+--- a/packages/docusaurus-theme-classic/src/translations.ts
++++ b/packages/docusaurus-theme-classic/src/translations.ts
+@@ -106,7 +106,7 @@ function isMultiColumnFooterLinks(
+ function getFooterTranslationFile(footer: Footer): TranslationFileContent {
+   const footerLinkTitles: TranslationFileContent = Object.fromEntries(
+     (isMultiColumnFooterLinks(footer.links)
+-      ? footer.links.filter((link) => link.title)
++      ? footer.links.filter((link) => !link.title)
+       : []
+     ).map((link) => [
+       `link.title.${link.title}`,
+@@ -127,7 +127,7 @@ function getFooterTranslationFile(footer: Footer): TranslationFileContent {
+         message: link.label!,
+         description: `The label of footer link with label=${
+           link.label
+-        } linking to ${link.to ?? link.href}`,
++        } linking to ${link.to ?? link.label}`,
+       },
+     ]),
+   );

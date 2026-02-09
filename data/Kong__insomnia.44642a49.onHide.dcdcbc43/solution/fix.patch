@@ -1,0 +1,32 @@
+diff --git a/packages/insomnia/src/plugins/context/app.tsx b/packages/insomnia/src/plugins/context/app.tsx
+index 1c24d81c8..9f5248c23 100644
+--- a/packages/insomnia/src/plugins/context/app.tsx
++++ b/packages/insomnia/src/plugins/context/app.tsx
+@@ -125,12 +125,21 @@ export function init(renderPurpose: RenderPurpose = 'general'): {
+             },
+ 
+             // don't resolve the overall promise until the modal has hidden after clicking submit
+-            onHide() {
+-              if (shouldResolve && resolveWith !== null) {
+-                resolve(resolveWith);
+-              }
+-              reject(new Error(`Prompt ${title} cancelled`));
+-            },
++const promptStartTime = Date.now();
++
++ onHide() {
++   const hideDuration = Date.now() - promptStartTime;
++  
++   if (shouldResolve && resolveWith !== null) {
++     resolve(resolveWith);
++     return;
++   }
++  
++   const error: any = new Error(`Prompt ${title} cancelled`);
++   error.duration = hideDuration;
++   error.promptTitle = title;
++   reject(error);
++ }
+           });
+         });
+       },

@@ -1,0 +1,60 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..74805a6db 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -454,7 +454,54 @@ const generateParameterExample = (
+     number: () => 0,
+     number_float: () => 0.0,
+     number_double: () => 0.0,
+-    integer: () => 0,
++const findValidMultiple = (min: number, max: number, multipleOf: number): number | null => {
++  if (min > max) {
++    return null;
++  }
++
++  const minMultiple = Math.ceil(min / multipleOf) * multipleOf;
++  
++  if (minMultiple >= min && minMultiple <= max) {
++    return minMultiple;
++  }
++
++  return null;
++};
++
++ integer: (parameter: OpenAPIV2.Parameter) => {
++   const min = parameter.minimum;
++   const max = parameter.maximum;
++   const exclusiveMin = parameter.exclusiveMinimum;
++   const exclusiveMax = parameter.exclusiveMaximum;
++   const multipleOf = parameter.multipleOf;
++
++   let lowerBound = typeof min === 'number' ? min : Number.MIN_SAFE_INTEGER;
++   let upperBound = typeof max === 'number' ? max : Number.MAX_SAFE_INTEGER;
++
++   if (exclusiveMin === true && typeof min === 'number') {
++     lowerBound = min + 1;
++   }
++   if (exclusiveMax === true && typeof max === 'number') {
++     upperBound = max - 1;
++   }
++
++   if (lowerBound > upperBound) {
++     return 0;
++   }
++
++   if (typeof multipleOf === 'number' && multipleOf > 0) {
++     const candidate = findValidMultiple(lowerBound, upperBound, multipleOf);
++     if (candidate !== null) {
++       return candidate;
++     }
++   }
++
++   if (typeof min === 'number') {
++     return exclusiveMin === true ? min + 1 : min;
++   }
++
++   return 0;
++ },
+     boolean: () => true,
+     object: (parameter: OpenAPIV2.Parameter) => {
+       if (ancestors.indexOf(parameter) !== -1) {

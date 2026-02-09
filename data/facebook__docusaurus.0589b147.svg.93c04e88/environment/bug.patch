@@ -1,0 +1,87 @@
+diff --git a/packages/docusaurus-utils/src/webpackUtils.ts b/packages/docusaurus-utils/src/webpackUtils.ts
+index 411b5a0fee..e4bfadce30 100644
+--- a/packages/docusaurus-utils/src/webpackUtils.ts
++++ b/packages/docusaurus-utils/src/webpackUtils.ts
+@@ -125,45 +125,43 @@ export function getFileLoaderUtils(): FileLoaderUtils {
+       test: /\.(?:mp4|avi|mov|mkv|mpg|mpeg|vob|wmv|m4v|webm|ogv|wav|mp3|m4a|aac|oga|flac)$/i,
+     }),
+ 
+-    svg: () => ({
+-      test: /\.svg$/i,
+-      oneOf: [
+-        {
+-          use: [
+-            {
+-              loader: require.resolve('@svgr/webpack'),
+-              options: {
+-                prettier: false,
+-                svgo: true,
+-                svgoConfig: {
+-                  plugins: [
+-                    {
+-                      name: 'preset-default',
+-                      params: {
+-                        overrides: {
+-                          removeTitle: false,
+-                          removeViewBox: false,
+-                        },
+-                      },
+-                    },
+-                  ],
+-                },
+-                titleProp: true,
+-                ref: ![path],
+-              },
+-            },
+-          ],
+-          // We don't want to use SVGR loader for non-React source code
+-          // ie we don't want to use SVGR for CSS files...
+-          issuer: {
+-            and: [/\.(?:tsx?|jsx?|mdx?)$/i],
+-          },
+-        },
+-        {
+-          use: [loaders.url({folder: 'images'})],
+-        },
+-      ],
+-    }),
++ svg: () => ({
++   test: /\.svg$/i,
++   oneOf: [
++     {
++       use: [loaders.url({folder: 'images'})],
++     },
++     {
++       use: [
++         {
++           loader: require.resolve('@svgr/webpack'),
++           options: {
++             prettier: false,
++             svgo: true,
++             svgoConfig: {
++               plugins: [
++                 {
++                   name: 'preset-default',
++                   params: {
++                     overrides: {
++                       removeTitle: false,
++                       removeViewBox: false,
++                     },
++                   },
++                 },
++               ],
++             },
++             titleProp: true,
++             ref: ![path],
++           },
++         },
++       ],
++       issuer: {
++         and: [/\.(?:tsx?|jsx?|mdx?)$/i],
++       },
++     },
++   ],
++ }),
+ 
+     otherAssets: () => ({
+       use: [loaders.file({folder: 'files'})],

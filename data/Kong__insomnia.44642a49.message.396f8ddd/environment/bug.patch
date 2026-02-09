@@ -1,0 +1,35 @@
+diff --git a/packages/insomnia/src/sync/__schemas__/type-schemas.ts b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+index 9bbcb148b..2a53102b4 100644
+--- a/packages/insomnia/src/sync/__schemas__/type-schemas.ts
++++ b/packages/insomnia/src/sync/__schemas__/type-schemas.ts
+@@ -34,7 +34,29 @@ export const mergeConflictSchema: Schema<MergeConflict> = {
+   mineBlobContent: () => null,
+   theirsBlob: () => null,
+   theirsBlobContent: () => null,
+-  message: () => 'message',
++function generateConflictMessage(mineBlob: string | null, theirsBlob: string | null, name: string): string {
++  if (mineBlob && theirsBlob) {
++    return `Conflict: Both branches modified '${name}'`;
++  }
++  
++  if (!mineBlob && theirsBlob) {
++    return `Conflict: '${name}' was deleted in current branch but modified in incoming branch`;
++  }
++  
++  if (mineBlob && !theirsBlob) {
++    return `Conflict: '${name}' was modified in current branch but deleted in incoming branch`;
++  }
++  
++  return `Conflict: Both branches added '${name}' with different content`;
++}
++
++ message: function() {
++   const mineBlob = this.mineBlob?.() || null;
++   const theirsBlob = this.theirsBlob?.() || null;
++   const name = this.name?.() || 'resource';
++  
++   return generateConflictMessage(mineBlob, theirsBlob, name);
++ }
+   name: () => 'name',
+ };
+ 

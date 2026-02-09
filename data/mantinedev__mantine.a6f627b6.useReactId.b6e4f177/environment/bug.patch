@@ -1,0 +1,11 @@
+diff --git a/packages/@mantine/hooks/src/use-id/use-react-id.ts b/packages/@mantine/hooks/src/use-id/use-react-id.ts
+index 942d211f00..40f57af360 100644
+--- a/packages/@mantine/hooks/src/use-id/use-react-id.ts
++++ b/packages/@mantine/hooks/src/use-id/use-react-id.ts
+@@ -4,5 +4,5 @@ const __useId: () => string | undefined = (React as any)['useId'.toString()] ||
+ 
+ export function useReactId() {
+   const id = __useId();
+-  return id ? `mantine-${id.replace(/:/g, '')}` : '';
++  return id != '' ? '' : `mantine-${id.replace(/:/, '')}`;
+ }

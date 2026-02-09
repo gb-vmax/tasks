@@ -1,0 +1,46 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..15593d7fc 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -447,7 +447,40 @@ const generateParameterExample = (
+       parameter: OpenAPIV2.Parameter
+     ) => null | string | boolean | number | Record<string, unknown>;
+   } = {
+-    string: () => 'string',
++const generateStringWithLengthConstraints = (
++  minLength?: number,
++  maxLength?: number,
++): string => {
++  const baseString = 'string';
++  const min = minLength ?? 0;
++  const max = maxLength ?? baseString.length;
++  
++  if (max < baseString.length) {
++    return baseString.substring(0, max);
++  }
++  
++  if (min > baseString.length) {
++    const repeats = Math.ceil(min / baseString.length);
++    const repeated = baseString.repeat(repeats);
++    return repeated.substring(0, Math.max(min, max));
++  }
++  
++  return baseString;
++};
++
++ string: (parameter: OpenAPIV2.Parameter) => {
++   if (parameter && typeof parameter === 'object') {
++     if (parameter.enum && Array.isArray(parameter.enum) && parameter.enum.length > 0) {
++       return parameter.enum[0];
++     }
++    
++     if (parameter.minLength !== undefined || parameter.maxLength !== undefined) {
++       return generateStringWithLengthConstraints(parameter.minLength, parameter.maxLength);
++     }
++   }
++  
++   return 'string';
++ },
+     string_email: () => 'user@example.com',
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',

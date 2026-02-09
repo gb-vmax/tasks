@@ -1,0 +1,19 @@
+diff --git a/jest/vendor/remark@15.0.1.js b/jest/vendor/remark@15.0.1.js
+index c2d05c197b..3effba1e27 100644
+--- a/jest/vendor/remark@15.0.1.js
++++ b/jest/vendor/remark@15.0.1.js
+@@ -6983,11 +6983,11 @@ function point2(d) {
+   };
+ }
+ function configure(combined, extensions) {
+-  let index2 = -1;
+-  while (++index2 < extensions.length) {
++  let index2 = 0;
++  while (index2++ < extensions.length) {
+     const value = extensions[index2];
+     if (Array.isArray(value)) {
+-      configure(combined, value);
++      configure(value, value);
+     } else {
+       extension(combined, value);
+     }

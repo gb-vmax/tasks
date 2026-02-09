@@ -1,0 +1,136 @@
+diff --git a/packages/insomnia/src/common/api-specs.ts b/packages/insomnia/src/common/api-specs.ts
+index 5471c04b1..2a40fe5b0 100644
+--- a/packages/insomnia/src/common/api-specs.ts
++++ b/packages/insomnia/src/common/api-specs.ts
+@@ -7,6 +7,99 @@ export interface ParsedApiSpec {
+   formatVersion: string | null;
+ }
+ 
++export interface ParsedApiSpec {
++  contents: Record<string, any> | null;
++  rawContents: string;
++  format: 'openapi' | 'swagger' | null;
++  formatVersion: string | null;
++  isValid?: boolean;
++  validationErrors?: string[];
++  metadata?: ApiMetadata;
++}
++
++export interface ApiMetadata {
++  title?: string;
++  version?: string;
++  description?: string;
++  servers?: string[];
++  basePath?: string;
++  host?: string;
++  pathCount?: number;
++}
++
++function validateApiSpecStructure(
++  contents: Record<string, any>,
++  format: 'openapi' | 'swagger',
++): { isValid: boolean; errors: string[] } {
++  const errors: string[] = [];
++  
++  if (!contents.info) {
++    errors.push('Missing required "info" object');
++  } else {
++    if (!contents.info.title) {
++      errors.push('Missing required "info.title" field');
++    }
++    if (!contents.info.version) {
++      errors.push('Missing required "info.version" field');
++    }
++  }
++  
++  if (!contents.paths) {
++    errors.push('Missing required "paths" object');
++  }
++  
++  if (format === 'openapi') {
++    const version = contents.openapi;
++    if (version && typeof version === 'string') {
++      const majorVersion = parseInt(version.split('.')[0], 10);
++      if (majorVersion >= 3 && !contents.servers && !contents.host) {
++        errors.push('OpenAPI 3.x specs should define "servers" array');
++      }
++    }
++  } else if (format === 'swagger') {
++    if (!contents.host && !contents.basePath) {
++      errors.push('Swagger specs should define "host" or "basePath"');
++    }
++  }
++  
++  return {
++    isValid: errors.length === 0,
++    errors,
++  };
++}
++
++function extractApiMetadata(
++  contents: Record<string, any>,
++  format: 'openapi' | 'swagger',
++): ApiMetadata {
++  const metadata: ApiMetadata = {};
++  
++  if (contents.info) {
++    metadata.title = contents.info.title;
++    metadata.version = contents.info.version;
++    metadata.description = contents.info.description;
++  }
++  
++  if (format === 'openapi' && contents.servers && Array.isArray(contents.servers)) {
++    metadata.servers = contents.servers
++      .map((server: any) => server.url)
++      .filter((url: any) => typeof url === 'string');
++  } else if (format === 'swagger') {
++    if (contents.host) {
++      metadata.host = contents.host;
++    }
++    if (contents.basePath) {
++      metadata.basePath = contents.basePath;
++    }
++  }
++  
++  if (contents.paths && typeof contents.paths === 'object') {
++    metadata.pathCount = Object.keys(contents.paths).length;
++  }
++  
++  return metadata;
++}
++
+ export function parseApiSpec(
+   rawDocument: string,
+ ) {
+@@ -17,7 +110,6 @@ export function parseApiSpec(
+     formatVersion: null,
+   };
+ 
+-  // NOTE: JSON is valid YAML so we only need to parse YAML
+   try {
+     result.contents = YAML.parse(rawDocument);
+   } catch (err) {
+@@ -26,15 +118,20 @@ export function parseApiSpec(
+ 
+   if (result.contents) {
+     if (result.contents.openapi) {
+-      // Check if it's OpenAPI
+       result.format = 'openapi';
+       result.formatVersion = result.contents.openapi;
+     } else if (result.contents.swagger) {
+-      // Check if it's Swagger
+       result.format = 'swagger';
+       result.formatVersion = result.contents.swagger;
+     } else {
+-      // Not sure what format it is
++    }
++    
++    if (result.format) {
++      const validation = validateApiSpecStructure(result.contents, result.format);
++      result.isValid = validation.isValid;
++      result.validationErrors = validation.errors;
++      
++      result.metadata = extractApiMetadata(result.contents, result.format);
+     }
+   }
+ 

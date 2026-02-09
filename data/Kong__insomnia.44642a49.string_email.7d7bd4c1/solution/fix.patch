@@ -1,0 +1,42 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/swagger-2.ts b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+index 3c915f47a..1f9266be2 100644
+--- a/packages/insomnia/src/utils/importers/importers/swagger-2.ts
++++ b/packages/insomnia/src/utils/importers/importers/swagger-2.ts
+@@ -448,7 +448,36 @@ const generateParameterExample = (
+     ) => null | string | boolean | number | Record<string, unknown>;
+   } = {
+     string: () => 'string',
+-    string_email: () => 'user@example.com',
++const extractEmailUsernameFromParameterName = (paramName?: string): string => {
++  if (!paramName) {
++    return 'user';
++  }
++  
++  const emailRelatedPattern = /email|mail|contact|recipient|sender/i;
++  const match = paramName.match(emailRelatedPattern);
++  
++  if (match) {
++    const beforeEmail = paramName.slice(0, match.index);
++    if (beforeEmail.length > 0) {
++      return beforeEmail
++        .replace(/[^a-zA-Z0-9]/g, '')
++        .toLowerCase() || 'user';
++    }
++  }
++  
++  const sanitized = paramName
++    .replace(/email|mail|contact|address/gi, '')
++    .replace(/[^a-zA-Z0-9]/g, '')
++    .toLowerCase();
++  
++  return sanitized.length > 0 && sanitized.length <= 64 ? sanitized : 'user';
++};
++
++ string_email: (parameter: OpenAPIV2.Parameter) => {
++   const domain = document?.host?.split(':')[0] || 'example.com';
++   const username = extractEmailUsernameFromParameterName(parameter?.name) || 'user';
++   return `${username}@${domain}`;
++ },
+     'string_date-time': () => new Date().toISOString(),
+     string_byte: () => 'ZXhhbXBsZQ==',
+     number: () => 0,

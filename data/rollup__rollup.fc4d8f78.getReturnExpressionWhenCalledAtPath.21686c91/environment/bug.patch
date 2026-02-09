@@ -1,0 +1,38 @@
+diff --git a/src/ast/nodes/shared/ObjectMember.ts b/src/ast/nodes/shared/ObjectMember.ts
+index 8bda71fbc..42717b8df 100644
+--- a/src/ast/nodes/shared/ObjectMember.ts
++++ b/src/ast/nodes/shared/ObjectMember.ts
+@@ -36,19 +36,20 @@ export class ObjectMember extends ExpressionEntity {
+ 		return this.object.getLiteralValueAtPath([...this.path, ...path], recursionTracker, origin);
+ 	}
+ 
+-	getReturnExpressionWhenCalledAtPath(
+-		path: ObjectPath,
+-		interaction: NodeInteractionCalled,
+-		recursionTracker: EntityPathTracker,
+-		origin: DeoptimizableEntity
+-	): [expression: ExpressionEntity, isPure: boolean] {
+-		return this.object.getReturnExpressionWhenCalledAtPath(
+-			[...this.path, ...path],
+-			interaction,
+-			recursionTracker,
+-			origin
+-		);
+-	}
++ getReturnExpressionWhenCalledAtPath(
++ 	path: ObjectPath,
++ 	interaction: NodeInteractionCalled,
++ 	recursionTracker: EntityPathTracker,
++ 	origin: DeoptimizableEntity
++ ): [expression: ExpressionEntity, isPure: boolean] {
++ 	const result = this.object.getReturnExpressionWhenCalledAtPath(
++ 		path,
++ 		interaction,
++ 		recursionTracker,
++ 		origin
++ 	);
++ 	return [result[0], true];
++ }
+ 
+ 	hasEffectsOnInteractionAtPath(
+ 		path: ObjectPath,

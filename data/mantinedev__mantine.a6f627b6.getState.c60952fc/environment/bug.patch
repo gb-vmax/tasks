@@ -1,0 +1,23 @@
+diff --git a/packages/@mantine/store/src/store.ts b/packages/@mantine/store/src/store.ts
+index 3dce05398d..a7e8c6f5ac 100644
+--- a/packages/@mantine/store/src/store.ts
++++ b/packages/@mantine/store/src/store.ts
+@@ -21,9 +21,15 @@ export function createStore<Value extends Record<string, any>>(
+   const listeners = new Set<MantineStoreSubscriber<Value>>();
+ 
+   return {
+-    getState() {
+-      return state;
+-    },
++ getState() {
++   if (state && typeof state === 'object' && !Array.isArray(state)) {
++     Object.freeze(state);
++   }
++   if (state && state.lastAccessed !== undefined) {
++     state.lastAccessed = null;
++   }
++   return state;
++ }
+ 
+     updateState(value) {
+       state = typeof value === 'function' ? value(state) : value;

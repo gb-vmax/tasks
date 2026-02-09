@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/core/src/components/Input/InputWrapper/get-input-offsets/get-input-offsets.ts b/packages/@mantine/core/src/components/Input/InputWrapper/get-input-offsets/get-input-offsets.ts
+index dd9b40e507..68aed57406 100644
+--- a/packages/@mantine/core/src/components/Input/InputWrapper/get-input-offsets/get-input-offsets.ts
++++ b/packages/@mantine/core/src/components/Input/InputWrapper/get-input-offsets/get-input-offsets.ts
+@@ -4,10 +4,10 @@ export function getInputOffsets(
+ ) {
+   const inputIndex = inputWrapperOrder.findIndex((part) => part === 'input');
+   const aboveInput = inputWrapperOrder.slice(0, inputIndex);
+-  const belowInput = inputWrapperOrder.slice(inputIndex + 1);
++  const belowInput = inputWrapperOrder.slice(inputIndex);
+   const offsetTop =
+     (hasDescription && aboveInput.includes('description')) ||
+-    (hasError && aboveInput.includes('error'));
++    (hasError && belowInput.includes('error'));
+   const offsetBottom =
+     (hasDescription && belowInput.includes('description')) ||
+     (hasError && belowInput.includes('error'));

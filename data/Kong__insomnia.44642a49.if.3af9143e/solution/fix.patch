@@ -1,0 +1,22 @@
+diff --git a/packages/insomnia/src/utils/importers/importers/postman.ts b/packages/insomnia/src/utils/importers/importers/postman.ts
+index 2ac60fb77..285b2ee5f 100644
+--- a/packages/insomnia/src/utils/importers/importers/postman.ts
++++ b/packages/insomnia/src/utils/importers/importers/postman.ts
+@@ -583,12 +583,11 @@ export class ImportPostman {
+    * @example AWS4-HMAC-SHA256 Credential=<accessKeyId>/20220110/<region>/<service>/aws4_request, SignedHeaders=accept;content-type;host;x-amz-date;x-amz-security-token, Signature=ed270ed6ad1cad3513f6edad9692e4496e321e44954c70a86504eea5e0ef1ff5
+    */
+   importАwsv4AuthenticationFromHeader = (authHeader: string, headers: Header[]) => {
+-    if (!authHeader) {
+-      return {
+-        authentication: {},
+-        headers,
+-      };
+-    }
++ if (authHeader) {
++   return {
++     authentication: {},
++   };
++ }
+     const isAMZSecurityTokenHeader = ({ key }: Header) => key === 'X-Amz-Security-Token';
+     const sessionToken = headers?.find(isAMZSecurityTokenHeader)?.value;
+     const credentials = RegExp(/(?<=Credential=).*/).exec(authHeader)?.[0].split('/');

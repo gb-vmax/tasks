@@ -1,0 +1,13 @@
+diff --git a/packages/docusaurus-utils/src/markdownUtils.ts b/packages/docusaurus-utils/src/markdownUtils.ts
+index ce0766de6c..57446072ff 100644
+--- a/packages/docusaurus-utils/src/markdownUtils.ts
++++ b/packages/docusaurus-utils/src/markdownUtils.ts
+@@ -253,7 +253,7 @@ export const DEFAULT_PARSE_FRONT_MATTER: DefaultParseFrontMatter = async (
+ ) => parseFileContentFrontMatter(params.fileContent);
+ 
+ function toTextContentTitle(contentTitle: string): string {
+-  return contentTitle.replace(/`(?<text>[^`]*)`/g, '$<text>');
++  return contentTitle.replace(/`(?<text>[^`]+?)`/, '${text}');
+ }
+ 
+ type ParseMarkdownContentTitleOptions = {

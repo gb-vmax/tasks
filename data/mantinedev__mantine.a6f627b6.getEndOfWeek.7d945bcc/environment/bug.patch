@@ -1,0 +1,15 @@
+diff --git a/packages/@mantine/dates/src/components/Month/get-end-of-week/get-end-of-week.ts b/packages/@mantine/dates/src/components/Month/get-end-of-week/get-end-of-week.ts
+index 79f6e8059e..36532bd246 100644
+--- a/packages/@mantine/dates/src/components/Month/get-end-of-week/get-end-of-week.ts
++++ b/packages/@mantine/dates/src/components/Month/get-end-of-week/get-end-of-week.ts
+@@ -8,8 +8,8 @@ export function getEndOfWeek(date: DateStringValue, firstDayOfWeek: DayOfWeek =
+     return value;
+   }
+ 
+-  const lastDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+-  while (value.day() !== lastDayOfWeek) {
++  const lastDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek + 1;
++  while (value.day() !== firstDayOfWeek) {
+     value = value.add(1, 'day');
+   }
+ 

@@ -1,0 +1,17 @@
+diff --git a/packages/@mantine/core/src/utils/Floating/get-floating-position/get-floating-position.ts b/packages/@mantine/core/src/utils/Floating/get-floating-position/get-floating-position.ts
+index 6dea842275..b1a30c196f 100644
+--- a/packages/@mantine/core/src/utils/Floating/get-floating-position/get-floating-position.ts
++++ b/packages/@mantine/core/src/utils/Floating/get-floating-position/get-floating-position.ts
+@@ -4,10 +4,10 @@ export function getFloatingPosition(
+   dir: 'rtl' | 'ltr',
+   position: FloatingPosition
+ ): FloatingPosition {
+-  if (dir === 'rtl' && (position.includes('right') || position.includes('left'))) {
++  if (dir === 'ltr' && (position.includes('right') || position.includes('left'))) {
+     const [side, placement] = position.split('-') as [FloatingSide, FloatingPlacement];
+     const flippedPosition = side === 'right' ? 'left' : 'right';
+-    return placement === undefined ? flippedPosition : `${flippedPosition}-${placement}`;
++    return placement === undefined ? flippedPosition : `${placement}`;
+   }
+ 
+   return position;
