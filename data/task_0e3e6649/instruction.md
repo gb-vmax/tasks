@@ -1,0 +1,4 @@
+As a performance engineer, you are analyzing a CSV log file from an application profiling tool. The file <code>/home/user/app_profile.csv</code> contains several columns, but you are only interested in two columns: the process name (the second column) and CPU usage percentage (the fifth column). 
+Your task is to extract these two columns, in the order: process name, followed by CPU usage percentage, and save the result as a new CSV file <code>/home/user/profile_summary.csv</code>. The output file should contain a header row with the column titles <code>Process,CPU%</code>, followed by the corresponding data. 
+Ensure that the columns are comma-separated with no extra whitespace, and that the line endings are UNIX-style (LF only). 
+Do not modify the original <code>/home/user/app_profile.csv</code> file. The automated test will check the contents and format of <code>/home/user/profile_summary.csv</code> to verify correctness.
