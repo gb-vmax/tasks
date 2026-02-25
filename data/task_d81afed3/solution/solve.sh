@@ -1,22 +1,29 @@
 #!/bin/bash
-# Ground truth reference (not an executable solution):
-#
-# The following must exist at the end of the task:
-# 1. /home/user/source_configs directory exists (permissions 755 or default), owner=user.
-# 2. /home/user/source_configs/nginx.conf exists, owner=user, with contents:
-# user www-data;
-# worker_processes auto;
-# pid /run/nginx.pid;
-# 
-# 3. /home/user/remote_server/configs directory exists (permissions 755 or default), owner=user.
-# 4. /home/user/remote_server/configs/nginx.conf exists, owner=user, with contents:
-# user www-data;
-# worker_processes auto;
-# pid /run/nginx.pid;
-# 
-# 5. /home/user/sync.log exists, owner=user, with contents:
-# COPIED: /home/user/remote_server/configs/nginx.conf
-# 
-# No other files or lines should be present in any of the above directories or the log.
+set -euo pipefail
 
-echo 'No automated solution provided.'
+# The Dockerfile environment already sets up the correct final state.
+# This solve.sh ensures the state is correct by (re)creating files if needed.
+
+# Create source_configs directory and nginx.conf
+mkdir -p /home/user/source_configs
+cat > /home/user/source_configs/nginx.conf << 'EOF'
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+EOF
+
+# Create remote_server/configs directory
+mkdir -p /home/user/remote_server/configs
+
+# Copy nginx.conf to remote location
+cp /home/user/source_configs/nginx.conf /home/user/remote_server/configs/nginx.conf
+
+# Create sync log
+printf 'COPIED: /home/user/remote_server/configs/nginx.conf\n' > /home/user/sync.log
+
+# Fix ownership if running as root
+if [ "$(id -u)" = "0" ] && id user >/dev/null 2>&1; then
+    chown user:user /home/user/source_configs /home/user/source_configs/nginx.conf
+    chown user:user /home/user/remote_server /home/user/remote_server/configs /home/user/remote_server/configs/nginx.conf
+    chown user:user /home/user/sync.log
+fi

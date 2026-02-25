@@ -1,33 +1,31 @@
 #!/bin/bash
-# Ground truth reference (not an executable solution):
-#
-# Before the task, the following files exist:
-# 
-# /home/user/localization/source.txt:
-# Welcome
-# Hello
-# Save
-# Exit
-# 
-# /home/user/localization/old_fr.txt:
-# Welcome=Bienvenue
-# Hello=Bonjour
-# Exit=Sortie
-# 
-# After the agent completes the task, the following files must exist:
-# 
-# /home/user/localization/new_fr.txt:
-# Welcome=Bienvenue
-# Hello=Bonjour
-# Save=
-# Exit=Sortie
-# 
-# /home/user/localization/update.log:
-# COPIED: Welcome
-# COPIED: Hello
-# MISSING: Save
-# COPIED: Exit
-# 
-# There should be exactly four lines in each output file, corresponding to the order of source.txt. No extra spaces or lines.
+set -euo pipefail
 
-echo 'No automated solution provided.'
+LOC_DIR="/home/user/localization"
+SOURCE="${LOC_DIR}/source.txt"
+OLD_FR="${LOC_DIR}/old_fr.txt"
+NEW_FR="${LOC_DIR}/new_fr.txt"
+UPDATE_LOG="${LOC_DIR}/update.log"
+
+# Clear output files
+> "$NEW_FR"
+> "$UPDATE_LOG"
+
+# Read old_fr.txt into an associative array (key=phrase, value=translation)
+declare -A translations
+while IFS='=' read -r key value; do
+    translations["$key"]="$value"
+done < "$OLD_FR"
+
+# Process each phrase in source.txt
+while IFS= read -r phrase; do
+    if [ -n "${translations[$phrase]+x}" ]; then
+        # Translation exists
+        echo "${phrase}=${translations[$phrase]}" >> "$NEW_FR"
+        echo "COPIED: ${phrase}" >> "$UPDATE_LOG"
+    else
+        # Translation missing
+        echo "${phrase}=" >> "$NEW_FR"
+        echo "MISSING: ${phrase}" >> "$UPDATE_LOG"
+    fi
+done < "$SOURCE"

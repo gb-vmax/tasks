@@ -1,53 +1,35 @@
 #!/bin/bash
-# Ground truth reference (not an executable solution):
-#
-# Before the agent starts, the following files exist:
-# 
-# /home/user/localization/translations.csv:
-# <pre>
-# key,en,fr
-# greeting,Hello,Bonjour
-# farewell,Goodbye,Au revoir
-# thanks,Thank you,Merci
-# apology,Sorry,Désolé
-# welcome,Welcome,Bienvenue
-# </pre>
-# 
-# /home/user/localization/fr_updates.csv:
-# <pre>
-# key,fr
-# greeting,Salut
-# thanks,Merci beaucoup
-# </pre>
-# 
-# After the agent completes the task, the following files must exist:
-# 
-# /home/user/localization/fr_translations.csv:
-# <pre>
-# key,fr
-# greeting,Bonjour
-# farewell,Au revoir
-# thanks,Merci
-# apology,Désolé
-# welcome,Bienvenue
-# </pre>
-# 
-# /home/user/localization/fr_translations_updated.csv:
-# <pre>
-# key,fr
-# greeting,Salut
-# farewell,Au revoir
-# thanks,Merci beaucoup
-# apology,Désolé
-# welcome,Bienvenue
-# </pre>
-# 
-# /home/user/localization/update_log.txt:
-# <pre>
-# key: greeting | old_fr: Bonjour | new_fr: Salut
-# key: thanks | old_fr: Merci | new_fr: Merci beaucoup
-# </pre>
-# 
-# No other files should be created or modified. Permissions allow the user to write to all files in /home/user/localization/.
+set -euo pipefail
 
-echo 'No automated solution provided.'
+LOC_DIR="/home/user/localization"
+
+# Extract French translations from translations.csv (key,fr columns)
+# translations.csv has: key,en,fr
+{
+    echo "key,fr"
+    while IFS=',' read -r key en fr; do
+        echo "${key},${fr}"
+    done < <(tail -n +2 "${LOC_DIR}/translations.csv")
+} > "${LOC_DIR}/fr_translations.csv"
+
+# Read fr_updates.csv into associative array
+declare -A updates
+while IFS=',' read -r key fr; do
+    [ "$key" = "key" ] && continue  # skip header
+    updates["$key"]="$fr"
+done < "${LOC_DIR}/fr_updates.csv"
+
+# Apply updates to create fr_translations_updated.csv and update_log.txt
+> "${LOC_DIR}/update_log.txt"
+{
+    echo "key,fr"
+    while IFS=',' read -r key fr; do
+        if [ -n "${updates[$key]+x}" ]; then
+            new_fr="${updates[$key]}"
+            echo "key: ${key} | old_fr: ${fr} | new_fr: ${new_fr}" >> "${LOC_DIR}/update_log.txt"
+            echo "${key},${new_fr}"
+        else
+            echo "${key},${fr}"
+        fi
+    done < <(tail -n +2 "${LOC_DIR}/fr_translations.csv")
+} > "${LOC_DIR}/fr_translations_updated.csv"
