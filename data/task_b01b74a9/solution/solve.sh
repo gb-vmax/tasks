@@ -1,23 +1,22 @@
 #!/bin/bash
-# Ground truth reference (not an executable solution):
-#
-# Before the task starts:
-# - The directories /home/user/microservices/auth and /home/user/microservices/payment exist.
-# - /home/user/microservices/auth/auth.log contains the text:
-#   [2024-06-01 09:00:00] User login successful.
-# - /home/user/microservices/payment/payment.log contains the text:
-#   [2024-06-01 09:05:22] Payment processed for order #1278.
-# 
-# After correct task execution:
-# - /home/user/logs_backup.tar.gz exists and contains two files at its root: auth.log (with the above content) and payment.log (with the above content).
-# - /home/user/logs_restore is a directory that exists and contains:
-#     - /home/user/logs_restore/auth.log (with original content)
-#     - /home/user/logs_restore/payment.log (with original content)
-#     - /home/user/logs_restore/restore_report.txt with the exact contents:
-# Restored Files:
-# auth.log
-# payment.log
-# 
-# File and directory permissions must allow user read/write as the files and directories will be owned by user:user.
+set -e
+cd /home/user
 
-echo 'No automated solution provided.'
+# Create the tar.gz archive with just the log files at the root (no directory paths)
+# Use a temporary directory to stage the files for clean archive paths
+TMPSTAGE=$(mktemp -d)
+cp microservices/auth/auth.log "$TMPSTAGE/"
+cp microservices/payment/payment.log "$TMPSTAGE/"
+tar czf logs_backup.tar.gz -C "$TMPSTAGE" auth.log payment.log
+rm -rf "$TMPSTAGE"
+
+# Create the restore directory and extract
+mkdir -p logs_restore
+tar xzf logs_backup.tar.gz -C logs_restore
+
+# Create the restore report
+cat > logs_restore/restore_report.txt << 'EOF'
+Restored Files:
+auth.log
+payment.log
+EOF
