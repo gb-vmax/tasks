@@ -1,0 +1,3 @@
+I am analyzing web server logs and need to quickly identify patterns related to 404 errors. Please search through the access log file located at /home/user/logs/webserver_access.log and extract all log entries containing the status code "404". Write all these matching lines to a new file at /home/user/logs/404_errors.log. 
+
+The output file (/home/user/logs/404_errors.log) should contain only the original lines from /home/user/logs/webserver_access.log that have " 404 " (that is, space-404-space) anywhere in the line, preserving original formatting and line order. Do not add, remove, or modify any lines besides those matching this exact pattern.
