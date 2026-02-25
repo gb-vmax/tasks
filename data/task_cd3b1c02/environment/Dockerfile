@@ -1,0 +1,13 @@
+FROM ubuntu:22.04
+
+ENV PATH=/usr/local/bin:/usr/bin:/bin:$PATH
+
+RUN <<'ENDPOST'
+apt-get update
+apt-get install -y python3-pip
+pip3 install pytest
+useradd -m user
+chown -R user:user /home/user
+ENDPOST
+
+WORKDIR /home/user
