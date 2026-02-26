@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM endless-base:latest
 
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
