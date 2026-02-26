@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM endless-base:latest
 
 RUN <<'ENDPOST'
 apt-get update
