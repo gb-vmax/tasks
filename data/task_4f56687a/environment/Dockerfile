@@ -1,6 +1,6 @@
 FROM ubuntu:22.04
 
-ENV PATH=/usr/local/bin:/usr/bin:/bin
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 RUN <<'ENDPOST'
 set -eux
