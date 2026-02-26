@@ -1,0 +1,163 @@
+name: Validate Harbor Tasks
+
+on:
+  pull_request:
+    paths:
+      - 'data/**'
+  push:
+    branches: [main]
+    paths:
+      - 'data/**'
+  workflow_dispatch:
+    inputs:
+      verify_solutions:
+        description: 'Run solution verification (Docker required)'
+        type: boolean
+        default: false
+      force_verify:
+        description: 'Re-verify all tasks (ignore checksum cache)'
+        type: boolean
+        default: false
+
+jobs:
+  detect-changed-tasks:
+    runs-on: ubuntu-latest
+    outputs:
+      changed_tasks: ${{ steps.detect.outputs.changed_tasks }}
+      any_changed: ${{ steps.detect.outputs.any_changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed task directories
+        id: detect
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE=${{ github.event.pull_request.base.sha }}
+            HEAD=${{ github.sha }}
+          else
+            # For push events, compare with previous commit
+            BASE=${{ github.event.before }}
+            HEAD=${{ github.sha }}
+          fi
+
+          # Find changed task directories
+          CHANGED=$(git diff --name-only "$BASE" "$HEAD" -- 'data/' \
+            | cut -d'/' -f1-2 \
+            | sort -u \
+            | tr '\n' ' ')
+
+          if [ -z "$CHANGED" ]; then
+            echo "any_changed=false" >> "$GITHUB_OUTPUT"
+            echo "changed_tasks=" >> "$GITHUB_OUTPUT"
+          else
+            echo "any_changed=true" >> "$GITHUB_OUTPUT"
+            echo "changed_tasks=$CHANGED" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Changed tasks: $CHANGED"
+
+  # ── Tier 1: Schema lint (fast, always runs) ──────────────────────
+  lint:
+    runs-on: ubuntu-latest
+    needs: detect-changed-tasks
+    if: needs.detect-changed-tasks.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Lint changed tasks
+        run: |
+          TASKS="${{ needs.detect-changed-tasks.outputs.changed_tasks }}"
+          if [ -z "$TASKS" ]; then
+            echo "Linting all tasks..."
+            python scripts/validate_harbor_task.py data/
+          else
+            echo "Linting changed tasks: $TASKS"
+            python scripts/validate_harbor_task.py $TASKS
+          fi
+
+  # ── Tier 2: Docker build (medium, runs on PRs) ──────────────────
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [detect-changed-tasks, lint]
+    if: needs.detect-changed-tasks.outputs.any_changed == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker images for changed tasks
+        run: |
+          TASKS="${{ needs.detect-changed-tasks.outputs.changed_tasks }}"
+          FAILED=0
+
+          for TASK_DIR in $TASKS; do
+            TASK_ID=$(basename "$TASK_DIR")
+            DOCKERFILE="$TASK_DIR/environment/Dockerfile"
+            # Sanitize for Docker tag (only lowercase alnum and single dashes)
+            SAFE_TAG=$(echo "$TASK_ID" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/-\+/-/g; s/^-//; s/-$//')
+            TAG="hci-${SAFE_TAG:0:120}"
+
+            if [ ! -f "$DOCKERFILE" ]; then
+              echo "::error::$TASK_ID: missing Dockerfile"
+              FAILED=$((FAILED + 1))
+              continue
+            fi
+
+            echo "Building $TASK_ID..."
+            if docker build -t "$TAG" "$TASK_DIR/environment/" 2>&1; then
+              echo "::notice::$TASK_ID: build OK"
+              docker rmi -f "$TAG" 2>/dev/null || true
+            else
+              echo "::error::$TASK_ID: Docker build failed"
+              FAILED=$((FAILED + 1))
+            fi
+          done
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo "$FAILED task(s) failed Docker build"
+            exit 1
+          fi
+
+  # ── Tier 3: Solution verification (heavy, opt-in or on push to main) ─
+  verify-solutions:
+    runs-on: ubuntu-latest
+    needs: [detect-changed-tasks, lint]
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.verify_solutions == 'true') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify solutions
+        run: |
+          FORCE_FLAG=""
+          if [ "${{ github.event.inputs.force_verify }}" = "true" ]; then
+            FORCE_FLAG="--force"
+          fi
+
+          TASKS="${{ needs.detect-changed-tasks.outputs.changed_tasks }}"
+          if [ -z "$TASKS" ]; then
+            python scripts/verify_solutions.py $FORCE_FLAG --jobs 2 data/
+          else
+            python scripts/verify_solutions.py $FORCE_FLAG --jobs 2 $TASKS
+          fi
+
+      - name: Commit updated checksums
+        if: success()
+        run: |
+          if git diff --quiet .validated-solutions.json 2>/dev/null; then
+            echo "No checksum changes to commit"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .validated-solutions.json
+            git commit -m "ci: update validated solution checksums"
+            git push
+          fi
