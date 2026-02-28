@@ -1,1 +1,1 @@
-Run the 'false' command, and if it fails, create a file called /home/user/failure.log containing the word 'FAILED'.
+Run a command that exits with a non-zero (failure) status using the 'false' command. No files need to be created or modified.

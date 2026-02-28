@@ -1,21 +1,18 @@
 #!/bin/bash
 expected='[
   {
+    "id": 1,
+    "name": "Alice"
+  },
+  {
     "id": 2,
-    "value": "B"
+    "name": "Bob"
   },
   {
     "id": 3,
-    "value": "C"
-  },
-  {
-    "id": 1,
-    "value": "A"
+    "name": "Charlie"
   }
 ]'
-actual="$(cat /home/user/merged.json 2>/dev/null)"
-if [ "$actual" = "$expected" ]; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+if [ ! -f /home/user/users.json ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+actual=$(cat /home/user/users.json)
+if [ "$actual" = "$expected" ]; then echo 1 > /logs/verifier/reward.txt; else echo 0 > /logs/verifier/reward.txt; fi

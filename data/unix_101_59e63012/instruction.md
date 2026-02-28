@@ -1,1 +1,1 @@
-Use the 'w' command without any flags to display information about currently logged in users and their sessions. Do not supply any options or flags.
+Run the w command and save its output to /home/user/w_output.txt.

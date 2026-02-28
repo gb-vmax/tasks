@@ -1,1 +1,1 @@
-Print the number of processing units available to the current process and save the output to /home/user/cpu_count.txt.
+Use the nproc command to print the number of available processing units, and write the output to /home/user/proc_count.txt.

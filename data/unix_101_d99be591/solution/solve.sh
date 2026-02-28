@@ -1,2 +1,2 @@
 #!/bin/bash
-whoami --version > /home/user/whoami_version.txt
+whoami --help > /home/user/whoami_help.txt

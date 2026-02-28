@@ -1,2 +1,2 @@
 #!/bin/bash
-rename -v 's/^/old_/' /home/user/images/img*
+rename -v 's|(.*)/(.*\.jpg)$|$1/old_$2|' /home/user/pictures/**/*.jpg /home/user/pictures/*.jpg

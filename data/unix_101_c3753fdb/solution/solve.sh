@@ -1,2 +1,2 @@
 #!/bin/bash
-dd if=/home/user/data.txt of=/home/user/second_line.txt bs=6 skip=1 count=1 status=none
+dd if=/home/user/large.txt of=/home/user/partial.bin bs=6 count=2 status=none

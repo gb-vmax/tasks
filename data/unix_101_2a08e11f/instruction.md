@@ -1,1 +1,1 @@
-Use 'realpath' with the '-e' flag to print the absolute path of 'link1', a symbolic link pointing to '../file.txt' from '/home/user/projects/test/link1'. All path components must exist.
+Use the realpath command to resolve the absolute path of the file /home/user/docs/shortcut.txt. The file is a symlink pointing to ../data/report.txt. Output the result to /home/user/abs_path.txt.

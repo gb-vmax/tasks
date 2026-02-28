@@ -1,1 +1,1 @@
-Print the absolute path of the file 'notes.txt' located in your home directory using the 'realpath' command.
+Print the absolute path of the file 'docs/readme.txt' and save it to 'abs_readme.txt'.

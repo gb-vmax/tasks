@@ -1,2 +1,2 @@
 #!/bin/bash
-head /home/user/notes.txt
+head -n 5 /home/user/docs/poem.txt > /home/user/first5.txt

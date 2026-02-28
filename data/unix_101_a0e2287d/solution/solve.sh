@@ -1,2 +1,2 @@
 #!/bin/bash
-jq -r .email /home/user/profile.json > /home/user/email.txt
+jq -r '.name' /home/user/data.json > /home/user/name.txt

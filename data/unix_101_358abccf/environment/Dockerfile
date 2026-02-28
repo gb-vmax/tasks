@@ -1,12 +1,12 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user
-RUN echo 'alpha' > /home/user/a.txt
-RUN echo -e 'beta\ngamma' > /home/user/b.txt
-RUN echo -e 'delta\nepsilon\nzeta' > /home/user/c.txt
-RUN echo '/home/user/a.txt,/home/user/b.txt,/home/user/c.txt' > /home/user/files.csv
-RUN rm -f /home/user/linecounts.txt
+RUN mkdir -p /home/user/data
+RUN touch "/home/user/data/important.txt"
+RUN touch "/home/user/data/file one.txt"
+RUN touch "/home/user/data/file two.txt"
+RUN touch "/home/user/data/keep.txt"
+RUN printf '/home/user/data/file one.txt\0/home/user/data/file two.txt\0' > /home/user/delete_list.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

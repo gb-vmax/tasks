@@ -1,1 +1,1 @@
-Read the first line from /home/user/env/input.txt and assign the first word to variable VAR1 and the second word to variable VAR2. Then, write the value of VAR2 to /home/user/env/output.txt.
+Read the first and last name from the file /home/user/name.txt and assign the first word to the FIRST variable and the second word to the LAST variable. Then, write the output in the format 'FIRST LAST' (with a space) to /home/user/output.txt.

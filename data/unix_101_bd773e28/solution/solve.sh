@@ -1,2 +1,2 @@
 #!/bin/bash
-touch /home/user/notes.txt
+touch /home/user/report.txt

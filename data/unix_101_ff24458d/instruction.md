@@ -1,1 +1,1 @@
-Use the 'factor' command to print the prime factors of the number 42, and redirect the output to /home/user/factors.txt.
+Use the 'factor' command to find the prime factors of the number 84 and write the output to /home/user/factors.txt.

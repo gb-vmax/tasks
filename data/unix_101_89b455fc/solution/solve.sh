@@ -1,2 +1,2 @@
 #!/bin/bash
-xxd /home/user/data/input.txt /home/user/data/output.hex
+xxd /home/user/input.txt /home/user/output.hex

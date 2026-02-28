@@ -1,1 +1,1 @@
-A background process is running and its PID is stored in /home/user/pid.txt. Use the kill command to terminate this process using the default signal.
+A script is running in the background with its PID stored in /home/user/echo.pid. Use the kill command to terminate this process using the PID from the file.

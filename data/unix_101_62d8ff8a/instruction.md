@@ -1,1 +1,1 @@
-Recursively copy the directory /home/user/source_dir to /home/user/backup_dir, preserving file permissions and timestamps.
+Recursively copy the directory '/home/user/project' to '/home/user/project_copy', preserving all file permissions, ownership, and timestamps.

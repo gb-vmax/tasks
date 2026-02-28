@@ -1,1 +1,1 @@
-List all currently exported environment variables and functions in the current shell, including their values, using a single command.
+Create two exported environment variables: PROJECT=unix and MODE=testing. Then, use the export command with a flag to list all exported variables and save the output to /home/user/envlist.txt. Do not manually echo variable values; use export's built-in listing feature.

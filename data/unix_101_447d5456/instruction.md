@@ -1,1 +1,1 @@
-Remove the symbolic link /home/user/link_to_data.txt (but not the target file) using the unlink command.
+Use the unlink command to remove the symbolic link /home/user/link_to_data.txt, without deleting the original file.

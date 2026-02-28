@@ -1,2 +1,2 @@
 #!/bin/bash
-md5sum -c /home/user/files/MD5SUMS
+md5sum --check /home/user/checksums.md5 > /home/user/verify_output.txt

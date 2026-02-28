@@ -1,11 +1,8 @@
 #!/bin/bash
-if [ "$([ -f /home/user/data/info.log.bak ] && cat /home/user/data/info.log)" = $'ERROR: FAILED TO LOAD
-WARNING: DEPRECATED API
-INFO: PROCESS STARTED' ] \
-   && [ "$(cat /home/user/data/info.log.bak)" = $'error: failed to load
-warning: deprecated api
-info: process started' ]; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+if [ ! -f /home/user/unsorted.txt ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+expected='apple
+banana
+orange
+pear'
+actual=$(cat /home/user/unsorted.txt)
+if [ "$actual" = "$expected" ]; then echo 1 > /logs/verifier/reward.txt; else echo 0 > /logs/verifier/reward.txt; fi

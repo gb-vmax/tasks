@@ -1,1 +1,1 @@
-Use tac to reverse the order of lines in /home/user/notes.txt and save the output to /home/user/reversed_notes.txt.
+Reverse the order of lines in /home/user/data/poem.txt and save the result to /home/user/data/poem_reversed.txt.

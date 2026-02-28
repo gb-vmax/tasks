@@ -1,2 +1,2 @@
 #!/bin/bash
-mkfifo /home/user/pipe1
+mkfifo /home/user/mypipe

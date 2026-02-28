@@ -1,2 +1,2 @@
 #!/bin/bash
-realpath -e /home/user/projects/test/link1
+realpath /home/user/docs/shortcut.txt > /home/user/abs_path.txt

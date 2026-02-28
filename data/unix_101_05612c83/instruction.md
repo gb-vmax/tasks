@@ -1,1 +1,1 @@
-Recursively compare the contents of /home/user/dir1 and /home/user/dir2 using diff, ignoring all whitespace differences.
+Recursively compare the directories /home/user/dirA and /home/user/dirB using diff. Only report if the directories differ (do not show line-by-line differences). Save the output to /home/user/dir_comparison.txt.

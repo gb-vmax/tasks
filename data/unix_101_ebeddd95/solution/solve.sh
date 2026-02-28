@@ -1,2 +1,2 @@
 #!/bin/bash
-expr substr brainstorm 2 4
+expr substr "$(cat /home/user/input.txt)" 3 4 > /home/user/substr.txt

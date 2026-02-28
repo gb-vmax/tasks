@@ -1,1 +1,1 @@
-Recursively list the attributes of all files under /home/user/data/ using lsattr.
+Recursively list all file attributes in the directory /home/user/data using lsattr with the recursive option.

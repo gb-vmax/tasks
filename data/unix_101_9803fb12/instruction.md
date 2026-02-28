@@ -1,1 +1,1 @@
-Run the command so that the contents of /home/user/input.txt are written to /home/user/output.txt only if /home/user/input.txt is not empty, using the ifne command.
+Using 'ifne', run the command 'echo run' and write its output to /home/user/output.txt, but only if /home/user/input.txt is non-empty. The command should do nothing if the file is empty. Use /home/user/input.txt as input (which is non-empty).

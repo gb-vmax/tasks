@@ -1,2 +1,2 @@
 #!/bin/bash
-cmp --ignore-initial=5 /home/user/alpha.bin /home/user/beta.bin
+cmp /home/user/file1.txt /home/user/file2.txt

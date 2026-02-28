@@ -1,2 +1,2 @@
 #!/bin/bash
-lsattr /home/user/file1.txt
+lsattr /home/user/report.txt

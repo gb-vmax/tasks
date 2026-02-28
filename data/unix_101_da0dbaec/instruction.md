@@ -1,1 +1,1 @@
-Wrap the lines in /home/user/texts/shorttext.txt so that no output line exceeds 10 characters, and save the result to /home/user/texts/folded.txt.
+Use the fold command to wrap lines in /home/user/text.txt so that no output line is longer than 10 characters. Save the result to /home/user/wrapped.txt.

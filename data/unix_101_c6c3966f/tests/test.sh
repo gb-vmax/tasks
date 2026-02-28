@@ -1,5 +1,5 @@
 #!/bin/bash
-if grep -E '^[tcpud]+\s+\d+\s+\d+\s+[0-9.]+:[0-9]+' /home/user/listen_numeric.txt >/dev/null; then
+if [ -s /home/user/interfaces.txt ] && grep -q "Iface" /home/user/interfaces.txt; then
   echo 1 > /logs/verifier/reward.txt
 else
   echo 0 > /logs/verifier/reward.txt

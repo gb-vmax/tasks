@@ -1,2 +1,2 @@
 #!/bin/bash
-id -Gn
+id -gn > /home/user/groupname.txt

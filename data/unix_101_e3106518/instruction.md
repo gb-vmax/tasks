@@ -1,1 +1,1 @@
-Remove the file /home/user/tmpfile.txt using the unlink command.
+Delete the file /home/user/remove_me.txt using the unlink command.

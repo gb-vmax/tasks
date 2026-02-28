@@ -1,1 +1,1 @@
-Count all lines (case-insensitive) containing the word 'error' in /home/user/logs/server.log and write the number to /home/user/error_count.txt.
+Count (case-insensitive) the number of lines containing the word "network" in the file /home/user/network_status.txt using grep, and write only the count (as a number) to /home/user/network_count.txt.

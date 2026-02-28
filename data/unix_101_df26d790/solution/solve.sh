@@ -1,2 +1,2 @@
 #!/bin/bash
-cat /home/user/data.txt | ifne -n tee /home/user/result.txt
+cat /home/user/input.txt | ifne -n echo empty > /home/user/empty.txt

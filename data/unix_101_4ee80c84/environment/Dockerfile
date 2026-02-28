@@ -1,10 +1,12 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user/docs/subdir
-RUN echo 'File A' > /home/user/docs/a.txt
-RUN echo 'File B' > /home/user/docs/b.txt
-RUN echo 'Subdir File' > /home/user/docs/subdir/c.txt
+RUN mkdir -p /home/user/project/src
+RUN mkdir -p /home/user/project/tmp
+RUN echo 'main code' > /home/user/project/src/main.py
+RUN echo 'config info' > /home/user/project/config.yaml
+RUN echo 'temporary data' > /home/user/project/tmp/temp1.txt
+RUN echo 'cache' > /home/user/project/tmp/cache.dat
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

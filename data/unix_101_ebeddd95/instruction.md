@@ -1,1 +1,1 @@
-Extract the substring 'rain' from the string 'brainstorm' using expr. The substring starts at position 2 and has a length of 4.
+Extract a substring of length 4 starting at position 3 from the string in /home/user/input.txt using expr, and write the result to /home/user/substr.txt. The input file contains a single line: 'abcdefg'.

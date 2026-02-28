@@ -1,2 +1,2 @@
 #!/bin/bash
-unzip example.zip
+unzip archive.zip

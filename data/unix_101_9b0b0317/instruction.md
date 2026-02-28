@@ -1,1 +1,1 @@
-Use egrep with the -o flag to search both /home/user/texts/first.txt and /home/user/texts/second.txt for words ending with 'ing' or 'ed'. Output only the matching words, one per line.
+Using egrep with the -i flag, extract from /home/user/phrases.txt all lines that start with a vowel (A, E, I, O, or U, case-insensitive) and write them to /home/user/vowel_lines.txt.

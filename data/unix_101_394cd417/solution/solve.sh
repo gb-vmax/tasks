@@ -1,2 +1,2 @@
 #!/bin/bash
-echo 'Hello, Unix!' > /home/user/greeting.txt
+echo -n 'Hello, World!' > /home/user/greeting.txt

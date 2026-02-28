@@ -1,1 +1,1 @@
-Copy the file /home/user/file1.txt to /home/user/file2.txt.
+Copy the file '/home/user/note.txt' to '/home/user/backup_note.txt'.

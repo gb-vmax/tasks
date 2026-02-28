@@ -1,2 +1,2 @@
 #!/bin/bash
-grep -i -c 'error' /home/user/logs/server.log > /home/user/error_count.txt
+grep -i -c 'network' /home/user/network_status.txt > /home/user/network_count.txt

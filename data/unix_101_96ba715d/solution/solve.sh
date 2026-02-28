@@ -1,2 +1,2 @@
 #!/bin/bash
-groups testuser > /home/user/testuser_groups.txt
+groups user nobody > /home/user/groupcheck.txt

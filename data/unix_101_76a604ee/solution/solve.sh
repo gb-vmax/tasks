@@ -1,2 +1,2 @@
 #!/bin/bash
-sort /home/user/names.txt -o /home/user/sorted_names.txt
+sort /home/user/fruits.txt -o /home/user/sorted_fruits.txt

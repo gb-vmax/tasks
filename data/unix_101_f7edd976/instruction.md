@@ -1,1 +1,1 @@
-Display a list of all currently defined aliases in your shell. The output should include any existing aliases in the format 'alias NAME=VALUE'.
+Display all currently defined shell aliases in reusable format using the appropriate alias command flag. Redirect the output to /home/user/aliases.txt.

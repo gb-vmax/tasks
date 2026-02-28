@@ -1,7 +1,6 @@
 #!/bin/bash
-set -e
-output=$(expr substr brainstorm 2 4)
-if [ "$output" = "rain" ]; then
+expected="cdef"
+if [ -f /home/user/substr.txt ] && grep -qx "$expected" /home/user/substr.txt; then
   echo 1 > /logs/verifier/reward.txt
 else
   echo 0 > /logs/verifier/reward.txt

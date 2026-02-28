@@ -1,1 +1,1 @@
-Display only your effective user ID number using the id command. Do not display any other information.
+Write the effective user ID (UID) of the current user into /home/user/id_uid.txt using the id command.

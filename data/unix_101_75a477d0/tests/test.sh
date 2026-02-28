@@ -1,7 +1,5 @@
 #!/bin/bash
-EXPECTED='thE qUIck brOwn fOx jUmps OvEr thE lAzy dOg.'
-if [[ "$(cat /home/user/output.txt)" == "$EXPECTED" ]]; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+if [ ! -f /home/user/output.txt ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+if grep -q '[a-z]' /home/user/output.txt; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+if ! grep -q 'HELLO WORLD' /home/user/output.txt; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+echo 1 > /logs/verifier/reward.txt

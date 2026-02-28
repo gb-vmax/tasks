@@ -1,1 +1,1 @@
-Use the 'factor' command to read numbers from the file /home/user/numbers.txt and print their prime factors to /home/user/factors_out.txt, one line per number.
+Given the file /home/user/nums.txt containing a list of integers (one per line), use the 'factor' command to compute the prime factors of each number in the file by reading from standard input, and write the output to /home/user/multi_factors.txt.

@@ -1,2 +1,2 @@
 #!/bin/bash
-dirname /home/user/docs/report.txt
+dirname $(cat /home/user/paths.txt) > /home/user/parent.txt

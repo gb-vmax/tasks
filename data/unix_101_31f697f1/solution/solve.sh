@@ -1,2 +1,2 @@
 #!/bin/bash
-tail -n 5 /home/user/logs/app.log
+tail /home/user/notes.txt > /home/user/last_lines.txt

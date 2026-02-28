@@ -1,2 +1,2 @@
 #!/bin/bash
-grep 'apple' /home/user/fruits.txt > /home/user/found_apples.txt
+grep -i 'apple' /home/user/fruits.txt > /home/user/apple_lines.txt

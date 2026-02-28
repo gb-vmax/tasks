@@ -1,2 +1,2 @@
 #!/bin/bash
-tree -L 2 /home/user/project
+tree /home/user/project > /home/user/tree.txt

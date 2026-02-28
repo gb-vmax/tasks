@@ -1,2 +1,2 @@
 #!/bin/bash
-free -b -t
+free -t -b > /home/user/totalmem.txt

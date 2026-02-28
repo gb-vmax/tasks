@@ -1,2 +1,2 @@
 #!/bin/bash
-b2sum --check /home/user/filesums.txt
+b2sum -c /home/user/docs/report.txt.b2sum

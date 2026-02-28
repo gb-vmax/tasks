@@ -1,1 +1,1 @@
-Create a zip archive named 'docs.zip' in /home/user/ that includes all files from the directory '/home/user/docs', but does not include any of its subdirectories or their contents. Only the files directly inside '/home/user/docs' should be in the archive.
+Create a zip archive named 'project.zip' in /home/user that includes all files and folders from the 'project' directory, except for the files in the 'project/tmp/' subdirectory (exclude all contents of 'tmp'). Use recursion so all nested files (except those in 'tmp') are included.

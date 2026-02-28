@@ -1,1 +1,1 @@
-Given the hex dump file /home/user/binfile.hex, convert it back to its original binary form and save as /home/user/binfile_restored.bin.
+Reverse the hex dump in /home/user/dump.hex to recreate the original binary file at /home/user/restored.bin using xxd.

@@ -1,2 +1,3 @@
 #!/bin/bash
-if grep -q -i '^whoami (GNU coreutils)' /home/user/whoami_version.txt && grep -q 'Copyright' /home/user/whoami_version.txt; then echo 1 > /logs/verifier/reward.txt; else echo 0 > /logs/verifier/reward.txt; fi
+if [ ! -f /home/user/whoami_help.txt ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+if grep -q 'Print the user name associated' /home/user/whoami_help.txt && grep -q 'Usage: whoami' /home/user/whoami_help.txt; then echo 1 > /logs/verifier/reward.txt; else echo 0 > /logs/verifier/reward.txt; fi

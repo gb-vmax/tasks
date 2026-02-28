@@ -1,2 +1,2 @@
 #!/bin/bash
-touch --reference=/home/user/reference.txt /home/user/file.txt
+touch -r /home/user/project/template.txt /home/user/project/notes.txt

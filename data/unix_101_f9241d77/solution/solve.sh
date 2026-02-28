@@ -1,2 +1,2 @@
 #!/bin/bash
-hardlink -f /home/user/documents
+hardlink -f /home/user/photos/

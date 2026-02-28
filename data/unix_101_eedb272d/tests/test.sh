@@ -1,8 +1,5 @@
 #!/bin/bash
 set -e
-output=$(namei /home/user/projects/testdir/file1.txt | tr -s ' ')
-if echo "$output" | grep -qE '^f: /home/user/projects/testdir/file1.txt$|^d [^ ]+ home$' && echo "$output" | grep -q 'f file1.txt'; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+file=/home/user/path_steps.txt
+[ -f "$file" ] || { echo 0 > /logs/verifier/reward.txt; exit; }
+grep -q 'readme.txt' "$file" && grep -q 'demo' "$file" && grep -q 'projects' "$file" && grep -q 'home' "$file" && grep -q 'user' "$file" && [ "$(wc -l < "$file")" -ge 5 ] && echo 1 > /logs/verifier/reward.txt || echo 0 > /logs/verifier/reward.txt

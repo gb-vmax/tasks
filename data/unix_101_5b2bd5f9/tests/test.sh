@@ -1,6 +1,6 @@
 #!/bin/bash
-out=$(umask)
-if [ "$out" = "0027" ]; then
+output=$(umask)
+if [ "$output" = "0022" ]; then
   echo 1 > /logs/verifier/reward.txt
 else
   echo 0 > /logs/verifier/reward.txt

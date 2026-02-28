@@ -1,1 +1,1 @@
-Use chronic with the '-e' flag to run 'cat /home/user/missing.txt'. The file /home/user/missing.txt does not exist. Ensure that the error message from cat is shown in the output.
+Use chronic with the -e flag to run 'cat missing.txt' and redirect all output (stdout and stderr) to error.log. Ensure that error.log contains the error message from cat (i.e., file not found).

@@ -1,1 +1,1 @@
-Display the uncompressed contents of /home/user/data/hello.txt.xz using xzcat.
+Use xzcat to decompress /home/user/data1.txt.xz and save the plain text output to /home/user/result1.txt.

@@ -1,2 +1,2 @@
 #!/bin/bash
-chown root /home/user/report.txt
+chown user /home/user/project.txt

@@ -1,1 +1,1 @@
-Expand tabs in /home/user/reports/columns.txt so that tab stops are set at positions 4 and 10 (i.e., first tab at column 4, next at column 10, then default every 8 columns after that). Save the output to /home/user/reports/columns_expanded.txt.
+Use the expand command with custom tab stops at columns 4 and 10 to convert tabs to spaces in /home/user/data/scores.tsv. Save the output to /home/user/data/scores_expanded.txt.

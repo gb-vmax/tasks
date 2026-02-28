@@ -1,2 +1,2 @@
 #!/bin/bash
-expr 42 + 58
+expr 7 + 5 > /home/user/sum.txt

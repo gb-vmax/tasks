@@ -1,2 +1,2 @@
 #!/bin/bash
-xxd -r /home/user/binfile.hex /home/user/binfile_restored.bin
+xxd -r /home/user/dump.hex /home/user/restored.bin

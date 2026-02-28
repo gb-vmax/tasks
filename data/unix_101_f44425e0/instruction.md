@@ -1,1 +1,1 @@
-Display the help information for the rev command and save it to /home/user/rev_help.txt.
+Reverse every line in both /home/user/file1.txt and /home/user/file2.txt using a single rev command. Write the combined output to /home/user/combined_reversed.txt. Also, display the help message using the --help flag and save it to /home/user/rev_help.txt.

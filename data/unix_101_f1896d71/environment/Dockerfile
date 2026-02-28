@@ -1,7 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo -n 'Hello, cksum!' > /home/user/data.txt
+RUN printf 'Hello world\nThis is a test file.\n' > /home/user/note.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

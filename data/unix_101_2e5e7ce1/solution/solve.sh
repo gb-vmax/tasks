@@ -1,2 +1,2 @@
 #!/bin/bash
-env > /home/user/env.txt
+env FOO=BAR

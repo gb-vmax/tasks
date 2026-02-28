@@ -1,1 +1,1 @@
-List information about the compressed files /home/user/a.txt.xz and /home/user/b.txt.xz using xz. You should print the information to standard output.
+Decompress the file /home/user/docs/report.txt.xz, but keep the compressed .xz file as well as the decompressed file.

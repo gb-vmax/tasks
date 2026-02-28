@@ -1,1 +1,1 @@
-Print all locations of the 'echo' command found in your PATH using 'which' with the appropriate flag.
+Suppose a command named 'mycmd' exists in both /home/user/bin/ and /usr/local/bin/. Find all locations of the 'mycmd' command using the 'which' command with the appropriate flag, and write the output to /home/user/mycmd_paths.txt.

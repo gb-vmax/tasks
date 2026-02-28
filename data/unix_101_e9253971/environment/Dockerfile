@@ -1,7 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo -e 'A B\nB C\nC D' > /home/user/deps.txt
+RUN printf "A B\nB C\nD C\nE D\n" > /home/user/order.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

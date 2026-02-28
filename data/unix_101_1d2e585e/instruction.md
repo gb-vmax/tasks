@@ -1,1 +1,1 @@
-Use printf to write the numbers 1, 2, and 3 each on a separate line to /home/user/nums.txt, with each number right-aligned in a 3-character wide field.
+Use printf to write the number 42, zero-padded to 5 digits, to /home/user/output.txt (should contain '00042').

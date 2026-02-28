@@ -1,1 +1,1 @@
-Use xzcat to display the combined uncompressed contents of /home/user/logs/part1.log.xz and /home/user/logs/part2.log.xz in order.
+Decompress both /home/user/part1.txt.xz and /home/user/part2.txt.xz with xzcat and write the combined uncompressed output to /home/user/combined.txt. The output should have the contents of part1 followed by part2.

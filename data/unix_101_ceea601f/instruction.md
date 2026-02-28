@@ -1,1 +1,1 @@
-Display the names of all groups that you are a member of, separated by spaces, using the id command (not the group IDs).
+Write the effective group name of the current user to /home/user/groupname.txt using the 'id' command and appropriate flags.

@@ -1,12 +1,9 @@
 #!/bin/bash
-expected='Third line
-Second line
-First line'
-if [ -f /home/user/reversed_notes.txt ]; then
-  actual=$(cat /home/user/reversed_notes.txt)
-  if [ "$actual" = "$expected" ]; then
-    echo 1 > /logs/verifier/reward.txt
-    exit 0
-  fi
+set -e
+expected=$'And so are you\nSugar is sweet\nViolets are blue\nRoses are red'
+output=$(cat /home/user/data/poem_reversed.txt)
+if [ "$output" = "$expected" ]; then
+  echo 1 > /logs/verifier/reward.txt
+else
+  echo 0 > /logs/verifier/reward.txt
 fi
-echo 0 > /logs/verifier/reward.txt

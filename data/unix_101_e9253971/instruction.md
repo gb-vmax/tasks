@@ -1,1 +1,1 @@
-Given the file /home/user/deps.txt containing pairs of items representing dependencies, perform a topological sort and save the result to /home/user/sorted.txt.
+Given the file /home/user/order.txt, which contains a list of pairs representing dependencies (one pair per line, separated by spaces), use tsort to produce a topologically sorted list and save it to /home/user/sorted.txt.

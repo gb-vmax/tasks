@@ -1,1 +1,1 @@
-Run the 'true' command with the '--help' flag to display its help information.
+Run the 'true' command in the terminal. It should exit successfully and produce no output or files.

@@ -1,1 +1,1 @@
-From the file /home/user/notes/todo.txt, extract only characters 3 through 7 (inclusive) from each line and write the result to /home/user/notes/todo_cut.txt.
+From the file /home/user/phrases.txt, extract only characters 2 through 5 (inclusive) from each line and save the result to /home/user/col_2_to_5.txt.

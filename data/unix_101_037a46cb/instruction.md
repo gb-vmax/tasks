@@ -1,1 +1,1 @@
-Use tput with the -T flag to query the 'lines' capability for the vt100 terminal type and write the result into /home/user/vt100_lines.txt.
+Use tput with the -T option to query the value of the 'cup' capability for the 'vt100' terminal. Save the output to /home/user/vt100_cup.txt.

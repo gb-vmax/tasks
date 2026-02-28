@@ -1,7 +1,5 @@
 #!/bin/bash
-EXPECTED=$'A1;A2;A3\nB1;B2'
-if [[ -f /home/user/merged.txt ]] && diff <(cat /home/user/merged.txt) <(echo "$EXPECTED") >/dev/null; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+if [ ! -f /home/user/names_ages.txt ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+expected=$'Alice\t23\nBob\t29\nCharlie\t31'
+output=$(cat /home/user/names_ages.txt | tr -d '\r')
+if [ "$output" = "$expected" ]; then echo 1 > /logs/verifier/reward.txt; else echo 0 > /logs/verifier/reward.txt; fi

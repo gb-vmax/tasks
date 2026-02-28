@@ -1,2 +1,2 @@
 #!/bin/bash
-column -t /home/user/data.txt > /home/user/table.txt
+column /home/user/fruits.txt > /home/user/fruits_columns.txt

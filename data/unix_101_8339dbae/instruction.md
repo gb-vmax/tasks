@@ -1,1 +1,1 @@
-Split /home/user/logs.txt into multiple files at every line matching the word 'ERROR', using csplit. Name the output files with prefix 'logpart_' and 3-digit numeric suffixes (e.g., logpart_000). Suppress the matched lines from the output files.
+Given /home/user/server.log, split it into multiple files at every line containing '=== SESSION START ==='. Name the output files with prefix 'session_' and a three-digit suffix (e.g., session_000, session_001, ...). Suppress printing byte counts to stdout.

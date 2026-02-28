@@ -1,2 +1,2 @@
 #!/bin/bash
-mktemp -d /home/user/tmp/mydirXXX
+mktemp -d --suffix=_data /home/user/tmpwork/jobtemp_XXXXXX

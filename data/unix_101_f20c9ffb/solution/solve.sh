@@ -1,2 +1,2 @@
 #!/bin/bash
-gzip /home/user/notes.txt
+gzip /home/user/data.txt

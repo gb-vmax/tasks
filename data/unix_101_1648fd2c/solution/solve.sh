@@ -1,2 +1,2 @@
 #!/bin/bash
-pgrep -c bash
+pgrep -l bash > /home/user/bashlist.txt

@@ -1,1 +1,1 @@
-Use flock with the --nonblock (-n) flag and set conflict exit code to 42 (-E 42) to attempt to obtain an exclusive lock on /home/user/conflict.lock and run 'echo test > /home/user/test.txt'. Another process is already holding the lock. The command should exit with code 42 and not create /home/user/test.txt.
+Use flock to acquire an exclusive lock on /home/user/lockfile.lock and append the line 'locked append' to /home/user/output.txt. Ensure that the append only happens after obtaining the exclusive lock. Use the -c option to run the echo command via flock.

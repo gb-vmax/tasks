@@ -1,1 +1,1 @@
-Overwrite the file /home/user/confidential/report.dat three times using shred, add a final overwrite with zeros, and remove the file after shredding.
+Securely overwrite and delete the file /home/user/old_data.bin by shredding it with 5 overwrite passes, and ensure it is removed after shredding.

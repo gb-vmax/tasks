@@ -1,2 +1,2 @@
 #!/bin/bash
-split -b 5 -d --suffix-length=2 /home/user/long.txt part_
+split -b 25 -d -a 2 /home/user/data.csv chunk

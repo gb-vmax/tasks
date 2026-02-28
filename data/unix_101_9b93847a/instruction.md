@@ -1,1 +1,1 @@
-Use flock to obtain an exclusive lock on /home/user/lockfile.lock and run the command 'echo locked > /home/user/result.txt' only while holding the lock.
+Using flock, run the command 'echo locked >> /home/user/lockfile.log' while holding an exclusive lock on /home/user/lockfile.lock. Use the -c option.

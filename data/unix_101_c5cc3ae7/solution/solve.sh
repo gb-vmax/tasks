@@ -1,2 +1,2 @@
 #!/bin/bash
-errno -l > /home/user/all_errno.txt
+errno -l > /home/user/errno_all.txt

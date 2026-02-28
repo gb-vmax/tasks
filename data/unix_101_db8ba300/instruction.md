@@ -1,1 +1,1 @@
-Use comm to output only the lines that are unique to /home/user/numbers1.txt (i.e., suppress columns 2 and 3), and write the result to /home/user/unique1.txt.
+Given two sorted files, /home/user/list1.txt and /home/user/list2.txt, use comm to produce a file /home/user/unique.txt containing only the lines that are unique to either file (not common to both).

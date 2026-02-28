@@ -1,1 +1,1 @@
-Use getconf to determine the maximum allowed filename length in /home/user/testdir and write the result to /home/user/max_name_length.txt.
+Create a new directory at /home/user/testdir. Use the getconf command to find the maximum length of a filename in that directory and save the result to /home/user/max_name_len.txt.

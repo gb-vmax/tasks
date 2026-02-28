@@ -1,2 +1,2 @@
 #!/bin/bash
-gunzip -k /home/user/archive.log.gz
+gunzip -c /home/user/info.log.gz > /home/user/info.log.unzipped

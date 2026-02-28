@@ -1,8 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user
-RUN echo 'hello world' > /home/user/file1.txt
+RUN printf "Hello SHA256!\n" > /home/user/data.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

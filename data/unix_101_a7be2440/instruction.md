@@ -1,1 +1,1 @@
-Use the 'file' command with the appropriate flag to print only the MIME type of the file '/home/user/images/photo.jpg'.
+Use the file command to determine the type of the file /home/user/doc.txt and display the result.

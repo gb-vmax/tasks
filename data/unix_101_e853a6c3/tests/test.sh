@@ -1,10 +1,12 @@
 #!/bin/bash
 set -e
-if [ ! -f /home/user/random_numbers.txt ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
-count=$(wc -l < /home/user/random_numbers.txt)
-if [ "$count" -ne 3 ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+# File must exist
+[ -f /home/user/numbers.txt ] || { echo 0 > /logs/verifier/reward.txt; exit 0; }
+# Must have 5 lines
+[ "$(wc -l < /home/user/numbers.txt)" -eq 5 ] || { echo 0 > /logs/verifier/reward.txt; exit 0; }
+# All lines must be unique and in 20-29
+sort -n /home/user/numbers.txt | uniq -d | grep . && { echo 0 > /logs/verifier/reward.txt; exit 0; }
 while read n; do
-  if ! [[ "$n" =~ ^[0-9]+$ ]]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
-  if [ "$n" -lt 10 ] || [ "$n" -gt 20 ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
-done < /home/user/random_numbers.txt
+  if ! [ "$n" -ge 20 ] || ! [ "$n" -le 29 ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+done < /home/user/numbers.txt
 echo 1 > /logs/verifier/reward.txt

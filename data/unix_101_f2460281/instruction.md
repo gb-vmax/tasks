@@ -1,1 +1,1 @@
-Given the file /home/user/mycolors.txt containing a custom dircolors configuration, output Bourne shell code to set LS_COLORS according to it.
+Given a file /home/user/custom_colors.conf containing a minimal dircolors configuration, generate Bourne shell code to set the LS_COLORS environment variable using dircolors, and write it to /home/user/lscolors.sh.

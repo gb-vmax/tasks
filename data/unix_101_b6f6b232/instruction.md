@@ -1,1 +1,1 @@
-Use the 'env' command to run 'printenv GREETING' with GREETING set to 'hello_world', and write the output to /home/user/greeting.txt.
+Create a file named custom_env.txt in your home directory that contains only the string 'HELLO=world'. Use the env command to run 'env' with only the 'HELLO=world' environment variable set (ignore all other environment variables), and redirect the output to hello_env.txt in your home directory.

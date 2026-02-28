@@ -1,9 +1,8 @@
 FROM unix101-base:latest
 
 USER root
-RUN ip link add veth1 type veth peer name veth2
-RUN ip link set veth1 up
-RUN ip link set veth2 up
+RUN mkdir -p /home/user
+RUN touch /home/user/dummyfile
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

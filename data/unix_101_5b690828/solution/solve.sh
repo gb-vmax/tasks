@@ -1,2 +1,2 @@
 #!/bin/bash
-fgrep 'apple' /home/user/fruits.txt > /home/user/apples.txt
+fgrep 'error' /home/user/logfile.txt > /home/user/errors.txt

@@ -1,2 +1,2 @@
 #!/bin/bash
-mv --backup /home/user/docs/report.txt /home/user/docs/summary.txt /home/user/backup/
+mv -t /home/user/docs /home/user/project/intro.txt /home/user/project/summary.txt

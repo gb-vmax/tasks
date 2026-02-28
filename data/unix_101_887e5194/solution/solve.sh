@@ -1,2 +1,2 @@
 #!/bin/bash
-whereis -m -M /home/user/customman -f customtool
+whereis -m -M /home/user/customman -f foo > /home/user/foo_man.txt

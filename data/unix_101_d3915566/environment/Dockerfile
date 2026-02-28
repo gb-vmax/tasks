@@ -1,10 +1,10 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user/dirA /home/user/dirB
-RUN echo 'target file' > /home/user/dirB/realfile.txt
-RUN ln -s ../dirB/realfile.txt /home/user/dirA/link2
-RUN ln -s link2 /home/user/dirA/chainlink
+RUN echo 'Real file contents.' > /home/user/realfile.txt
+RUN ln -s /home/user/linkB /home/user/linkA
+RUN ln -s /home/user/realfile.txt /home/user/linkB
+RUN rm -f /home/user/canon.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

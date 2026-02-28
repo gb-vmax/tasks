@@ -1,1 +1,1 @@
-There is a script at /home/user/print_error.sh that prints three lines to standard error. Run this script so that its standard error is line buffered, and redirect the standard error to /home/user/error.log.
+Use stdbuf to run the command 'sort unsorted.txt' with line-buffered output and write the sorted result to sorted.txt.

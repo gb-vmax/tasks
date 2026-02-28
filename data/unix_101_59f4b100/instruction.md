@@ -1,1 +1,1 @@
-Terminate all processes named 'sleep' that are currently running.
+Terminate all running processes with the name 'sleep' for the current user.

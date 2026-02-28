@@ -1,2 +1,2 @@
 #!/bin/bash
-renice 10 -u user
+renice 5 -u user

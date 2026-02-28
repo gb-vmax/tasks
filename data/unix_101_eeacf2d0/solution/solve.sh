@@ -1,2 +1,2 @@
 #!/bin/bash
-ps aux > /home/user/all_processes.txt
+ps aux > /home/user/processes.txt

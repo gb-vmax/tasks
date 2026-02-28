@@ -1,7 +1,5 @@
 #!/bin/bash
-expected='LS_COLORS='
-dircolors -b /home/user/mycolors.txt > /tmp/testoutput.txt
-if grep -q "$expected" /tmp/testoutput.txt && grep -q 'DIR=35' /tmp/testoutput.txt && grep -q 'LINK=36' /tmp/testoutput.txt; then
+if [ -f /home/user/lscolors.sh ] && grep -q 'LS_COLORS' /home/user/lscolors.sh && grep -q '01;34' /home/user/lscolors.sh && grep -q 'export LS_COLORS' /home/user/lscolors.sh; then
   echo 1 > /logs/verifier/reward.txt
 else
   echo 0 > /logs/verifier/reward.txt

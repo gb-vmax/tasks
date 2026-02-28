@@ -1,2 +1,2 @@
 #!/bin/bash
-env GREETING=hello_world printenv GREETING > /home/user/greeting.txt
+env -i HELLO=world env > /home/user/hello_env.txt

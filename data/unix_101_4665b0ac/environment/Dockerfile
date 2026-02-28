@@ -1,11 +1,12 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user/logs
-RUN echo 'First log entry' > /home/user/logs/part1.log
-RUN echo 'Second log entry' > /home/user/logs/part2.log
-RUN xz -z -k /home/user/logs/part1.log
-RUN xz -z -k /home/user/logs/part2.log
+RUN echo '111 First line' > /home/user/part1.txt
+RUN echo '222 Second line' >> /home/user/part1.txt
+RUN xz /home/user/part1.txt
+RUN echo '333 Third line' > /home/user/part2.txt
+RUN echo '444 Fourth line' >> /home/user/part2.txt
+RUN xz /home/user/part2.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

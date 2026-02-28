@@ -1,1 +1,1 @@
-Securely overwrite the file /home/user/notes.txt using the shred command, but do not delete it after shredding.
+Securely overwrite the file /home/user/secret.txt using the shred command, WITHOUT deleting the file. Use default options.

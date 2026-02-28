@@ -1,2 +1,2 @@
 #!/bin/bash
-comm -23 /home/user/numbers1.txt /home/user/numbers2.txt > /home/user/unique1.txt
+comm -3 /home/user/list1.txt /home/user/list2.txt > /home/user/unique.txt

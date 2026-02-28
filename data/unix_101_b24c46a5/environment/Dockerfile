@@ -1,10 +1,12 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo -e '#!/bin/bash\ntrap ":" TERM\nsleep 100' > /home/user/ignore_term.sh
+RUN echo '#!/bin/bash' > /home/user/ignore_term.sh
+RUN echo 'trap "" TERM' >> /home/user/ignore_term.sh
+RUN echo 'sleep 10' >> /home/user/ignore_term.sh
+RUN echo 'echo finished > /home/user/kill_check.txt' >> /home/user/ignore_term.sh
 RUN chmod +x /home/user/ignore_term.sh
-RUN echo start > /home/user/marker.txt
-RUN mkdir -p /logs/verifier
+RUN rm -f /home/user/kill_check.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

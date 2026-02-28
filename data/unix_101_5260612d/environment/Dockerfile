@@ -1,7 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user/project/logs
+RUN mkdir -p /home/user/foo/bar/baz
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

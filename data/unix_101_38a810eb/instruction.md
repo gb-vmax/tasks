@@ -1,1 +1,1 @@
-Check if /home/user/project/new.txt is newer than /home/user/project/old.txt using the test command.
+Check if /home/user/second.txt is newer than /home/user/first.txt using the 'test' command. Return a zero exit status if it is newer.

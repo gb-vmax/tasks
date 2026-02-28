@@ -1,1 +1,1 @@
-Print the base names of the files '/home/user/photos/vacation1.jpg' and '/home/user/photos/vacation2.jpg', removing the '.jpg' suffix from each. Use a single command.
+Print only the filename (without directories) from the path /home/user/documents/report2024.pdf and save the output to /home/user/output.txt.

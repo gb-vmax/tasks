@@ -1,2 +1,2 @@
 #!/bin/bash
-pkill -n sleep
+pkill testsleep

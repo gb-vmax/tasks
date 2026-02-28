@@ -1,2 +1,2 @@
 #!/bin/bash
-truncate -r /home/user/ref.txt /home/user/input.txt
+truncate -c -r /home/user/file1.bin /home/user/file2.bin

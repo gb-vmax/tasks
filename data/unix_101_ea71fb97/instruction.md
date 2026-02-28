@@ -1,1 +1,1 @@
-Combine the JSON arrays from /home/user/data1.json and /home/user/data2.json into a single array, then output the resulting merged array with its objects' keys sorted, saving it to /home/user/merged.json. The output must be pretty-printed (not compact).
+There are three files: /home/user/user1.json, /home/user/user2.json, and /home/user/user3.json, each containing a JSON object. Use jq to combine all three objects into a single JSON array and save it to /home/user/users.json. Format the output with indentation.

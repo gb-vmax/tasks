@@ -1,1 +1,1 @@
-Create a new temporary directory in /home/user/tmp/ using mktemp with the template 'mydirXXX' and the -d flag. Print the name of the created directory.
+Use mktemp to create a temporary directory in /home/user/tmpwork/ with the template 'jobtemp_XXXXXX' and the suffix '_data'. The resulting directory's name should match 'jobtemp_XXXXXX_data' with random characters for the X's. Ensure the directory is created and has user read/write/execute permissions.

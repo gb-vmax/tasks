@@ -1,2 +1,2 @@
 #!/bin/bash
-chmod -R 660 /home/user/project
+chmod -R 755 /home/user/project_dir

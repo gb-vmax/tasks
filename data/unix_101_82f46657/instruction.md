@@ -1,1 +1,1 @@
-Run the command that prints all available system information and save the output to /home/user/sysinfo.txt.
+Run the command that prints all available system information (kernel name, node name, kernel release, kernel version, machine, processor, hardware platform, operating system) and save the output to /home/user/uname_all.txt.

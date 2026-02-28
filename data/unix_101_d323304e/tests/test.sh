@@ -1,13 +1,3 @@
 #!/bin/bash
-EXPECTED='Lorem ipsum dolor sit amet,
-consectetur adipiscing elit. Sed do
-eiusmod tempor incididunt ut labore et
-dolore magna aliqua. Ut enim ad minim
-veniam, quis nostrud exercitation
-ullamco laboris nisi ut aliquip ex ea
-commodo consequat.'
-if [[ -f /home/user/data/paragraph_fmt.txt ]] && diff -u <(echo "$EXPECTED") /home/user/data/paragraph_fmt.txt >/dev/null; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+if [ ! -f /home/user/formatted1.txt ]; then echo 0 > /logs/verifier/reward.txt; exit; fi
+if awk '{ if(length > 40) exit 1 }' /home/user/formatted1.txt; then echo 1 > /logs/verifier/reward.txt; else echo 0 > /logs/verifier/reward.txt; fi

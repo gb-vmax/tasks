@@ -1,1 +1,1 @@
-List all IPv4 addresses assigned to network interfaces in JSON format.
+List all network interfaces on the system in JSON format and save the output into /home/user/interfaces.json.

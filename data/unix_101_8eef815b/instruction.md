@@ -1,1 +1,1 @@
-Run the command /bin/echo 'Hello, world!' and redirect its output to /home/user/output.txt, but use stdbuf to make sure the standard output is unbuffered.
+Use stdbuf to run the command 'grep apple fruits.txt' with unbuffered output, and save the result to result.txt.

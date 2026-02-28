@@ -1,2 +1,2 @@
 #!/bin/bash
-test -f /home/user/data/input.txt
+test -f /home/user/input.txt

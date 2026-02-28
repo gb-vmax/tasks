@@ -1,8 +1,8 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user/projects/testdir
-RUN echo 'hello world' > /home/user/projects/testdir/file1.txt
+RUN mkdir -p /home/user/projects/demo
+RUN touch /home/user/projects/demo/readme.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

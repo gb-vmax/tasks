@@ -1,1 +1,1 @@
-Use printf with the -v flag to assign a shell variable named RESULT the shell-quoted version of the string 'hello world!' (with the exclamation mark) using the %q format, and then write the value of RESULT to /home/user/quoted.txt.
+Using printf, read the contents of /home/user/input.txt (which contains escape sequences) and write the result with escape sequences expanded to /home/user/result.txt. Use the %b format specifier. Do not add any extra newlines.

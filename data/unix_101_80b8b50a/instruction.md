@@ -1,1 +1,1 @@
-Compress the file /home/user/system.log using bzip2. The original file should be replaced by the compressed file.
+Compress the file /home/user/data.txt using bzip2. The result should be a new file named /home/user/data.txt.bz2, and the original file should be deleted.

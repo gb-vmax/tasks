@@ -1,2 +1,2 @@
 #!/bin/bash
-gzip -k /home/user/data/report.csv
+gzip -k /home/user/report.log

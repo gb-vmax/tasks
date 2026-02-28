@@ -1,1 +1,1 @@
-Create a hex dump of the file /home/user/data/input.txt and save the output to /home/user/data/output.hex.
+Create a hex dump of /home/user/input.txt and save it as /home/user/output.hex using xxd.

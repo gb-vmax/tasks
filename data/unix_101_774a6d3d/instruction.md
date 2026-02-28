@@ -1,1 +1,1 @@
-Change to the directory /home/user/real_folder via the symlink /home/user/link_folder, then print the physical directory path (resolving all symlinks) using the appropriate flag.
+There is a directory /home/user/original and a symlink /home/user/linkdir pointing to it. Change into /home/user/linkdir, then print the physical (real) path of the current directory (resolving symlinks) and save it to /home/user/physical_path.txt.

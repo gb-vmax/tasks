@@ -1,12 +1,4 @@
 #!/bin/bash
-shopt -s expand_aliases
-alias gotmp='cd /home/user/tmp'
-cd /home/user
-if [ "$PWD" = "/home/user" ]; then
-  gotmp
-  if [ "$PWD" = "/home/user/tmp" ]; then
-    echo 1 > /logs/verifier/reward.txt
-    exit 0
-  fi
-fi
-echo 0 > /logs/verifier/reward.txt
+# Check that greet_alias.txt exists and contains the correct alias definition
+if [ ! -f /home/user/greet_alias.txt ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+grep -q "alias greet='echo Hello, world!'" /home/user/greet_alias.txt && echo 1 > /logs/verifier/reward.txt || echo 0 > /logs/verifier/reward.txt

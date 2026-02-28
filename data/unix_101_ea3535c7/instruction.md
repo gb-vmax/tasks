@@ -1,1 +1,1 @@
-Decompress the file /home/user/archive.bz2 to produce /home/user/archive, but keep the original .bz2 file.
+Decompress the file /home/user/archive/data.csv.bz2 but keep both the decompressed file (/home/user/archive/data.csv) and the original compressed file (/home/user/archive/data.csv.bz2) after the operation.

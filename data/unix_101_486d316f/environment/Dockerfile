@@ -1,7 +1,9 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo -n 'abcdefghij1234567890ABCDEFGHIJ' > /home/user/data.log
+RUN mkdir -p /home/user/data
+RUN printf "ABCDEFGHIJKLMNOPQRSTUVWXYZ\n1234567890abcdefghij\n" > /home/user/data/alpha.txt
+RUN printf "Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit.\n" > /home/user/data/beta.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

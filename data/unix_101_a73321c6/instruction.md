@@ -1,1 +1,1 @@
-Delete the empty directory /home/user/emptydir.
+Delete the directory /home/user/emptydir, which exists and is empty.

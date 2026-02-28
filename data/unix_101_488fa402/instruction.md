@@ -1,1 +1,1 @@
-Decode the base64-encoded file /home/user/input/encoded_with_garbage.txt (which contains non-base64 characters) and write the decoded output to /home/user/output/decoded.txt, ignoring all non-base64 characters.
+Decode the base64-encoded file /home/user/data.b64 (wrapped at 8 columns per line) and write the output to /home/user/decoded.txt.

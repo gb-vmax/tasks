@@ -1,2 +1,2 @@
 #!/bin/bash
-xz /home/user/data.txt
+xz /home/user/note.txt

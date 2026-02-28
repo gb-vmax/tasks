@@ -1,13 +1,17 @@
 #!/bin/bash
-fail=0
-for f in /home/user/project/src/empty1.py /home/user/project/src/empty2.py /home/user/project/tests/empty_test.py; do
-  if [ -e "$f" ]; then fail=1; fi
+set -e
+# Check that all empty files are gone
+files=(/home/user/project/file1.txt /home/user/project/alpha/empty1.log /home/user/project/beta/empty2.md /home/user/project/beta/gamma/empty3.tmp)
+pass=1
+for f in "${files[@]}"; do
+  if [ -f "$f" ]; then
+    pass=0
+  fi
 done
-for f in /home/user/project/src/main.py /home/user/project/tests/test_main.py; do
-  if [ ! -e "$f" ]; then fail=1; fi
+# Check that non-empty files still exist
+for f in /home/user/project/file2.txt /home/user/project/alpha/data2.csv /home/user/project/beta/gamma/data3.txt; do
+  if [ ! -f "$f" ]; then
+    pass=0
+  fi
 done
-if [ $fail -eq 0 ]; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+echo $pass > /logs/verifier/reward.txt

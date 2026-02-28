@@ -1,1 +1,1 @@
-Change the owner of /home/user/report.txt to root (keep the current group unchanged).
+Change the ownership of the file /home/user/project.txt to the user 'user'.

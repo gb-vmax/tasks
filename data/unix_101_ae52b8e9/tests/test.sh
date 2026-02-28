@@ -1,9 +1,24 @@
 #!/bin/bash
-set -e
-output="$(cal -A 2 -d 2023-08-15 | sed 's/[[:space:]]*$//')"
-expected="    August 2023           September 2023          October 2023\nSu Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa\n       1  2  3  4  5                   1  2  3                   1  2  3  4  5  6  7\n 6  7  8  9 10 11 12   4  5  6  7  8  9 10   8  9 10 11 12 13 14\n13 14 15 16 17 18 19  11 12 13 14 15 16 17  15 16 17 18 19 20 21\n20 21 22 23 24 25 26  18 19 20 21 22 23 24  22 23 24 25 26 27 28\n27 28 29 30 31        25 26 27 28 29 30     29 30 31"
-if [ "$output" = "$expected" ]; then
-  echo 1 > /logs/verifier/reward.txt
-else
+if [ ! -f /home/user/jan2020_julian.txt ]; then
   echo 0 > /logs/verifier/reward.txt
+  exit 0
 fi
+# The Julian calendar for Jan 2020 starts with 1 and ends with 31
+# The first week should contain numbers 1 to 4
+head -n 3 /home/user/jan2020_julian.txt | grep -Eq '^[[:space:]]*1[[:space:]]+2[[:space:]]+3[[:space:]]+4'
+if [ $? -ne 0 ]; then
+  echo 0 > /logs/verifier/reward.txt
+  exit 0
+fi
+# Last line should contain 31
+if ! grep -q '\b31\b' /home/user/jan2020_julian.txt; then
+  echo 0 > /logs/verifier/reward.txt
+  exit 0
+fi
+# Check for 'January 2020' in the header
+head -n 1 /home/user/jan2020_julian.txt | grep -q 'January 2020'
+if [ $? -ne 0 ]; then
+  echo 0 > /logs/verifier/reward.txt
+  exit 0
+fi
+echo 1 > /logs/verifier/reward.txt

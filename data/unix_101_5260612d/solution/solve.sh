@@ -1,2 +1,2 @@
 #!/bin/bash
-rmdir --parents /home/user/project/logs
+rmdir -p /home/user/foo/bar/baz

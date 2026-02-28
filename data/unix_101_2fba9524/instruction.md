@@ -1,1 +1,1 @@
-Display the directory tree of /home/user/project, including all files and directories, but only up to two levels deep.
+List the directory tree structure of /home/user/project and save the output to /home/user/tree.txt.

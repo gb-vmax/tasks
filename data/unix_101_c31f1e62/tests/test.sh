@@ -1,8 +1,5 @@
 #!/bin/bash
-set -e
-output="$(export -p)"
-if echo "$output" | grep -q 'declare -x TESTVAR="foo"' && echo "$output" | grep -q 'declare -x ANOTHERVAR="bar"'; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+result=1
+grep -q "declare -x PROJECT=\"unix\"" /home/user/envlist.txt || result=0
+grep -q "declare -x MODE=\"testing\"" /home/user/envlist.txt || result=0
+echo $result > /logs/verifier/reward.txt

@@ -1,2 +1,2 @@
 #!/bin/bash
-arch --version
+arch --version > /home/user/arch_version.txt

@@ -1,1 +1,1 @@
-Join /home/user/products.csv and /home/user/prices.csv on their first field using comma as the field separator, and output only the product name (from products.csv) and the price (from prices.csv), separated by a comma, into /home/user/product_prices.csv.
+Join /home/user/people.csv and /home/user/cities.csv on the second field using comma as the field separator. Output only the person's name (field 1 from people.csv) and the city name (field 2 from cities.csv) for matching records, and write the result to /home/user/matches.csv.

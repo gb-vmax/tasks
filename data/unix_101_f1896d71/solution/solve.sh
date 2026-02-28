@@ -1,2 +1,2 @@
 #!/bin/bash
-cksum /home/user/data.txt > /home/user/data.cksum
+cksum /home/user/note.txt > /home/user/note_cksum.txt

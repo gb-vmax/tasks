@@ -1,8 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo -e 'banana\napple pie\npear\napple\ngrape' > /home/user/fruits.txt
-RUN rm -f /home/user/apples.txt
+RUN printf "This is an info message\nThis is an error message\nAnother line\nerror: file not found\nNo issues detected\n" > /home/user/logfile.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

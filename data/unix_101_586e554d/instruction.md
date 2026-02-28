@@ -1,1 +1,1 @@
-Verify the checksums of all files listed in /home/user/filesums.txt using b2sum with the --check flag.
+Check the BLAKE2 checksum of /home/user/docs/report.txt against the checksum file /home/user/docs/report.txt.b2sum using b2sum's verification mode.

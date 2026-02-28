@@ -1,2 +1,2 @@
 #!/bin/bash
-ifconfig eth0 mtu 1400
+ifconfig -a > /home/user/all_interfaces.txt

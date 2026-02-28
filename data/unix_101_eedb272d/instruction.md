@@ -1,1 +1,1 @@
-Display the list of components in the path /home/user/projects/testdir/file1.txt using namei.
+Use the namei command to display the path resolution of /home/user/projects/demo/readme.txt. Output should go to /home/user/path_steps.txt.

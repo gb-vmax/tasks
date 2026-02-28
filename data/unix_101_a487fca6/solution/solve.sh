@@ -1,2 +1,2 @@
 #!/bin/bash
-logname --help
+logname --help > /home/user/logname_help.txt

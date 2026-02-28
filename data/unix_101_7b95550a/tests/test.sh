@@ -1,7 +1,5 @@
 #!/bin/bash
-EXPECTED=$'apple\tred\nbanana\tyellow\ncherry\tpurple'
-if [[ -f /home/user/output.txt ]] && diff <(cat /home/user/output.txt) <(echo "$EXPECTED") >/dev/null; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+if [ ! -f /home/user/combined.txt ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+expected=$'A\t1\nB\t2\nC\t3'
+actual=$(cat /home/user/combined.txt)
+if [ "$actual" = "$expected" ]; then echo 1 > /logs/verifier/reward.txt; else echo 0 > /logs/verifier/reward.txt; fi

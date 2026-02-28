@@ -1,2 +1,2 @@
 #!/bin/bash
-tr -d '0-9' < /home/user/data.txt > /home/user/nodigits.txt
+tr -d '0-9' < /home/user/mixed.txt > /home/user/nodigits.txt

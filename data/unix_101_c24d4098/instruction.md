@@ -1,1 +1,1 @@
-List the size in bytes of every file and directory (recursively) under /home/user/data, including the total at the end. The output should show the apparent size (not disk usage) in bytes, and include every file and directory. Use a flag to ensure the total is included as the last line.
+Display only the total disk usage (in default block size) of the directory /home/user/project and none of its subdirectories or files individually.

@@ -1,1 +1,1 @@
-Print the parent directory of the file '/home/user/docs/report.txt' using the dirname command.
+Read the file /home/user/paths.txt, which contains a single absolute file path on the first line. Use the dirname command to write the parent directory of that path to /home/user/parent.txt. Overwrite parent.txt if it exists.

@@ -1,1 +1,1 @@
-There are two running sleep commands started by user 'user'. Change the nice value of all processes belonging to user 'user' to 10 using the 'renice' command.
+There are two running processes started by the user 'user'. Use the renice command to set the nice value of all processes owned by 'user' to 5.

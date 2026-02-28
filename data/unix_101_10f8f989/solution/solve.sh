@@ -1,2 +1,2 @@
 #!/bin/bash
-ps -u $(whoami) -o pid= > /home/user/my_pids.txt
+ps aux > /home/user/all_processes.txt

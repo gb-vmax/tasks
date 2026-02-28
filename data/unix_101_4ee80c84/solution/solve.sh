@@ -1,2 +1,2 @@
 #!/bin/bash
-zip docs.zip docs/*.txt
+zip -r project.zip project -x 'project/tmp/*'

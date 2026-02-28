@@ -1,1 +1,1 @@
-Compress the file /home/user/data/report.csv using gzip, but keep the original file unchanged. After the command, both /home/user/data/report.csv and /home/user/data/report.csv.gz should exist.
+Compress the file /home/user/report.log using gzip, but keep the original report.log file as well as creating the compressed report.log.gz.

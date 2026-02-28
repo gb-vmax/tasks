@@ -1,2 +1,2 @@
 #!/bin/bash
-diff3 -A /home/user/base.txt /home/user/theirs.txt /home/user/yours.txt > /home/user/merge.diff3
+diff3 -A /home/user/branch1.txt /home/user/base.txt /home/user/branch2.txt > /home/user/changes.txt

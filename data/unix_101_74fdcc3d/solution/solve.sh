@@ -1,2 +1,2 @@
 #!/bin/bash
-uname -s
+uname -s > /home/user/kernel_name.txt

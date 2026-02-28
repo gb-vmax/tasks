@@ -1,8 +1,5 @@
 #!/bin/bash
-if [ -f /home/user/data/greeting.txt ] && [ -f /home/user/data/answer.txt ]; then
-  if grep -qxF 'Hello World' /home/user/data/greeting.txt && grep -qxF '42' /home/user/data/answer.txt; then
-    echo 1 > /logs/verifier/reward.txt
-    exit 0
-  fi
+if [ -f /home/user/file1.txt ] && [ -f /home/user/file2.txt ]; then
+  grep -q 'Hello World' /home/user/file1.txt && grep -q 'Second file' /home/user/file2.txt && echo 1 > /logs/verifier/reward.txt && exit 0
 fi
 echo 0 > /logs/verifier/reward.txt

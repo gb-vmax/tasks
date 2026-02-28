@@ -1,1 +1,1 @@
-Count the number of lines in /home/user/input.txt using the appropriate wc flag.
+Count the number of lines in /home/user/notes.txt and write the result to /home/user/line_count.txt.

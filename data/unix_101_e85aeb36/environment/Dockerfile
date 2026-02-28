@@ -1,7 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN rm -rf /home/user/pipe1
+RUN rm -rf /home/user/*
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

@@ -1,1 +1,1 @@
-Extract all files from /home/user/example.zip into the current directory (/home/user), preserving file structure.
+Extract all files from the archive /home/user/archive.zip into the current directory (/home/user/).

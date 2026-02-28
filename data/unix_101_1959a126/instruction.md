@@ -1,1 +1,1 @@
-Use the pathchk command to check if the file path '/home/user/notes/todo.txt' is valid and portable.
+Check whether the file path '/home/user/my_valid_file.txt' is valid and portable using the 'pathchk' command. Do not use any additional flags.

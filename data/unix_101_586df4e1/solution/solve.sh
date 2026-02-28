@@ -1,2 +1,2 @@
 #!/bin/bash
-awk '{sum += $2} END {print sum}' /home/user/numbers.txt > /home/user/col2_sum.txt
+awk -F '\t' 'NR>1 {sum += $3} END {print sum}' /home/user/sales.tsv > /home/user/total_sales.txt

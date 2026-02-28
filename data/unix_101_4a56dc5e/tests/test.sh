@@ -1,7 +1,9 @@
 #!/bin/bash
 set -e
 cd /home/user
-if [ ! -f archive.zip ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
-unzip -p archive.zip file1.txt > extracted1.txt || { echo 0 > /logs/verifier/reward.txt; exit 0; }
-unzip -p archive.zip file2.txt > extracted2.txt || { echo 0 > /logs/verifier/reward.txt; exit 0; }
-diff -q file1.txt extracted1.txt && diff -q file2.txt extracted2.txt && echo 1 > /logs/verifier/reward.txt || echo 0 > /logs/verifier/reward.txt
+# Check the zip file exists
+[ -f archive.zip ] || { echo 0 > /logs/verifier/reward.txt; exit; }
+# Check both files are present in the zip
+unzip -l archive.zip | grep -q 'file1.txt' || { echo 0 > /logs/verifier/reward.txt; exit; }
+unzip -l archive.zip | grep -q 'file2.txt' || { echo 0 > /logs/verifier/reward.txt; exit; }
+echo 1 > /logs/verifier/reward.txt

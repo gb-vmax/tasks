@@ -1,1 +1,1 @@
-List all available locales on the system and save the output to /home/user/locales.txt.
+List all the available locales on the system and save the output to /home/user/locales.txt.

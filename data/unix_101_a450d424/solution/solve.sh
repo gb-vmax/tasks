@@ -1,2 +1,2 @@
 #!/bin/bash
-base64 /home/user/docs/message.txt > /home/user/docs/message.b64
+base64 /home/user/input.txt > /home/user/encoded.txt

@@ -1,1 +1,1 @@
-Extract only the dir2/ directory (and its contents) from the archive all_dirs.tar in /home/user into the current directory.
+Extract all the contents of the archive project.tar (located in /home/user/) into the directory /home/user/output/. The output directory already exists and is empty before extraction.

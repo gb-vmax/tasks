@@ -1,2 +1,2 @@
 #!/bin/bash
-link /home/user/document.txt /home/user/backup.txt
+link /home/user/notes.txt /home/user/link_to_notes.txt

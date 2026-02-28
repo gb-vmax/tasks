@@ -1,1 +1,1 @@
-Search case-insensitively for the word 'success' in both /home/user/data/backup1.gz and /home/user/data/backup2.gz, and display all matching lines.
+Search for all lines containing the word 'backup' (case-insensitive) in all .gz files in /home/user/archive/ and save them to /home/user/all_backups.txt.

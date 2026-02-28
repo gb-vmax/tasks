@@ -1,2 +1,2 @@
 #!/bin/bash
-b2sum /home/user/testdata.txt > /home/user/checksums.txt
+b2sum /home/user/data.txt > /home/user/data.txt.b2sum

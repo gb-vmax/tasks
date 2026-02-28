@@ -1,1 +1,1 @@
-Split the file /home/user/long.txt into files containing at most 5 bytes each. The output files should use the prefix 'part_' and numeric suffixes (e.g., part_00, part_01, ...), created in /home/user/.
+Split the file /home/user/data.csv into multiple files of at most 25 bytes each, using files named chunk00, chunk01, etc. (i.e., with numeric suffixes of length 2 and prefix 'chunk').

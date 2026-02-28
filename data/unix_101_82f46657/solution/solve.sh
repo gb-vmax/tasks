@@ -1,2 +1,2 @@
 #!/bin/bash
-uname -a > /home/user/sysinfo.txt
+uname -a > /home/user/uname_all.txt

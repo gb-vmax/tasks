@@ -1,1 +1,1 @@
-Using the ping command, send 3 ICMP echo requests to the IPv6 localhost address (::1) in quiet mode, and save the output summary to /home/user/ipv6_ping_summary.txt.
+Ping 127.0.0.1 five times in quiet mode (-q), saving output to /home/user/ping_summary.txt. The file should contain only the summary statistics.

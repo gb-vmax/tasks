@@ -1,2 +1,2 @@
 #!/bin/bash
-od -tx1 /home/user/text/sample.txt
+od /home/user/data.txt > /home/user/data_od.txt

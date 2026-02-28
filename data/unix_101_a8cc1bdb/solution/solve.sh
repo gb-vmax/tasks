@@ -1,2 +1,2 @@
 #!/bin/bash
-echo -n 'This is the end.' >> /home/user/log.txt
+echo '"She said, \"Hello!\""' >> /home/user/logs/event.log

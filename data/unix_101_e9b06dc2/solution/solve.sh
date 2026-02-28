@@ -1,2 +1,2 @@
 #!/bin/bash
-ls -a /home/user/project
+ls -a /home/user/ls_test

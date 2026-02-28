@@ -1,1 +1,1 @@
-Print the number of currently running 'bash' processes using pgrep.
+Start two bash processes as your user (via 'bash -c "sleep 60" &' twice). Use pgrep with the '-l' flag to list the PID and process name of all running 'bash' processes, and save the output to /home/user/bashlist.txt.

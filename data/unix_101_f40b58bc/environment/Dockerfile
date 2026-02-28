@@ -1,7 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo -e 'This is line one.\nThis is line two.\nThis is line three.' > /home/user/input.txt
+RUN printf "First line\nSecond line\nThird line\nFourth line\n" > /home/user/notes.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

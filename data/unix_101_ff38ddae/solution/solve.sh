@@ -1,2 +1,2 @@
 #!/bin/bash
-chown -R developer:devs /home/user/project/
+chown -R user:user /home/user/data

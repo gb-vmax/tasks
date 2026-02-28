@@ -1,2 +1,2 @@
 #!/bin/bash
-shuf /home/user/names.txt -o /home/user/names_shuffled.txt
+shuf /home/user/input.txt -o /home/user/output.txt

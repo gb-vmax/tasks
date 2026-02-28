@@ -3,6 +3,7 @@ FROM unix101-base:latest
 USER root
 RUN mkdir -p /home/user
 RUN rm -f /home/user/missing.txt
+RUN rm -f /home/user/error.log
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

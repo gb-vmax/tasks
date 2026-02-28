@@ -1,1 +1,1 @@
-Reverse the order of sections in /home/user/sections.txt, treating '---END---' as the separator (not newlines). Save the result to /home/user/reversed_sections.txt. Use the appropriate tac option.
+Reverse the order of lines in /home/user/input.txt and save the output to /home/user/output.txt.

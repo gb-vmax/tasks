@@ -1,2 +1,2 @@
 #!/bin/bash
-tac /home/user/notes.txt > /home/user/reversed_notes.txt
+tac /home/user/data/poem.txt > /home/user/data/poem_reversed.txt

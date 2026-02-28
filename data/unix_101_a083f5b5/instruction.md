@@ -1,1 +1,1 @@
-Create a cpio archive named archive.cpio in /home/user/ that contains the files file1.txt and file2.txt. Use the old portable ASCII archive format. The file list is provided in filelist.txt.
+Create a cpio archive file named archive.cpio in /home/user/ that contains the files listed in the file /home/user/filelist.txt. The files to archive are /home/user/a.txt and /home/user/b.txt. Use cpio's copy-out mode.

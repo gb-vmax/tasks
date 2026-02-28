@@ -1,1 +1,1 @@
-Print the version information of the 'whoami' command to the file /home/user/whoami_version.txt.
+Display the command-line help for 'whoami', saving its output to /home/user/whoami_help.txt.

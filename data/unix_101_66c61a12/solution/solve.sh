@@ -1,2 +1,2 @@
 #!/bin/bash
-kill $(cat /home/user/pid.txt)
+kill $(cat /home/user/echo.pid)

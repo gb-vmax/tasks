@@ -1,1 +1,1 @@
-Create a hard link named /home/user/archive/report_link.txt pointing to the existing file /home/user/reports/2020/report.txt.
+Create a hard link named /home/user/project/final_report.txt that points to the existing file /home/user/reports/draft_report.txt.

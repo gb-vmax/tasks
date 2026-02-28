@@ -1,1 +1,1 @@
-Compare the contents of /home/user/data/alpha.txt.gz and /home/user/data/beta.txt.gz using zdiff to check if they differ.
+Use zdiff to compare /home/user/file1.txt.gz with /home/user/file2.txt and output the differences.

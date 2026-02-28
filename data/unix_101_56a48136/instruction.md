@@ -1,1 +1,1 @@
-Compute the SHA256 checksum of the file /home/user/file1.txt and save the output to /home/user/file1.sha256.
+Generate the SHA256 checksum of /home/user/data.txt and save the output to /home/user/data.txt.sha256.

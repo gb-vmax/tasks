@@ -1,2 +1,2 @@
 #!/bin/bash
-getfacl /home/user/doc.txt
+getfacl /home/user/testfile.txt > /home/user/acl.txt

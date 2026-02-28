@@ -1,2 +1,2 @@
 #!/bin/bash
-nproc > /home/user/cpu_count.txt
+nproc > /home/user/proc_count.txt

@@ -1,1 +1,1 @@
-Set the soft limit for the maximum number of open file descriptors to 128 for your current shell session.
+Print all current shell resource limits in a human-readable format.

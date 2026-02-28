@@ -1,6 +1,12 @@
 #!/bin/bash
-if [[ -f "/home/user/notes.txt.gz" && ! -f "/home/user/notes.txt" ]]; then
-  gunzip -c /home/user/notes.txt.gz | grep -q 'Meeting notes:' && echo 1 > /logs/verifier/reward.txt || echo 0 > /logs/verifier/reward.txt
-else
+if [ -f /home/user/data.txt ]; then
   echo 0 > /logs/verifier/reward.txt
+  exit 0
 fi
+if [ -f /home/user/data.txt.gz ]; then
+  if gzip -t /home/user/data.txt.gz; then
+    echo 1 > /logs/verifier/reward.txt
+    exit 0
+  fi
+fi
+echo 0 > /logs/verifier/reward.txt

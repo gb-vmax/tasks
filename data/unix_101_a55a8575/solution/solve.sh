@@ -1,2 +1,2 @@
 #!/bin/bash
-nice > /home/user/current_nice.txt
+nice -n 7 cat /home/user/input.txt > /home/user/output.txt

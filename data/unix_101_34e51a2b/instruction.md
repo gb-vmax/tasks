@@ -1,1 +1,1 @@
-Print the contents of /home/user/notes/todo.txt to the terminal, numbering all output lines.
+Use cat with the -n option to number all lines of /home/user/text.txt and write the result to /home/user/numbered.txt.

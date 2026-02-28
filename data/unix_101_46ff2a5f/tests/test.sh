@@ -1,9 +1,9 @@
 #!/bin/bash
-ref_atime=$(stat -c %X /home/user/reference.txt)
-ref_mtime=$(stat -c %Y /home/user/reference.txt)
-file_atime=$(stat -c %X /home/user/file.txt)
-file_mtime=$(stat -c %Y /home/user/file.txt)
-if [ "$ref_atime" = "$file_atime" ] && [ "$ref_mtime" = "$file_mtime" ]; then
+ref_mtime=$(stat -c %Y /home/user/project/template.txt)
+target_mtime=$(stat -c %Y /home/user/project/notes.txt)
+ref_atime=$(stat -c %X /home/user/project/template.txt)
+target_atime=$(stat -c %X /home/user/project/notes.txt)
+if [ "$ref_mtime" = "$target_mtime" ] && [ "$ref_atime" = "$target_atime" ]; then
   echo 1 > /logs/verifier/reward.txt
 else
   echo 0 > /logs/verifier/reward.txt

@@ -1,1 +1,1 @@
-List the contents of /home/user/data and append a slash (/) to directory names in the listing.
+List the contents of /home/user/ls_longtest in long format (showing permissions, owner, size, etc.). Save the output to /home/user/ls_long_output.txt.

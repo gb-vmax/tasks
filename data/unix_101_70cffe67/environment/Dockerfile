@@ -1,15 +1,9 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user
-RUN cat > /home/user/input.txt <<EOF
-First line
-
-Second line
-
-
-Third line
-EOF
+RUN echo Alpha > /home/user/data.txt
+RUN echo Beta >> /home/user/data.txt
+RUN echo Gamma >> /home/user/data.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

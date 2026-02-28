@@ -1,2 +1,2 @@
 #!/bin/bash
-nproc --ignore=2 > /home/user/remaining_cpus.txt
+nproc --ignore=1 > /home/user/ignored_proc.txt

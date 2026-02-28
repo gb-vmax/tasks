@@ -1,1 +1,1 @@
-Use bc with the -l (math library) flag to compute the sine of 1 (in radians) and write the result to /home/user/sin_result.txt. The input file /home/user/sin_input.txt contains the expression 's(1)'.
+Use bc with the math library (-l) to evaluate 'scale=5; 10/3' from /home/user/div.txt and write the result to /home/user/float_result.txt. The output should show the result with exactly 5 decimal digits.

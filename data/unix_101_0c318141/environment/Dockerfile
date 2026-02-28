@@ -1,7 +1,8 @@
 FROM unix101-base:latest
 
 USER root
-RUN rm -f /home/user/seq_custom.txt
+RUN mkdir -p /home/user
+RUN rm -f /home/user/seq_comma.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

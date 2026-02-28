@@ -1,1 +1,1 @@
-Using jq, extract the value of the "email" field from the JSON file /home/user/profile.json and save ONLY this value (no quotes or extra formatting) to /home/user/email.txt.
+Given the file /home/user/data.json containing a JSON object, use jq to extract the value of the "name" field and save it as raw text (not JSON) to /home/user/name.txt.

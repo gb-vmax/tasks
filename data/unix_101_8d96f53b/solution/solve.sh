@@ -1,2 +1,2 @@
 #!/bin/bash
-link /home/user/reports/2020/report.txt /home/user/archive/report_link.txt
+link /home/user/reports/draft_report.txt /home/user/project/final_report.txt

@@ -1,2 +1,2 @@
 #!/bin/bash
-sort -t, -k2,2nr /home/user/data.csv -o /home/user/data_sorted.csv
+sort -n -r /home/user/scores.txt -o /home/user/sorted_scores.txt

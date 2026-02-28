@@ -1,1 +1,1 @@
-Print the parent directories of '/home/user/photos/2022/vacation.jpg' and '/home/user/music/album/song.mp3' on a single command, using dirname with the -z flag to separate the outputs with null bytes.
+Given /home/user/multi_paths.txt containing three absolute paths, use the dirname command with the -z option to write the parent directory of each path to /home/user/multi_parents.txt, with each result separated by a NUL (\0) character.

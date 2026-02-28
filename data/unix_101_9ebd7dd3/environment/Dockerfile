@@ -2,7 +2,7 @@ FROM unix101-base:latest
 
 USER root
 RUN mkdir -p /home/user
-RUN echo 'This is a sensitive note.' > /home/user/notes.txt
+RUN echo 'Top secret information' > /home/user/secret.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

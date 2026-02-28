@@ -1,2 +1,2 @@
 #!/bin/bash
-realpath notes.txt
+realpath docs/readme.txt > abs_readme.txt

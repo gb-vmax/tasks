@@ -1,1 +1,1 @@
-Print the username of the current user to the terminal.
+Print your current username and save it to /home/user/current_user.txt.

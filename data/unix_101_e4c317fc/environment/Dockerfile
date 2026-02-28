@@ -1,7 +1,8 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo -e 'Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10\nLine 11\nLine 12' > /home/user/notes.txt
+RUN mkdir -p /home/user/docs
+RUN printf "The woods are lovely, dark and deep\nBut I have promises to keep\nAnd miles to go before I sleep\nAnd miles to go before I sleep\nWhose woods these are I think I know.\nHis house is in the village though;\nHe will not see me stopping here\nTo watch his woods fill up with snow.\nMy little horse must think it queer\nTo stop without a farmhouse near.\n" > /home/user/docs/poem.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

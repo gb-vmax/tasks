@@ -1,2 +1,2 @@
 #!/bin/bash
-column -t -s, /home/user/people.csv > /home/user/people_table.txt
+column -t -s $'\t' /home/user/people.tsv > /home/user/people_table.txt

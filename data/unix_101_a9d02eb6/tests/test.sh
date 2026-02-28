@@ -1,7 +1,3 @@
 #!/bin/bash
-# After skipping 5 bytes, both files have '12345FGHIJ' (alpha) and 'XXXXXFGHIJ' (beta), so they differ.
-if cmp --ignore-initial=5 -s /home/user/alpha.bin /home/user/beta.bin; then
-  echo 0 > /logs/verifier/reward.txt
-else
-  echo 1 > /logs/verifier/reward.txt
-fi
+set -e
+cmp /home/user/file1.txt /home/user/file2.txt > /tmp/cmp_test.out 2>&1 && [ ! -s /tmp/cmp_test.out ] && echo 1 > /logs/verifier/reward.txt || echo 0 > /logs/verifier/reward.txt

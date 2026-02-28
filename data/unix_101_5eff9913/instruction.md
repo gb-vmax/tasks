@@ -1,1 +1,1 @@
-Show the system's uptime in a human-readable, pretty format using the appropriate uptime command flag. No files need to be created or modified.
+Use the 'uptime' command with the appropriate flag to write the system's uptime in pretty format to /home/user/uptime_pretty.txt.

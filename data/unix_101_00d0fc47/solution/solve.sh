@@ -1,2 +1,2 @@
 #!/bin/bash
-fold -s -w 15 /home/user/data/paragraph.txt > /home/user/data/wrapped.txt
+fold -w 15 -s /home/user/article.txt > /home/user/article_wrapped.txt

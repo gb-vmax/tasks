@@ -1,6 +1,5 @@
 #!/bin/bash
-OUTPUT=$(file /home/user/docs/notes.txt)
-if [[ "$OUTPUT" == "/home/user/docs/notes.txt: ASCII text"* || "$OUTPUT" == "/home/user/docs/notes.txt: UTF-8 Unicode text"* ]]; then
+if grep -qi 'text' /home/user/type_output.txt; then
   echo 1 > /logs/verifier/reward.txt
 else
   echo 0 > /logs/verifier/reward.txt

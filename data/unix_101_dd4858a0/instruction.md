@@ -1,1 +1,1 @@
-Show the network interface table using netstat and save the output to /home/user/interfaces.txt.
+Display the network interface table and save the output to /home/user/interfaces.txt using netstat.

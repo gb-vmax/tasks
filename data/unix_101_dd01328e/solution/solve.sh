@@ -1,2 +1,2 @@
 #!/bin/bash
-zgrep -i 'success' /home/user/data/backup1.gz /home/user/data/backup2.gz
+zgrep -i 'backup' /home/user/archive/*.gz > /home/user/all_backups.txt

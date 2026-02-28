@@ -1,9 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user/texts
-RUN echo -e 'This is a line that should wrap.
-Short.' > /home/user/texts/shorttext.txt
+RUN printf 'This is a sample line of text that is quite long and should be wrapped properly.\nAnotherlinewithnospacesandverylong.\nShort.\n' > /home/user/text.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

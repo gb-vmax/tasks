@@ -1,7 +1,4 @@
 #!/bin/bash
-set -e
-if [[ -f /home/user/error_count.txt ]] && [[ $(cat /home/user/error_count.txt) == "3" ]]; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+if [ ! -f /home/user/network_count.txt ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+count=$(cat /home/user/network_count.txt | tr -d '[:space:]')
+if [ "$count" = "5" ]; then echo 1 > /logs/verifier/reward.txt; else echo 0 > /logs/verifier/reward.txt; fi

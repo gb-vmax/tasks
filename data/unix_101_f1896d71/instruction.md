@@ -1,1 +1,1 @@
-Compute the CRC checksum and byte count of the file /home/user/data.txt and save the output to /home/user/data.cksum.
+Use the cksum command to compute the CRC checksum and byte count of the file /home/user/note.txt. Save the output to /home/user/note_cksum.txt.

@@ -1,2 +1,2 @@
 #!/bin/bash
-diff -r -w /home/user/dir1 /home/user/dir2
+diff -r -q /home/user/dirA /home/user/dirB > /home/user/dir_comparison.txt

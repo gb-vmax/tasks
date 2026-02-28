@@ -1,1 +1,1 @@
-There is an archive file called /home/user/libmulti.a containing the members a1.o, a2.o, and a3.o. Use ar to extract only the file a2.o from this archive (do not extract other files).
+Extract only the file gamma.c from the archive /home/user/libstuff.a. The archive contains gamma.c and delta.c. After extraction, gamma.c should appear in /home/user/ with its original content.

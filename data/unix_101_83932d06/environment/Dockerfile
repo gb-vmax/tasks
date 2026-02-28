@@ -1,12 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user/data
-RUN cat > /home/user/data/prefixed.txt <<EOF
-# This is a comment that should be wrapped to the specified width.
-Normal text that should not be changed.
-# Another comment that is also very long and should be wrapped nicely.
-EOF
+RUN printf "> This is a quoted paragraph that should be reformatted using crown margin.\n> Another quoted line that is part of the same paragraph.\nNormal line that should be left untouched.\n> Yet another quoted paragraph for testing.\n> Followed by its continuation.\n" > /home/user/prefix_text.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

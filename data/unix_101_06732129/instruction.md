@@ -1,1 +1,1 @@
-Compress the file /home/user/data.txt using xz. The original file should be removed and a compressed file /home/user/data.txt.xz should be created.
+Compress the file /home/user/note.txt using xz so that the original file is replaced by the compressed file.

@@ -1,2 +1,2 @@
 #!/bin/bash
-rm -r /home/user/project_backup
+rm -r /home/user/temp_dir

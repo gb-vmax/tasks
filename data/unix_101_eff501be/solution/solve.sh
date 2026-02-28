@@ -1,2 +1,2 @@
 #!/bin/bash
-diff -s /home/user/fileA.txt /home/user/fileB.txt
+diff /home/user/alpha.txt /home/user/beta.txt > /home/user/alpha_vs_beta.diff

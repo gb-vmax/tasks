@@ -1,8 +1,8 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo 's(1)' > /home/user/sin_input.txt
-RUN rm -f /home/user/sin_result.txt
+RUN mkdir -p /home/user
+RUN printf 'scale=5; 10/3\n' > /home/user/div.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

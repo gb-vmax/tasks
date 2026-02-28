@@ -1,2 +1,2 @@
 #!/bin/bash
-bzip2 -k /home/user/data/report.txt
+bzip2 -k /home/user/logs/system.log

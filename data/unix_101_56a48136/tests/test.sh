@@ -1,7 +1,7 @@
 #!/bin/bash
-expected="b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9  /home/user/file1.txt"
-if [[ -f /home/user/file1.sha256 && "$(cat /home/user/file1.sha256 | tr -d '\r\n')" == "$expected" ]]; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+set -e
+[ -f /home/user/data.txt.sha256 ] || { echo 0 > /logs/verifier/reward.txt; exit; }
+read checksum filename < /home/user/data.txt.sha256
+[ "$filename" = "/home/user/data.txt" ] || { echo 0 > /logs/verifier/reward.txt; exit; }
+echo -n "Hello SHA256!
+" | sha256sum | grep -q "^$checksum " && echo 1 > /logs/verifier/reward.txt || echo 0 > /logs/verifier/reward.txt

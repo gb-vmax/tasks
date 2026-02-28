@@ -1,7 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo -e 'INFO Startup complete\nINFO User login\nERROR Disk full\nINFO Retry\nERROR Network down\nINFO Shutdown' > /home/user/logs.txt
+RUN printf "Header info\n=== SESSION START ===\nUser: Alice\nAction: Login\n=== SESSION START ===\nUser: Bob\nAction: Logout\n=== SESSION START ===\nUser: Eve\nAction: Login\n" > /home/user/server.log
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

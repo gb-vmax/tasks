@@ -1,5 +1,9 @@
 #!/bin/bash
-if [ ! -f /home/user/data.txt.xz ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
-if [ -f /home/user/data.txt ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
-xz -d /home/user/data.txt.xz
-diff /home/user/data.txt <(echo -e 'apple\nbanana\ncherry') >/dev/null && echo 1 > /logs/verifier/reward.txt || echo 0 > /logs/verifier/reward.txt
+if [ -f /home/user/note.txt.xz ] && [ ! -f /home/user/note.txt ]; then
+  xz -d /home/user/note.txt.xz
+  if grep -q 'This is a note.' /home/user/note.txt; then
+    echo 1 > /logs/verifier/reward.txt
+    exit 0
+  fi
+fi
+echo 0 > /logs/verifier/reward.txt

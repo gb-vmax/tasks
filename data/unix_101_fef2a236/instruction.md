@@ -1,1 +1,1 @@
-Calculate the sum of the numbers 42 and 58 using expr.
+Use the expr command to add the numbers 7 and 5, and write the result to /home/user/sum.txt.

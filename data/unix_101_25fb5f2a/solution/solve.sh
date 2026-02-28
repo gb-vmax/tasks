@@ -1,2 +1,2 @@
 #!/bin/bash
-source /home/user/envvars.sh
+source /home/user/env_setup.sh

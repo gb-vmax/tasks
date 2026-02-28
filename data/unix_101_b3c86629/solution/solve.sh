@@ -1,2 +1,2 @@
 #!/bin/bash
-wc -w /home/user/doc1.txt /home/user/doc2.txt
+wc -l /home/user/data.txt > /home/user/lines_count.txt

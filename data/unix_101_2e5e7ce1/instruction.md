@@ -1,1 +1,1 @@
-List all environment variables to the file /home/user/env.txt.
+Print your current environment variables, but add the variable FOO with value BAR for this command only.

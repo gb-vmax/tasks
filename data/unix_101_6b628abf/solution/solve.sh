@@ -1,2 +1,2 @@
 #!/bin/bash
-unset MY_ENV_VAR
+unset TEMP_VAR

@@ -1,1 +1,1 @@
-Write the date and time since when the system has been up (the boot time) to the file /home/user/boot_time.txt using the uptime command with the appropriate flag.
+Use the 'uptime' command with the correct option to write the system boot time (in ISO 8601 format) to /home/user/boot_time.log.

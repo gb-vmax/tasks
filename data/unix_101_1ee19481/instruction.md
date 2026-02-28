@@ -1,1 +1,1 @@
-Terminate only the most recently started 'sleep' process for your user, leaving any other 'sleep' processes running.
+Start the script /home/user/testsleep.sh in the background, then use pkill to terminate all running instances of 'testsleep'.

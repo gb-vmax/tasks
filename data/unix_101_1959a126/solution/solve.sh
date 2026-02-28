@@ -1,2 +1,2 @@
 #!/bin/bash
-pathchk /home/user/notes/todo.txt
+pathchk /home/user/my_valid_file.txt

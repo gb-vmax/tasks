@@ -1,1 +1,1 @@
-Truncate the file /home/user/data.txt to exactly 6 bytes in size. Do not create a new file if it does not exist.
+Shrink the file /home/user/sample.txt to exactly 10 bytes using the appropriate command.

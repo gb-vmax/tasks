@@ -1,2 +1,2 @@
 #!/bin/bash
-factor 42 > /home/user/factors.txt
+factor 84 > /home/user/factors.txt

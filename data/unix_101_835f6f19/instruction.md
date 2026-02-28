@@ -1,1 +1,1 @@
-Display the system's page size using getconf and write the output to /home/user/page_size.txt.
+Use the getconf command to retrieve the system's memory page size and save the output to /home/user/page_size.txt.

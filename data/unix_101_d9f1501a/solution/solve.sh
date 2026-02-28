@@ -1,2 +1,2 @@
 #!/bin/bash
-hexdump -C /home/user/data/hello.txt > /home/user/data/hello.hex
+hexdump -C /home/user/sample.txt > /home/user/sample.hex

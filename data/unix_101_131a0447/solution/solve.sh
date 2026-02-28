@@ -1,2 +1,2 @@
 #!/bin/bash
-alias gotmp='cd /home/user/tmp'
+bash -i -c "alias greet='echo Hello, world!' && alias -p" > /home/user/greet_alias.txt

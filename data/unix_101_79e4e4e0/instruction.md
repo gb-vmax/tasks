@@ -1,1 +1,1 @@
-Use install to copy /home/user/app.sh to /home/user/bin/app.sh and set its permissions to 750 (rwxr-x---).
+Using the install command, create the directory structure /home/user/app/bin/logs (all parent directories included) in a single command.

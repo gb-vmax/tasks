@@ -1,1 +1,1 @@
-Recursively change the owner and group of all files and subdirectories under /home/user/project/ to developer:devs.
+Recursively change the owner and group of all files and directories under /home/user/data/ to 'user' and 'user' respectively.

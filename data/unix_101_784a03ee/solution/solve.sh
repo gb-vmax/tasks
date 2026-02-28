@@ -1,2 +1,2 @@
 #!/bin/bash
-sort /home/user/notes.txt | sponge /home/user/notes.txt
+sort /home/user/names.txt | sponge /home/user/names.txt

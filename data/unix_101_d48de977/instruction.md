@@ -1,1 +1,1 @@
-Recursively set read and write permissions for the owner and group, and remove all permissions for others, on the directory /home/user/project and all its contents.
+Recursively change the permissions of /home/user/project_dir and all its files and subdirectories so that every file and directory has permission 755.

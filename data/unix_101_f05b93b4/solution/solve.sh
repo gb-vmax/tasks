@@ -1,2 +1,2 @@
 #!/bin/bash
-ip -j -4 addr
+ip -j link > /home/user/interfaces.json

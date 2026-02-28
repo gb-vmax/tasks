@@ -1,2 +1,2 @@
 #!/bin/bash
-pwd
+pwd > /home/user/current_dir.txt

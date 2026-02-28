@@ -1,2 +1,2 @@
 #!/bin/bash
-export -p
+export PROJECT=unix MODE=testing && export -p > /home/user/envlist.txt

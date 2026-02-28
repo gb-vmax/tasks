@@ -1,2 +1,2 @@
 #!/bin/bash
-mktemp
+mktemp /home/user/mytempfile_XXXXXX

@@ -1,2 +1,2 @@
 #!/bin/bash
-unzip project.zip -d output_dir
+unzip project.zip -d extracted

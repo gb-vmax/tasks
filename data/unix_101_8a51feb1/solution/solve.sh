@@ -1,2 +1,2 @@
 #!/bin/bash
-source /home/user/setpos.sh alpha beta
+source /home/user/writearg.sh world

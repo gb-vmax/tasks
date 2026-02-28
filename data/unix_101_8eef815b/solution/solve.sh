@@ -1,2 +1,2 @@
 #!/bin/bash
-stdbuf -o0 /bin/echo 'Hello, world!' > /home/user/output.txt
+stdbuf -o0 grep apple fruits.txt > result.txt

@@ -1,2 +1,2 @@
 #!/bin/bash
-rsync -r --delete /home/user/projectA/ /home/user/projectB/
+rsync -r --exclude='*.log' /home/user/project_src/ /home/user/project_backup/

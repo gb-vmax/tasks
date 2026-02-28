@@ -1,1 +1,1 @@
-Run the 'true' command in the terminal. No input or output files are needed. The command should succeed with exit status 0.
+Execute the 'true' command with no arguments. This command should do nothing and exit successfully. No files need to be modified.

@@ -1,8 +1,5 @@
 #!/bin/bash
-expected="/home/user/dirB/realfile.txt"
-output=$(readlink -f /home/user/dirA/chainlink)
-if [ "$output" = "$expected" ]; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+set -e
+if [ ! -f /home/user/canon.txt ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+resolved=$(cat /home/user/canon.txt | tr -d '\n')
+if [ "$resolved" = "/home/user/realfile.txt" ]; then echo 1 > /logs/verifier/reward.txt; else echo 0 > /logs/verifier/reward.txt; fi

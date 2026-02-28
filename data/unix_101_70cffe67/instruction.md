@@ -1,1 +1,1 @@
-Add line numbers to only the non-empty lines of /home/user/input.txt and save the result to /home/user/numbered.txt.
+Number the lines of /home/user/data.txt and write the output to /home/user/numbered.txt. Use default numbering (no special flags).

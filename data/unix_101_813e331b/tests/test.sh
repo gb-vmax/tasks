@@ -1,6 +1,4 @@
 #!/bin/bash
-if [ -f /home/user/data/report.txt ] && [ -f /home/user/data/report.txt.bz2 ]; then
-  bunzip2 -t /home/user/data/report.txt.bz2 && diff <(cat /home/user/data/report.txt) <(bunzip2 -c /home/user/data/report.txt.bz2) >/dev/null && echo 1 > /logs/verifier/reward.txt || echo 0 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+if [ ! -f /home/user/logs/system.log.bz2 ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+if [ ! -f /home/user/logs/system.log ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+file /home/user/logs/system.log.bz2 | grep -q 'bzip2 compressed data' && echo 1 > /logs/verifier/reward.txt || echo 0 > /logs/verifier/reward.txt

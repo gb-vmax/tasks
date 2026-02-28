@@ -1,1 +1,1 @@
-Create a new directory named 'project' inside /home/user/.
+Create a directory named "project" in /home/user/.

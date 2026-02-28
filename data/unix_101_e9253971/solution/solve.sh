@@ -1,2 +1,2 @@
 #!/bin/bash
-tsort /home/user/deps.txt > /home/user/sorted.txt
+tsort /home/user/order.txt > /home/user/sorted.txt

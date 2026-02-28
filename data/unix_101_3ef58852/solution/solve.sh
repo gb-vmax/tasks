@@ -1,2 +1,2 @@
 #!/bin/bash
-paste -s -d ';' /home/user/alpha.txt /home/user/beta.txt > /home/user/merged.txt
+paste /home/user/names.txt /home/user/ages.txt > /home/user/names_ages.txt

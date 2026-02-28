@@ -1,2 +1,2 @@
 #!/bin/bash
-flock -n -E 42 /home/user/conflict.lock -c "echo test > /home/user/test.txt"
+flock /home/user/lockfile.lock -c "echo 'locked append' >> /home/user/output.txt"

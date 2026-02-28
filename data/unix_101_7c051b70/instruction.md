@@ -1,1 +1,1 @@
-Show the current memory usage in human-readable format using a single command.
+Display the system's current memory usage in a human-readable format and save the output to /home/user/meminfo.txt.

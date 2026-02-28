@@ -1,1 +1,1 @@
-Extract only the file named subdir/fileB.txt from the archive myarchive.cpio using a pattern file patterns.txt. The extracted file should appear in the current directory, creating subdirectories as needed.
+Given the files /home/user/report.txt and /home/user/data.csv, use cpio to create an archive named backup.cpio containing both files. Use the "newc" portable format.

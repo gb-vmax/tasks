@@ -1,2 +1,2 @@
 #!/bin/bash
-truncate -s 6 /home/user/data.txt
+truncate -s 10 /home/user/sample.txt

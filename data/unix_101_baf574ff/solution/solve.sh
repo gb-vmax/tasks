@@ -1,2 +1,2 @@
 #!/bin/bash
-cp /home/user/file1.txt /home/user/file2.txt
+cp /home/user/note.txt /home/user/backup_note.txt

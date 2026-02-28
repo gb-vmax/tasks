@@ -1,2 +1,2 @@
 #!/bin/bash
-fold -w 10 /home/user/texts/shorttext.txt > /home/user/texts/folded.txt
+fold -w 10 /home/user/text.txt > /home/user/wrapped.txt

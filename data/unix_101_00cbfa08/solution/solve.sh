@@ -1,2 +1,2 @@
 #!/bin/bash
-cut -c3-7 /home/user/notes/todo.txt > /home/user/notes/todo_cut.txt
+cut -c2-5 /home/user/phrases.txt > /home/user/col_2_to_5.txt

@@ -1,2 +1,2 @@
 #!/bin/bash
-test /home/user/project/new.txt -nt /home/user/project/old.txt
+test /home/user/second.txt -nt /home/user/first.txt

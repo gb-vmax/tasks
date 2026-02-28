@@ -1,2 +1,2 @@
 #!/bin/bash
-lsattr -R /home/user/data/
+lsattr -R /home/user/data

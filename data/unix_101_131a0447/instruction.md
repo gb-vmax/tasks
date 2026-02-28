@@ -1,1 +1,1 @@
-Define a new alias named 'gotmp' that changes directory to '/home/user/tmp'. The alias should be set in the current shell session.
+Define an alias named 'greet' that echoes 'Hello, world!'. After running the alias command, verify that the alias is available by listing all aliases and redirecting the output to /home/user/greet_alias.txt.

@@ -1,1 +1,1 @@
-Extract the contents of /home/user/project.zip into the directory /home/user/output_dir/, so that all files from the archive appear under /home/user/output_dir/ (preserving any subdirectory structure).
+Extract all files from /home/user/project.zip into the directory /home/user/extracted/ (so the files appear inside /home/user/extracted/).

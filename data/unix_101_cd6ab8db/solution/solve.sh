@@ -1,2 +1,2 @@
 #!/bin/bash
-ar x libmulti.a a2.o
+ar x libstuff.a gamma.c

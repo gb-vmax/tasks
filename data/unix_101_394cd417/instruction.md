@@ -1,1 +1,1 @@
-Write the text 'Hello, Unix!' to a new file named /home/user/greeting.txt, overwriting any existing contents.
+Write the string Hello, World! (including the exclamation mark) to a new file at /home/user/greeting.txt. Do not add any extra characters, including no trailing newline.

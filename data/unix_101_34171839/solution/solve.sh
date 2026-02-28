@@ -1,2 +1,2 @@
 #!/bin/bash
-read VAR1 VAR2 < /home/user/env/input.txt; echo "$VAR2" > /home/user/env/output.txt
+read FIRST LAST < /home/user/name.txt && echo "$FIRST $LAST" > /home/user/output.txt

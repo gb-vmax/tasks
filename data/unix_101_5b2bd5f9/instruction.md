@@ -1,1 +1,1 @@
-Display the current user file-creation mask (umask) as an octal number.
+Show the current user file-creation mask (umask) in octal format. Do not change the umask, simply display it in the terminal.

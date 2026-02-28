@@ -1,2 +1,2 @@
 #!/bin/bash
-xzcat /home/user/logs/part1.log.xz /home/user/logs/part2.log.xz
+xzcat /home/user/part1.txt.xz /home/user/part2.txt.xz > /home/user/combined.txt

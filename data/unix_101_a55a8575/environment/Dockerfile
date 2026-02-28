@@ -1,7 +1,9 @@
 FROM unix101-base:latest
 
 USER root
-RUN rm -f /home/user/current_nice.txt
+RUN mkdir -p /home/user
+RUN echo "First line of input" > /home/user/input.txt
+RUN echo "Second line of input" >> /home/user/input.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

@@ -1,1 +1,1 @@
-Compress the file /home/user/note.txt using zstd, creating the compressed file /home/user/note.txt.zst. Do not remove the original file.
+Compress the file /home/user/data.txt using zstd. The output should be /home/user/data.txt.zst. Do not delete the original file.

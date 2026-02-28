@@ -1,8 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user/notes
-RUN echo 'Buy milk' > /home/user/notes/todo.txt
+RUN touch /home/user/my_valid_file.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

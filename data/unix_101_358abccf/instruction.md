@@ -1,1 +1,1 @@
-Use xargs with the -d flag to count the number of lines in each file listed in /home/user/files.csv (comma-separated list, no spaces) using wc -l, and write the output to /home/user/linecounts.txt.
+Given a file /home/user/delete_list.txt containing null-separated file names (some with spaces), use xargs with the -0 flag and rm to delete those files from /home/user/data/. Do not delete any other files. Do not remove the /home/user/data directory itself.

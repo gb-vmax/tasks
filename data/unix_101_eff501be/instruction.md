@@ -1,1 +1,1 @@
-Compare /home/user/fileA.txt and /home/user/fileB.txt using diff and report if they are identical.
+Compare the files /home/user/alpha.txt and /home/user/beta.txt and save the output to /home/user/alpha_vs_beta.diff. Use the default diff output format.

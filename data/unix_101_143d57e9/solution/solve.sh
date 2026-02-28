@@ -1,2 +1,2 @@
 #!/bin/bash
-mv /home/user/note.txt /home/user/todo.txt
+mv /home/user/old_report.txt /home/user/new_report.txt

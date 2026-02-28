@@ -1,1 +1,1 @@
-Compare /home/user/alpha.txt and /home/user/beta.txt side-by-side, ignoring differences in letter case and all whitespace. Save the output to /home/user/alpha_beta_sdiff.txt.
+Compare /home/user/left.txt and /home/user/right.txt using sdiff, suppressing lines that are identical in both files. Save the output to /home/user/diff_only.txt.

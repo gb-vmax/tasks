@@ -1,9 +1,8 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo -e 'A1\nA2\nA3' > /home/user/alpha.txt
-RUN echo -e 'B1\nB2' > /home/user/beta.txt
-RUN rm -f /home/user/merged.txt
+RUN printf "Alice\nBob\nCharlie\n" > /home/user/names.txt
+RUN printf "23\n29\n31\n" > /home/user/ages.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

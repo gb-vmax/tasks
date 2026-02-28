@@ -1,2 +1,2 @@
 #!/bin/bash
-unlink /home/user/tmpfile.txt
+unlink /home/user/remove_me.txt

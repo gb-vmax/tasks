@@ -1,2 +1,2 @@
 #!/bin/bash
-shred -n 3 -z -u /home/user/confidential/report.dat
+shred -n 5 -u /home/user/old_data.bin

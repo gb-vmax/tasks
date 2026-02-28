@@ -1,2 +1,2 @@
 #!/bin/bash
-w
+w > /home/user/w_output.txt

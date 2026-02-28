@@ -1,2 +1,2 @@
 #!/bin/bash
-shred /home/user/notes.txt
+shred /home/user/secret.txt

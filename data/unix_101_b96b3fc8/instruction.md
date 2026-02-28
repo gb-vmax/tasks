@@ -1,1 +1,1 @@
-Set the shell positional parameters to 'apple', 'banana', and 'cherry' using one command. After your command, $1 should be 'apple', $2 should be 'banana', and $3 should be 'cherry'.
+Use the set command to set the positional parameters to 'apple', 'banana', and 'cherry', then write the value of $2 (the second parameter) to /home/user/second_param.txt.

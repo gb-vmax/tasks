@@ -1,1 +1,1 @@
-Use dd to copy only the second line of /home/user/data.txt into /home/user/second_line.txt. Each line is exactly 6 bytes including the newline. Use dd's skip and count options to extract only the second line.
+Copy only the first 12 bytes from /home/user/large.txt to /home/user/partial.bin using dd with block size 6 and count 2.

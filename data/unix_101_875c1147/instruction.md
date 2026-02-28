@@ -1,1 +1,1 @@
-Display all groups that the current user (user) is a member of and save the output to /home/user/my_groups.txt.
+Print all groups that the current user belongs to and write the output to /home/user/mygroups.txt.

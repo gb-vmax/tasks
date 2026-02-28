@@ -1,2 +1,2 @@
 #!/bin/bash
-tar -xf /home/user/all_dirs.tar dir2
+tar -xf project.tar -C output

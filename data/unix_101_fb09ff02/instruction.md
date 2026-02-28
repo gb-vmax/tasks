@@ -1,1 +1,1 @@
-Extract the first column from /home/user/data.csv and save it to /home/user/first_column.txt. The input file uses commas as separators.
+Extract the first column from /home/user/data.csv (comma-separated values) and write it to /home/user/first_column.txt. Do not include the other columns.

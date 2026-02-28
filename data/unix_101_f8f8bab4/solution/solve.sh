@@ -1,2 +1,2 @@
 #!/bin/bash
-which ls
+which ls > /home/user/ls_path.txt

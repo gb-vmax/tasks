@@ -1,4 +1,2 @@
 #!/bin/bash
-echo -e 'orange
-banana
-grape' | tee -a /home/user/fruits.txt > /dev/null
+tee -a /home/user/log.txt < /home/user/update.txt

@@ -1,1 +1,1 @@
-Delete the entire directory /home/user/project_backup and all its contents using a single command.
+Remove the entire directory /home/user/temp_dir and all files inside it.

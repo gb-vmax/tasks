@@ -1,2 +1,2 @@
 #!/bin/bash
-tail -c 15 /home/user/data/report.txt
+tail -c 20 /home/user/logs/app.log > /home/user/logs/tail_bytes.txt

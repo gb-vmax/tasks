@@ -1,1 +1,1 @@
-Flush only the file data (not metadata) of /home/user/important.txt to persistent storage using the appropriate sync option.
+Ensure that all cached filesystem writes are flushed to persistent storage. Use the appropriate command to synchronize all data, with no arguments.

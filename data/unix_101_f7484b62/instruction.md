@@ -1,1 +1,1 @@
-Extend the file /home/user/input.txt to have the same size as /home/user/ref.txt. If input.txt is smaller than ref.txt, fill the extra space with zero bytes. Do not create a new file if input.txt does not exist.
+Extend /home/user/file2.bin so its size matches that of /home/user/file1.bin, using the reference feature of the command. Do not create any new files.

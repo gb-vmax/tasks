@@ -1,1 +1,1 @@
-Print the default dircolors color database to the terminal.
+Output the default dircolors database to /home/user/dircolors_defaults.txt using the appropriate dircolors flag.

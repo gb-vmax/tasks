@@ -1,2 +1,2 @@
 #!/bin/bash
-ulimit -Sn 128
+ulimit -a

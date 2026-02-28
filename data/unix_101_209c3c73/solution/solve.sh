@@ -1,2 +1,2 @@
 #!/bin/bash
-bunzip2 /home/user/data.txt.bz2
+bunzip2 /home/user/docs/report.txt.bz2

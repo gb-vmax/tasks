@@ -1,1 +1,1 @@
-Use ifne with the -n flag so that the command only runs if /home/user/data.txt is not empty, and suppresses the trailing newline in the output. Write the result to /home/user/result.txt.
+Use 'ifne' with the '-n' option so that the command 'echo empty' writes to /home/user/empty.txt only if /home/user/input.txt is empty. If the file is not empty, the command should do nothing. Use /home/user/input.txt as input (which is empty).

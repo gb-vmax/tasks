@@ -1,1 +1,1 @@
-Display the contents of /home/user/data/hello.txt in canonical hex+ASCII format using hexdump. The output should be written to /home/user/data/hello.hex.
+Create a canonical hex+ASCII hexdump of /home/user/sample.txt and save the output to /home/user/sample.hex.

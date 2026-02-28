@@ -1,2 +1,2 @@
 #!/bin/bash
-cpio -o -c < filelist.txt > archive.cpio
+cpio -o < filelist.txt > archive.cpio

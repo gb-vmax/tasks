@@ -1,1 +1,1 @@
-Create a new temporary file using the 'mktemp' command with default options and print its name to the terminal.
+Use mktemp to create a temporary file in /home/user/ named 'mytempfile_XXXXXX', where the X's are replaced with random characters. The command should print the name of the created file. Do not create any directories.

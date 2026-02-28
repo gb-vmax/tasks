@@ -1,11 +1,10 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo 'aaa' > /home/user/a1.o
-RUN echo 'bbb' > /home/user/a2.o
-RUN echo 'ccc' > /home/user/a3.o
-RUN ar rcs /home/user/libmulti.a /home/user/a1.o /home/user/a2.o /home/user/a3.o
-RUN rm -f /home/user/a1.o /home/user/a2.o /home/user/a3.o
+RUN printf '#include <stdio.h>\nint main() { return 0; }\n' > /home/user/gamma.c
+RUN printf 'void func() {}\n' > /home/user/delta.c
+RUN ar rcs /home/user/libstuff.a /home/user/gamma.c /home/user/delta.c
+RUN rm /home/user/gamma.c /home/user/delta.c
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

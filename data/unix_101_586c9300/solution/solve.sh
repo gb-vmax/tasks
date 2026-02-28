@@ -1,2 +1,2 @@
 #!/bin/bash
-ln -sr /home/user/logs/build.log /home/user/docs/latest.log
+ln -s ../summary.txt /home/user/docs/summary_link.txt

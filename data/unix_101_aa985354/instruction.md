@@ -1,1 +1,1 @@
-Given /home/user/animals.txt and /home/user/patterns.txt, count how many lines in animals.txt contain any of the fixed strings listed (one per line) in patterns.txt. Write only the count (number) to /home/user/match_count.txt using fgrep with the appropriate flags.
+Using fgrep with the -f option, search for all lines in /home/user/report.txt that contain any of the patterns listed (one per line) in /home/user/patterns.txt. Save the matching lines to /home/user/matches.txt.

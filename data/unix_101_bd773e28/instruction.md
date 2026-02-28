@@ -1,1 +1,1 @@
-Create an empty file named notes.txt in the /home/user/ directory. If the file already exists, just update its timestamp.
+Create a new empty file named 'report.txt' in the /home/user directory using the touch command.

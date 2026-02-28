@@ -1,8 +1,6 @@
 #!/bin/bash
-expected='Apple,1.20
-Orange,0.80'
-if [[ -f /home/user/product_prices.csv ]] && diff -u <(echo "$expected") /home/user/product_prices.csv >/dev/null; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+if [ ! -f /home/user/matches.csv ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+# There are three matches: Bob,Carol,David
+expected=$'2,Chicago\n3,Denver\n4,Houston'
+actual=$(cat /home/user/matches.csv)
+if [ "$actual" = "$expected" ]; then echo 1 > /logs/verifier/reward.txt; else echo 0 > /logs/verifier/reward.txt; fi

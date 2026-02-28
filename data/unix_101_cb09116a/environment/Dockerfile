@@ -1,9 +1,8 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo 'Confidential report' > /home/user/doc.txt
-RUN setfacl -m u:alice:r-- /home/user/doc.txt
-RUN setfacl -m g:staff:rw- /home/user/doc.txt
+RUN echo 'Hello, ACL world!' > /home/user/testfile.txt
+RUN setfacl -m u:user:rw /home/user/testfile.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

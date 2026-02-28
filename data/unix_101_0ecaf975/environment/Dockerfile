@@ -1,13 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user
-RUN cat > /home/user/people.csv <<EOF
-Name,Department,Salary
-Jane,Engineering,85000
-Mark,Design,76000
-Sue,Marketing,68000
-EOF
+RUN printf "Name\tAge\tCity\nAlice\t30\tNew York\nBob\t25\tLos Angeles\nCharlie\t35\tChicago\nDiana\t28\tMiami\n" > /home/user/people.tsv
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

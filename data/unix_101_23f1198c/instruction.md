@@ -1,1 +1,1 @@
-Use the 'file' command to display the type of the file '/home/user/docs/notes.txt'.
+Determine the type of the file /home/user/test.txt and output the result to /home/user/type_output.txt.

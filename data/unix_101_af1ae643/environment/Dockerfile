@@ -1,10 +1,9 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user/data
-RUN echo 'id,name,score
-1,Alice,85
-2,Bob,92' > /home/user/data/report.csv
+RUN echo 'Compression and decompression with zstd.' > /home/user/original.txt
+RUN zstd /home/user/original.txt -o /home/user/archive.zst
+RUN rm /home/user/original.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

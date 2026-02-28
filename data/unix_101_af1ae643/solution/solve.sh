@@ -1,2 +1,2 @@
 #!/bin/bash
-zstd --rm /home/user/data/report.csv
+zstd -d /home/user/archive.zst -o /home/user/unpacked.txt

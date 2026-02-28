@@ -1,1 +1,1 @@
-Sort the items from /home/user/input/partial_order.txt using tsort, reading the file from standard input (not as a file argument), and write the output to /home/user/output/sorted_order.txt.
+Using tsort, read pairs of dependencies from standard input (provided in /home/user/input.txt) and write the resulting topologically sorted order to /home/user/out.txt. Do not specify a file argument to tsort; use input redirection.

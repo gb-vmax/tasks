@@ -1,2 +1,2 @@
 #!/bin/bash
-ip -br link
+ip -br link > /home/user/ifaces.txt

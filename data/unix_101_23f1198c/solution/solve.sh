@@ -1,2 +1,2 @@
 #!/bin/bash
-file /home/user/docs/notes.txt
+file /home/user/test.txt > /home/user/type_output.txt

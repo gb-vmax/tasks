@@ -1,2 +1,2 @@
 #!/bin/bash
-netstat -l -n > /home/user/listen_numeric.txt
+netstat -i > /home/user/interfaces.txt

@@ -1,2 +1,2 @@
 #!/bin/bash
-csplit -f logpart_ -n 3 --suppress-matched /home/user/logs.txt '/ERROR/' '{*}'
+csplit -s -f session_ -n 3 /home/user/server.log '/=== SESSION START ===/' '{*}'

@@ -1,1 +1,1 @@
-Split the file /home/user/data.txt into multiple files with 3 lines each. The output files should use the default naming (xaa, xab, etc.), and be created in /home/user/.
+Split the file /home/user/poem.txt into multiple files each containing exactly 3 lines (except possibly the last). Use the default prefix and suffix. Do not specify an output prefix. The input file has 8 lines.

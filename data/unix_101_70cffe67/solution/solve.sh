@@ -1,2 +1,2 @@
 #!/bin/bash
-nl /home/user/input.txt > /home/user/numbered.txt
+nl /home/user/data.txt > /home/user/numbered.txt

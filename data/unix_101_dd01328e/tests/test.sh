@@ -1,5 +1,5 @@
 #!/bin/bash
-out=$(zgrep -i 'success' /home/user/data/backup1.gz /home/user/data/backup2.gz)
-expected='/home/user/data/backup1.gz:Success! Backup completed.
-/home/user/data/backup2.gz:Partial success on backup.'
-if [[ "$out" == "$expected" ]]; then echo 1 > /logs/verifier/reward.txt; else echo 0 > /logs/verifier/reward.txt; fi
+if [ ! -f /home/user/all_backups.txt ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+# Should match all lines (case-insensitive) with 'backup' from both files.
+lines=$(grep -i 'backup' /home/user/all_backups.txt | wc -l)
+if [ "$lines" -eq 4 ]; then echo 1 > /logs/verifier/reward.txt; else echo 0 > /logs/verifier/reward.txt; fi

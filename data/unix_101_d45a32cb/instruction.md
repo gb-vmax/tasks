@@ -1,1 +1,1 @@
-Compare the sorted files /home/user/list1.txt and /home/user/list2.txt using comm and save the output to /home/user/compare.txt. Use the default output format.
+Compare /home/user/alpha.txt and /home/user/beta.txt (both sorted) using comm, and write only the lines that appear in both files to /home/user/common.txt.

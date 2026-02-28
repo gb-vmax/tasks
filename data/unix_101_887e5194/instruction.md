@@ -1,1 +1,1 @@
-Display only the manual file location for 'customtool', searching in /home/user/customman as the man path.
+Find only the manual page(s) for 'foo' using 'whereis', searching in the custom man directory /home/user/customman. Use appropriate flags so that only manual paths are searched and output is saved to /home/user/foo_man.txt.

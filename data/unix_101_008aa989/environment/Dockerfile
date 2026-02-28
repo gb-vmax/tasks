@@ -1,10 +1,9 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user/project_backup/src
-RUN echo 'main.c contents' > /home/user/project_backup/src/main.c
-RUN echo 'README' > /home/user/project_backup/README.md
-RUN touch /home/user/project_backup/.env
+RUN mkdir -p /home/user/temp_dir/subdir
+RUN echo 'Temporary file 1' > /home/user/temp_dir/file1.txt
+RUN echo 'Temporary file 2' > /home/user/temp_dir/subdir/file2.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

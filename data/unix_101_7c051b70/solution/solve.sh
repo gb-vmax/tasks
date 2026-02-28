@@ -1,2 +1,2 @@
 #!/bin/bash
-free -h
+free -h > /home/user/meminfo.txt

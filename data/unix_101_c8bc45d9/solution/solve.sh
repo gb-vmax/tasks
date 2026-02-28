@@ -1,2 +1,2 @@
 #!/bin/bash
-tac -s '---END---' /home/user/sections.txt > /home/user/reversed_sections.txt
+tac /home/user/input.txt > /home/user/output.txt

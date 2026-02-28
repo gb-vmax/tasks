@@ -1,1 +1,1 @@
-Copy /home/user/source1.txt into the directory /home/user/targetdir/ using the install command. The file should appear as /home/user/targetdir/source1.txt.
+Copy /home/user/source.txt to /home/user/destination.txt using the install command, setting the file permissions to 600 (rw-------) on the destination file.

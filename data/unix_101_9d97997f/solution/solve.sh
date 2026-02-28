@@ -1,2 +1,2 @@
 #!/bin/bash
-sdiff -i -W /home/user/alpha.txt /home/user/beta.txt > /home/user/alpha_beta_sdiff.txt
+sdiff -s /home/user/left.txt /home/user/right.txt > /home/user/diff_only.txt

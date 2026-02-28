@@ -1,2 +1,2 @@
 #!/bin/bash
-factor < /home/user/numbers.txt > /home/user/factors_out.txt
+factor < /home/user/nums.txt > /home/user/multi_factors.txt

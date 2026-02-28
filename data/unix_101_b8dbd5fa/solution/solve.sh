@@ -1,2 +1,2 @@
 #!/bin/bash
-arch
+arch > /home/user/arch_info.txt

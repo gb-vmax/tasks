@@ -1,8 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo 'Project Data 2024' > /home/user/data.txt
-RUN rm -f /home/user/archive.txt
+RUN printf "Annual Report 2023\nSummary: Profitable year." > /home/user/report.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

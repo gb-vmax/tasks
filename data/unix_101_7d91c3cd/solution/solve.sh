@@ -1,2 +1,2 @@
 #!/bin/bash
-cmp /home/user/fileA.txt /home/user/fileB.txt
+cmp /home/user/file1.txt /home/user/file2.txt

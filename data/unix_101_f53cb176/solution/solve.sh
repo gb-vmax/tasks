@@ -1,2 +1,2 @@
 #!/bin/bash
-ping -6 -c 3 -q ::1 > /home/user/ipv6_ping_summary.txt
+ping -c 5 -q 127.0.0.1 > /home/user/ping_summary.txt

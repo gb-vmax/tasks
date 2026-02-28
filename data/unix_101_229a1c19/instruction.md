@@ -1,1 +1,1 @@
-Run the 'false' command in the terminal. It should fail with a non-zero exit status.
+Run the 'false' command. This command should do nothing and return a non-zero exit status.

@@ -1,10 +1,9 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user
-RUN echo -e 'A\nB\nC\nD' > /home/user/old.txt
-RUN echo -e 'A\nB\nCX\nD' > /home/user/new.txt
-RUN echo -e 'A\nBY\nC\nD' > /home/user/my.txt
+RUN printf "Start\nCommon\nEnd\n" > /home/user/original.txt
+RUN printf "Start\nFeatureA\nEnd\n" > /home/user/featureA.txt
+RUN printf "Start\nCommon\nFeatureB\nEnd\n" > /home/user/featureB.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

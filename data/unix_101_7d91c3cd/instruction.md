@@ -1,1 +1,1 @@
-Compare /home/user/fileA.txt and /home/user/fileB.txt using cmp to verify if they are identical. Use cmp with no options.
+Compare /home/user/file1.txt and /home/user/file2.txt using cmp, and output nothing if they are the same. Do not use any additional options.

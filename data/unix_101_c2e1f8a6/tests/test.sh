@@ -1,6 +1,11 @@
 #!/bin/bash
-if ulimit -a | grep -q "open files" && ulimit -a | grep -q "max user processes"; then
-  echo 1 > /logs/verifier/reward.txt
+set -e
+if ulimit -a > /tmp/ulimit_actual.txt; then
+  if diff /tmp/ulimit_actual.txt <(ulimit -a) >/dev/null; then
+    echo 1 > /logs/verifier/reward.txt
+  else
+    echo 0 > /logs/verifier/reward.txt
+  fi
 else
   echo 0 > /logs/verifier/reward.txt
 fi

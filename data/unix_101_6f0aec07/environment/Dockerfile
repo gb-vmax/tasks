@@ -1,11 +1,11 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user/data
-RUN echo 'Hello World' > /home/user/data/greeting.txt
-RUN echo '42' > /home/user/data/answer.txt
-RUN cd /home/user && zip -r example.zip data/
-RUN rm -rf /home/user/data
+RUN cd /home/user
+RUN echo 'Hello World' > file1.txt
+RUN echo 'Second file' > file2.txt
+RUN zip archive.zip file1.txt file2.txt
+RUN rm file1.txt file2.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

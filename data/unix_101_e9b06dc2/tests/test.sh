@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
-out=$(ls -a /home/user/project)
-if echo "$out" | grep -q "\.hidden1" && echo "$out" | grep -q "\.hidden2" && echo "$out" | grep -q "file1.txt" && echo "$out" | grep -q "file2.txt" && echo "$out" | grep -q "\." && echo "$out" | grep -q "\.\." ; then
+cd /home/user/ls_test
+output=$(ls -a)
+if echo "$output" | grep -qx "." && echo "$output" | grep -qx ".." && echo "$output" | grep -qx ".hiddenfile" && echo "$output" | grep -qx "file1.txt" && echo "$output" | grep -qx "file2.txt"; then
   echo 1 > /logs/verifier/reward.txt
 else
   echo 0 > /logs/verifier/reward.txt

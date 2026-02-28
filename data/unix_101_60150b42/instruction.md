@@ -1,1 +1,1 @@
-Verify the integrity of /home/user/data.bin using the corresponding SHA256 checksum listed in /home/user/data.sha256. Use the appropriate sha256sum flag to perform the check.
+Check the integrity of the files /home/user/filea.txt and /home/user/fileb.txt using the provided SHA256 checksum list /home/user/files.sha256. Use sha256sum's --check mode and save the results to /home/user/sha256_check_output.txt.

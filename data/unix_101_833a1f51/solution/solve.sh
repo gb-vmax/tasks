@@ -1,2 +1,2 @@
 #!/bin/bash
-echo 'Hello Unix' | tee /home/user/output.txt
+echo 'Hello, tee!' | tee /home/user/output.txt

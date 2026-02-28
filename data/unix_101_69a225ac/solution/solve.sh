@@ -1,2 +1,2 @@
 #!/bin/bash
-cpio -id -E patterns.txt < myarchive.cpio
+cpio -o -H newc < /home/user/filelist.txt > /home/user/backup.cpio

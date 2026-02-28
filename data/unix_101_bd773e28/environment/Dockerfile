@@ -1,8 +1,7 @@
 FROM unix101-base:latest
 
 USER root
-RUN rm -f /home/user/notes.txt
-RUN mkdir -p /logs/verifier
+RUN rm -f /home/user/report.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

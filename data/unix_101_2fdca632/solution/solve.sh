@@ -1,2 +1,2 @@
 #!/bin/bash
-zcat /home/user/app.log.gz
+zcat /home/user/data.txt.gz > /home/user/result.txt

@@ -1,1 +1,1 @@
-Generate an ed script that applies only non-overlapping changes from /home/user/old.txt to /home/user/new.txt into /home/user/my.txt using diff3 with the --easy-only flag. Save the script to /home/user/easymerge.ed.
+Given three versions of a file: /home/user/original.txt, /home/user/featureA.txt, and /home/user/featureB.txt, use diff3's merge mode to produce a merged file with conflicts marked, writing the output to /home/user/merged.txt.

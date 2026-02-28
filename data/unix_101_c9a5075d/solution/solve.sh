@@ -1,2 +1,2 @@
 #!/bin/bash
-dirname -z /home/user/photos/2022/vacation.jpg /home/user/music/album/song.mp3
+dirname -z $(cat /home/user/multi_paths.txt) > /home/user/multi_parents.txt

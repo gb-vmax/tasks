@@ -1,1 +1,1 @@
-Use the 'yes' command to write 10 lines of its default output into /home/user/yes_output.txt. Each line should contain only the letter 'y'.
+Use the 'yes' command to write exactly 10 lines, each containing just the letter 'y', into /home/user/output.txt.

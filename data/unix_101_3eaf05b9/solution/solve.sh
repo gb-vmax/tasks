@@ -1,2 +1,2 @@
 #!/bin/bash
-whoami
+whoami > /home/user/current_user.txt

@@ -1,1 +1,1 @@
-Run the script /home/user/ignore_term.sh, but ensure it is killed if still running 1 second after a 2-second timeout (using the --kill-after flag).
+Run the script /home/user/ignore_term.sh and ensure it is given 1 second to complete. If it does not terminate, send SIGKILL after an additional 1 second. Use the appropriate flags for timeout.

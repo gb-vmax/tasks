@@ -1,2 +1,2 @@
 #!/bin/bash
-fmt -p '# ' -w 30 /home/user/data/prefixed.txt > /home/user/data/prefixed_fmt.txt
+fmt -c -p '> ' -w 30 /home/user/prefix_text.txt > /home/user/formatted_prefix.txt

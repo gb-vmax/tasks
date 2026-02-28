@@ -1,1 +1,1 @@
-Compress the file /home/user/data/report.txt using bzip2, but keep the original file after compression.
+Compress the file /home/user/logs/system.log using bzip2, but keep the original file. The compressed file should be /home/user/logs/system.log.bz2 and the original /home/user/logs/system.log should remain.

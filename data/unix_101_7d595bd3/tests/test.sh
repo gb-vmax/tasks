@@ -1,7 +1,10 @@
 #!/bin/bash
-set -e
-output=$(zdiff -u /home/user/reports/summary.txt /home/user/reports/summary.txt.gz || true)
-if echo "$output" | grep -q '\-report 2' && echo "$output" | grep -q '+report two'; then
+zdiff -u /home/user/dir/dataA.gz /home/user/dir/dataB.gz > /home/user/zdiff_u_output.txt
+# Should be in unified diff format, showing -uniqueA and +uniqueB
+if grep -q '^---' /home/user/zdiff_u_output.txt \
+  && grep -q '^+++' /home/user/zdiff_u_output.txt \
+  && grep -q '^-uniqueA' /home/user/zdiff_u_output.txt \
+  && grep -q '^+uniqueB' /home/user/zdiff_u_output.txt; then
   echo 1 > /logs/verifier/reward.txt
 else
   echo 0 > /logs/verifier/reward.txt

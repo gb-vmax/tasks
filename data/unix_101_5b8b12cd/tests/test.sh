@@ -1,7 +1,9 @@
 #!/bin/bash
-EXPECTED=$(printf '%s\n' {1..10})
-if [ -f /home/user/seq_easy.txt ] && diff -u <(echo "$EXPECTED") /home/user/seq_easy.txt >/dev/null; then
-  echo 1 > /logs/verifier/reward.txt
-else
-  echo 0 > /logs/verifier/reward.txt
-fi
+if [ ! -f /home/user/seq_output.txt ]; then echo 0 > /logs/verifier/reward.txt; exit 0; fi
+expected='1
+2
+3
+4
+5'
+actual=$(cat /home/user/seq_output.txt)
+if [ "$actual" = "$expected" ]; then echo 1 > /logs/verifier/reward.txt; else echo 0 > /logs/verifier/reward.txt; fi

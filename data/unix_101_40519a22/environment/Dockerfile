@@ -1,7 +1,8 @@
 FROM unix101-base:latest
 
 USER root
-RUN echo "Shopping list" > /home/user/notes.txt
+RUN mkdir -p /home/user/docs
+RUN echo 'Project documentation' > /home/user/docs/readme.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

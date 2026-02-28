@@ -1,1 +1,1 @@
-List all running processes on the system. Save the output to /home/user/all_processes.txt.
+List all running processes on the system and write the output to /home/user/processes.txt.

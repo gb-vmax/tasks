@@ -1,7 +1,6 @@
 #!/bin/bash
-set -e
-out=$(getfacl /home/user/doc.txt)
-echo "$out" | grep -q 'user:alice:r--'
-echo "$out" | grep -q 'group:staff:rw-'
-echo "$out" | grep -q '# file: /home/user/doc.txt'
-echo 1 > /logs/verifier/reward.txt
+if grep -q 'user:user:rw-' /home/user/acl.txt && grep -q 'Hello, ACL world!' /home/user/testfile.txt; then
+  echo 1 > /logs/verifier/reward.txt
+else
+  echo 0 > /logs/verifier/reward.txt
+fi

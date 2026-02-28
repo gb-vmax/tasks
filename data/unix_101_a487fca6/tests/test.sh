@@ -1,6 +1,5 @@
 #!/bin/bash
-out=$(logname --help 2>&1)
-if echo "$out" | grep -q "Print the name of the current user." && echo "$out" | grep -q "--help"; then
+if grep -q 'Usage: logname' /home/user/logname_help.txt && grep -q 'Print the name of the current user.' /home/user/logname_help.txt; then
   echo 1 > /logs/verifier/reward.txt
 else
   echo 0 > /logs/verifier/reward.txt

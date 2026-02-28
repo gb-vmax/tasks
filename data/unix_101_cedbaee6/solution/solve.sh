@@ -1,2 +1,2 @@
 #!/bin/bash
-ar rcs libstuff.a foo.o bar.o
+ar rcs libalpha.a alpha.o beta.o

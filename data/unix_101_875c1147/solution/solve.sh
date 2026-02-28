@@ -1,2 +1,2 @@
 #!/bin/bash
-groups > /home/user/my_groups.txt
+groups > /home/user/mygroups.txt

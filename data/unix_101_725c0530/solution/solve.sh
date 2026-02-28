@@ -1,2 +1,2 @@
 #!/bin/bash
-ifconfig -a
+ifconfig -s > /home/user/net_summary.txt

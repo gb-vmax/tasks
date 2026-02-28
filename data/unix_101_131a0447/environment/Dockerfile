@@ -1,8 +1,8 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user/tmp
-RUN rm -f /home/user/.bashrc
+RUN rm -f /home/user/greet_alias.txt
+RUN echo '' > /home/user/.bashrc
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

@@ -1,1 +1,1 @@
-Use cmp with the --ignore-initial flag to compare /home/user/alpha.bin and /home/user/beta.bin, skipping the first 5 bytes in both files. Determine if their remaining bytes are identical.
+Compare the files /home/user/file1.txt and /home/user/file2.txt using cmp. Both files are identical. If the files are identical, cmp should produce no output and exit with status 0.

@@ -1,10 +1,11 @@
 FROM unix101-base:latest
 
 USER root
-RUN mkdir -p /home/user/project
-RUN touch /home/user/project/README
-RUN touch /home/user/project/verylongfilenameeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-RUN touch /home/user/project/illegal:name
+RUN mkdir -p /home/user/unportable
+RUN touch /home/user/unportable/normal.txt
+RUN touch /home/user/unportable/verylongfilenameeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.txt
+RUN touch /home/user/unportable/file_with:colon.txt
+RUN touch /home/user/unportable/-leadingdash.txt
 RUN chown -R user:user /home/user
 RUN chown -R user:user /home/user
 

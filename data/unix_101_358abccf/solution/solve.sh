@@ -1,2 +1,2 @@
 #!/bin/bash
-cat /home/user/files.csv | xargs -d, wc -l > /home/user/linecounts.txt
+xargs -0 rm < /home/user/delete_list.txt

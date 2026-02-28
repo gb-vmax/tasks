@@ -1,2 +1,2 @@
 #!/bin/bash
-bc /home/user/input.txt > /home/user/output.txt
+bc /home/user/calc.txt > /home/user/result.txt

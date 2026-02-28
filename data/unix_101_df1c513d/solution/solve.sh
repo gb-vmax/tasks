@@ -1,2 +1,2 @@
 #!/bin/bash
-cut -d, -f1 /home/user/data/users.csv > /home/user/data/usernames.txt
+cut -d',' -f1 /home/user/data.csv > /home/user/first_column.txt
