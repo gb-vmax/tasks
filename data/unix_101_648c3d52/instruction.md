@@ -1,0 +1,1 @@
+Use nohup to run /home/user/task2_long.sh. Redirect its output to /home/user/results/task2.out. The script prints "Processing" and then "Completed" with a 1-second pause in between. Ensure the output file contains both lines, in order, after execution.

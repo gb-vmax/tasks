@@ -1,0 +1,1 @@
+Join /home/user/products.csv and /home/user/prices.csv on their first field using comma as the field separator, and output only the product name (from products.csv) and the price (from prices.csv), separated by a comma, into /home/user/product_prices.csv.

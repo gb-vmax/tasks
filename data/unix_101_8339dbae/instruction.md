@@ -1,0 +1,1 @@
+Split /home/user/logs.txt into multiple files at every line matching the word 'ERROR', using csplit. Name the output files with prefix 'logpart_' and 3-digit numeric suffixes (e.g., logpart_000). Suppress the matched lines from the output files.

@@ -1,0 +1,1 @@
+Use wdiff with the --no-deleted flag to compare /home/user/old.txt and /home/user/new.txt, saving the output to /home/user/insertions.txt. Only inserted words (marked with {+...+}) should appear, not deletions.

@@ -1,0 +1,1 @@
+Extract only the file named subdir/fileB.txt from the archive myarchive.cpio using a pattern file patterns.txt. The extracted file should appear in the current directory, creating subdirectories as needed.

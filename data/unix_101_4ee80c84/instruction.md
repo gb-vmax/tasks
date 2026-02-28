@@ -1,0 +1,1 @@
+Create a zip archive named 'docs.zip' in /home/user/ that includes all files from the directory '/home/user/docs', but does not include any of its subdirectories or their contents. Only the files directly inside '/home/user/docs' should be in the archive.

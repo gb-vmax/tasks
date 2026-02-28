@@ -1,0 +1,1 @@
+Run the script /home/user/test_scripts/sleep.sh with the 'time' command and save the timing statistics to /home/user/output/timing.txt using the appropriate flag. Do not include the timing information in standard error or standard output; only the output file should contain the timing stats.

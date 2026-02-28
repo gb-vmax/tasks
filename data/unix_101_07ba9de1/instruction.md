@@ -1,0 +1,1 @@
+In the directory /home/user/photos/, deduplicate any files with identical content by replacing them with hardlinks using the 'hardlink' command. Do not use any flags. The result should be that duplicate files are hardlinked (sharing the same inode), but filenames remain unchanged.

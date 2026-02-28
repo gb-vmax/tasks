@@ -1,0 +1,1 @@
+Decompress the file /home/user/archive.log.gz with gunzip, but do not delete the original compressed file. The resulting uncompressed file should be /home/user/archive.log and both files should exist after the command.

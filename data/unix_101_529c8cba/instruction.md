@@ -1,0 +1,1 @@
+Verify the integrity of the files /home/user/files/file1.txt and /home/user/files/file2.txt using the checksum list /home/user/files/MD5SUMS. Only print the verification results to standard output (do not modify any files).

@@ -1,0 +1,1 @@
+Extend the file /home/user/input.txt to have the same size as /home/user/ref.txt. If input.txt is smaller than ref.txt, fill the extra space with zero bytes. Do not create a new file if input.txt does not exist.

@@ -1,0 +1,1 @@
+Generate an ed script that applies only non-overlapping changes from /home/user/old.txt to /home/user/new.txt into /home/user/my.txt using diff3 with the --easy-only flag. Save the script to /home/user/easymerge.ed.

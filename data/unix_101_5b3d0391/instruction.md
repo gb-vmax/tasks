@@ -1,0 +1,1 @@
+For the file /home/user/colors.txt, use uniq to output each group of adjacent lines (ignoring case), prefixing each line by the number of times it occurs consecutively. Save the output to /home/user/colors_count.txt.

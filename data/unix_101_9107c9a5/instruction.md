@@ -1,0 +1,1 @@
+In /home/user/images/, prepend the prefix 'old_' to every file whose name starts with 'img' (e.g., img1.jpg becomes old_img1.jpg). Use the verbose flag so the command prints the names of the files it renames.

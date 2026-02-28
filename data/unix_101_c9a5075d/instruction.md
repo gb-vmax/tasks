@@ -1,0 +1,1 @@
+Print the parent directories of '/home/user/photos/2022/vacation.jpg' and '/home/user/music/album/song.mp3' on a single command, using dirname with the -z flag to separate the outputs with null bytes.

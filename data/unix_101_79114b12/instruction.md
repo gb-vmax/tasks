@@ -1,0 +1,1 @@
+Split the file /home/user/long.txt into files containing at most 5 bytes each. The output files should use the prefix 'part_' and numeric suffixes (e.g., part_00, part_01, ...), created in /home/user/.

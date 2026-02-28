@@ -1,0 +1,1 @@
+Combine the JSON arrays from /home/user/data1.json and /home/user/data2.json into a single array, then output the resulting merged array with its objects' keys sorted, saving it to /home/user/merged.json. The output must be pretty-printed (not compact).

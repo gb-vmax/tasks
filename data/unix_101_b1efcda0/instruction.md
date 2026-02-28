@@ -1,0 +1,1 @@
+Transform all lowercase letters to uppercase in /home/user/data/info.log and overwrite the original file with the result using 'sponge'. Also, create a backup of the original file as /home/user/data/info.log.bak before overwriting.

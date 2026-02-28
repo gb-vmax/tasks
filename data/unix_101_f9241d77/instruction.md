@@ -1,0 +1,1 @@
+In the directory /home/user/documents/, use the 'hardlink' command to deduplicate files by content, but only hardlink files that have the same filename (even if they are in different subdirectories). Use the appropriate flag to ensure only files with identical names are considered for hardlinking.

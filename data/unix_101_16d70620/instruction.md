@@ -1,0 +1,1 @@
+In the directory /home/user/texts, there are files file1.txt, file2.txt, and file3.txt, each containing the word 'foo'. Use the parallel command to run a sed command that replaces 'foo' with 'bar' in each file, editing the files in-place.

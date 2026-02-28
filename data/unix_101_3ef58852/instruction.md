@@ -1,0 +1,1 @@
+Combine the files /home/user/alpha.txt and /home/user/beta.txt serially (one after another, not in parallel), separating their lines with a semicolon (;), and write the result to /home/user/merged.txt. Use the appropriate options for paste.

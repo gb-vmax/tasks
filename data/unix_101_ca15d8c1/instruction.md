@@ -1,0 +1,1 @@
+Read the contents of /home/user/env/colors.txt using a colon (:) as the delimiter, and store each separated value as an element in the array ARR. Then, write the third element of ARR to /home/user/env/third_color.txt.

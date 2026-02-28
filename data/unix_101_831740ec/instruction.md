@@ -1,0 +1,1 @@
+Use the pathchk command with the --portability flag to check if the following file paths are portable on all POSIX systems: '/home/user/project/README', '/home/user/project/verylongfilenameeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', and '/home/user/project/illegal:name'.

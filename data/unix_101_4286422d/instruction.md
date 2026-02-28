@@ -1,0 +1,1 @@
+Compare /home/user/doc1.txt and /home/user/doc2.txt side-by-side, but only output lines that are different (suppress lines that are identical in both files). Save the output to /home/user/diff_output.txt.

@@ -1,0 +1,1 @@
+Append the lines 'orange', 'banana', and 'grape' (each on its own line) to the file /home/user/fruits.txt using 'tee' with the appropriate option, so that the original content is preserved and the new lines are added at the end.

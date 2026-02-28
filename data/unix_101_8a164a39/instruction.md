@@ -1,0 +1,1 @@
+Use dig with the +short option to query the MX records for example.org and save the result to /home/user/network/dig_mx_short.txt. The output should only contain the mail exchanger records in short format.
