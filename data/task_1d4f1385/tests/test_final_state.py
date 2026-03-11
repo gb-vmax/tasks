@@ -1,0 +1,360 @@
+# test_final_state.py
+
+import os
+import pytest
+
+HOME = "/home/user"
+RESTORE_WORK = os.path.join(HOME, "restore_work")
+RESTORE_WORK_SITE_PACKAGES = os.path.join(RESTORE_WORK, "site-packages")
+RESTORE_TARGET_SITE_PACKAGES = os.path.join(HOME, "restore_target", "site-packages")
+ARCHIVE_FILE = os.path.join(HOME, "backup", "restore_archive.tar.gz")
+REPORT_FILE = os.path.join(HOME, "restore_report.txt")
+
+EXPECTED_REPORT = """\
+=== RESTORE VERIFICATION REPORT ===
+Archive: /home/user/backup/restore_archive.tar.gz
+Target: /home/user/restore_target/site-packages
+
+--- PACKAGE STATUS ---
+click==8.1.3 [OK]
+flask==2.2.0 -> 2.1.0 [WRONG_VERSION]
+numpy==1.24.0 [MISSING]
+requests==2.28.1 [OK]
+Werkzeug==2.2.2 [OK]
+
+--- EXTRA PACKAGES IN TARGET ---
+itsdangerous==2.1.2 [EXTRA]
+
+--- SUMMARY ---
+Total packages in archive: 5
+OK: 3
+WRONG_VERSION: 1
+MISSING: 1
+EXTRA: 1
+Restore status: INCOMPLETE
+"""
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def read_report():
+    with open(REPORT_FILE, "r") as f:
+        return f.read()
+
+
+def parse_report_sections(content):
+    """Split report into named sections for targeted assertions."""
+    sections = {}
+    current_section = None
+    buffer = []
+    for line in content.splitlines(keepends=True):
+        stripped = line.strip()
+        if stripped.startswith("--- ") and stripped.endswith(" ---"):
+            if current_section is not None:
+                sections[current_section] = "".join(buffer).strip()
+            current_section = stripped.strip("- ").strip()
+            buffer = []
+        elif stripped.startswith("=== ") and stripped.endswith(" ==="):
+            if current_section is not None:
+                sections[current_section] = "".join(buffer).strip()
+            current_section = stripped.strip("= ").strip()
+            buffer = []
+        else:
+            buffer.append(line)
+    if current_section is not None:
+        sections[current_section] = "".join(buffer).strip()
+    return sections
+
+
+# ---------------------------------------------------------------------------
+# Step 1: Archive extraction tests
+# ---------------------------------------------------------------------------
+
+def test_restore_work_directory_exists():
+    assert os.path.isdir(RESTORE_WORK), (
+        f"restore_work directory was not created at {RESTORE_WORK}. "
+        "The archive should have been extracted here."
+    )
+
+
+def test_restore_work_site_packages_exists():
+    assert os.path.isdir(RESTORE_WORK_SITE_PACKAGES), (
+        f"site-packages directory not found at {RESTORE_WORK_SITE_PACKAGES}. "
+        "The archive should contain a site-packages/ directory."
+    )
+
+
+def test_restore_work_contains_expected_dist_info_dirs():
+    expected_dirs = [
+        "requests-2.28.1.dist-info",
+        "flask-2.2.0.dist-info",
+        "numpy-1.24.0.dist-info",
+        "click-8.1.3.dist-info",
+        "Werkzeug-2.2.2.dist-info",
+    ]
+    for d in expected_dirs:
+        full_path = os.path.join(RESTORE_WORK_SITE_PACKAGES, d)
+        assert os.path.isdir(full_path), (
+            f"Expected dist-info directory not found after extraction: {full_path}"
+        )
+
+
+def test_restore_work_metadata_files_exist():
+    expected_metadata = [
+        "requests-2.28.1.dist-info/METADATA",
+        "flask-2.2.0.dist-info/METADATA",
+        "numpy-1.24.0.dist-info/METADATA",
+        "click-8.1.3.dist-info/METADATA",
+        "Werkzeug-2.2.2.dist-info/METADATA",
+    ]
+    for rel_path in expected_metadata:
+        full_path = os.path.join(RESTORE_WORK_SITE_PACKAGES, rel_path)
+        assert os.path.isfile(full_path), (
+            f"METADATA file not found after extraction: {full_path}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Step 2 & 3: Verify source data is intact
+# ---------------------------------------------------------------------------
+
+def test_restore_target_still_has_correct_structure():
+    """Restore target should still have its 5 dist-info dirs."""
+    entries = [
+        e for e in os.listdir(RESTORE_TARGET_SITE_PACKAGES)
+        if e.endswith(".dist-info") and os.path.isdir(
+            os.path.join(RESTORE_TARGET_SITE_PACKAGES, e)
+        )
+    ]
+    assert len(entries) == 5, (
+        f"Expected exactly 5 .dist-info directories in restore target, "
+        f"found {len(entries)}: {sorted(entries)}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Step 5: Report file existence and exact content
+# ---------------------------------------------------------------------------
+
+def test_restore_report_file_exists():
+    assert os.path.isfile(REPORT_FILE), (
+        f"Restore verification report not found at {REPORT_FILE}. "
+        "The report must be generated by the student's solution."
+    )
+
+
+def test_restore_report_exact_content():
+    content = read_report()
+    assert content == EXPECTED_REPORT, (
+        f"Report content does not match expected.\n\n"
+        f"=== EXPECTED ===\n{EXPECTED_REPORT}\n\n"
+        f"=== ACTUAL ===\n{content}\n\n"
+        f"=== DIFF (expected vs actual) ===\n"
+        + _diff(EXPECTED_REPORT, content)
+    )
+
+
+def _diff(expected, actual):
+    """Simple line-by-line diff helper."""
+    import difflib
+    diff = difflib.unified_diff(
+        expected.splitlines(keepends=True),
+        actual.splitlines(keepends=True),
+        fromfile="expected",
+        tofile="actual",
+    )
+    return "".join(diff)
+
+
+# ---------------------------------------------------------------------------
+# Targeted section tests (for clearer failure messages)
+# ---------------------------------------------------------------------------
+
+def test_report_header():
+    content = read_report()
+    assert content.startswith("=== RESTORE VERIFICATION REPORT ==="), (
+        "Report must start with '=== RESTORE VERIFICATION REPORT ==='"
+    )
+    assert "Archive: /home/user/backup/restore_archive.tar.gz" in content, (
+        "Report must contain 'Archive: /home/user/backup/restore_archive.tar.gz'"
+    )
+    assert "Target: /home/user/restore_target/site-packages" in content, (
+        "Report must contain 'Target: /home/user/restore_target/site-packages'"
+    )
+
+
+def test_report_package_status_section_present():
+    content = read_report()
+    assert "--- PACKAGE STATUS ---" in content, (
+        "Report must contain '--- PACKAGE STATUS ---' section header"
+    )
+
+
+def test_report_click_ok():
+    content = read_report()
+    assert "click==8.1.3 [OK]" in content, (
+        "Report must contain 'click==8.1.3 [OK]' — click was correctly restored."
+    )
+
+
+def test_report_flask_wrong_version():
+    content = read_report()
+    assert "flask==2.2.0 -> 2.1.0 [WRONG_VERSION]" in content, (
+        "Report must contain 'flask==2.2.0 -> 2.1.0 [WRONG_VERSION]' — "
+        "flask was restored with wrong version (2.1.0 instead of 2.2.0)."
+    )
+
+
+def test_report_numpy_missing():
+    content = read_report()
+    assert "numpy==1.24.0 [MISSING]" in content, (
+        "Report must contain 'numpy==1.24.0 [MISSING]' — numpy was not restored."
+    )
+
+
+def test_report_requests_ok():
+    content = read_report()
+    assert "requests==2.28.1 [OK]" in content, (
+        "Report must contain 'requests==2.28.1 [OK]' — requests was correctly restored."
+    )
+
+
+def test_report_werkzeug_ok():
+    content = read_report()
+    assert "Werkzeug==2.2.2 [OK]" in content, (
+        "Report must contain 'Werkzeug==2.2.2 [OK]' — Werkzeug was correctly restored."
+    )
+
+
+def test_report_package_status_order():
+    """Packages must be sorted alphabetically (case-insensitive): click < flask < numpy < requests < Werkzeug"""
+    content = read_report()
+    lines = content.splitlines()
+
+    # Find the PACKAGE STATUS section
+    try:
+        start = lines.index("--- PACKAGE STATUS ---")
+    except ValueError:
+        pytest.fail("'--- PACKAGE STATUS ---' section not found in report")
+
+    # Collect package lines until next section
+    pkg_lines = []
+    for line in lines[start + 1:]:
+        if line.startswith("---"):
+            break
+        if line.strip():
+            pkg_lines.append(line.strip())
+
+    assert len(pkg_lines) == 5, (
+        f"Expected 5 package lines in PACKAGE STATUS section, got {len(pkg_lines)}: {pkg_lines}"
+    )
+
+    # Extract package names (before ==)
+    names = [line.split("==")[0] for line in pkg_lines]
+    expected_order = ["click", "flask", "numpy", "requests", "Werkzeug"]
+
+    assert [n.lower() for n in names] == [e.lower() for e in expected_order], (
+        f"Package status lines are not in correct alphabetical order.\n"
+        f"Expected order (case-insensitive): {expected_order}\n"
+        f"Got: {names}"
+    )
+
+
+def test_report_extra_packages_section_present():
+    content = read_report()
+    assert "--- EXTRA PACKAGES IN TARGET ---" in content, (
+        "Report must contain '--- EXTRA PACKAGES IN TARGET ---' section header"
+    )
+
+
+def test_report_itsdangerous_extra():
+    content = read_report()
+    assert "itsdangerous==2.1.2 [EXTRA]" in content, (
+        "Report must contain 'itsdangerous==2.1.2 [EXTRA]' — "
+        "itsdangerous is present in restore target but not in archive."
+    )
+
+
+def test_report_summary_section_present():
+    content = read_report()
+    assert "--- SUMMARY ---" in content, (
+        "Report must contain '--- SUMMARY ---' section header"
+    )
+
+
+def test_report_summary_total_packages():
+    content = read_report()
+    assert "Total packages in archive: 5" in content, (
+        "Report summary must contain 'Total packages in archive: 5'"
+    )
+
+
+def test_report_summary_ok_count():
+    content = read_report()
+    assert "OK: 3" in content, (
+        "Report summary must contain 'OK: 3' (click, requests, Werkzeug are OK)"
+    )
+
+
+def test_report_summary_wrong_version_count():
+    content = read_report()
+    assert "WRONG_VERSION: 1" in content, (
+        "Report summary must contain 'WRONG_VERSION: 1' (flask has wrong version)"
+    )
+
+
+def test_report_summary_missing_count():
+    content = read_report()
+    assert "MISSING: 1" in content, (
+        "Report summary must contain 'MISSING: 1' (numpy is missing)"
+    )
+
+
+def test_report_summary_extra_count():
+    content = read_report()
+    assert "EXTRA: 1" in content, (
+        "Report summary must contain 'EXTRA: 1' (itsdangerous is extra)"
+    )
+
+
+def test_report_restore_status_incomplete():
+    content = read_report()
+    assert "Restore status: INCOMPLETE" in content, (
+        "Report must contain 'Restore status: INCOMPLETE' — "
+        "there are WRONG_VERSION and MISSING packages, so restore is not complete."
+    )
+
+
+def test_report_restore_status_not_success():
+    content = read_report()
+    assert "Restore status: SUCCESS" not in content, (
+        "Report must NOT contain 'Restore status: SUCCESS' — "
+        "the restore is INCOMPLETE due to WRONG_VERSION and MISSING packages."
+    )
+
+
+def test_report_no_none_in_extra_section():
+    """Since there IS an extra package, the EXTRA section should not say 'None'."""
+    content = read_report()
+    lines = content.splitlines()
+    try:
+        start = lines.index("--- EXTRA PACKAGES IN TARGET ---")
+    except ValueError:
+        pytest.fail("'--- EXTRA PACKAGES IN TARGET ---' section not found")
+
+    extra_lines = []
+    for line in lines[start + 1:]:
+        if line.startswith("---"):
+            break
+        if line.strip():
+            extra_lines.append(line.strip())
+
+    assert "None" not in extra_lines, (
+        "EXTRA PACKAGES section should not contain 'None' — "
+        "there is one extra package (itsdangerous)."
+    )
+    assert len(extra_lines) == 1, (
+        f"Expected exactly 1 extra package line, got {len(extra_lines)}: {extra_lines}"
+    )
