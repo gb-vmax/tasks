@@ -1,0 +1,34 @@
+FROM endless-base:latest
+RUN <<'ENDSETUP'
+#!/bin/bash
+set -e
+
+mkdir -p /home/user/security
+
+cat > /home/user/security/auth.log << 'EOF'
+2024-05-01T08:00:01Z SUCCESS key_alpha
+2024-05-01T08:00:05Z FAILED key_beta
+2024-05-01T08:00:09Z SUCCESS key_gamma
+2024-05-01T08:01:00Z SUCCESS key_alpha
+2024-05-01T08:01:15Z FAILED key_delta
+2024-05-01T08:01:22Z SUCCESS key_gamma
+2024-05-01T08:02:00Z FAILED key_alpha
+2024-05-01T08:02:10Z SUCCESS key_beta
+2024-05-01T08:02:45Z SUCCESS key_gamma
+2024-05-01T08:03:00Z SUCCESS key_delta
+2024-05-01T08:03:12Z FAILED key_gamma
+2024-05-01T08:03:30Z SUCCESS key_alpha
+2024-05-01T08:04:00Z SUCCESS key_gamma
+2024-05-01T08:04:22Z FAILED key_beta
+2024-05-01T08:05:00Z SUCCESS key_delta
+2024-05-01T08:05:10Z SUCCESS key_gamma
+2024-05-01T08:05:45Z SUCCESS key_alpha
+2024-05-01T08:06:00Z FAILED key_gamma
+2024-05-01T08:06:15Z SUCCESS key_beta
+2024-05-01T08:06:45Z SUCCESS key_alpha
+EOF
+
+chown -R user:user /home/user
+ENDSETUP
+
+WORKDIR /home/user
